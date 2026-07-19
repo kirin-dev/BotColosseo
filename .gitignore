@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+.venv/
+
+# Git worktrees
+.worktrees/
+
+# ViZDoom runtime state
+/_vizdoom/
+/_vizdoom.ini
+*.lmp
+
+# Experiments and generated media
+/runs/
+/checkpoints/
+/artifacts/
+/videos/
+/wandb/
+/tensorboard/
+
+# Local IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+
+# Personal application material
+/盛文聪_中国科学院自动化研究所_强化学习.pdf
