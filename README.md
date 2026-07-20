@@ -58,9 +58,8 @@ conda env create -f env.yml
 conda activate botcolosseo
 python scripts/check_env.py
 python -m pytest -v
-python scripts/build_crystal_run.py --check \
-  --acc /home/wencong/.local/bin/acc \
-  --acc-include /home/wencong/.local/src/acc-1.60
+ACC_PATH=/path/to/acc ACC_INCLUDE=/path/to/acc/source \
+  python scripts/build_crystal_run.py --check
 python scripts/smoke_crystal_run.py \
   --task moving_hit \
   --teacher aggressive_script \
