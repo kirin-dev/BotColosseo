@@ -54,6 +54,10 @@ def main(argv: list[str] | None = None) -> int:
         video_path=video,
         video_frame_cap=args.video_frame_cap,
     )
+    try:
+        summary["video_path"] = str(video.relative_to(root))
+    except ValueError:
+        pass
     write_audit_summary(summary, output)
     print(json.dumps(summary, indent=2, sort_keys=True))
     return 0 if summary["passed"] else 1

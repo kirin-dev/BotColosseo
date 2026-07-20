@@ -3,6 +3,7 @@ from pathlib import Path
 from botcolosseo.agents.duel_teachers import (
     AggressiveDuelTeacher,
     DefensiveDuelTeacher,
+    DuelTeacherMode,
     FixedRouteDuelTeacher,
     ObjectiveDuelTeacher,
     RandomDuelTeacher,
@@ -45,6 +46,7 @@ def test_objective_teacher_seeks_core_then_own_base() -> None:
     teacher.reset(seed=7)
 
     assert teacher.act(state()) == MacroAction.MOVE_FORWARD
+    assert teacher.mode is DuelTeacherMode.OBJECTIVE
     carrying = state(host_x=0.0, carrier=1)
     assert teacher.act(carrying) in {
         MacroAction.TURN_LEFT,
@@ -52,6 +54,9 @@ def test_objective_teacher_seeks_core_then_own_base() -> None:
         MacroAction.FORWARD_TURN_LEFT,
         MacroAction.FORWARD_TURN_RIGHT,
     }
+    assert teacher.mode is DuelTeacherMode.EVADE
+    teacher.act(state(host_health=20.0))
+    assert teacher.mode is DuelTeacherMode.RECOVER
 
 
 def test_aggressive_attacks_aligned_opponent_and_defensive_holds_base() -> None:
@@ -62,10 +67,17 @@ def test_aggressive_attacks_aligned_opponent_and_defensive_holds_base() -> None:
     nearby = state(opponent_x=-256.0)
 
     assert aggressive.act(nearby) == MacroAction.FORWARD_ATTACK
+    assert aggressive.mode is DuelTeacherMode.INTERCEPT
     angled = state(opponent_x=-256.0, opponent_y=256.0)
     assert aggressive.act(angled) == MacroAction.TURN_LEFT_ATTACK
     assert defensive.act(state()) == MacroAction.IDLE
+    assert defensive.mode is DuelTeacherMode.DEFEND
     assert defensive.act(state(carrier=2)) != MacroAction.IDLE
+    assert defensive.mode is DuelTeacherMode.INTERCEPT
+    aggressive.act(state(host_health=10.0))
+    assert aggressive.mode is DuelTeacherMode.EVADE
+    aggressive.act(state(host_health=0.0))
+    assert aggressive.mode is DuelTeacherMode.RECOVER
 
 
 def test_fixed_route_and_random_are_deterministic() -> None:
@@ -78,3 +90,4 @@ def test_fixed_route_and_random_are_deterministic() -> None:
 
     assert fixed.act(state()) in set(MacroAction)
     assert [first.act(state()) for _ in range(20)] == [second.act(state()) for _ in range(20)]
+    assert first.mode is DuelTeacherMode.RANDOM

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from enum import Enum
 from typing import Protocol
 
 import numpy as np
@@ -10,9 +11,19 @@ from botcolosseo.envs.duel_types import DuelPrivilegedState
 from botcolosseo.scenarios.regions import RegionGraph
 
 
+class DuelTeacherMode(str, Enum):
+    OBJECTIVE = "objective"
+    INTERCEPT = "intercept"
+    EVADE = "evade"
+    RECOVER = "recover"
+    DEFEND = "defend"
+    RANDOM = "random"
+
+
 class DuelTeacher(Protocol):
     name: str
     side: str
+    mode: DuelTeacherMode
 
     def reset(self, *, seed: int) -> None: ...
 
@@ -29,6 +40,24 @@ def _opponent(state: DuelPrivilegedState, side: str) -> tuple[float, float]:
     if side == "host":
         return state.opponent_x, state.opponent_y
     return state.host_x, state.host_y
+
+
+def _health(state: DuelPrivilegedState, side: str) -> tuple[float, float]:
+    if side == "host":
+        return state.host_health, state.opponent_health
+    return state.opponent_health, state.host_health
+
+
+def _base(side: str) -> tuple[float, float]:
+    return (-640.0, 0.0) if side == "host" else (640.0, 0.0)
+
+
+def _recover(state: DuelPrivilegedState, side: str) -> MacroAction:
+    x, y, _ = _player(state, side)
+    target = _base(side)
+    if math.hypot(target[0] - x, target[1] - y) <= 32.0:
+        return MacroAction.IDLE
+    return _steer(state, side, target)
 
 
 def _steer(
@@ -56,15 +85,23 @@ class ObjectiveDuelTeacher:
         if side not in ("host", "opponent"):
             raise ValueError(f"Invalid duel side: {side}")
         self.side = side
+        self.mode = DuelTeacherMode.OBJECTIVE
 
     def reset(self, *, seed: int) -> None:
         del seed
+        self.mode = DuelTeacherMode.OBJECTIVE
 
     def act(self, state: DuelPrivilegedState) -> MacroAction:
+        own_health, _ = _health(state, self.side)
+        if own_health <= 25.0:
+            self.mode = DuelTeacherMode.RECOVER
+            return _recover(state, self.side)
         own_carrier = 1 if self.side == "host" else 2
         if state.carrier == own_carrier:
-            target = (-640.0, 0.0) if self.side == "host" else (640.0, 0.0)
+            self.mode = DuelTeacherMode.EVADE
+            target = _base(self.side)
         else:
+            self.mode = DuelTeacherMode.OBJECTIVE
             target = (state.core_x, state.core_y)
         return _steer(state, self.side, target)
 
@@ -79,12 +116,15 @@ class FixedRouteDuelTeacher:
         points = graph.route("direct_upper").waypoints
         self._points = points if side == "host" else tuple((-x, y) for x, y in points)
         self._index = 0
+        self.mode = DuelTeacherMode.OBJECTIVE
 
     def reset(self, *, seed: int) -> None:
         del seed
         self._index = 0
+        self.mode = DuelTeacherMode.OBJECTIVE
 
     def act(self, state: DuelPrivilegedState) -> MacroAction:
+        self.mode = DuelTeacherMode.OBJECTIVE
         x, y, _ = _player(state, self.side)
         while self._index < len(self._points) - 1:
             target = self._points[self._index]
@@ -102,11 +142,21 @@ class AggressiveDuelTeacher:
         if side not in ("host", "opponent"):
             raise ValueError(f"Invalid duel side: {side}")
         self.side = side
+        self.mode = DuelTeacherMode.INTERCEPT
 
     def reset(self, *, seed: int) -> None:
         del seed
+        self.mode = DuelTeacherMode.INTERCEPT
 
     def act(self, state: DuelPrivilegedState) -> MacroAction:
+        own_health, opponent_health = _health(state, self.side)
+        if own_health <= 0.0:
+            self.mode = DuelTeacherMode.RECOVER
+            return MacroAction.IDLE
+        if own_health <= 25.0 and opponent_health > own_health:
+            self.mode = DuelTeacherMode.EVADE
+            return _recover(state, self.side)
+        self.mode = DuelTeacherMode.INTERCEPT
         x, y, angle = _player(state, self.side)
         target = _opponent(state, self.side)
         distance = math.hypot(target[0] - x, target[1] - y)
@@ -130,16 +180,24 @@ class DefensiveDuelTeacher:
         if side not in ("host", "opponent"):
             raise ValueError(f"Invalid duel side: {side}")
         self.side = side
-        self._base = (-640.0, 0.0) if side == "host" else (640.0, 0.0)
+        self._base = _base(side)
         self._aggressive = AggressiveDuelTeacher(graph, side=side)
+        self.mode = DuelTeacherMode.DEFEND
 
     def reset(self, *, seed: int) -> None:
         self._aggressive.reset(seed=seed)
+        self.mode = DuelTeacherMode.DEFEND
 
     def act(self, state: DuelPrivilegedState) -> MacroAction:
+        own_health, _ = _health(state, self.side)
+        if own_health <= 0.0:
+            self.mode = DuelTeacherMode.RECOVER
+            return MacroAction.IDLE
         opponent_carrier = 2 if self.side == "host" else 1
         if state.carrier == opponent_carrier:
+            self.mode = DuelTeacherMode.INTERCEPT
             return self._aggressive.act(state)
+        self.mode = DuelTeacherMode.DEFEND
         x, y, _ = _player(state, self.side)
         if math.hypot(self._base[0] - x, self._base[1] - y) <= 32.0:
             return MacroAction.IDLE
@@ -155,12 +213,15 @@ class RandomDuelTeacher:
             raise ValueError(f"Invalid duel side: {side}")
         self.side = side
         self._rng: np.random.Generator | None = None
+        self.mode = DuelTeacherMode.RANDOM
 
     def reset(self, *, seed: int) -> None:
         self._rng = np.random.default_rng(seed)
+        self.mode = DuelTeacherMode.RANDOM
 
     def act(self, state: DuelPrivilegedState) -> MacroAction:
         del state
+        self.mode = DuelTeacherMode.RANDOM
         if self._rng is None:
             raise RuntimeError("RandomDuelTeacher must be reset before act")
         return MacroAction(int(self._rng.integers(0, len(MacroAction))))

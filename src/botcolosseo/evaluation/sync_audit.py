@@ -133,6 +133,9 @@ def run_sync_audit(
     before = {child.pid for child in mp.active_children()}
     audit = SyncAuditAccumulator(target_decisions=decisions)
     frames: list[np.ndarray] = []
+    action_counts: Counter[str] = Counter()
+    mode_counts: Counter[str] = Counter()
+    mode_transitions: Counter[str] = Counter()
     started = time.monotonic()
     episode = 0
     scenario_hash = ""
@@ -142,12 +145,33 @@ def run_sync_audit(
         audit.start_episode(initial_tic=info.engine_tic)
         host_teacher.reset(seed=seed)
         opponent_teacher.reset(seed=seed)
+        previous_modes = {
+            "host": host_teacher.mode.value,
+            "opponent": opponent_teacher.mode.value,
+        }
         dispatched = 0
         while audit.completed_decisions < decisions:
             state = env.teacher_state()
-            step = env.step(host_teacher.act(state), opponent_teacher.act(state))
+            host_action = host_teacher.act(state)
+            opponent_action = opponent_teacher.act(state)
+            current_modes = {
+                "host": host_teacher.mode.value,
+                "opponent": opponent_teacher.mode.value,
+            }
+            step = env.step(host_action, opponent_action)
             dispatched += 1
             recorded = audit.record(step)
+            if recorded:
+                action_counts.update(
+                    (f"host:{host_action.name}", f"opponent:{opponent_action.name}")
+                )
+                for side in ("host", "opponent"):
+                    mode_counts[f"{side}:{current_modes[side]}"] += 1
+                    if current_modes[side] != previous_modes[side]:
+                        mode_transitions[
+                            f"{side}:{previous_modes[side]}->{current_modes[side]}"
+                        ] += 1
+                    previous_modes[side] = current_modes[side]
             if recorded and len(frames) < video_frame_cap:
                 label = ",".join(event.type.value for event in step.events) or "none"
                 frames.append(compose_duel_frame(step, event_label=label))
@@ -159,6 +183,10 @@ def run_sync_audit(
                 audit.start_episode(initial_tic=info.engine_tic)
                 host_teacher.reset(seed=seed + episode)
                 opponent_teacher.reset(seed=seed + episode)
+                previous_modes = {
+                    "host": host_teacher.mode.value,
+                    "opponent": opponent_teacher.mode.value,
+                }
     finally:
         env.close()
     cleaned = {child.pid for child in mp.active_children()} <= before
@@ -167,7 +195,10 @@ def run_sync_audit(
         {
             "host_teacher": host_teacher.name,
             "opponent_teacher": opponent_teacher.name,
+            "action_counts": dict(sorted(action_counts.items())),
             "dispatched_decisions": dispatched,
+            "teacher_mode_counts": dict(sorted(mode_counts.items())),
+            "teacher_transitions": dict(sorted(mode_transitions.items())),
             "scenario_hash": scenario_hash,
             "seed": seed,
             "video_frames": len(frames),
