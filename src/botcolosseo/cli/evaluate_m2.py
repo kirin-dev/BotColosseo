@@ -3,7 +3,8 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
+from dataclasses import replace
 from pathlib import Path
 
 import torch
@@ -13,6 +14,7 @@ from botcolosseo.agents.duel_teachers import DUEL_TEACHERS
 from botcolosseo.evaluation.m2 import (
     FROZEN_M2_THRESHOLDS,
     M2_POLICIES,
+    M2EpisodeRecord,
     TeacherEvaluationPolicy,
     evaluate_m2_records,
     load_actor_policy,
@@ -81,6 +83,39 @@ def _selected_cases(
     return tuple(selected)
 
 
+def ensure_evidence_targets_absent(output_dir: Path) -> None:
+    targets = (
+        "episodes.csv",
+        "summary.json",
+        "manifest.json",
+        ".episodes.csv.tmp",
+        ".summary.json.tmp",
+        ".manifest.json.tmp",
+    )
+    conflicts = [name for name in targets if (output_dir / name).exists()]
+    if conflicts:
+        raise FileExistsError(
+            f"Evaluation evidence already exists: {', '.join(conflicts)}"
+        )
+
+
+def run_case_with_retries(
+    runner: Callable[[], M2EpisodeRecord], *, max_attempts: int
+) -> M2EpisodeRecord:
+    if max_attempts <= 0:
+        raise ValueError("max_attempts must be positive")
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return replace(runner(), environment_attempts=attempt)
+        except RuntimeError as error:
+            retriable = str(error) == (
+                "Duel respawn did not complete within the warm-up limit"
+            )
+            if not retriable or attempt == max_attempts:
+                raise
+    raise AssertionError("unreachable")
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -147,8 +182,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if exact_official_selection and dirty:
         raise RuntimeError("Official M2 evaluation requires a clean tracked worktree")
     output_dir = _resolve(root, args.output)
-    if output_dir.exists() and any(output_dir.iterdir()):
-        raise FileExistsError(f"Evaluation output is not empty: {output_dir}")
+    ensure_evidence_targets_absent(output_dir)
     device = torch.device(args.device)
     if device.type == "cuda" and not torch.cuda.is_available():
         raise RuntimeError("CUDA was requested but is unavailable")
@@ -199,6 +233,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     total = len(policies) * len(cases)
     completed = 0
     max_decisions = args.max_decisions or int(config["max_episode_decisions"])
+    max_environment_attempts = int(config["max_environment_attempts"])
     for policy_name in policies:
         for case in cases:
             policy = learned.get(policy_name)
@@ -207,12 +242,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                     policy_name, graph, side=case.learner_side
                 )
             records.append(
-                run_m2_episode(
-                    case,
-                    policy=policy,
-                    graph=graph,
-                    config_path=config_cfg,
-                    max_decisions=max_decisions,
+                run_case_with_retries(
+                    lambda case=case, policy=policy: run_m2_episode(
+                        case,
+                        policy=policy,
+                        graph=graph,
+                        config_path=config_cfg,
+                        max_decisions=max_decisions,
+                    ),
+                    max_attempts=max_environment_attempts,
                 )
             )
             completed += 1
@@ -243,6 +281,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "opponents": list(opponents),
         "pairs_per_opponent": args.max_pairs or pairs_per_opponent,
         "max_episode_decisions": max_decisions,
+        "max_environment_attempts": max_environment_attempts,
         "action_selection": config["action_selection"],
         "bootstrap": config["bootstrap"],
         "thresholds": config["thresholds"],

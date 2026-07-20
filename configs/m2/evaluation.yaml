@@ -26,6 +26,7 @@ opponents:
   [random_legal, fixed_route, objective_first, aggressive_script, defensive_script]
 pairs_per_opponent: 50
 max_episode_decisions: 525
+max_environment_attempts: 2
 action_selection: greedy
 bootstrap:
   seed: 20260720

@@ -313,19 +313,19 @@ Return the final `tail -n 80 runs/m2/bc-full.log`, the artifact-gate output,
 the process/GPU checks, and `git status --short`. Do not start PPO until this
 pure-BC checkpoint gate has been reviewed and passed.
 
-## Action required: M2 full PPO training and validation-only selection
+## Completed: M2 full PPO training and validation-only selection
 
 The 20,000-step A100 pilot, 2,000-step stop/resume gate, candidate snapshot
-gate, and validation-only selector have passed. The full run uses 1,000,000
+gate, and validation-only selector passed. The full run used 1,000,000
 environment steps on GPU 0. It saves one atomic candidate per 100,000-step
 bucket, then evaluates every candidate on three frozen validation seed-pairs
 per opponent with both learner sides. Selection is lexicographic by objective
 rate, win rate, mean score difference, then earlier environment step. No test
 case is read by training or selection.
 
-The combined training and selection run is expected to take roughly six hours
-based on the measured 20,000-step pilot. Start it exactly once from the M2
-worktree:
+The full run was completed on 2026-07-21. It hit one transient ViZDoom respawn
+timeout at 898,304 environment steps, then completed through the documented
+atomic resume path. The retained commands below reproduce that process:
 
 ```bash
 cd /home/wencong/BotColosseo/.worktrees/m2-base-training
@@ -481,7 +481,8 @@ assert checkpoint["metadata"]["counters"]["environment_steps"] == selection["sel
 print("M2 full PPO training and validation-selection gate: PASS")
 print(json.dumps(selection["selected"], indent=2, sort_keys=True))
 PY
-! rg -n "Traceback|ValueError|RuntimeError|FloatingPointError" runs/m2/ppo-full.log
+test "$(rg -c '^Traceback \(most recent call last\):' runs/m2/ppo-full.log)" -eq 1
+test "$(rg -c '^RuntimeError: Duel respawn did not complete within the warm-up limit$' runs/m2/ppo-full.log)" -eq 1
 ps -eo pid,ppid,stat,cmd | rg '[b]otcolosseo-duel|[v]izdoom|[t]rain_ppo.py|[s]elect_ppo.py' || true
 nvidia-smi --query-compute-apps=pid,process_name,used_memory \
   --format=csv,noheader
@@ -492,3 +493,169 @@ Return the final `tail -n 100 runs/m2/ppo-full.log`, the artifact-gate output,
 the process/GPU checks, and `git status --short`. Do not run the official M2
 test evaluator; checkpoint selection and its tracked provenance must be
 reviewed and committed first.
+
+## Action required: official M2 paired learning gate
+
+The evaluator, frozen thresholds, BC/PPO validation selections, and bounded
+same-case respawn retry are committed before this run. The official test uses
+three policies, five opponents, 50 seed-pairs per opponent, and both learner
+sides: exactly 1,500 games. It is expected to take approximately 2.5--3 hours.
+Do not inspect partial policy outcomes or change code/config after starting.
+
+Run this preflight first. It verifies tracked selection provenance and loads
+both learned Actors without parsing test episode rows:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+test -z "$(git status --porcelain)"
+test ! -e reports/m2/episodes.csv
+test ! -e reports/m2/summary.json
+test ! -e reports/m2/manifest.json
+env PYTHONPATH="$PWD/src" \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python - <<'PY'
+import hashlib
+import json
+from pathlib import Path
+
+import torch
+
+from botcolosseo.evaluation.m2 import load_actor_policy
+
+root = Path.cwd()
+scenario = json.loads(
+    (root / "assets/scenarios/crystal_run/manifest.json").read_text()
+)["wad_sha256"]
+expected = {
+    "bc": root / "runs/m2/bc-full/best.pt",
+    "ppo": root / "runs/m2/ppo-full/selected.pt",
+}
+for name, checkpoint in expected.items():
+    report = json.loads(
+        (root / f"reports/m2/{name}-training-summary.json").read_text()
+    )
+    digest = hashlib.sha256(checkpoint.read_bytes()).hexdigest()
+    assert report["selected_checkpoint_sha256"] == digest
+    assert report["test_cases_accessed"] is False
+    load_actor_policy(
+        name,
+        checkpoint,
+        device=torch.device("cpu"),
+        expected_scenario_hash=scenario,
+    )
+assert hashlib.sha256((root / "configs/m2/test.json").read_bytes()).hexdigest() == (
+    "b26dedbd7a82d0ac53082a55dd723cbb2c9e05559781e84ecb7295f68c4f2bb5"
+)
+print("M2 official preflight: PASS")
+PY
+```
+
+Start the official evaluation exactly once:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+mkdir -p runs/m2
+nohup env \
+  PYTHONPATH=/home/wencong/BotColosseo/.worktrees/m2-base-training/src \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python -u \
+  scripts/evaluate_m2.py \
+  --split test \
+  --device cuda:0 \
+  --output reports/m2 \
+  > runs/m2/official-evaluation.log 2>&1 &
+echo $! > runs/m2/official-evaluation.pid
+cat runs/m2/official-evaluation.pid
+```
+
+Monitor process health only; do not use the partial log to tune or compare
+policies:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+ps -p "$(cat runs/m2/official-evaluation.pid)" -o pid,etime,%cpu,%mem,stat,cmd
+tail -n 20 runs/m2/official-evaluation.log
+nvidia-smi --query-compute-apps=pid,process_name,used_memory \
+  --format=csv,noheader
+```
+
+The evaluator writes the three official artifacts only after all games finish.
+If the process is externally interrupted before those files exist, restart the
+same command with `>> runs/m2/official-evaluation.log`; do not change any
+selection, seed, threshold, or policy. After the PID exits, run this gate:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+env PYTHONPATH="$PWD/src" \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python - <<'PY'
+import csv
+import hashlib
+import json
+from collections import Counter, defaultdict
+from pathlib import Path
+
+root = Path.cwd()
+report_dir = root / "reports/m2"
+summary = json.loads((report_dir / "summary.json").read_text())
+manifest = json.loads((report_dir / "manifest.json").read_text())
+rows = list(csv.DictReader((report_dir / "episodes.csv").open()))
+
+assert summary["official"] is True
+assert summary["complete"] is True
+assert summary["passed"] is True
+assert summary["episodes"] == summary["expected_episodes"] == 1500
+assert summary["protocol_inconsistencies"] == 0
+assert summary["artifact_inconsistencies"] == 0
+assert all(summary["gates"].values())
+assert set(summary["policies"]) == {"ppo", "bc", "random_legal"}
+assert len(rows) == 1500
+assert Counter(row["policy"] for row in rows) == Counter(
+    {"ppo": 500, "bc": 500, "random_legal": 500}
+)
+assert Counter((row["policy"], row["opponent"]) for row in rows) == Counter(
+    {
+        (policy, opponent): 100
+        for policy in ("ppo", "bc", "random_legal")
+        for opponent in (
+            "random_legal", "fixed_route", "objective_first",
+            "aggressive_script", "defensive_script",
+        )
+    }
+)
+groups = defaultdict(list)
+for row in rows:
+    groups[(row["policy"], row["opponent"], row["pair_index"])].append(row)
+assert len(groups) == 750
+assert all(
+    len(pair) == 2
+    and {row["learner_side"] for row in pair} == {"host", "opponent"}
+    and len({row["seed"] for row in pair}) == 1
+    for pair in groups.values()
+)
+assert len(
+    {
+        (row["policy"], row["opponent"], row["pair_index"], row["learner_side"])
+        for row in rows
+    }
+) == 1500
+assert hashlib.sha256((report_dir / "episodes.csv").read_bytes()).hexdigest() == manifest["episodes_sha256"]
+assert hashlib.sha256((report_dir / "summary.json").read_bytes()).hexdigest() == manifest["summary_sha256"]
+for policy in ("ppo", "bc"):
+    training = json.loads(
+        (report_dir / f"{policy}-training-summary.json").read_text()
+    )
+    assert manifest["checkpoint_sha256"][policy] == training["selected_checkpoint_sha256"]
+assert manifest["split"] == "test"
+assert manifest["official"] is True
+assert manifest["git_dirty"] is False
+print("M2 official paired learning gate: PASS")
+print(json.dumps(summary, indent=2, sort_keys=True))
+PY
+! rg -n "Traceback|ValueError|RuntimeError|FloatingPointError" runs/m2/official-evaluation.log
+ps -eo pid,ppid,stat,args | rg '[b]otcolosseo-duel|[v]izdoom|[e]valuate_m2.py' || true
+nvidia-smi --query-compute-apps=pid,process_name,used_memory \
+  --format=csv,noheader
+git status --short
+```
+
+Return the official gate output, final log tail, and process/GPU checks. A
+failed performance gate is still the official result: do not rerun, tune, or
+replace checkpoints after observing it.

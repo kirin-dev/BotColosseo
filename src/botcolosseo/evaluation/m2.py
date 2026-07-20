@@ -140,6 +140,7 @@ class M2EpisodeRecord:
     scenario_hash: str
     action_tic_inconsistent: bool = False
     score_event_inconsistent: bool = False
+    environment_attempts: int = 1
 
     @property
     def score_difference(self) -> int:
@@ -187,6 +188,7 @@ class M2EvaluationSummary:
     protocol_inconsistencies: int
     protocol_counts: dict[str, int]
     artifact_inconsistencies: int
+    environment_retries: int
     paired_score_difference_ci: tuple[float, float] | None
     gates: dict[str, bool]
     policies: dict[str, PolicySummary]
@@ -318,6 +320,8 @@ def _paired_score_differences(
 ) -> np.ndarray | None:
     scores: dict[tuple[str, int, str], list[int]] = defaultdict(list)
     for record in records:
+        if record.environment_attempts <= 0:
+            raise ValueError("environment_attempts must be positive")
         if record.policy in ("ppo", "bc"):
             scores[(record.policy, record.pair_index, record.opponent)].append(
                 record.score_difference
@@ -424,6 +428,9 @@ def evaluate_m2_records(
         )
         protocol_counts["terminated_rows"] += int(record.terminated)
         protocol_counts["truncated_rows"] += int(record.truncated)
+        protocol_counts["environment_retry_rows"] += int(
+            record.environment_attempts > 1
+        )
     issue_names = (
         "duplicate_rows",
         "explicit_inconsistency_rows",
@@ -532,6 +539,7 @@ def evaluate_m2_records(
         protocol_inconsistencies=protocol_inconsistencies,
         protocol_counts=dict(sorted(protocol_counts.items())),
         artifact_inconsistencies=artifact_inconsistencies,
+        environment_retries=sum(record.environment_attempts - 1 for record in records),
         paired_score_difference_ci=paired_ci,
         gates=gates,
         policies=policies,

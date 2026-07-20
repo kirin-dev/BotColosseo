@@ -257,3 +257,14 @@ def test_artifact_inconsistency_blocks_an_otherwise_passing_gate() -> None:
 
     assert summary.gates["artifact_clean"] is False
     assert summary.passed is False
+
+
+def test_environment_attempts_must_be_positive_for_every_policy() -> None:
+    records = _passing_records()
+    random_index = next(
+        index for index, record in enumerate(records) if record.policy == "random_legal"
+    )
+    records[random_index] = replace(records[random_index], environment_attempts=0)
+
+    with pytest.raises(ValueError, match="environment_attempts must be positive"):
+        _summary(records)
