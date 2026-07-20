@@ -39,14 +39,19 @@ def protocol(*, tic: int = 10, winner: int = 0, round_state: int = 1):
 
 
 def worker_state(
-    *, tic: int = 10, x: float = -640.0, winner: int = 0, health: float = 100.0
+    *,
+    tic: int = 10,
+    x: float = -640.0,
+    winner: int = 0,
+    health: float = 100.0,
+    dead: bool = False,
 ):
     return {
         "frame": np.zeros((240, 320), dtype=np.uint8),
         "episode_time": tic,
         "server_tic": tic,
         "finished": winner > 0,
-        "dead": False,
+        "dead": dead,
         "multiplayer": True,
         "protocol_values": protocol(tic=tic, winner=winner, round_state=2 if winner else 1),
         "player_x": x,
@@ -61,13 +66,19 @@ def worker_state(
 
 class FakeClient:
     def __init__(
-        self, role: str, log: list[tuple[str, str]], *, invalid_initial: bool = False
+        self,
+        role: str,
+        log: list[tuple[str, str]],
+        *,
+        invalid_initial: bool = False,
+        dead_initial: bool = False,
     ) -> None:
         self.role = role
         self.log = log
         self.closed = False
         self.time = 10
         self.invalid_initial = invalid_initial
+        self.dead_initial = dead_initial
         self.last_command = ""
 
     def submit(self, command: str, payload: object) -> int:
@@ -81,7 +92,8 @@ class FakeClient:
         self.log.append((self.role, "receive"))
         x = -640.0 if self.role == "host" else 640.0
         health = -999900.0 if self.invalid_initial and self.last_command == "init" else 100.0
-        return worker_state(tic=request_id, x=x, health=health)
+        dead = self.dead_initial and self.time < 12
+        return worker_state(tic=request_id, x=x, health=health, dead=dead)
 
     def close(self) -> None:
         self.closed = True
@@ -91,7 +103,7 @@ class FakeClient:
 
 
 def make_env(
-    log: list[tuple[str, str]], *, invalid_initial: bool = False
+    log: list[tuple[str, str]], *, invalid_initial: bool = False, dead_initial: bool = False
 ) -> SynchronousDuelEnv:
     graph = RegionGraph.from_yaml(Path("assets/scenarios/crystal_run/src/regions.yaml"))
     return SynchronousDuelEnv(
@@ -99,7 +111,10 @@ def make_env(
         region_graph=graph,
         seed=7,
         client_factory=lambda settings: FakeClient(
-            settings.role.value, log, invalid_initial=invalid_initial
+            settings.role.value,
+            log,
+            invalid_initial=invalid_initial,
+            dead_initial=dead_initial,
         ),
         port_allocator=lambda: 17432,
     )
@@ -151,3 +166,17 @@ def test_reset_barriers_until_both_players_have_valid_initial_state() -> None:
     assert observations.opponent.health == 100.0
     assert info.engine_tic == 11
     assert ("host", "submit:step") in log
+
+
+def test_dead_players_auto_respawn_through_symmetric_idle_barriers() -> None:
+    log: list[tuple[str, str]] = []
+    env = make_env(log, dead_initial=True)
+    try:
+        observations, info = env.reset()
+    finally:
+        env.close()
+
+    assert observations.host.health == observations.opponent.health == 100.0
+    assert info.engine_tic == 12
+    assert not any(entry == ("host", "submit:respawn") for entry in log)
+    assert not any(entry == ("opponent", "submit:respawn") for entry in log)

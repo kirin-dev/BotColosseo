@@ -102,7 +102,7 @@ class DuelWorker:
             return (
                 f"-host 2 -port {self._settings.port} -deathmatch "
                 "+timelimit 1.0 +sv_forcerespawn 1 +sv_noautoaim 1 "
-                "+sv_respawnprotect 0 +viz_respawn_delay 1 "
+                "+sv_respawnprotect 0 +sv_spawnfarthest 1 +viz_respawn_delay 1 "
                 "+name BotHost +colorset 0"
             )
         return (

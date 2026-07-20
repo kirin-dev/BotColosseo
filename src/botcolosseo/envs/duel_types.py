@@ -69,3 +69,4 @@ class DuelStep:
     decision_index: int
     engine_tic: int
     peer_tic_lag: int
+    pre_action_tics: int

@@ -21,7 +21,7 @@ def observation(score: int = 0) -> DuelActorObservation:
     )
 
 
-def step(*, index: int, tic: int, lag: int = 0) -> DuelStep:
+def step(*, index: int, tic: int, lag: int = 0, pre_action_tics: int = 0) -> DuelStep:
     return DuelStep(
         host=observation(),
         opponent=observation(),
@@ -33,6 +33,7 @@ def step(*, index: int, tic: int, lag: int = 0) -> DuelStep:
         decision_index=index,
         engine_tic=tic,
         peer_tic_lag=lag,
+        pre_action_tics=pre_action_tics,
     )
 
 
@@ -42,7 +43,7 @@ def test_accumulator_requires_four_tics_except_after_death() -> None:
     audit.record(step(index=1, tic=14, lag=1))
     death = DuelEvent(DuelEventType.DEATH, "host", 0, 2, 18)
     audit.record(replace(step(index=2, tic=18), events=(death,)))
-    audit.record(step(index=3, tic=58, lag=2))
+    audit.record(step(index=3, tic=58, lag=2, pre_action_tics=36))
 
     summary = audit.finish(cleaned_workers=True)
 
@@ -55,10 +56,23 @@ def test_accumulator_requires_four_tics_except_after_death() -> None:
 def test_accumulator_rejects_unexplained_tic_jump_and_wrong_total() -> None:
     audit = SyncAuditAccumulator(target_decisions=2)
     audit.start_episode(initial_tic=10)
-    with pytest.raises(RuntimeError, match="four tics"):
+    with pytest.raises(RuntimeError, match="four action tics"):
         audit.record(step(index=1, tic=15))
     with pytest.raises(RuntimeError, match="exactly 2"):
         audit.finish(cleaned_workers=True)
+
+
+def test_accumulator_skips_partial_terminal_boundary() -> None:
+    audit = SyncAuditAccumulator(target_decisions=1)
+    audit.start_episode(initial_tic=10)
+
+    recorded = audit.record(replace(step(index=1, tic=12), truncated=True))
+
+    assert recorded is False
+    assert audit.completed_decisions == 0
+    audit.start_episode(initial_tic=20)
+    assert audit.record(step(index=1, tic=24)) is True
+    assert audit.finish(cleaned_workers=True)["incomplete_terminal_boundaries"] == 1
 
 
 def test_duel_video_is_side_by_side_and_public_overlay_only() -> None:

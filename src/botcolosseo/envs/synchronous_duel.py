@@ -148,7 +148,7 @@ class SynchronousDuelEnv:
         host_macro = MacroAction(host_action)
         opponent_macro = MacroAction(opponent_action)
         try:
-            self._ensure_players_alive()
+            pre_action_tics = self._ensure_players_alive()
             host_state: dict[str, object] | None = None
             opponent_state: dict[str, object] | None = None
             for tic_index in range(self._frame_skip):
@@ -207,6 +207,7 @@ class SynchronousDuelEnv:
                     int(host_state["protocol_values"][1])
                     - int(opponent_state["protocol_values"][1])
                 ),
+                pre_action_tics=pre_action_tics,
             )
         except BaseException:
             self.close()
@@ -246,14 +247,15 @@ class SynchronousDuelEnv:
         opponent_state = self._opponent.receive(opponent_id)
         return host_state, opponent_state
 
-    def _ensure_players_alive(self) -> None:
+    def _ensure_players_alive(self) -> int:
         if self._last_host_state is None or self._last_opponent_state is None:
-            return
+            return 0
         if not (
             bool(self._last_host_state["dead"])
             or bool(self._last_opponent_state["dead"])
         ):
-            return
+            return 0
+        previous_tic = int(self._last_host_state["protocol_values"][1])
         host = self._require_client(self._host)
         opponent = self._require_client(self._opponent)
         host_state, opponent_state = self._respawn_players(
@@ -274,6 +276,7 @@ class SynchronousDuelEnv:
         self._update_privileged(host_state, opponent_state, snapshot, engine_tic)
         self._last_host_state = host_state
         self._last_opponent_state = opponent_state
+        return engine_tic - previous_tic
 
     def _warmup_players(
         self,
@@ -328,40 +331,17 @@ class SynchronousDuelEnv:
         *,
         max_tics: int,
     ) -> tuple[dict[str, object], dict[str, object]]:
-        host_dead = bool(host_state["dead"])
-        opponent_dead = bool(opponent_state["dead"])
-        host_id = host.submit("respawn", None) if host_dead else None
-        opponent_id = opponent.submit("respawn", None) if opponent_dead else None
-        if host_dead and opponent_dead:
+        for _ in range(max_tics + 1):
+            if self._valid_player_state(host_state) and self._valid_player_state(
+                opponent_state
+            ):
+                return host_state, opponent_state
+            host_id = self._submit_idle(host)
+            opponent_id = self._submit_idle(opponent)
             host_state = host.receive(host_id)
             opponent_state = opponent.receive(opponent_id)
-            return self._idle_barrier(host, opponent)
-        dead_client = host if host_dead else opponent
-        living_client = opponent if host_dead else host
-        dead_id = host_id if host_dead else opponent_id
-        for _ in range(max_tics):
-            living_id = self._submit_idle(living_client)
-            living_state = living_client.receive(living_id)
-            try:
-                dead_state = dead_client.receive(dead_id, timeout=0.01)
-            except TimeoutError:
-                continue
-            if host_dead:
-                host_state, opponent_state = dead_state, living_state
-            else:
-                host_state, opponent_state = living_state, dead_state
-            return self._idle_barrier(host, opponent)
+            self._validate_engine_tic(host_state, opponent_state)
         raise RuntimeError("Duel respawn did not complete within the warm-up limit")
-
-    def _idle_barrier(
-        self, host: Any, opponent: Any
-    ) -> tuple[dict[str, object], dict[str, object]]:
-        host_id = self._submit_idle(host)
-        opponent_id = self._submit_idle(opponent)
-        host_state = host.receive(host_id)
-        opponent_state = opponent.receive(opponent_id)
-        self._validate_engine_tic(host_state, opponent_state)
-        return host_state, opponent_state
 
     def _validate_pair(
         self, host_state: dict[str, object], opponent_state: dict[str, object]

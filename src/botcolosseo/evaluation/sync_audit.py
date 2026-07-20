@@ -11,7 +11,6 @@ import cv2
 import numpy as np
 
 from botcolosseo.agents.duel_teachers import DuelTeacher
-from botcolosseo.envs.duel_protocol import DuelEventType
 from botcolosseo.envs.duel_types import DuelStep
 from botcolosseo.envs.synchronous_duel import SynchronousDuelEnv
 from botcolosseo.envs.video import write_mp4
@@ -25,28 +24,37 @@ class SyncAuditAccumulator:
         self._completed = 0
         self._episodes = 0
         self._last_tic: int | None = None
-        self._death_on_previous_decision = False
         self._events: Counter[str] = Counter()
         self._max_peer_tic_lag = 0
+        self._incomplete_terminal_boundaries = 0
+
+    @property
+    def completed_decisions(self) -> int:
+        return self._completed
 
     def start_episode(self, *, initial_tic: int) -> None:
         if initial_tic < 0:
             raise ValueError("initial_tic must be nonnegative")
         self._episodes += 1
         self._last_tic = initial_tic
-        self._death_on_previous_decision = False
 
-    def record(self, step: DuelStep) -> None:
+    def record(self, step: DuelStep) -> bool:
         if self._last_tic is None:
             raise RuntimeError("start_episode must be called before record")
         if self._completed >= self._target:
             raise RuntimeError("Audit received more decisions than requested")
         tic_delta = step.engine_tic - self._last_tic
-        if tic_delta != 4 and not (
-            self._death_on_previous_decision and tic_delta >= 4
-        ):
+        if 0 <= tic_delta < 4 and (step.terminated or step.truncated):
+            self._incomplete_terminal_boundaries += 1
+            self._events.update(
+                f"{event.side}:{event.type.value}" for event in step.events
+            )
+            return False
+        expected_delta = step.pre_action_tics + 4
+        if tic_delta != expected_delta:
             raise RuntimeError(
-                f"Duel decision must advance four tics, observed {tic_delta}"
+                "Duel decision must advance four action tics plus reported "
+                f"pre-action tics: expected {expected_delta}, observed {tic_delta}"
             )
         if not 0 <= step.peer_tic_lag <= 2:
             raise RuntimeError(f"Peer tic lag exceeds tolerance: {step.peer_tic_lag}")
@@ -54,9 +62,7 @@ class SyncAuditAccumulator:
         self._last_tic = step.engine_tic
         self._max_peer_tic_lag = max(self._max_peer_tic_lag, step.peer_tic_lag)
         self._events.update(f"{event.side}:{event.type.value}" for event in step.events)
-        self._death_on_previous_decision = any(
-            event.type is DuelEventType.DEATH for event in step.events
-        )
+        return True
 
     def finish(self, *, cleaned_workers: bool) -> dict[str, object]:
         if self._completed != self._target:
@@ -68,6 +74,7 @@ class SyncAuditAccumulator:
             "completed_decisions": self._completed,
             "episode_count": self._episodes,
             "event_counts": dict(sorted(self._events.items())),
+            "incomplete_terminal_boundaries": self._incomplete_terminal_boundaries,
             "max_peer_tic_lag": self._max_peer_tic_lag,
             "protocol_errors": 0,
             "tic_mismatches": 0,
@@ -135,14 +142,18 @@ def run_sync_audit(
         audit.start_episode(initial_tic=info.engine_tic)
         host_teacher.reset(seed=seed)
         opponent_teacher.reset(seed=seed)
-        for completed in range(decisions):
+        dispatched = 0
+        while audit.completed_decisions < decisions:
             state = env.teacher_state()
             step = env.step(host_teacher.act(state), opponent_teacher.act(state))
-            audit.record(step)
-            if len(frames) < video_frame_cap:
+            dispatched += 1
+            recorded = audit.record(step)
+            if recorded and len(frames) < video_frame_cap:
                 label = ",".join(event.type.value for event in step.events) or "none"
                 frames.append(compose_duel_frame(step, event_label=label))
-            if completed + 1 < decisions and (step.terminated or step.truncated):
+            if audit.completed_decisions < decisions and (
+                step.terminated or step.truncated
+            ):
                 episode += 1
                 _, info = env.reset()
                 audit.start_episode(initial_tic=info.engine_tic)
@@ -156,6 +167,7 @@ def run_sync_audit(
         {
             "host_teacher": host_teacher.name,
             "opponent_teacher": opponent_teacher.name,
+            "dispatched_decisions": dispatched,
             "scenario_hash": scenario_hash,
             "seed": seed,
             "video_frames": len(frames),
