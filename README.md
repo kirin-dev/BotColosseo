@@ -14,6 +14,8 @@ initialization, and a 1,000,000-step PPO run. The official 1,500-game paired M2
 test is frozen and prepared but has not yet been run, so no PPO-over-BC test
 claim is made here.
 
+![M2 fair-observation learning system](docs/assets/m2-system.png)
+
 ![M2 validation-only training evidence](docs/assets/m2-training-curves.png)
 
 | M2 training artifact | Validation evidence | Selected checkpoint |
