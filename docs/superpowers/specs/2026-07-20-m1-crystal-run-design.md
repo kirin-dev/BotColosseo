@@ -113,7 +113,7 @@ the visual later without changing events or task APIs.
 ## 6. Event Protocol
 
 ACS exposes episode-local monotonic counters and current state through ViZDoom
-`USER1`–`USER16` variables. `USER1` is always the protocol version. Global
+`USER1`–`USER20` variables. `USER1` is always the protocol version. Global
 variable 0 remains reserved for ViZDoom reward and is not used as an event
 channel.
 
@@ -137,6 +137,10 @@ The initial protocol is:
 | `USER14` | public home score |
 | `USER15` | public away score |
 | `USER16` | reserved; must remain zero in protocol v1 |
+| `USER17` | privileged core X coordinate as fixed point |
+| `USER18` | privileged core Y coordinate as fixed point |
+| `USER19` | privileged target X coordinate as fixed point |
+| `USER20` | privileged target Y coordinate as fixed point |
 
 Python snapshots these variables before and after each decision. Positive
 counter deltas produce typed `EpisodeEvent` objects; a delta less than zero,
