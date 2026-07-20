@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 PUBLIC_DOCS = (
@@ -6,7 +7,10 @@ PUBLIC_DOCS = (
     Path("docs/milestones/m1.md"),
     Path("docs/milestones/m2.md"),
     Path("assets/scenarios/crystal_run/README.md"),
+    Path("THIRD_PARTY_NOTICES.md"),
 )
+
+MARKDOWN_LINK = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 
 
 def test_public_documentation_has_no_machine_specific_home_paths() -> None:
@@ -29,3 +33,17 @@ def test_freedoom_rendered_assets_ship_the_required_bsd_notice() -> None:
     assert "Neither the name of the Freedoom project" in notice
     assert "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS" in notice
     assert "licenses/FREEDOOM-BSD-3-CLAUSE.txt" in third_party
+
+
+def test_public_documentation_local_links_resolve() -> None:
+    broken = []
+    for document in PUBLIC_DOCS:
+        for target in MARKDOWN_LINK.findall(document.read_text(encoding="utf-8")):
+            relative = target.split("#", 1)[0]
+            if not relative or "://" in relative or relative.startswith("mailto:"):
+                continue
+            resolved = (document.parent / relative).resolve()
+            if not resolved.exists():
+                broken.append((str(document), target))
+
+    assert broken == []
