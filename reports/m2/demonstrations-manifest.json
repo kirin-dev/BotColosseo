@@ -1,0 +1,76 @@
+{
+  "config": "configs/m2/demonstrations.yaml",
+  "schema_version": 1,
+  "splits": [
+    {
+      "action_counts": {
+        "FORWARD_TURN_LEFT": 21,
+        "FORWARD_TURN_RIGHT": 2,
+        "MOVE_FORWARD": 153,
+        "TURN_LEFT": 24
+      },
+      "case_manifest_sha256": "e7e2f566e84d457303be2c50c59da8d83add757d0c2f791991ee7f478d400dcb",
+      "episode_count": 6,
+      "frame_reproducibility": "engine-rendered-best-effort",
+      "opponent_counts": {
+        "aggressive_script": 40,
+        "defensive_script": 40,
+        "fixed_route": 40,
+        "objective_first": 40,
+        "random_legal": 40
+      },
+      "privileged_leak_count": 0,
+      "requested_transitions": 200,
+      "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+      "schema": {
+        "fields": [
+          "frame",
+          "scalars",
+          "previous_action",
+          "teacher_action",
+          "episode_start",
+          "valid_mask",
+          "opponent_id",
+          "task_id",
+          "train_seed"
+        ],
+        "frame": {
+          "dtype": "uint8",
+          "shape": [
+            84,
+            84
+          ]
+        },
+        "scalars": {
+          "dtype": "float32",
+          "shape": [
+            6
+          ]
+        }
+      },
+      "schema_version": 1,
+      "shards": [
+        {
+          "file": "train-00000.npz",
+          "sha256": "88a468a9aae2221b322d3a2480c0babb77b2cc977dd8eab5a01ffb2dcc2bc7b8",
+          "trajectory_sha256": "814c3a901ba4afa241c791e75fed2fa6a367c768f2520cb57155542a00be0c1a",
+          "transitions": 100
+        },
+        {
+          "file": "train-00001.npz",
+          "sha256": "ccf541fa9053d79710fa95cbc80941dc45c6b8c138028f295cb6238709f7050c",
+          "trajectory_sha256": "08268ba47893f8e18277fc4402089b2c5f669eb4aa776c7a3b8fae24ce986b68",
+          "transitions": 100
+        }
+      ],
+      "split": "train",
+      "task_counts": {
+        "evade": 57,
+        "objective": 143
+      },
+      "test_cases_accessed": false,
+      "transitions": 200
+    }
+  ],
+  "test_cases_accessed": false
+}
