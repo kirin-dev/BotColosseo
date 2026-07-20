@@ -18,3 +18,14 @@ def test_public_documentation_has_no_machine_specific_home_paths() -> None:
     }
 
     assert violations == {}
+
+
+def test_freedoom_rendered_assets_ship_the_required_bsd_notice() -> None:
+    notice = Path("licenses/FREEDOOM-BSD-3-CLAUSE.txt").read_text(encoding="utf-8")
+    third_party = Path("THIRD_PARTY_NOTICES.md").read_text(encoding="utf-8")
+
+    assert "Copyright © 2001-2024 Contributors to the Freedoom project" in notice
+    assert "Redistribution and use in source and binary forms" in notice
+    assert "Neither the name of the Freedoom project" in notice
+    assert "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS" in notice
+    assert "licenses/FREEDOOM-BSD-3-CLAUSE.txt" in third_party
