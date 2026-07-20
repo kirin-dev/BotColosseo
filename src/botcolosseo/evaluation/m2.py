@@ -138,6 +138,8 @@ class M2EpisodeRecord:
     peer_tic_lag_max: int
     protocol_inconsistent: bool
     scenario_hash: str
+    action_tic_inconsistent: bool = False
+    score_event_inconsistent: bool = False
 
     @property
     def score_difference(self) -> int:
@@ -339,6 +341,14 @@ def _at_least(value: float, threshold: float) -> bool:
     return value + 1e-12 >= threshold
 
 
+def valid_action_tic_boundary(
+    action_tics: int, *, terminated: bool, truncated: bool
+) -> bool:
+    return action_tics == 4 or (
+        (terminated or truncated) and 0 <= action_tics < 4
+    )
+
+
 def _records_are_paired(
     by_policy: dict[str, list[M2EpisodeRecord]], *, pairs_per_opponent: int
 ) -> bool:
@@ -392,6 +402,12 @@ def evaluate_m2_records(
         protocol_counts["explicit_inconsistency_rows"] += int(
             record.protocol_inconsistent
         )
+        protocol_counts["action_tic_inconsistency_rows"] += int(
+            record.action_tic_inconsistent
+        )
+        protocol_counts["score_event_inconsistency_rows"] += int(
+            record.score_event_inconsistent
+        )
         protocol_counts["peer_tic_lag_rows"] += int(record.peer_tic_lag_max != 0)
         protocol_counts["scenario_mismatch_rows"] += int(
             record.scenario_hash != expected_scenario_hash
@@ -411,6 +427,8 @@ def evaluate_m2_records(
     issue_names = (
         "duplicate_rows",
         "explicit_inconsistency_rows",
+        "action_tic_inconsistency_rows",
+        "score_event_inconsistency_rows",
         "peer_tic_lag_rows",
         "scenario_mismatch_rows",
         "outcome_score_mismatch_rows",
@@ -546,8 +564,9 @@ def run_m2_episode(
     )
     opponent_side = "opponent" if case.learner_side == "host" else "host"
     opponent = TeacherEvaluationPolicy(case.opponent, graph, side=opponent_side)
-    protocol_inconsistent = False
+    action_tic_inconsistent = False
     peer_tic_lag_max = 0
+    score_event_counts: Counter[str] = Counter()
     decisions = 0
     terminated = False
     truncated = False
@@ -561,8 +580,10 @@ def run_m2_episode(
             else observations.opponent
         )
         initial_score = learner_observation.own_score
-        previous_host_score = observations.host.own_score
-        previous_opponent_score = observations.opponent.own_score
+        initial_scores = {
+            "host": observations.host.own_score,
+            "opponent": observations.opponent.own_score,
+        }
         while not (terminated or truncated):
             state = environment.teacher_state()
             learner_observation = (
@@ -587,18 +608,16 @@ def run_m2_episode(
             decisions += 1
             terminated, truncated = step.terminated, step.truncated
             peer_tic_lag_max = max(peer_tic_lag_max, step.peer_tic_lag)
-            host_scored = step.host.own_score > previous_host_score
-            opponent_scored = step.opponent.own_score > previous_opponent_score
-            event_scorers = {
+            score_event_counts.update(
                 event.side
                 for event in step.events
                 if event.type is DuelEventType.SCORE
-            }
-            protocol_inconsistent |= host_scored != ("host" in event_scorers)
-            protocol_inconsistent |= opponent_scored != ("opponent" in event_scorers)
-            protocol_inconsistent |= step.action_tics != 4
-            previous_host_score = step.host.own_score
-            previous_opponent_score = step.opponent.own_score
+            )
+            action_tic_inconsistent |= not valid_action_tic_boundary(
+                step.action_tics,
+                terminated=step.terminated,
+                truncated=step.truncated,
+            )
         learner_observation = (
             observations.host
             if case.learner_side == "host"
@@ -606,6 +625,14 @@ def run_m2_episode(
         )
         learner_score = learner_observation.own_score
         opponent_score = learner_observation.opponent_score
+        final_scores = {
+            "host": observations.host.own_score,
+            "opponent": observations.opponent.own_score,
+        }
+        score_event_inconsistent = any(
+            score_event_counts[side] != final_scores[side] - initial_scores[side]
+            for side in ("host", "opponent")
+        )
         score_difference = learner_score - opponent_score
         outcome = "win" if score_difference > 0 else "loss" if score_difference < 0 else "draw"
         return M2EpisodeRecord(
@@ -623,8 +650,10 @@ def run_m2_episode(
             terminated=terminated,
             truncated=truncated,
             peer_tic_lag_max=peer_tic_lag_max,
-            protocol_inconsistent=protocol_inconsistent,
+            protocol_inconsistent=False,
             scenario_hash=reset_info.scenario_hash,
+            action_tic_inconsistent=action_tic_inconsistent,
+            score_event_inconsistent=score_event_inconsistent,
         )
     finally:
         environment.close()

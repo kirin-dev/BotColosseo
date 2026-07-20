@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from botcolosseo.cli.train_ppo import (
+    _candidate_checkpoint_step,
     _planned_updates,
     _reconcile_metrics,
     _run_hash,
@@ -57,3 +58,25 @@ def test_validation_pilot_reads_paired_randomlegal_only() -> None:
         "host",
         "opponent",
     ]
+
+
+def test_candidate_checkpoints_cross_intervals_and_always_include_final() -> None:
+    assert (
+        _candidate_checkpoint_step(
+            99_840, 100_096, interval=100_000, target=1_000_000
+        )
+        == 100_096
+    )
+    assert (
+        _candidate_checkpoint_step(
+            100_096, 100_352, interval=100_000, target=1_000_000
+        )
+        is None
+    )
+    assert (
+        _candidate_checkpoint_step(
+            999_936, 1_000_000, interval=100_000, target=1_000_000
+        )
+        == 1_000_000
+    )
+    assert _candidate_checkpoint_step(0, 2_000, interval=100_000, target=2_000) == 2_000

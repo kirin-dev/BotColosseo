@@ -9,6 +9,7 @@ from botcolosseo.evaluation.m2 import (
     M2EpisodeRecord,
     evaluate_m2_records,
     paired_bootstrap_interval,
+    valid_action_tic_boundary,
     validate_paired_schedule,
     wilson_interval,
 )
@@ -127,6 +128,14 @@ def test_intervals_are_deterministic_and_known() -> None:
     second = paired_bootstrap_interval(differences, seed=7, samples=2_000)
     assert first == second
     assert first[0] > 0.0
+
+
+def test_only_terminal_boundary_may_advance_fewer_than_four_action_tics() -> None:
+    assert valid_action_tic_boundary(4, terminated=False, truncated=False)
+    assert valid_action_tic_boundary(0, terminated=True, truncated=False)
+    assert valid_action_tic_boundary(3, terminated=False, truncated=True)
+    assert not valid_action_tic_boundary(3, terminated=False, truncated=False)
+    assert not valid_action_tic_boundary(5, terminated=True, truncated=False)
 
 
 def test_complete_official_result_passes_every_frozen_gate() -> None:

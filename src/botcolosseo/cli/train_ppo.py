@@ -4,6 +4,8 @@ import argparse
 import hashlib
 import json
 import math
+import os
+import shutil
 from collections import Counter
 from dataclasses import asdict
 from pathlib import Path
@@ -38,6 +40,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--resume", type=Path)
     parser.add_argument("--validation-pairs", type=int, default=0)
+    parser.add_argument("--checkpoint-interval-steps", type=int, default=100_000)
     return parser
 
 
@@ -98,6 +101,40 @@ def _planned_updates(
         updates += update_epochs * math.ceil(sequences / minibatch_sequences)
         remaining -= collected
     return updates
+
+
+def _candidate_checkpoint_step(
+    previous_steps: int, current_steps: int, *, interval: int, target: int
+) -> int | None:
+    if not 0 <= previous_steps < current_steps <= target or interval <= 0:
+        raise ValueError("Invalid candidate checkpoint range")
+    if current_steps == target or previous_steps // interval < current_steps // interval:
+        return current_steps
+    return None
+
+
+def _copy_checkpoint(source: Path, destination: Path) -> None:
+    temporary = destination.with_name(f".{destination.name}.tmp")
+    try:
+        with source.open("rb") as reader, temporary.open("wb") as writer:
+            shutil.copyfileobj(reader, writer)
+            writer.flush()
+            os.fsync(writer.fileno())
+        temporary.replace(destination)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
+
+
+def _candidate_manifest(output_dir: Path) -> list[dict[str, object]]:
+    return [
+        {
+            "checkpoint": path.name,
+            "environment_steps": int(path.stem.split("-")[-1]),
+            "sha256": sha256_file(path),
+        }
+        for path in sorted(output_dir.glob("candidate-*.pt"))
+    ]
 
 
 def _reconcile_metrics(path: Path, *, committed_environment_steps: int) -> None:
@@ -212,6 +249,8 @@ def main(argv: list[str] | None = None) -> int:
     target_steps = args.environment_steps or int(config["environment_steps"])
     stop_after = args.stop_after_steps or target_steps
     rollout_steps = args.rollout_steps or int(config["rollout_steps"])
+    if args.checkpoint_interval_steps <= 0:
+        raise ValueError("--checkpoint-interval-steps must be positive")
     config_hash = _run_hash(
         _provenance_hash(config_path, train_cases, bc_checkpoint),
         target_steps=target_steps,
@@ -292,6 +331,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     try:
         while environment_steps < stop_after:
+            previous_environment_steps = environment_steps
             count = min(rollout_steps, stop_after - environment_steps)
             collection = collector.collect(
                 steps=count, start_environment_step=environment_steps
@@ -352,6 +392,17 @@ def main(argv: list[str] | None = None) -> int:
                     "episodes": collector.episode_index,
                 },
             )
+            candidate_step = _candidate_checkpoint_step(
+                previous_environment_steps,
+                environment_steps,
+                interval=args.checkpoint_interval_steps,
+                target=target_steps,
+            )
+            if candidate_step is not None:
+                _copy_checkpoint(
+                    output_dir / "latest.pt",
+                    output_dir / f"candidate-{candidate_step:07d}.pt",
+                )
             summary = {
                 "bc_checkpoint": str(bc_checkpoint.relative_to(root)),
                 "bc_checkpoint_sha256": bc_checkpoint_sha,
@@ -362,6 +413,8 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 "checkpoint": _display_path(output_dir / "latest.pt", root),
                 "checkpoint_sha256": sha256_file(output_dir / "latest.pt"),
+                "candidate_checkpoints": _candidate_manifest(output_dir),
+                "checkpoint_interval_steps": args.checkpoint_interval_steps,
                 "completed": environment_steps == target_steps,
                 "config": str(config_path.relative_to(root)),
                 "config_hash": config_hash,
