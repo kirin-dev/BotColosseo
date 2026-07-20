@@ -312,3 +312,183 @@ git status --short
 Return the final `tail -n 80 runs/m2/bc-full.log`, the artifact-gate output,
 the process/GPU checks, and `git status --short`. Do not start PPO until this
 pure-BC checkpoint gate has been reviewed and passed.
+
+## Action required: M2 full PPO training and validation-only selection
+
+The 20,000-step A100 pilot, 2,000-step stop/resume gate, candidate snapshot
+gate, and validation-only selector have passed. The full run uses 1,000,000
+environment steps on GPU 0. It saves one atomic candidate per 100,000-step
+bucket, then evaluates every candidate on three frozen validation seed-pairs
+per opponent with both learner sides. Selection is lexicographic by objective
+rate, win rate, mean score difference, then earlier environment step. No test
+case is read by training or selection.
+
+The combined training and selection run is expected to take roughly six hours
+based on the measured 20,000-step pilot. Start it exactly once from the M2
+worktree:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+test ! -e runs/m2/ppo-full
+mkdir -p runs/m2/ppo-full
+nohup bash -lc '
+  set -euo pipefail
+  cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+  export PYTHONPATH=/home/wencong/BotColosseo/.worktrees/m2-base-training/src
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python -u \
+    scripts/train_ppo.py \
+    --device cuda:0 \
+    --environment-steps 1000000 \
+    --rollout-steps 256 \
+    --checkpoint-interval-steps 100000 \
+    --output-dir runs/m2/ppo-full
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python -u \
+    scripts/select_ppo.py \
+    --run-dir runs/m2/ppo-full \
+    --device cuda:0 \
+    --pairs-per-opponent 3
+' > runs/m2/ppo-full.log 2>&1 &
+echo $! > runs/m2/ppo-full.pid
+cat runs/m2/ppo-full.pid
+```
+
+Monitor without modifying the run:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+tail -n 60 runs/m2/ppo-full.log
+ps -p "$(cat runs/m2/ppo-full.pid)" -o pid,etime,%cpu,%mem,stat,cmd
+nvidia-smi --query-compute-apps=pid,process_name,used_memory \
+  --format=csv,noheader
+/home/wencong/miniconda3/envs/botcolosseo/bin/python - <<'PY'
+import json
+from pathlib import Path
+
+path = Path("runs/m2/ppo-full/summary.json")
+if path.exists():
+    summary = json.loads(path.read_text())
+    print({
+        "environment_steps": summary["environment_steps"],
+        "target": 1_000_000,
+        "episodes": summary["episode_count"],
+        "updates": summary["updates"],
+        "kl_early_stops": summary["kl_early_stop_count"],
+        "candidate_count": len(summary["candidate_checkpoints"]),
+    })
+else:
+    print("summary.json not written yet")
+PY
+```
+
+Expected progress is a new JSON summary every 256 environment steps, candidate
+checkpoints near each 100,000-step boundary, and finally 30 validation episodes
+per candidate. During selection, log lines report `M2 evaluation progress`.
+The process is complete only after the PID exits successfully and both
+`runs/m2/ppo-full/selection.json` and `runs/m2/ppo-full/selected.pt` exist.
+
+If the process was interrupted and `latest.pt` exists, do not delete the run
+directory. Resume the same 1,000,000-step scheduler and then continue selection:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+nohup bash -lc '
+  set -euo pipefail
+  cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+  export PYTHONPATH=/home/wencong/BotColosseo/.worktrees/m2-base-training/src
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python -u \
+    scripts/train_ppo.py \
+    --device cuda:0 \
+    --environment-steps 1000000 \
+    --rollout-steps 256 \
+    --checkpoint-interval-steps 100000 \
+    --output-dir runs/m2/ppo-full \
+    --resume runs/m2/ppo-full/latest.pt
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python -u \
+    scripts/select_ppo.py \
+    --run-dir runs/m2/ppo-full \
+    --device cuda:0 \
+    --pairs-per-opponent 3
+' >> runs/m2/ppo-full.log 2>&1 &
+echo $! > runs/m2/ppo-full.pid
+cat runs/m2/ppo-full.pid
+```
+
+Do not resume after changing the PPO config, scenario, BC checkpoint, target
+steps, or rollout length; provenance checks intentionally reject that drift.
+After the process exits, run this exact artifact gate:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+env PYTHONPATH="$PWD/src" \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python - <<'PY'
+import hashlib
+import json
+import math
+from pathlib import Path
+
+import torch
+
+root = Path("runs/m2/ppo-full")
+summary_path = root / "summary.json"
+summary = json.loads(summary_path.read_text())
+selection = json.loads((root / "selection.json").read_text())
+metrics = [json.loads(line) for line in (root / "metrics.jsonl").read_text().splitlines()]
+candidates = summary["candidate_checkpoints"]
+
+assert summary["completed"] is True
+assert summary["environment_steps"] == 1_000_000
+assert summary["test_cases_accessed"] is False
+assert summary["bc_checkpoint_sha256"] == "7eef23a06ea7177d5090ba90be65f8f2f1a847ecb15d81035c21a7e4567949d4"
+assert summary["train_cases_hash"] == "e7e2f566e84d457303be2c50c59da8d83add757d0c2f791991ee7f478d400dcb"
+assert summary["scenario_hash"] == "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8"
+assert len(candidates) == 10
+assert [item["environment_steps"] // 100_000 for item in candidates] == list(range(1, 11))
+assert candidates[-1]["environment_steps"] == 1_000_000
+for item in candidates:
+    path = root / item["checkpoint"]
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == item["sha256"]
+
+training = [item for item in metrics if item["kind"] == "train"]
+rollouts = [item for item in metrics if item["kind"] == "rollout"]
+assert training and rollouts
+assert all(
+    math.isfinite(float(item[name]))
+    for item in training
+    for name in (
+        "total_loss", "policy_loss", "value_loss", "entropy",
+        "approximate_kl", "pre_clip_grad_norm", "post_clip_grad_norm",
+    )
+)
+assert all(float(item["post_clip_grad_norm"]) <= 0.50001 for item in training)
+assert summary["kl_early_stop_count"] < len(rollouts)
+
+assert selection["split"] == "validation"
+assert selection["test_cases_accessed"] is False
+assert selection["pairs_per_opponent"] == 3
+assert selection["episodes_per_candidate"] == 30
+assert len(selection["candidates"]) == len(candidates)
+assert all(item["episodes"] == 30 for item in selection["candidates"])
+assert all(item["protocol_inconsistencies"] == 0 for item in selection["candidates"])
+assert selection["training_summary_sha256"] == hashlib.sha256(summary_path.read_bytes()).hexdigest()
+selected_path = root / "selected.pt"
+selected_sha = hashlib.sha256(selected_path.read_bytes()).hexdigest()
+assert selected_sha == selection["selected_checkpoint_sha256"]
+assert selected_sha == selection["selected"]["checkpoint_sha256"]
+checkpoint = torch.load(selected_path, map_location="cpu", weights_only=False)
+assert checkpoint["metadata"]["scenario_hash"] == summary["scenario_hash"]
+assert checkpoint["metadata"]["config_hash"] == summary["config_hash"]
+assert checkpoint["metadata"]["counters"]["environment_steps"] == selection["selected"]["environment_steps"]
+print("M2 full PPO training and validation-selection gate: PASS")
+print(json.dumps(selection["selected"], indent=2, sort_keys=True))
+PY
+! rg -n "Traceback|ValueError|RuntimeError|FloatingPointError" runs/m2/ppo-full.log
+ps -eo pid,ppid,stat,cmd | rg '[b]otcolosseo-duel|[v]izdoom|[t]rain_ppo.py|[s]elect_ppo.py' || true
+nvidia-smi --query-compute-apps=pid,process_name,used_memory \
+  --format=csv,noheader
+git status --short
+```
+
+Return the final `tail -n 100 runs/m2/ppo-full.log`, the artifact-gate output,
+the process/GPU checks, and `git status --short`. Do not run the official M2
+test evaluator; checkpoint selection and its tracked provenance must be
+reviewed and committed first.
