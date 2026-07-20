@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import asdict, dataclass
 from enum import Enum
 from pathlib import Path
 
 import numpy as np
+import yaml
 
 
 class TaskKind(str, Enum):
@@ -29,6 +31,33 @@ class EpisodeCase:
         payload = asdict(self)
         payload["task"] = self.task.value
         return payload
+
+
+@dataclass(frozen=True)
+class TaskVariant:
+    task: TaskKind
+    map_name: str
+    timeout_tics: int
+
+
+def load_task_variants(path: Path) -> dict[TaskKind, TaskVariant]:
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if payload.get("protocol_version") != 1:
+        raise ValueError("Task variants require protocol_version 1")
+    variants: dict[TaskKind, TaskVariant] = {}
+    for raw_task, item in payload.get("variants", {}).items():
+        task = TaskKind(raw_task)
+        map_name = str(item["map"]).upper()
+        timeout_tics = int(item["timeout_tics"])
+        if re.fullmatch(r"MAP[0-9]{2}", map_name) is None:
+            raise ValueError(f"Invalid Doom map marker: {map_name}")
+        if timeout_tics <= 0:
+            raise ValueError(f"timeout_tics must be positive for {task.value}")
+        variants[task] = TaskVariant(task, map_name, timeout_tics)
+    missing = set(TaskKind).difference(variants)
+    if missing:
+        raise ValueError(f"Missing task variants: {sorted(task.value for task in missing)}")
+    return variants
 
 
 def generate_split_cases(

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
 import vizdoom as vzd
+
+_MAP_NAME = re.compile(r"MAP[0-9]{2}")
 
 
 @dataclass(frozen=True)
@@ -13,6 +16,7 @@ class GameSettings:
     seed: int = 0
     visible: bool = False
     screen_format: vzd.ScreenFormat = vzd.ScreenFormat.GRAY8
+    doom_map: str | None = None
 
 
 def create_game(
@@ -27,6 +31,11 @@ def create_game(
     try:
         if not game.load_config(str(config_path)):
             raise ValueError(f"ViZDoom rejected config: {config_path}")
+        if settings.doom_map is not None:
+            doom_map = settings.doom_map.upper()
+            if _MAP_NAME.fullmatch(doom_map) is None:
+                raise ValueError(f"Invalid Doom map marker: {settings.doom_map}")
+            game.set_doom_map(doom_map)
         game.set_seed(settings.seed)
         game.set_window_visible(settings.visible)
         game.set_sound_enabled(False)

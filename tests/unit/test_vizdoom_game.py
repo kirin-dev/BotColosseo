@@ -17,6 +17,9 @@ class FakeGame:
     def set_seed(self, value: int) -> None:
         self.calls.append(("set_seed", value))
 
+    def set_doom_map(self, value: str) -> None:
+        self.calls.append(("set_doom_map", value))
+
     def set_window_visible(self, value: bool) -> None:
         self.calls.append(("set_window_visible", value))
 
@@ -54,3 +57,17 @@ def test_create_game_applies_headless_silent_settings(tmp_path: Path) -> None:
     assert ("set_audio_buffer_enabled", False) in fake.calls
     assert fake.calls[-1] == ("init", None)
     assert not fake.closed
+
+
+def test_create_game_overrides_map_before_initialization(tmp_path: Path) -> None:
+    config_path = tmp_path / "crystal_run.cfg"
+    config_path.write_text("doom_map = map01\n", encoding="utf-8")
+    fake = FakeGame()
+
+    create_game(
+        GameSettings(config_path=config_path, seed=7, doom_map="MAP03"),
+        game_factory=lambda: fake,
+    )
+
+    assert ("set_doom_map", "MAP03") in fake.calls
+    assert fake.calls.index(("set_doom_map", "MAP03")) < fake.calls.index(("init", None))

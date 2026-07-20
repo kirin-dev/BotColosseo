@@ -4,6 +4,7 @@ from pathlib import Path
 from botcolosseo.scenarios.splits import (
     TaskKind,
     generate_split_cases,
+    load_task_variants,
     write_split_manifests,
 )
 
@@ -31,3 +32,13 @@ def test_split_manifest_serialization_is_stable(tmp_path: Path) -> None:
     payload = json.loads(paths[0].read_text(encoding="utf-8"))
     assert payload[0]["split"] == "train"
     assert paths[0].read_text(encoding="utf-8").endswith("\n")
+
+
+def test_tracked_task_variants_cover_every_task() -> None:
+    variants = load_task_variants(
+        Path("assets/scenarios/crystal_run/src/task_variants.yaml")
+    )
+
+    assert set(variants) == set(TaskKind)
+    assert variants[TaskKind.NAVIGATION].map_name == "MAP02"
+    assert variants[TaskKind.RETURN].timeout_tics == 900
