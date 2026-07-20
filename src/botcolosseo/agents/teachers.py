@@ -235,3 +235,12 @@ TEACHER_REGISTRY = {
     DefensiveScriptTeacher.name: DefensiveScriptTeacher,
     EvasiveReturnTeacher.name: EvasiveReturnTeacher,
 }
+
+
+def create_teacher(name: str, graph: RegionGraph) -> Teacher:
+    if name not in TEACHER_REGISTRY:
+        raise ValueError(f"Unknown Teacher: {name}")
+    teacher_type = TEACHER_REGISTRY[name]
+    if teacher_type is AggressiveScriptTeacher:
+        return teacher_type()
+    return teacher_type(graph)
