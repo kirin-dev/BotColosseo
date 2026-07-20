@@ -4,23 +4,25 @@
   "splits": [
     {
       "action_counts": {
-        "FORWARD_TURN_LEFT": 21,
-        "FORWARD_TURN_RIGHT": 2,
-        "MOVE_FORWARD": 153,
-        "TURN_LEFT": 24
+        "FORWARD_TURN_LEFT": 9819,
+        "FORWARD_TURN_RIGHT": 9299,
+        "IDLE": 1312,
+        "MOVE_FORWARD": 53262,
+        "TURN_LEFT": 13761,
+        "TURN_RIGHT": 12547
       },
       "case_manifest_sha256": "e7e2f566e84d457303be2c50c59da8d83add757d0c2f791991ee7f478d400dcb",
-      "episode_count": 6,
+      "episode_count": 617,
       "frame_reproducibility": "engine-rendered-best-effort",
       "opponent_counts": {
-        "aggressive_script": 40,
-        "defensive_script": 40,
-        "fixed_route": 40,
-        "objective_first": 40,
-        "random_legal": 40
+        "aggressive_script": 20000,
+        "defensive_script": 20000,
+        "fixed_route": 20000,
+        "objective_first": 20000,
+        "random_legal": 20000
       },
       "privileged_leak_count": 0,
-      "requested_transitions": 200,
+      "requested_transitions": 100000,
       "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
       "schema": {
         "fields": [
@@ -52,24 +54,217 @@
       "shards": [
         {
           "file": "train-00000.npz",
-          "sha256": "88a468a9aae2221b322d3a2480c0babb77b2cc977dd8eab5a01ffb2dcc2bc7b8",
-          "trajectory_sha256": "814c3a901ba4afa241c791e75fed2fa6a367c768f2520cb57155542a00be0c1a",
-          "transitions": 100
+          "sha256": "10fa1f160c3bab96d685d13c1e11a2e1ad3d29bee9bc924ff6fbd47e0fee72df",
+          "trajectory_sha256": "f1eac29f25a30a2423ed98a78f6e77feb3795fe6dfa5ed18f5339dbcdee04482",
+          "transitions": 5000
         },
         {
           "file": "train-00001.npz",
-          "sha256": "ccf541fa9053d79710fa95cbc80941dc45c6b8c138028f295cb6238709f7050c",
-          "trajectory_sha256": "08268ba47893f8e18277fc4402089b2c5f669eb4aa776c7a3b8fae24ce986b68",
-          "transitions": 100
+          "sha256": "e4eb726eb09c1f62a8317e424964f99f8dc064af4d24bfbfa83ebd5e30c7c931",
+          "trajectory_sha256": "3776199b0ff144e1cfb70073a824551c2633f29a8def672b812460562259b420",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00002.npz",
+          "sha256": "ec6b0b7a60b1a8f6e81803dc9f7be324136121e486835114f0636a7b337bfdd4",
+          "trajectory_sha256": "58655ff930b17e3f37c9d7c5366dadc68d4b1b48e6bd8f37ece8507715033006",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00003.npz",
+          "sha256": "2e7521e1c4a369881cc9cac5420a2952537c6ed6abbb5333f040df690cb5db8f",
+          "trajectory_sha256": "9cd24d5159aabaeececadb17def35062bee4bfd15bc5fc12d88bb5be266881ee",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00004.npz",
+          "sha256": "13b92fb7e54dae71e00d2d6c2dcdab0b4854201ccff5d04c1b3909f9bb12207b",
+          "trajectory_sha256": "c1a2591919bb228bf6fc956e7d4d9c8202aa1c006781ffc60df8519284ff6bdd",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00005.npz",
+          "sha256": "1596da7850c93b22458a7488a510fceea9fb01ad8f1f3a23156087b6896190ab",
+          "trajectory_sha256": "b692781a3eb8f9b14ed41c7de54abc71c6265db3c00ac3382242d946b7b0c131",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00006.npz",
+          "sha256": "ddb921bdf034bbde7552091a4d9dc5e07a8ceb29e3358fb4ac527aeeb3c0f7eb",
+          "trajectory_sha256": "6a94cff71525d4b1779b8e000450f69ecebf1744312a3b403fe9632590c31001",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00007.npz",
+          "sha256": "991a3d1fa22985380b831465ce6a63d7e7e734224f7615d71d584e2b6a7e64e2",
+          "trajectory_sha256": "9957cf91cec0c5d620d0de1c83ea77e7348c5e9e86da17f78a3b43834d62f24a",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00008.npz",
+          "sha256": "8b3e0af05dd5b7027d926edf4db6b1862af0da223476758916f57abb86f558d5",
+          "trajectory_sha256": "083ba9afad183489549793e2c8cd5e98dca1c302e12e89cbebecfbe749dfb58c",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00009.npz",
+          "sha256": "62b040f67b1de92bbbea2aab735d8b79c1b9e448d19b7fec351150b26296ff05",
+          "trajectory_sha256": "3b932841f7b198277cf6d3e9e8958770dde34191894fc487ccc6de2a59f32869",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00010.npz",
+          "sha256": "dcd3f55167a5ff507d3914630a4055f9ae117ce4f071cff08eb3508d0622db1d",
+          "trajectory_sha256": "c966ed3f01677669026ba6491419643c3cc408957fafeecb64c62866464aa4e9",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00011.npz",
+          "sha256": "4b968773f4a2155687f2e3af266a61ae6fa6c3fb65d23054a16d7a421aee72d8",
+          "trajectory_sha256": "d879d2942c987ede844dcdaee8e80e94bf912741cfa6236bfae2ddb47199b8fa",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00012.npz",
+          "sha256": "e12a3498893fd5ef4b5e0259c49c35085ee8f0edb16271db7cfbb98f7c2381a7",
+          "trajectory_sha256": "87178b30e828f04b2070079eda2137a1b1cb61e3e9c9d3970f9d674dcb571a58",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00013.npz",
+          "sha256": "1bd7f1212905836ef13e818d728cb8b0e5d6bd3357bb9af6d92d66f76e705f13",
+          "trajectory_sha256": "ec133b41d9960cda811572f1f6ec9d9a5af17ab1140e10833fae87d1fed74ec6",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00014.npz",
+          "sha256": "97d48828b65249f3f4b2d164e170725c7c90480a5ca075b0c34df6fae5a65a95",
+          "trajectory_sha256": "2905e35d6d2c242db421381e5d1afd5b25fbcc69f14027f508354464be0062fe",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00015.npz",
+          "sha256": "d003b0b7913c4eaa7bba58cb74cdaa223a1eb348f28e5cde3f29b4ea7b0e3723",
+          "trajectory_sha256": "cdbee03ad50dfed3c8ce202204c98fe304cdf7307a611650e4e1c4ab697498e4",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00016.npz",
+          "sha256": "c6fc2c309f86cd170498f7c27a091134c54c6913ce931b5ba507cc2aaee979fd",
+          "trajectory_sha256": "f6f4666b7261da47b911bff9dd969f600c2cf52776e0b8cca2c449b34cb491d8",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00017.npz",
+          "sha256": "2befa55a94539158bc58d159a535b376559a470c696739cbb1877e4f4878c852",
+          "trajectory_sha256": "1277f64af9c5da44ddab2e78c7f335daa7264680b919691e66d750788e4f9b21",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00018.npz",
+          "sha256": "40bf5442ab60a4a330bcb2189fc4fbb1ff15937ea9904757e89a35c181574c41",
+          "trajectory_sha256": "e2dadee6ee683237331e5f642cedbc630dc6f980351e67ccf076f21ddc9bf299",
+          "transitions": 5000
+        },
+        {
+          "file": "train-00019.npz",
+          "sha256": "220fd018c969ca3ab2fc5e58ff2d50d40d2d7446063bbe33cf7c5e9c022da34c",
+          "trajectory_sha256": "c67a228d7dc9d68fc88d60dc626e23ea5e1332697de8946f14d3277dd978f809",
+          "transitions": 5000
         }
       ],
       "split": "train",
       "task_counts": {
-        "evade": 57,
-        "objective": 143
+        "evade": 32180,
+        "objective": 62625,
+        "recover": 5195
       },
       "test_cases_accessed": false,
-      "transitions": 200
+      "transitions": 100000
+    },
+    {
+      "action_counts": {
+        "FORWARD_TURN_LEFT": 2152,
+        "FORWARD_TURN_RIGHT": 1682,
+        "IDLE": 54,
+        "MOVE_FORWARD": 10717,
+        "TURN_LEFT": 2938,
+        "TURN_RIGHT": 2457
+      },
+      "case_manifest_sha256": "3f5d0c4f6ac26541c6d159f53413f7c1c1cc44702c49159983a84a2ff5270993",
+      "episode_count": 125,
+      "frame_reproducibility": "engine-rendered-best-effort",
+      "opponent_counts": {
+        "aggressive_script": 4000,
+        "defensive_script": 4000,
+        "fixed_route": 4000,
+        "objective_first": 4000,
+        "random_legal": 4000
+      },
+      "privileged_leak_count": 0,
+      "requested_transitions": 20000,
+      "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+      "schema": {
+        "fields": [
+          "frame",
+          "scalars",
+          "previous_action",
+          "teacher_action",
+          "episode_start",
+          "valid_mask",
+          "opponent_id",
+          "task_id",
+          "train_seed"
+        ],
+        "frame": {
+          "dtype": "uint8",
+          "shape": [
+            84,
+            84
+          ]
+        },
+        "scalars": {
+          "dtype": "float32",
+          "shape": [
+            6
+          ]
+        }
+      },
+      "schema_version": 1,
+      "shards": [
+        {
+          "file": "validation-00000.npz",
+          "sha256": "c079c4c3531ebb93df64a7d8f801bc46a5607692afd07dcfb3c2aeae497fb32c",
+          "trajectory_sha256": "a56b4d91444e94645fa97b4f8f6d1085287fc6656c3df7ec1ea23ef11c42497f",
+          "transitions": 5000
+        },
+        {
+          "file": "validation-00001.npz",
+          "sha256": "23ea0e69bc2bb7ba48e2a0d13212c9ac9947148c2546d43a08154dc4a90e0d3a",
+          "trajectory_sha256": "3b85b8ec080c122034514ec77c0897cbdd8222a49b8e2edcc0f00152611c7321",
+          "transitions": 5000
+        },
+        {
+          "file": "validation-00002.npz",
+          "sha256": "0e3af66df3a460eb131e4ca2172046431b54059eea5678084517d467963cfb0c",
+          "trajectory_sha256": "0687f6d8c17f19bb762d43729a9bd9767e5a04181f95e4213ed550feb59ca070",
+          "transitions": 5000
+        },
+        {
+          "file": "validation-00003.npz",
+          "sha256": "9e1476db1daadbfc6a95655a18c6c86f8b0fad43404164c1553a2439534ee554",
+          "trajectory_sha256": "c66ba73ed60639453819f6df7eba5cb5c19b78ad3bd7490c1f1c9e3271ba3155",
+          "transitions": 5000
+        }
+      ],
+      "split": "validation",
+      "task_counts": {
+        "evade": 6848,
+        "objective": 12490,
+        "recover": 662
+      },
+      "test_cases_accessed": false,
+      "transitions": 20000
     }
   ],
   "test_cases_accessed": false
