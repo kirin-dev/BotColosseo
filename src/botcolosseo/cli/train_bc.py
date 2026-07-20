@@ -59,19 +59,22 @@ def _load_validation_case(root: Path) -> DuelCase:
     return DuelCase(**payload[0])
 
 
-def _restore_tracker(path: Path) -> BestCheckpointTracker:
+def _restore_tracker(path: Path) -> tuple[BestCheckpointTracker, set[int]]:
     tracker = BestCheckpointTracker()
+    validation_updates: set[int] = set()
     if not path.exists():
-        return tracker
+        return tracker, validation_updates
     for line in path.read_text(encoding="utf-8").splitlines():
         record = json.loads(line)
         if record.get("kind") == "validation":
+            update = int(record["update"])
             tracker.update(
                 validation_loss=float(record["loss"]),
                 objective_rate=float(record["objective_rate"]),
-                update=int(record["update"]),
+                update=update,
             )
-    return tracker
+            validation_updates.add(update)
+    return tracker, validation_updates
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -129,45 +132,53 @@ def main(argv: list[str] | None = None) -> int:
             scenario_hash=scenario_hash,
             restore_rng=True,
         )
-    tracker = _restore_tracker(metrics_path)
+    tracker, validation_updates = _restore_tracker(metrics_path)
     latest_validation = None
     closed_loop = None
     validation_case = _load_validation_case(root)
     validation_interval = int(config["validation_interval"])
+
+    def validate_and_checkpoint() -> None:
+        nonlocal closed_loop, latest_validation
+        latest_validation = trainer.validate(validation_loader)
+        closed_loop = evaluate_closed_loop_episode(
+            trainer.model, root=root, case=validation_case
+        )
+        objective_rate = float(closed_loop["objective_completed"])
+        trainer.save(
+            output_dir / "latest.pt",
+            config_hash=config_hash,
+            scenario_hash=scenario_hash,
+        )
+        if tracker.update(
+            validation_loss=latest_validation.loss,
+            objective_rate=objective_rate,
+            update=trainer.updates,
+        ):
+            trainer.save(
+                output_dir / "best.pt",
+                config_hash=config_hash,
+                scenario_hash=scenario_hash,
+            )
+        append_jsonl(
+            metrics_path,
+            {
+                "kind": "validation",
+                "objective_rate": objective_rate,
+                "update": trainer.updates,
+                **asdict(latest_validation),
+            },
+        )
+        validation_updates.add(trainer.updates)
+
+    if args.resume is not None and trainer.updates not in validation_updates:
+        validate_and_checkpoint()
     while trainer.updates < stop_after:
         metrics = trainer.train_step(stream.batch(trainer.updates))
         if metrics.update == 1 or metrics.update % 25 == 0:
             append_jsonl(metrics_path, {"kind": "train", **asdict(metrics)})
         if metrics.update % validation_interval == 0 or metrics.update == stop_after:
-            latest_validation = trainer.validate(validation_loader)
-            closed_loop = evaluate_closed_loop_episode(
-                trainer.model, root=root, case=validation_case
-            )
-            objective_rate = float(closed_loop["objective_completed"])
-            append_jsonl(
-                metrics_path,
-                {
-                    "kind": "validation",
-                    "objective_rate": objective_rate,
-                    "update": trainer.updates,
-                    **asdict(latest_validation),
-                },
-            )
-            trainer.save(
-                output_dir / "latest.pt",
-                config_hash=config_hash,
-                scenario_hash=scenario_hash,
-            )
-            if tracker.update(
-                validation_loss=latest_validation.loss,
-                objective_rate=objective_rate,
-                update=trainer.updates,
-            ):
-                trainer.save(
-                    output_dir / "best.pt",
-                    config_hash=config_hash,
-                    scenario_hash=scenario_hash,
-                )
+            validate_and_checkpoint()
     if closed_loop is not None:
         _atomic_json(closed_loop, output_dir / "closed-loop-validation.json")
     if latest_validation is None:

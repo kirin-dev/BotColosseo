@@ -125,12 +125,12 @@ command-line ACS builds, and SLADE is not required for M0.
 - GZDoom and original Doom assets: ViZDoom plus Freedoom is the approved runtime
   and licensing path.
 
-## Action required: M2 full demonstration generation
+## Verified: M2 full demonstration generation
 
-The reproducibility code and 200-transition real smoke have passed. The full
-100,000-train / 20,000-validation generation is expected to take roughly
-60--90 minutes because each balanced case starts a real two-process ViZDoom
-match. Run it in the M2 worktree while the machine can be left unattended:
+Completed and passed the full artifact gate on 2026-07-20. The reproducibility
+code, 200-transition real smoke, and full 100,000-train /
+20,000-validation generation all passed. The commands are retained for
+reproduction:
 
 ```bash
 cd /home/wencong/BotColosseo/.worktrees/m2-base-training
@@ -204,3 +204,111 @@ Expected tracked changes after success are only the refreshed
 ignored `data/generated/` and must not be committed. Return the final log tail,
 artifact-gate output, and `git status --short` before the Task 6 gate is marked
 passed.
+
+## Action required: M2 full behavioral cloning
+
+The real-shard overfit test and the interrupted 1,000-update single-A100 smoke
+have passed. The smoke resumed at update 500, reached 89.0% validation action
+accuracy at update 1,000, and completed the held-out validation objective. The
+full run uses all 100,000 training and 20,000 validation transitions and is the
+next required gate. Start it in the M2 worktree while the machine can be left
+unattended:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+mkdir -p runs/m2/bc-full
+nohup env \
+  PYTHONPATH=/home/wencong/BotColosseo/.worktrees/m2-base-training/src \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python -u \
+  scripts/train_bc.py \
+  --device cuda:0 \
+  --updates 10000 \
+  --output-dir runs/m2/bc-full \
+  > runs/m2/bc-full.log 2>&1 &
+echo $! > runs/m2/bc-full.pid
+cat runs/m2/bc-full.pid
+```
+
+Monitor without modifying the run:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+tail -n 40 runs/m2/bc-full.log
+ps -p "$(cat runs/m2/bc-full.pid)" -o pid,etime,%cpu,%mem,stat,cmd
+nvidia-smi --query-compute-apps=pid,process_name,used_memory \
+  --format=csv,noheader
+```
+
+If the process was interrupted and `latest.pt` exists, resume the same
+10,000-update scheduler instead of deleting the directory or starting over:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+nohup env \
+  PYTHONPATH=/home/wencong/BotColosseo/.worktrees/m2-base-training/src \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python -u \
+  scripts/train_bc.py \
+  --device cuda:0 \
+  --updates 10000 \
+  --output-dir runs/m2/bc-full \
+  --resume runs/m2/bc-full/latest.pt \
+  >> runs/m2/bc-full.log 2>&1 &
+echo $! > runs/m2/bc-full.pid
+cat runs/m2/bc-full.pid
+```
+
+Do not resume after a config, scenario, or demonstration manifest change; the
+trainer intentionally rejects provenance drift. When the PID has exited, run
+this exact artifact gate:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+env PYTHONPATH="$PWD/src" \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python - <<'PY'
+import hashlib
+import json
+import math
+from pathlib import Path
+
+import torch
+
+root = Path("runs/m2/bc-full")
+summary = json.loads((root / "summary.json").read_text())
+closed_loop = json.loads((root / "closed-loop-validation.json").read_text())
+records = [json.loads(line) for line in (root / "metrics.jsonl").read_text().splitlines()]
+validations = [record for record in records if record["kind"] == "validation"]
+checkpoint_path = root / "best.pt"
+checkpoint_sha = hashlib.sha256(checkpoint_path.read_bytes()).hexdigest()
+checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+
+assert summary["updates"] == 10_000
+assert summary["train_transitions_loaded"] == 100_000
+assert summary["validation_transitions_loaded"] == 20_000
+assert summary["pure_behavioral_cloning"] is True
+assert summary["checkpoint_sha256"] == checkpoint_sha
+assert summary["closed_loop"] == closed_loop
+assert [record["update"] for record in validations] == list(range(250, 10_001, 250))
+assert all(math.isfinite(record["loss"]) for record in validations)
+assert all(0.0 <= record["accuracy"] <= 1.0 for record in validations)
+assert all(record["objective_rate"] in (0.0, 1.0) for record in validations)
+best = min(validations, key=lambda record: (-record["objective_rate"], record["loss"]))
+assert summary["best_update"] == best["update"]
+assert summary["best_objective_rate"] == best["objective_rate"]
+assert summary["best_validation_loss"] == best["loss"]
+metadata = checkpoint["metadata"]
+assert metadata["counters"]["updates"] == summary["best_update"]
+assert metadata["config_hash"] == summary["config_hash"]
+assert metadata["scenario_hash"] == summary["scenario_hash"]
+print("M2 full BC artifact gate: PASS")
+print(json.dumps(summary, indent=2, sort_keys=True))
+PY
+! grep -n "Traceback" runs/m2/bc-full.log
+ps -eo pid,ppid,stat,cmd | grep -E '[b]otcolosseo-duel|[v]izdoom|[t]rain_bc.py' || true
+nvidia-smi --query-compute-apps=pid,process_name,used_memory \
+  --format=csv,noheader
+git status --short
+```
+
+Return the final `tail -n 80 runs/m2/bc-full.log`, the artifact-gate output,
+the process/GPU checks, and `git status --short`. Do not start PPO until this
+pure-BC checkpoint gate has been reviewed and passed.
