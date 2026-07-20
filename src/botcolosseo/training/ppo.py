@@ -42,6 +42,15 @@ class PPOLoss(NamedTuple):
     valid_count: int
 
 
+class ExcessiveKLError(RuntimeError):
+    def __init__(self, approximate_kl: float, max_kl: float) -> None:
+        self.approximate_kl = approximate_kl
+        self.max_kl = max_kl
+        super().__init__(
+            f"PPO approximate KL {approximate_kl:.6f} exceeded {max_kl:.6f}"
+        )
+
+
 @dataclass(frozen=True)
 class PPOUpdateMetrics:
     total_loss: float
@@ -119,9 +128,7 @@ def clipped_ppo_loss(
     _require_finite(total_loss, approximate_kl_tensor)
     approximate_kl = float(approximate_kl_tensor.detach())
     if approximate_kl > max_kl:
-        raise RuntimeError(
-            f"PPO approximate KL {approximate_kl:.6f} exceeded {max_kl:.6f}"
-        )
+        raise ExcessiveKLError(approximate_kl, max_kl)
     clip_fraction = float(((ratio - 1.0).abs() > policy_clip).float().mean())
     return PPOLoss(
         total_loss,
@@ -315,7 +322,18 @@ class PPOTrainer:
         self.updates += 1
         return self._metrics(loss, pre_clip=pre_clip, post_clip=post_clip)
 
-    def save(self, path: Path, *, config_hash: str, scenario_hash: str) -> Path:
+    def save(
+        self,
+        path: Path,
+        *,
+        config_hash: str,
+        scenario_hash: str,
+        counters: dict[str, int] | None = None,
+    ) -> Path:
+        metadata_counters = dict(counters or {})
+        if "updates" in metadata_counters:
+            raise ValueError("PPO checkpoint counters reserve the updates key")
+        metadata_counters["updates"] = self.updates
         return save_training_checkpoint(
             path,
             model=self.model,
@@ -324,7 +342,7 @@ class PPOTrainer:
             metadata=CheckpointMetadata(
                 config_hash=config_hash,
                 scenario_hash=scenario_hash,
-                counters={"updates": self.updates},
+                counters=metadata_counters,
             ),
         )
 
@@ -335,7 +353,7 @@ class PPOTrainer:
         config_hash: str,
         scenario_hash: str,
         restore_rng: bool,
-    ) -> None:
+    ) -> CheckpointMetadata:
         metadata = load_training_checkpoint(
             path,
             model=self.model,
@@ -346,3 +364,4 @@ class PPOTrainer:
             restore_rng=restore_rng,
         )
         self.updates = metadata.counters["updates"]
+        return metadata

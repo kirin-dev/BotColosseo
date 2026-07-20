@@ -42,6 +42,8 @@ def load_reward_config(path: Path) -> DuelRewardConfig:
 
 
 class DuelRewardLedger:
+    SHAPING_EVENTS = frozenset((DuelEventType.PICKUP, DuelEventType.VALID_HIT))
+
     def __init__(self, config: DuelRewardConfig) -> None:
         self._config = config
         self.reset()
@@ -53,7 +55,11 @@ class DuelRewardLedger:
             for event_type in DuelEventType
         }
 
-    def apply(self, events: tuple[DuelEvent, ...]) -> DuelRewards:
+    def apply(
+        self, events: tuple[DuelEvent, ...], *, shaping_scale: float = 1.0
+    ) -> DuelRewards:
+        if not 0.0 <= shaping_scale <= 1.0:
+            raise ValueError("shaping_scale must be in [0, 1]")
         host_reward = 0.0
         for event in events:
             if event.side not in ("host", "opponent"):
@@ -63,6 +69,8 @@ class DuelRewardLedger:
             if self._counts[key] >= rule.cap:
                 continue
             self._counts[key] += 1
-            signed = rule.weight if event.side == "host" else -rule.weight
+            scale = shaping_scale if event.type in self.SHAPING_EVENTS else 1.0
+            weight = rule.weight * scale
+            signed = weight if event.side == "host" else -weight
             host_reward += signed
         return DuelRewards(host=host_reward, opponent=-host_reward)

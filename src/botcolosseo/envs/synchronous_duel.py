@@ -93,7 +93,13 @@ class SynchronousDuelEnv:
         self._last_opponent_state: dict[str, object] | None = None
         self._privileged: DuelPrivilegedState | None = None
         self._previous_hitcounts = {"host": 0, "opponent": 0}
+        self._shaping_scale = 1.0
         self._scenario_hash = self._load_scenario_hash()
+
+    def set_shaping_scale(self, scale: float) -> None:
+        if not 0.0 <= scale <= 1.0:
+            raise ValueError("shaping scale must be in [0, 1]")
+        self._shaping_scale = scale
 
     def reset(self) -> tuple[DuelObservations, DuelResetInfo]:
         try:
@@ -180,7 +186,7 @@ class SynchronousDuelEnv:
                 opponent_state,
                 engine_tic,
             )
-            rewards = self._ledger.apply(events)
+            rewards = self._ledger.apply(events, shaping_scale=self._shaping_scale)
             observations = self._make_observations(
                 host_state,
                 opponent_state,

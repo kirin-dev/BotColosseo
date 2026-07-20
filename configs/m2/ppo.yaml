@@ -1,12 +1,16 @@
 schema_version: 1
 seed: 20260720
 bc_checkpoint: runs/m2/bc-full/best.pt
+train_cases: configs/m2/train.json
+output_dir: runs/m2/ppo
+environment_steps: 1000000
 rollout_steps: 256
+max_episode_decisions: 525
 sequence_length: 16
 burn_in: 8
 minibatch_sequences: 16
 update_epochs: 4
-learning_rate: 0.00025
+learning_rate: 0.00005
 weight_decay: 0.00001
 gamma: 0.99
 gae_lambda: 0.95
@@ -16,3 +20,16 @@ value_coefficient: 0.5
 entropy_coefficient: 0.01
 gradient_clip: 0.5
 max_kl: 0.03
+shaping_decay_steps: 300000
+curriculum:
+  - start_environment_step: 0
+    opponents: [random_legal, fixed_route]
+  - start_environment_step: 100000
+    opponents: [random_legal, fixed_route, objective_first]
+  - start_environment_step: 300000
+    opponents:
+      - random_legal
+      - fixed_route
+      - objective_first
+      - aggressive_script
+      - defensive_script

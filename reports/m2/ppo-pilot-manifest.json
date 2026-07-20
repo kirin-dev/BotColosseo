@@ -1,0 +1,33 @@
+{
+  "artifact_hashes": {
+    "checkpoint": "7e08b1dc622ab0fd30703f6963291b7494476c1dde44326dfd461fd2572d6769",
+    "log": "0c4c01adc28fde4e75a7c3a61b33af847e4c21bcbe020aebd3cc8117f0ef2629",
+    "metrics": "bb7d36b5851e41ce49763311ea7af0576428547e88c1b5e65d7dd2a2709a2dc3",
+    "summary": "4cfdc34f1cf81982753bc83c3e2993bd6f75d92182bc29026d4a2a997ae2f29e",
+    "validation": "a4a84bdb6f0a3904e5a36164cc582c27857785b82e4fc2c6098ce8e169e48cb7"
+  },
+  "bc_checkpoint_sha256": "7eef23a06ea7177d5090ba90be65f8f2f1a847ecb15d81035c21a7e4567949d4",
+  "config_hash": "17e85d4968013eb29b40a47dbd4beedbaaabb53c189f2e4291a3b448ebf70c53",
+  "environment_steps": 20000,
+  "episode_count": 54,
+  "finite_training_metrics": true,
+  "gradient_clip_max_observed": 0.4999998866080774,
+  "kl_early_stop_count": 0,
+  "max_approximate_kl": 0.01989608258008957,
+  "objective_completion_count": 52,
+  "official_test_result": false,
+  "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+  "schema_version": 1,
+  "source_state": "pre-freeze-development-validation",
+  "test_cases_accessed": false,
+  "train_cases_hash": "e7e2f566e84d457303be2c50c59da8d83add757d0c2f791991ee7f478d400dcb",
+  "updates": 316,
+  "validation_random_legal": {
+    "episode_count": 6,
+    "objective_completion_count": 6,
+    "objective_rate": 1.0,
+    "paired_seed_count": 3,
+    "paired_side_swaps": true,
+    "split": "validation"
+  }
+}

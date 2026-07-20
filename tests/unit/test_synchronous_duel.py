@@ -180,3 +180,12 @@ def test_dead_players_auto_respawn_through_symmetric_idle_barriers() -> None:
     assert info.engine_tic == 12
     assert not any(entry == ("host", "submit:respawn") for entry in log)
     assert not any(entry == ("opponent", "submit:respawn") for entry in log)
+
+
+def test_shaping_scale_is_bounded() -> None:
+    env = make_env([])
+
+    env.set_shaping_scale(0.25)
+    assert env._shaping_scale == 0.25
+    with pytest.raises(ValueError):
+        env.set_shaping_scale(1.01)
