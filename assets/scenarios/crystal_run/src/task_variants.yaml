@@ -1,0 +1,7 @@
+protocol_version: 1
+variants:
+  navigation: {map: MAP02, timeout_tics: 700}
+  pickup: {map: MAP03, timeout_tics: 700}
+  return: {map: MAP04, timeout_tics: 900}
+  static_hit: {map: MAP05, timeout_tics: 525}
+  moving_hit: {map: MAP06, timeout_tics: 700}

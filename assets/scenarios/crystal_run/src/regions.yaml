@@ -1,0 +1,61 @@
+arena:
+  min_x: -768.0
+  min_y: -512.0
+  max_x: 768.0
+  max_y: 512.0
+
+regions:
+  - id: 1
+    name: home
+    bounds: {min_x: -768.0, min_y: -256.0, max_x: -512.0, max_y: 256.0}
+    neighbors: [upper_route, lower_route, flank_west, center]
+  - id: 2
+    name: upper_route
+    bounds: {min_x: -512.0, min_y: 128.0, max_x: 512.0, max_y: 320.0}
+    neighbors: [home, center, away, shooting_lane]
+  - id: 3
+    name: lower_route
+    bounds: {min_x: -512.0, min_y: -128.0, max_x: -128.0, max_y: 128.0}
+    neighbors: [home, center, flank_west]
+  - id: 4
+    name: center
+    bounds: {min_x: -128.0, min_y: -128.0, max_x: 128.0, max_y: 128.0}
+    neighbors: [home, upper_route, lower_route, shooting_lane, away]
+  - id: 5
+    name: shooting_lane
+    bounds: {min_x: 128.0, min_y: -128.0, max_x: 512.0, max_y: 128.0}
+    neighbors: [center, upper_route, away]
+  - id: 6
+    name: flank_west
+    bounds: {min_x: -768.0, min_y: -512.0, max_x: 0.0, max_y: -320.0}
+    neighbors: [home, lower_route, flank_east]
+  - id: 7
+    name: flank_east
+    bounds: {min_x: 0.0, min_y: -512.0, max_x: 768.0, max_y: -320.0}
+    neighbors: [flank_west, away]
+  - id: 8
+    name: away
+    bounds: {min_x: 512.0, min_y: -256.0, max_x: 768.0, max_y: 256.0}
+    neighbors: [upper_route, center, shooting_lane, flank_east]
+
+routes:
+  direct_upper:
+    regions: [home, upper_route, center]
+    waypoints:
+      - [-600.0, 192.0]
+      - [-320.0, 224.0]
+      - [0.0, 0.0]
+  direct_lower:
+    regions: [home, lower_route, center]
+    waypoints:
+      - [-600.0, -96.0]
+      - [-320.0, -64.0]
+      - [0.0, 0.0]
+  flank:
+    regions: [home, flank_west, flank_east, away, center]
+    waypoints:
+      - [-640.0, -384.0]
+      - [-256.0, -416.0]
+      - [256.0, -416.0]
+      - [640.0, -224.0]
+      - [0.0, 0.0]

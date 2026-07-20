@@ -302,7 +302,7 @@ with neighbors sorted by region ID.
 In `splits.py`, define:
 
 ```python
-class TaskKind(StrEnum):
+class TaskKind(str, Enum):
     NAVIGATION = "navigation"
     PICKUP = "pickup"
     RETURN = "return"
@@ -461,7 +461,7 @@ COUNTER_FIELDS = (
 )
 
 
-class EventType(StrEnum):
+class EventType(str, Enum):
     PICKUP = "pickup"
     DROP = "drop"
     SCORE = "score"
