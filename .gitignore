@@ -25,6 +25,7 @@ dist/
 /videos/
 /wandb/
 /tensorboard/
+/data/generated/
 
 # Local IDE and OS files
 .idea/

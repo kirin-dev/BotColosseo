@@ -1,0 +1,10 @@
+schema_version: 1
+shard_size: 5000
+case_transition_cap: 250
+splits:
+  train:
+    cases: configs/m2/train.json
+    transitions: 100000
+  validation:
+    cases: configs/m2/validation.json
+    transitions: 20000

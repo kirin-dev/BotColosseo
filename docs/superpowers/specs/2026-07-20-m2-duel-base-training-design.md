@@ -113,6 +113,11 @@ are recorded for audit.
 ## 6. Demonstration dataset
 
 Demonstrations are deterministic compressed NPZ shards plus a JSON manifest.
+The deterministic writer produces identical NPZ bytes for identical arrays.
+Because multiplayer sprite interpolation may vary cosmetically across process
+restarts, each shard also records a frame-excluding trajectory hash that proves
+the scalars, actions, labels, and boundaries reproduce from the same cases;
+the full shard hash always validates the exact stored visual artifact.
 Each transition contains only:
 
 - `frame`: uint8 `[84, 84]`;
