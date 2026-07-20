@@ -1,0 +1,311 @@
+{
+  "artifact_hashes": {
+    "checkpoint": "7eef23a06ea7177d5090ba90be65f8f2f1a847ecb15d81035c21a7e4567949d4",
+    "closed_loop_validation": "f43117dbae61e39dd93d8402a7247ada41e8c91955641b579f2c7fa4ca48dacc",
+    "config": "e01a7a8301cf047cf38c0c88e9a9cd8135d6f3929808e753e96467d5fcd88302",
+    "metrics": "959a82f5b1af40b291a0404b23b5b6d8b366653f7fffcddf250fe7743be3c3fc",
+    "summary": "12bad90059b1ce11b1ebb28d5bec0c6aee9df5c26141beb8cf3130de611f65e9"
+  },
+  "closed_loop_validation": {
+    "case_seed": 656489971,
+    "decisions": 301,
+    "event_counts": {
+      "host:pickup": 3,
+      "host:score": 3
+    },
+    "learner_side": "host",
+    "objective_completed": true,
+    "opponent": "random_legal",
+    "terminated": true,
+    "truncated": false
+  },
+  "config": {
+    "hash": "2816e491f2dcce493261dfb2e0158f3b83951344b7044ae8a137dc28866977b8",
+    "path": "configs/m2/bc.yaml"
+  },
+  "data": {
+    "train_manifest_hash": "77abc25b88000aa7f61c59b0903f605d7c77412269cb0954c5afe4da6c63ed3c",
+    "train_transitions": 100000,
+    "validation_manifest_hash": "fa284bc69cc215306d9e73a5bb05a6bedabd7739dcf87021ed39383205472cb6",
+    "validation_transitions": 20000
+  },
+  "implementation_commit": "14b7be61e91b73ef26d6afc023b26fadc86d98e7",
+  "limitations": [
+    "BC selection used validation only; no official M2 test episode was evaluated.",
+    "Closed-loop validation during BC training used one frozen validation case; the paired official comparison is deferred to Task 13."
+  ],
+  "milestone": "M2",
+  "official_test_result": false,
+  "policy": "bc",
+  "recorded_from_commit": "e705d04eea58e57ff1630ccaba541777f1569d46",
+  "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+  "schema_version": 1,
+  "selected_checkpoint": "runs/m2/bc-full/best.pt",
+  "selected_checkpoint_sha256": "7eef23a06ea7177d5090ba90be65f8f2f1a847ecb15d81035c21a7e4567949d4",
+  "selection": {
+    "evaluations": 40,
+    "rule": [
+      "objective_rate_desc",
+      "loss_asc"
+    ],
+    "selected_objective_rate": 1,
+    "selected_update": 5500,
+    "selected_validation_loss": 0.13537405037879943,
+    "split": "validation",
+    "validation_curve": [
+      {
+        "accuracy": 0.85035,
+        "loss": 0.4859333505630493,
+        "objective_rate": 1,
+        "update": 250
+      },
+      {
+        "accuracy": 0.88295,
+        "loss": 0.37274381151199343,
+        "objective_rate": 1,
+        "update": 500
+      },
+      {
+        "accuracy": 0.9018,
+        "loss": 0.30266755986213684,
+        "objective_rate": 1,
+        "update": 750
+      },
+      {
+        "accuracy": 0.8976,
+        "loss": 0.28988960399627683,
+        "objective_rate": 1,
+        "update": 1000
+      },
+      {
+        "accuracy": 0.9221,
+        "loss": 0.2362497445344925,
+        "objective_rate": 1,
+        "update": 1250
+      },
+      {
+        "accuracy": 0.9288,
+        "loss": 0.21068806228637696,
+        "objective_rate": 1,
+        "update": 1500
+      },
+      {
+        "accuracy": 0.93255,
+        "loss": 0.1935675590276718,
+        "objective_rate": 1,
+        "update": 1750
+      },
+      {
+        "accuracy": 0.9368,
+        "loss": 0.18153461728096007,
+        "objective_rate": 1,
+        "update": 2000
+      },
+      {
+        "accuracy": 0.9413,
+        "loss": 0.1685091465950012,
+        "objective_rate": 1,
+        "update": 2250
+      },
+      {
+        "accuracy": 0.94395,
+        "loss": 0.1610095497608185,
+        "objective_rate": 1,
+        "update": 2500
+      },
+      {
+        "accuracy": 0.93955,
+        "loss": 0.16459147365093232,
+        "objective_rate": 1,
+        "update": 2750
+      },
+      {
+        "accuracy": 0.94565,
+        "loss": 0.1520206286430359,
+        "objective_rate": 1,
+        "update": 3000
+      },
+      {
+        "accuracy": 0.9471,
+        "loss": 0.1487866987466812,
+        "objective_rate": 1,
+        "update": 3250
+      },
+      {
+        "accuracy": 0.9501,
+        "loss": 0.14112381119728087,
+        "objective_rate": 1,
+        "update": 3500
+      },
+      {
+        "accuracy": 0.95035,
+        "loss": 0.1427913281440735,
+        "objective_rate": 1,
+        "update": 3750
+      },
+      {
+        "accuracy": 0.9487,
+        "loss": 0.14478422303199767,
+        "objective_rate": 1,
+        "update": 4000
+      },
+      {
+        "accuracy": 0.9516,
+        "loss": 0.14184504823684693,
+        "objective_rate": 1,
+        "update": 4250
+      },
+      {
+        "accuracy": 0.9525,
+        "loss": 0.14057244353294374,
+        "objective_rate": 1,
+        "update": 4500
+      },
+      {
+        "accuracy": 0.95365,
+        "loss": 0.139312132024765,
+        "objective_rate": 1,
+        "update": 4750
+      },
+      {
+        "accuracy": 0.951,
+        "loss": 0.14052637243270874,
+        "objective_rate": 1,
+        "update": 5000
+      },
+      {
+        "accuracy": 0.95465,
+        "loss": 0.13814815883636475,
+        "objective_rate": 1,
+        "update": 5250
+      },
+      {
+        "accuracy": 0.9538,
+        "loss": 0.13537405037879943,
+        "objective_rate": 1,
+        "update": 5500
+      },
+      {
+        "accuracy": 0.95555,
+        "loss": 0.13999959483146668,
+        "objective_rate": 1,
+        "update": 5750
+      },
+      {
+        "accuracy": 0.955,
+        "loss": 0.14155443654060365,
+        "objective_rate": 1,
+        "update": 6000
+      },
+      {
+        "accuracy": 0.9534,
+        "loss": 0.14081188912391662,
+        "objective_rate": 1,
+        "update": 6250
+      },
+      {
+        "accuracy": 0.95385,
+        "loss": 0.1413371088027954,
+        "objective_rate": 1,
+        "update": 6500
+      },
+      {
+        "accuracy": 0.95525,
+        "loss": 0.1431391963005066,
+        "objective_rate": 1,
+        "update": 6750
+      },
+      {
+        "accuracy": 0.9545,
+        "loss": 0.14206021571159363,
+        "objective_rate": 1,
+        "update": 7000
+      },
+      {
+        "accuracy": 0.955,
+        "loss": 0.14408998250961302,
+        "objective_rate": 1,
+        "update": 7250
+      },
+      {
+        "accuracy": 0.9557,
+        "loss": 0.14640704312324523,
+        "objective_rate": 1,
+        "update": 7500
+      },
+      {
+        "accuracy": 0.9564,
+        "loss": 0.1445796718120575,
+        "objective_rate": 1,
+        "update": 7750
+      },
+      {
+        "accuracy": 0.9567,
+        "loss": 0.14518652138710023,
+        "objective_rate": 1,
+        "update": 8000
+      },
+      {
+        "accuracy": 0.95625,
+        "loss": 0.14600185770988464,
+        "objective_rate": 1,
+        "update": 8250
+      },
+      {
+        "accuracy": 0.95615,
+        "loss": 0.14647344393730163,
+        "objective_rate": 1,
+        "update": 8500
+      },
+      {
+        "accuracy": 0.9564,
+        "loss": 0.1465919767856598,
+        "objective_rate": 1,
+        "update": 8750
+      },
+      {
+        "accuracy": 0.95615,
+        "loss": 0.14696542053222655,
+        "objective_rate": 1,
+        "update": 9000
+      },
+      {
+        "accuracy": 0.95595,
+        "loss": 0.14689887475967406,
+        "objective_rate": 1,
+        "update": 9250
+      },
+      {
+        "accuracy": 0.95615,
+        "loss": 0.14715779705047607,
+        "objective_rate": 1,
+        "update": 9500
+      },
+      {
+        "accuracy": 0.9562,
+        "loss": 0.14713311200141907,
+        "objective_rate": 1,
+        "update": 9750
+      },
+      {
+        "accuracy": 0.9561,
+        "loss": 0.1470805127620697,
+        "objective_rate": 1,
+        "update": 10000
+      }
+    ]
+  },
+  "status": "complete_validation_selected",
+  "test_cases_accessed": false,
+  "training": {
+    "final_validation": {
+      "accuracy": 0.9561,
+      "loss": 0.1470805127620697,
+      "valid_count": 20000
+    },
+    "finite_metrics": true,
+    "max_post_clip_grad_norm": 0.9999997245579146,
+    "pure_behavioral_cloning": true,
+    "updates": 10000
+  }
+}
