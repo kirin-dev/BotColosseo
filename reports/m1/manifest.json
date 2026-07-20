@@ -1,0 +1,8 @@
+{
+  "episodes": 500,
+  "git_commit": "a07f54ae865a20bf8f6ce6c486892750f34f6f7c",
+  "official": true,
+  "scenario_manifest_sha256": "a0669c671cf337a0defa0406474e095061cab621ee64af9e625c8023fedd8fe8",
+  "split": "test",
+  "split_sha256": "84d487e250590f95023562f456df5502c2f25f8cbe73bec81cfb5ec8d122c41e"
+}

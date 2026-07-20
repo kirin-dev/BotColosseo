@@ -1,0 +1,63 @@
+{
+  "capabilities": {
+    "moving_hit": {
+      "passed": true,
+      "success_rate": 1.0,
+      "successes": 100,
+      "task": "moving_hit",
+      "teacher": "aggressive_script",
+      "threshold": 0.75,
+      "trials": 100,
+      "wilson_lower": 0.9630065017930143,
+      "wilson_upper": 1.0
+    },
+    "navigation": {
+      "passed": true,
+      "success_rate": 1.0,
+      "successes": 100,
+      "task": "navigation",
+      "teacher": "fixed_route",
+      "threshold": 0.95,
+      "trials": 100,
+      "wilson_lower": 0.9630065017930143,
+      "wilson_upper": 1.0
+    },
+    "pickup": {
+      "passed": true,
+      "success_rate": 1.0,
+      "successes": 100,
+      "task": "pickup",
+      "teacher": "objective_first",
+      "threshold": 0.95,
+      "trials": 100,
+      "wilson_lower": 0.9630065017930143,
+      "wilson_upper": 1.0
+    },
+    "return": {
+      "passed": true,
+      "success_rate": 1.0,
+      "successes": 100,
+      "task": "return",
+      "teacher": "evasive_return",
+      "threshold": 0.95,
+      "trials": 100,
+      "wilson_lower": 0.9630065017930143,
+      "wilson_upper": 1.0
+    },
+    "static_hit": {
+      "passed": true,
+      "success_rate": 1.0,
+      "successes": 100,
+      "task": "static_hit",
+      "teacher": "aggressive_script",
+      "threshold": 0.9,
+      "trials": 100,
+      "wilson_lower": 0.9630065017930143,
+      "wilson_upper": 1.0
+    }
+  },
+  "episodes": 500,
+  "official": true,
+  "passed": true,
+  "protocol_inconsistencies": 0
+}
