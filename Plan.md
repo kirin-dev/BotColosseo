@@ -533,7 +533,12 @@ BotColosseo/
 - 至少五类规则 Teacher/脚本策略；
 - 场景与奖励反例测试。
 
-门禁：脚本 Teacher 能稳定完成对应子任务，事件日志与规则一致。
+门禁：脚本 Teacher 能稳定完成对应子任务，事件日志与规则一致。正式量化标准为
+navigation/pickup/return ≥95%、static hit ≥90%、moving hit ≥75%，每项使用
+100 个冻结 test seeds，且事件协议不一致数必须为 0。
+
+状态：已于 2026-07-20 通过。五项均为 100/100，协议不一致数为 0；原始证据位于
+`reports/m1/`，公开展示位于 `docs/assets/`。
 
 ### M2：真实 1v1 与 Base 训练
 
@@ -661,22 +666,23 @@ README 第一屏按以下顺序组织：
 
 ## 20. 当前仓库与环境事实
 
-截至 2026-07-19：
+截至 2026-07-20：
 
-- 仓库尚未初始化为有效 Git repository；当前 `.git` 目录不包含有效仓库元数据。
+- 仓库已初始化并采用小步、可审查提交记录。
 - 已存在 `botcolosseo` Conda 环境，Python 3.10.20、PyTorch 2.6.0+cu124、ViZDoom 1.3.0。
 - 当前 shell 的 `python` 错误指向另一个 Python 3.7 环境，正式脚本不能依赖隐式 PATH。
-- 当前执行会话中 CUDA/NVML 不可用，不能据此判断实际 A100 服务器不可用；应在目标训练会话单独验证。
-- 现有 `test.py` 使用正确环境启动后未完成 smoke test，并出现音频 mainloop 相关错误；M0 尚未通过。
-- 在 M0 有真实测试证据前，不开始 PPO、风格训练或 League/PFSP。
+- M0 的真实 ViZDoom、termination/reset、确定性动作和 MP4 门禁已通过。
+- M1 的场景、ACS 事件协议、单实例环境、五类 Teacher 与 500 回合冻结评测已完成。
+- M1 正式结果为五项 100/100、事件协议不一致数 0；这不是 learned-agent 或 multiplayer 结果。
+- 2 张 NVIDIA A100-PCIE-40GB 的训练可用性应在进入 M2 长训练前再次用目标会话验证。
 
 ## 21. 紧接着的实施顺序
 
-1. 修复环境入口与 ViZDoom headless/audio 问题，完成 M0 gate。
-2. 初始化规范的 Python package、Git 仓库和测试框架。
-3. 制作最小 UDMF Crystal Run 地图与 ACS 事件协议。
-4. 完成 `SingleAgentTaskEnv`、EpisodeEvent 和五类 Teacher。
-5. 冻结 train/validation/test 配置生成规则。
-6. 只有 M1 gate 通过后，才设计并实现 `SynchronousDuelEnv`。
+1. ~~修复环境入口并完成 M0 gate。~~
+2. ~~初始化 Python package、Git 仓库和测试框架。~~
+3. ~~制作 Crystal Run 地图、ACS 事件协议与单实例环境。~~
+4. ~~完成五类 Teacher 和冻结 train/validation/test 配置。~~
+5. ~~通过 M1 的 500 回合正式 gate 并发布证据。~~
+6. 设计并实现 M2 `SynchronousDuelEnv`、demonstration dataset 与 Base 训练入口。
 
 后续实现必须按里程碑逐个验证；如果某阶段的真实证据与本方案假设冲突，应更新本文件中的具体参数和风险判断，但不得悄然改变项目主线、评测隔离或公平边界。
