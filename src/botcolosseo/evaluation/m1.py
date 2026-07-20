@@ -201,7 +201,7 @@ def write_evidence(
     csv_temp = output_dir / ".episodes.csv.tmp"
     fields = list(rows[0]) if rows else []
     with csv_temp.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     csv_temp.replace(csv_path)

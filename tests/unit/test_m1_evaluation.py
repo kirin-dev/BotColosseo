@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 import pytest
 
@@ -9,6 +10,7 @@ from botcolosseo.evaluation.m1 import (
     M1_THRESHOLDS,
     evaluate_cases,
     wilson_interval,
+    write_evidence,
 )
 from botcolosseo.scenarios.splits import EpisodeCase, TaskKind
 
@@ -78,3 +80,15 @@ def test_gate_fails_threshold_miss_or_protocol_inconsistency() -> None:
     assert result.passed is False
     assert summary.protocol_inconsistencies == 1
     assert summary.passed is False
+
+
+def test_evidence_csv_uses_repository_safe_line_endings(tmp_path: Path) -> None:
+    summary, rows = evaluate_cases(
+        _cases(),
+        runner=lambda case, teacher: FakeEpisode(True, False, 1, 1.0, ("task_success",)),
+        official=False,
+    )
+
+    write_evidence(tmp_path, summary, rows, {"official": False})
+
+    assert b"\r\n" not in (tmp_path / "episodes.csv").read_bytes()
