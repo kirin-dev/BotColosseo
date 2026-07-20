@@ -585,70 +585,10 @@ selection, seed, threshold, or policy. After the PID exits, run this gate:
 ```bash
 cd /home/wencong/BotColosseo/.worktrees/m2-base-training
 env PYTHONPATH="$PWD/src" \
-  /home/wencong/miniconda3/envs/botcolosseo/bin/python - <<'PY'
-import csv
-import hashlib
-import json
-from collections import Counter, defaultdict
-from pathlib import Path
-
-root = Path.cwd()
-report_dir = root / "reports/m2"
-summary = json.loads((report_dir / "summary.json").read_text())
-manifest = json.loads((report_dir / "manifest.json").read_text())
-rows = list(csv.DictReader((report_dir / "episodes.csv").open()))
-
-assert summary["official"] is True
-assert summary["complete"] is True
-assert summary["passed"] is True
-assert summary["episodes"] == summary["expected_episodes"] == 1500
-assert summary["protocol_inconsistencies"] == 0
-assert summary["artifact_inconsistencies"] == 0
-assert all(summary["gates"].values())
-assert set(summary["policies"]) == {"ppo", "bc", "random_legal"}
-assert len(rows) == 1500
-assert Counter(row["policy"] for row in rows) == Counter(
-    {"ppo": 500, "bc": 500, "random_legal": 500}
-)
-assert Counter((row["policy"], row["opponent"]) for row in rows) == Counter(
-    {
-        (policy, opponent): 100
-        for policy in ("ppo", "bc", "random_legal")
-        for opponent in (
-            "random_legal", "fixed_route", "objective_first",
-            "aggressive_script", "defensive_script",
-        )
-    }
-)
-groups = defaultdict(list)
-for row in rows:
-    groups[(row["policy"], row["opponent"], row["pair_index"])].append(row)
-assert len(groups) == 750
-assert all(
-    len(pair) == 2
-    and {row["learner_side"] for row in pair} == {"host", "opponent"}
-    and len({row["seed"] for row in pair}) == 1
-    for pair in groups.values()
-)
-assert len(
-    {
-        (row["policy"], row["opponent"], row["pair_index"], row["learner_side"])
-        for row in rows
-    }
-) == 1500
-assert hashlib.sha256((report_dir / "episodes.csv").read_bytes()).hexdigest() == manifest["episodes_sha256"]
-assert hashlib.sha256((report_dir / "summary.json").read_bytes()).hexdigest() == manifest["summary_sha256"]
-for policy in ("ppo", "bc"):
-    training = json.loads(
-        (report_dir / f"{policy}-training-summary.json").read_text()
-    )
-    assert manifest["checkpoint_sha256"][policy] == training["selected_checkpoint_sha256"]
-assert manifest["split"] == "test"
-assert manifest["official"] is True
-assert manifest["git_dirty"] is False
-print("M2 official paired learning gate: PASS")
-print(json.dumps(summary, indent=2, sort_keys=True))
-PY
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/audit_m2_evidence.py
+/home/wencong/miniconda3/envs/botcolosseo/bin/python -m json.tool \
+  reports/m2/summary.json
 ! rg -n "Traceback|ValueError|RuntimeError|FloatingPointError" runs/m2/official-evaluation.log
 ps -eo pid,ppid,stat,args | rg '[b]otcolosseo-duel|[v]izdoom|[e]valuate_m2.py' || true
 nvidia-smi --query-compute-apps=pid,process_name,used_memory \
