@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import astuple, dataclass, fields
+from dataclasses import dataclass, fields
 from enum import Enum
+
+import vizdoom as vzd
 
 
 class DuelEventType(str, Enum):
@@ -37,8 +39,8 @@ class DuelProtocolSnapshot:
     opponent_score: int
     winner: int
     core_returns: int
-    core_x: int
-    core_y: int
+    core_x: float
+    core_y: float
     spawn_index: int
     reserved_zero: int
 
@@ -46,12 +48,18 @@ class DuelProtocolSnapshot:
     def from_values(cls, values: list[int] | tuple[int, ...]) -> DuelProtocolSnapshot:
         if len(values) != len(fields(cls)):
             raise ValueError(f"Duel protocol requires {len(fields(cls))} values")
-        snapshot = cls(*(int(value) for value in values))
+        converted = [int(value) for value in values]
+        converted[21] = vzd.doom_fixed_to_float(converted[21])
+        converted[22] = vzd.doom_fixed_to_float(converted[22])
+        snapshot = cls(*converted)
         snapshot.validate()
         return snapshot
 
     def to_values(self) -> tuple[int, ...]:
-        return astuple(self)
+        values = [int(getattr(self, field.name)) for field in fields(self)]
+        values[21] = int(round(self.core_x * 65536.0))
+        values[22] = int(round(self.core_y * 65536.0))
+        return tuple(values)
 
     def validate(self) -> None:
         if self.protocol_version != 2:

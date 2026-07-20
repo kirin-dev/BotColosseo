@@ -44,6 +44,7 @@ def worker_state(
     return {
         "frame": np.zeros((240, 320), dtype=np.uint8),
         "episode_time": tic,
+        "server_tic": tic,
         "finished": winner > 0,
         "dead": False,
         "multiplayer": True,
@@ -54,6 +55,7 @@ def worker_state(
         "health": health,
         "armor": 0.0,
         "ammo": 50.0,
+        "hitcount": 0,
     }
 
 
@@ -121,6 +123,7 @@ def test_reset_and_step_dispatch_both_sides_before_receive() -> None:
             ("opponent", "submit:step"),
         ]
     assert step.engine_tic == 14
+    assert step.peer_tic_lag == 0
     assert not step.terminated and not step.truncated
 
 
@@ -128,7 +131,7 @@ def test_tic_mismatch_closes_environment() -> None:
     log: list[tuple[str, str]] = []
     env = make_env(log)
     env.reset()
-    env._opponent.time += 1
+    env._opponent.time += 3
 
     with pytest.raises(RuntimeError, match="tic mismatch"):
         env.step(MacroAction.IDLE, MacroAction.IDLE)

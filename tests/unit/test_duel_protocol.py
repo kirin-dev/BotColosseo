@@ -51,6 +51,17 @@ def test_snapshot_requires_exact_version_ranges_and_reserved_zero() -> None:
             DuelProtocolSnapshot.from_values(invalid)
 
 
+def test_snapshot_converts_doom_fixed_coordinates() -> None:
+    values = list(snapshot().to_values())
+    values[21] = -64 * 65536
+    values[22] = 32 * 65536
+
+    converted = DuelProtocolSnapshot.from_values(values)
+
+    assert converted.core_x == -64.0
+    assert converted.core_y == 32.0
+
+
 def test_decoder_emits_stable_side_specific_events_once() -> None:
     decoder = DuelEventDecoder()
     decoder.reset(snapshot())

@@ -61,6 +61,7 @@ int previous_target_health;
 int player_was_dead;
 int core_returned;
 int duel_previous_has_core[2];
+int duel_drop_tic;
 
 function int InsideHome(void)
 {
@@ -186,6 +187,7 @@ script 1 OPEN
     duel_reserved_zero = 0;
     duel_previous_has_core[0] = 0;
     duel_previous_has_core[1] = 0;
+    duel_drop_tic = 0;
 
     if (BOTC_TASK_ID == TASK_DUEL)
     {
@@ -401,6 +403,11 @@ script 5 (void)
             duel_core_x = GetActorX(CORE_TID);
             duel_core_y = GetActorY(CORE_TID);
         }
+        if (duel_core_state == 2 && duel_engine_tic - duel_drop_tic >= 350)
+        {
+            SpawnCore();
+            duel_core_returns++;
+        }
         Delay(1);
     }
 }
@@ -419,6 +426,7 @@ script 6 DEATH
             duel_core_state = 2;
             duel_core_x = GetActorX(0);
             duel_core_y = GetActorY(0);
+            duel_drop_tic = duel_engine_tic;
             SpawnForced("RedCard", duel_core_x, duel_core_y, 0.0, CORE_TID, 0);
             if (player == 0) { duel_host_drops++; }
             else if (player == 1) { duel_opponent_drops++; }

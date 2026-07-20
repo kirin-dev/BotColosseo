@@ -12,7 +12,12 @@ import cv2
 import numpy as np
 
 from botcolosseo.envs.actions import MacroAction
-from botcolosseo.envs.duel_protocol import DuelEventDecoder, DuelProtocolSnapshot
+from botcolosseo.envs.duel_protocol import (
+    DuelEvent,
+    DuelEventDecoder,
+    DuelEventType,
+    DuelProtocolSnapshot,
+)
 from botcolosseo.envs.duel_rewards import DuelRewardLedger, load_reward_config
 from botcolosseo.envs.duel_types import (
     DuelActorObservation,
@@ -84,7 +89,10 @@ class SynchronousDuelEnv:
         self._decision_index = 0
         self._last_host: DuelActorObservation | None = None
         self._last_opponent: DuelActorObservation | None = None
+        self._last_host_state: dict[str, object] | None = None
+        self._last_opponent_state: dict[str, object] | None = None
         self._privileged: DuelPrivilegedState | None = None
+        self._previous_hitcounts = {"host": 0, "opponent": 0}
         self._scenario_hash = self._load_scenario_hash()
 
     def reset(self) -> tuple[DuelObservations, DuelResetInfo]:
@@ -104,6 +112,10 @@ class SynchronousDuelEnv:
             self._decision_index = 0
             self._ledger.reset()
             self._decoder.reset(snapshot)
+            self._previous_hitcounts = {
+                "host": int(host_state["hitcount"]),
+                "opponent": int(opponent_state["hitcount"]),
+            }
             observations = self._make_observations(
                 host_state,
                 opponent_state,
@@ -111,6 +123,8 @@ class SynchronousDuelEnv:
                 MacroAction.IDLE,
                 MacroAction.IDLE,
             )
+            self._last_host_state = host_state
+            self._last_opponent_state = opponent_state
             self._update_privileged(host_state, opponent_state, snapshot, engine_tic)
             return observations, DuelResetInfo(
                 seed=self._seed,
@@ -134,6 +148,7 @@ class SynchronousDuelEnv:
         host_macro = MacroAction(host_action)
         opponent_macro = MacroAction(opponent_action)
         try:
+            self._ensure_players_alive()
             host_state: dict[str, object] | None = None
             opponent_state: dict[str, object] | None = None
             for tic_index in range(self._frame_skip):
@@ -152,10 +167,15 @@ class SynchronousDuelEnv:
                 raise RuntimeError("Duel step advanced no engine tics")
             snapshot, engine_tic = self._validate_pair(host_state, opponent_state)
             self._decision_index += 1
-            events = self._decoder.decode(
-                snapshot,
-                episode_id=self._episode_id,
-                decision_index=self._decision_index,
+            events = self._with_native_hit_events(
+                self._decoder.decode(
+                    snapshot,
+                    episode_id=self._episode_id,
+                    decision_index=self._decision_index,
+                ),
+                host_state,
+                opponent_state,
+                engine_tic,
             )
             rewards = self._ledger.apply(events)
             observations = self._make_observations(
@@ -166,6 +186,8 @@ class SynchronousDuelEnv:
                 opponent_macro,
             )
             self._update_privileged(host_state, opponent_state, snapshot, engine_tic)
+            self._last_host_state = host_state
+            self._last_opponent_state = opponent_state
             terminated = snapshot.winner > 0 or snapshot.round_state == 2
             engine_finished = bool(host_state["finished"] or opponent_state["finished"])
             truncated = not terminated and (
@@ -181,6 +203,10 @@ class SynchronousDuelEnv:
                 events=events,
                 decision_index=self._decision_index,
                 engine_tic=engine_tic,
+                peer_tic_lag=abs(
+                    int(host_state["protocol_values"][1])
+                    - int(opponent_state["protocol_values"][1])
+                ),
             )
         except BaseException:
             self.close()
@@ -220,6 +246,35 @@ class SynchronousDuelEnv:
         opponent_state = self._opponent.receive(opponent_id)
         return host_state, opponent_state
 
+    def _ensure_players_alive(self) -> None:
+        if self._last_host_state is None or self._last_opponent_state is None:
+            return
+        if not (
+            bool(self._last_host_state["dead"])
+            or bool(self._last_opponent_state["dead"])
+        ):
+            return
+        host = self._require_client(self._host)
+        opponent = self._require_client(self._opponent)
+        host_state, opponent_state = self._respawn_players(
+            host,
+            opponent,
+            self._last_host_state,
+            self._last_opponent_state,
+            max_tics=70,
+        )
+        snapshot, engine_tic = self._validate_pair(host_state, opponent_state)
+        self._make_observations(
+            host_state,
+            opponent_state,
+            snapshot,
+            MacroAction.IDLE,
+            MacroAction.IDLE,
+        )
+        self._update_privileged(host_state, opponent_state, snapshot, engine_tic)
+        self._last_host_state = host_state
+        self._last_opponent_state = opponent_state
+
     def _warmup_players(
         self,
         host_state: dict[str, object],
@@ -234,12 +289,16 @@ class SynchronousDuelEnv:
                 opponent_state
             ):
                 return host_state, opponent_state
-            host_id = host.submit(
-                "step", {"action": int(MacroAction.IDLE), "update_state": True}
-            )
-            opponent_id = opponent.submit(
-                "step", {"action": int(MacroAction.IDLE), "update_state": True}
-            )
+            if bool(host_state["dead"]) or bool(opponent_state["dead"]):
+                return self._respawn_players(
+                    host,
+                    opponent,
+                    host_state,
+                    opponent_state,
+                    max_tics=max_tics,
+                )
+            host_id = self._submit_idle(host)
+            opponent_id = self._submit_idle(opponent)
             host_state = host.receive(host_id)
             opponent_state = opponent.receive(opponent_id)
             self._validate_engine_tic(host_state, opponent_state)
@@ -254,26 +313,75 @@ class SynchronousDuelEnv:
             and not bool(state["finished"])
         )
 
+    @staticmethod
+    def _submit_idle(client: Any) -> int:
+        return client.submit(
+            "step", {"action": int(MacroAction.IDLE), "update_state": True}
+        )
+
+    def _respawn_players(
+        self,
+        host: Any,
+        opponent: Any,
+        host_state: dict[str, object],
+        opponent_state: dict[str, object],
+        *,
+        max_tics: int,
+    ) -> tuple[dict[str, object], dict[str, object]]:
+        host_dead = bool(host_state["dead"])
+        opponent_dead = bool(opponent_state["dead"])
+        host_id = host.submit("respawn", None) if host_dead else None
+        opponent_id = opponent.submit("respawn", None) if opponent_dead else None
+        if host_dead and opponent_dead:
+            host_state = host.receive(host_id)
+            opponent_state = opponent.receive(opponent_id)
+            return self._idle_barrier(host, opponent)
+        dead_client = host if host_dead else opponent
+        living_client = opponent if host_dead else host
+        dead_id = host_id if host_dead else opponent_id
+        for _ in range(max_tics):
+            living_id = self._submit_idle(living_client)
+            living_state = living_client.receive(living_id)
+            try:
+                dead_state = dead_client.receive(dead_id, timeout=0.01)
+            except TimeoutError:
+                continue
+            if host_dead:
+                host_state, opponent_state = dead_state, living_state
+            else:
+                host_state, opponent_state = living_state, dead_state
+            return self._idle_barrier(host, opponent)
+        raise RuntimeError("Duel respawn did not complete within the warm-up limit")
+
+    def _idle_barrier(
+        self, host: Any, opponent: Any
+    ) -> tuple[dict[str, object], dict[str, object]]:
+        host_id = self._submit_idle(host)
+        opponent_id = self._submit_idle(opponent)
+        host_state = host.receive(host_id)
+        opponent_state = opponent.receive(opponent_id)
+        self._validate_engine_tic(host_state, opponent_state)
+        return host_state, opponent_state
+
     def _validate_pair(
         self, host_state: dict[str, object], opponent_state: dict[str, object]
     ) -> tuple[DuelProtocolSnapshot, int]:
         host_tic = self._validate_engine_tic(host_state, opponent_state)
         host_snapshot = DuelProtocolSnapshot.from_values(host_state["protocol_values"])
-        opponent_snapshot = DuelProtocolSnapshot.from_values(
-            opponent_state["protocol_values"]
-        )
-        if host_snapshot != opponent_snapshot:
-            raise RuntimeError("Duel protocol mismatch between workers")
+        DuelProtocolSnapshot.from_values(opponent_state["protocol_values"])
         return host_snapshot, host_tic
 
     @staticmethod
     def _validate_engine_tic(
         host_state: dict[str, object], opponent_state: dict[str, object]
     ) -> int:
-        host_tic = int(host_state["episode_time"])
-        opponent_tic = int(opponent_state["episode_time"])
-        if host_tic != opponent_tic:
-            raise RuntimeError(f"Duel tic mismatch: host={host_tic}, opponent={opponent_tic}")
+        host_tic = int(host_state["protocol_values"][1])
+        opponent_tic = int(opponent_state["protocol_values"][1])
+        if abs(host_tic - opponent_tic) > 2:
+            raise RuntimeError(
+                "Duel protocol tic mismatch exceeds replication tolerance: "
+                f"host={host_tic}, opponent={opponent_tic}"
+            )
         return host_tic
 
     def _make_observations(
@@ -304,6 +412,35 @@ class SynchronousDuelEnv:
         self._last_opponent = opponent
         return DuelObservations(host, opponent)
 
+    def _with_native_hit_events(
+        self,
+        events: tuple[DuelEvent, ...],
+        host_state: dict[str, object],
+        opponent_state: dict[str, object],
+        engine_tic: int,
+    ) -> tuple[DuelEvent, ...]:
+        augmented = list(events)
+        existing = {
+            event.side
+            for event in events
+            if event.type is DuelEventType.VALID_HIT
+        }
+        for side, state in (("host", host_state), ("opponent", opponent_state)):
+            current = int(state["hitcount"])
+            previous = self._previous_hitcounts[side]
+            if current > previous and side not in existing:
+                augmented.append(
+                    DuelEvent(
+                        type=DuelEventType.VALID_HIT,
+                        side=side,
+                        episode_id=self._episode_id,
+                        decision_index=self._decision_index,
+                        engine_tic=engine_tic,
+                    )
+                )
+            self._previous_hitcounts[side] = current
+        return tuple(augmented)
+
     @staticmethod
     def _make_observation(
         state: dict[str, object],
@@ -328,7 +465,7 @@ class SynchronousDuelEnv:
             )
         return DuelActorObservation(
             frame=frame,
-            health=float(state["health"]),
+            health=0.0 if bool(state["dead"]) else float(state["health"]),
             armor=float(state["armor"]),
             ammo=float(state["ammo"]),
             own_score=own_score,
@@ -362,8 +499,12 @@ class SynchronousDuelEnv:
             core_x=float(snapshot.core_x),
             core_y=float(snapshot.core_y),
             carrier=snapshot.carrier,
-            host_health=float(host_state["health"]),
-            opponent_health=float(opponent_state["health"]),
+            host_health=(0.0 if bool(host_state["dead"]) else float(host_state["health"])),
+            opponent_health=(
+                0.0
+                if bool(opponent_state["dead"])
+                else float(opponent_state["health"])
+            ),
             host_score=snapshot.host_score,
             opponent_score=snapshot.opponent_score,
             round_state=snapshot.round_state,

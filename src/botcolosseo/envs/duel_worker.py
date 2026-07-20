@@ -126,6 +126,7 @@ class DuelWorker:
         return {
             "frame": frame,
             "episode_time": int(game.get_episode_time()),
+            "server_tic": int(game.get_server_state().tic),
             "finished": bool(game.is_episode_finished()),
             "dead": bool(game.is_player_dead()),
             "multiplayer": bool(game.is_multiplayer_game()),
@@ -140,6 +141,7 @@ class DuelWorker:
             "ammo": float(
                 game.get_game_variable(vzd.GameVariable.SELECTED_WEAPON_AMMO)
             ),
+            "hitcount": int(game.get_game_variable(vzd.GameVariable.HITCOUNT)),
         }
 
     def _require_game(self) -> Any:

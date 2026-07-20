@@ -55,7 +55,8 @@ versioned block for:
 
 - current carrier (`none`, host, opponent);
 - host and opponent scores;
-- pickup, drop, score, valid-hit, death, and respawn counters per side;
+- pickup, drop, score, death, and respawn counters per side; valid hits are
+  decoded from each player's native ViZDoom `HITCOUNT` delta;
 - round state and terminal winner;
 - core coordinates and deterministic spawn index.
 
@@ -83,7 +84,8 @@ The coordinator enforces:
 - unique loopback port per live duel;
 - bounded host/join initialization;
 - both commands queued before either result is read;
-- equal engine episode time after every decision;
+- host-authoritative ACS time advances exactly four tics per decision; peer
+  replication lag is recorded and may not exceed two tics around respawn;
 - equal decision counts and shared protocol counters;
 - bounded reset, step, and close;
 - forced worker termination only after graceful close fails;

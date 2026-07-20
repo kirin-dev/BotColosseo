@@ -1,4 +1,5 @@
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -60,6 +61,9 @@ class FakeGame:
 
     def get_episode_time(self) -> int:
         return self.time
+
+    def get_server_state(self):
+        return SimpleNamespace(tic=self.time)
 
     def is_episode_finished(self) -> bool:
         return False

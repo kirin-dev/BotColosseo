@@ -107,11 +107,13 @@ class ProcessClient:
         self._pending.add(request_id)
         return request_id
 
-    def receive(self, request_id: int) -> object:
+    def receive(self, request_id: int, *, timeout: float | None = None) -> object:
         if request_id not in self._pending:
             raise ValueError(f"Unknown pending request: {request_id}")
         try:
-            response = self._responses.get(timeout=self._timeout)
+            response = self._responses.get(
+                timeout=self._timeout if timeout is None else timeout
+            )
         except queue.Empty as exc:
             raise WorkerTimeout(f"Timed out awaiting request {request_id}") from exc
         if response.id != request_id:
@@ -128,7 +130,8 @@ class ProcessClient:
         if self._closed:
             return
         self._closed = True
-        if self._process.is_alive() and not self._pending:
+        graceful = self._process.is_alive() and not self._pending
+        if graceful:
             request_id = self._next_id
             self._next_id += 1
             try:
@@ -140,7 +143,7 @@ class ProcessClient:
                     raise RemoteWorkerError(response.error or "Worker close failed")
             except (queue.Empty, queue.Full, RemoteWorkerError):
                 pass
-        self._process.join(timeout=self._timeout)
+        self._process.join(timeout=self._timeout if graceful else 0.0)
         if self._process.is_alive():
             self._process.terminate()
             self._process.join(timeout=self._timeout)

@@ -68,3 +68,4 @@ class DuelStep:
     events: tuple[DuelEvent, ...]
     decision_index: int
     engine_tic: int
+    peer_tic_lag: int
