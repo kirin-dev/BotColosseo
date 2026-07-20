@@ -115,12 +115,9 @@ class DuelWorker:
         if not isinstance(payload, dict):
             raise TypeError("Duel step payload must be a dictionary")
         action = MacroAction(int(payload["action"]))
-        frame_skip = int(payload["frame_skip"])
-        if frame_skip <= 0:
-            raise ValueError("frame_skip must be positive")
+        update_state = bool(payload["update_state"])
         game.set_action(action_vector(action))
-        for index in range(frame_skip):
-            game.advance_action(1, index == frame_skip - 1)
+        game.advance_action(1, update_state)
         return self._state(game)
 
     def _state(self, game: Any) -> dict[str, object]:

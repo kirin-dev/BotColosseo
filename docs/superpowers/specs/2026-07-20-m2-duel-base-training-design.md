@@ -25,15 +25,17 @@ ViZDoom multiplayer is a host/join network game, not two independent local
 simulations. The host launches with `-host 2`; the opponent joins an explicit
 loopback port. Each worker owns exactly one `DoomGame` instance.
 
-Both games run in synchronous `PLAYER` mode. The coordinator sends both macro
-actions before either result is awaited. Each worker then repeats:
+Both games run in synchronous `PLAYER` mode. For each tic of a macro action, the
+coordinator sends both actions before either result is awaited, then collects
+both results as an explicit barrier. Each worker performs exactly:
 
 ```text
 set_action(action)
 advance_action(1, update_state=is_last_tic)
 ```
 
-for the same four engine tics. This is required because ViZDoom's multiplayer
+The coordinator repeats that barrier for the same four engine tics and updates
+the rendered state only on the final tic. This is required because ViZDoom's multiplayer
 FAQ states that synchronous players must each advance one frame before the
 server proceeds; multiplayer frameskip cannot be treated as one independent
 `make_action` call. Process isolation also contains engine crashes, allows hard

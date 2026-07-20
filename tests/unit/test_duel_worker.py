@@ -101,18 +101,16 @@ def test_host_and_opponent_receive_explicit_network_arguments(tmp_path: Path) ->
     assert "+sv_noautoaim 1" in host_args
 
 
-def test_step_advances_exactly_one_tic_per_player_and_updates_only_last(
-    tmp_path: Path,
-) -> None:
+def test_step_advances_exactly_one_tic_with_explicit_update_flag(tmp_path: Path) -> None:
     game = FakeGame()
     worker = DuelWorker(settings(tmp_path, WorkerRole.HOST), game_factory=lambda: game)
     worker("init", None)
 
-    result = worker("step", {"action": 1, "frame_skip": 4})
+    result = worker("step", {"action": 1, "update_state": True})
 
     advances = [value for name, value in game.calls if name == "advance"]
-    assert advances == [False, False, False, True]
-    assert result["episode_time"] == 4
+    assert advances == [True]
+    assert result["episode_time"] == 1
     assert result["frame"].shape == (84, 84)
 
 

@@ -110,8 +110,8 @@ train/validation/test seeds and side swaps are disjoint and balanced.
    the child. Never send frames through an unbounded queue.
 3. Implement explicit host args (`-host 2`, loopback port, no autoaim, fixed
    respawn rules) and opponent join args. Sanitize names and port ranges.
-4. For each macro decision, repeat one-tic `set_action/advance_action`; update
-   state only on the final tic.
+4. For each macro decision, the coordinator barriers both workers after every
+   one-tic `set_action/advance_action`; update state only on the final tic.
 5. Prove fake workers receive both commands before the coordinator awaits
    results and that all child processes terminate after injected failures.
 6. Commit: `feat: add bounded duel worker runtime`.
