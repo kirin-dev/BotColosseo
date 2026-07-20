@@ -21,7 +21,14 @@ def observation(score: int = 0) -> DuelActorObservation:
     )
 
 
-def step(*, index: int, tic: int, lag: int = 0, pre_action_tics: int = 0) -> DuelStep:
+def step(
+    *,
+    index: int,
+    tic: int,
+    lag: int = 0,
+    pre_action_tics: int = 0,
+    action_tics: int = 4,
+) -> DuelStep:
     return DuelStep(
         host=observation(),
         opponent=observation(),
@@ -34,6 +41,7 @@ def step(*, index: int, tic: int, lag: int = 0, pre_action_tics: int = 0) -> Due
         engine_tic=tic,
         peer_tic_lag=lag,
         pre_action_tics=pre_action_tics,
+        action_tics=action_tics,
     )
 
 
@@ -57,7 +65,7 @@ def test_accumulator_rejects_unexplained_tic_jump_and_wrong_total() -> None:
     audit = SyncAuditAccumulator(target_decisions=2)
     audit.start_episode(initial_tic=10)
     with pytest.raises(RuntimeError, match="four action tics"):
-        audit.record(step(index=1, tic=15))
+        audit.record(step(index=1, tic=15, action_tics=5))
     with pytest.raises(RuntimeError, match="exactly 2"):
         audit.finish(cleaned_workers=True)
 
@@ -66,7 +74,12 @@ def test_accumulator_skips_partial_terminal_boundary() -> None:
     audit = SyncAuditAccumulator(target_decisions=1)
     audit.start_episode(initial_tic=10)
 
-    recorded = audit.record(replace(step(index=1, tic=12), truncated=True))
+    recorded = audit.record(
+        replace(
+            step(index=1, tic=45, pre_action_tics=35, action_tics=0),
+            truncated=True,
+        )
+    )
 
     assert recorded is False
     assert audit.completed_decisions == 0

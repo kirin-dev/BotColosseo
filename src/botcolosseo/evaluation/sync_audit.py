@@ -44,17 +44,22 @@ class SyncAuditAccumulator:
         if self._completed >= self._target:
             raise RuntimeError("Audit received more decisions than requested")
         tic_delta = step.engine_tic - self._last_tic
-        if 0 <= tic_delta < 4 and (step.terminated or step.truncated):
+        expected_delta = step.pre_action_tics + step.action_tics
+        if tic_delta != expected_delta:
+            raise RuntimeError(
+                "Duel reported tic components do not match total advancement: "
+                f"expected {expected_delta}, observed {tic_delta}"
+            )
+        if 0 <= step.action_tics < 4 and (step.terminated or step.truncated):
             self._incomplete_terminal_boundaries += 1
             self._events.update(
                 f"{event.side}:{event.type.value}" for event in step.events
             )
             return False
-        expected_delta = step.pre_action_tics + 4
-        if tic_delta != expected_delta:
+        if step.action_tics != 4:
             raise RuntimeError(
-                "Duel decision must advance four action tics plus reported "
-                f"pre-action tics: expected {expected_delta}, observed {tic_delta}"
+                "Duel decision must advance four action tics, observed "
+                f"{step.action_tics}"
             )
         if not 0 <= step.peer_tic_lag <= 2:
             raise RuntimeError(f"Peer tic lag exceeds tolerance: {step.peer_tic_lag}")

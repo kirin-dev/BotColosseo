@@ -149,6 +149,9 @@ class SynchronousDuelEnv:
         opponent_macro = MacroAction(opponent_action)
         try:
             pre_action_tics = self._ensure_players_alive()
+            if self._last_host_state is None:
+                raise RuntimeError("Duel environment has no pre-action host state")
+            action_start_tic = int(self._last_host_state["protocol_values"][1])
             host_state: dict[str, object] | None = None
             opponent_state: dict[str, object] | None = None
             for tic_index in range(self._frame_skip):
@@ -208,6 +211,7 @@ class SynchronousDuelEnv:
                     - int(opponent_state["protocol_values"][1])
                 ),
                 pre_action_tics=pre_action_tics,
+                action_tics=engine_tic - action_start_tic,
             )
         except BaseException:
             self.close()
