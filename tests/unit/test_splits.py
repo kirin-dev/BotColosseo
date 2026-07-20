@@ -20,6 +20,7 @@ def test_split_cases_are_reproducible_and_disjoint() -> None:
     assert seed_sets[0].isdisjoint(seed_sets[1])
     assert seed_sets[0].isdisjoint(seed_sets[2])
     assert seed_sets[1].isdisjoint(seed_sets[2])
+    assert all(0 <= seed <= 2**31 - 1 for seeds in seed_sets for seed in seeds)
     assert {case.task for case in first["test"]} == set(TaskKind)
 
 

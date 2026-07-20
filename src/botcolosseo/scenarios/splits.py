@@ -69,18 +69,17 @@ def generate_split_cases(
         raise ValueError("cases_per_task must be positive")
     split_names = ("train", "validation", "test")
     tasks = tuple(TaskKind)
-    seed_root = master_seed * 10_000_000
+    seed_rng = np.random.default_rng(master_seed)
+    used_seeds: set[int] = set()
     result: dict[str, tuple[EpisodeCase, ...]] = {}
-    for split_index, split in enumerate(split_names):
+    for split in split_names:
         cases: list[EpisodeCase] = []
-        for task_index, task in enumerate(tasks):
-            for case_index in range(cases_per_task):
-                seed = (
-                    seed_root
-                    + split_index * 1_000_000
-                    + task_index * cases_per_task
-                    + case_index
-                )
+        for task in tasks:
+            for _ in range(cases_per_task):
+                seed = int(seed_rng.integers(0, 2**31, dtype=np.int64))
+                while seed in used_seeds:
+                    seed = int(seed_rng.integers(0, 2**31, dtype=np.int64))
+                used_seeds.add(seed)
                 rng = np.random.default_rng(seed)
                 cases.append(
                     EpisodeCase(

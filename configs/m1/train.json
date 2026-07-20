@@ -1,0 +1,4002 @@
+[
+  {
+    "route": "direct_lower",
+    "seed": 1537984212,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1337446312,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 519714380,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1343758232,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 431050766,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 2030239791,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 861037877,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 124974937,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 826965061,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 82613462,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1690525621,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1832511703,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 978475359,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1823514312,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 934734540,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1177509906,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 989491727,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 573959708,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1746243621,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1883563503,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 130457003,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1267533686,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 753055372,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1008468228,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1513036095,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1446584315,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 792062314,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 357994902,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 2139434974,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 78811714,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1623325028,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 944034998,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1755395083,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1387219714,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 2051696464,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1285470843,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1898486706,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 629022951,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1123885799,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1140963428,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 579747087,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 124168869,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 150432704,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 613688735,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1682953352,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 20617211,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 905932898,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 622777685,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1073505471,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1638621137,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1118213963,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1063508367,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 837526515,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1674909611,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1380027293,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 225410518,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1775197866,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 273998076,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 890699015,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 2095406713,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 2001952631,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1784841155,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1952066999,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 444606997,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 988860428,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1822242578,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 205024308,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1312776493,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1737302402,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 617445670,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1076354128,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 485746889,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 329779007,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 2044078265,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1910176537,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 260121765,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1562985106,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1031313882,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 575463932,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1501889230,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1887644779,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 2050249088,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 718574760,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1791419168,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 196349647,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1345333505,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 2052167059,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 845123330,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 328595684,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1259880949,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1228571572,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1034791343,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1112744546,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 296068991,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1418116292,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 1341980700,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 547413707,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "flank",
+    "seed": 521440045,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1314495256,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 2103607699,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "navigation"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 895513845,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1064798930,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1834688845,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 458611055,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1622797652,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1278567109,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 1013406995,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 1246206760,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 1967042058,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 549638757,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1671025453,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1109951296,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 186716158,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1834153875,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 1298772102,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1788534754,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1437613240,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1432749811,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1619609324,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1196681543,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 100204432,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 198977144,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1512222710,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 149250568,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1599853159,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 603465639,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 143257631,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 123235869,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1373257643,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1943958973,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1387906054,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1696827421,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 2035300581,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1721384456,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1094812220,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 1212639824,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 785973417,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 764153922,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1084464847,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 1971314996,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 375308407,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 644082934,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 142539408,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 1194250465,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 201311254,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 2073292566,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 704760809,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 495050417,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 193679509,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 2061264157,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1449301336,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1297331084,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 1880288605,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 985271167,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 2133872417,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 770092462,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1654725041,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1769597085,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1757031269,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 834595710,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 1237707775,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 557233347,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 324958867,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 219855001,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 1424535712,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1306046309,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 960568872,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 2033994692,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 453512091,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1859475442,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 925657248,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 545875525,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 712920606,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1315657411,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 931733369,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 132678384,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 447801295,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1119979432,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 5927374,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 1739264563,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 638471595,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 460729311,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1725965978,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1130876391,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 124904,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1312906058,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 212292346,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1713329694,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1505465025,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 1473459372,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 311677946,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1144807493,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 450760006,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1666892161,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 1895607194,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 592415584,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1900745383,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1670877998,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1933127160,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "pickup"
+  },
+  {
+    "route": "flank",
+    "seed": 198616264,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "pickup"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1968750855,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1661960927,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1171034957,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 1293355233,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1383897500,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1263595557,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 2138998268,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 1598829293,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 1893117681,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 2083289404,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 741820562,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1704937390,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1481132025,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 821960879,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 655649934,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1863278308,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 398717605,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 971782713,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 797185381,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 106668523,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1934693732,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 2088821270,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 1258113488,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1076436174,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 934796372,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 26715822,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 955183275,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 605304144,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 755218254,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 318468525,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 473132217,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 998205533,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1619681730,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 770958900,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 1926673428,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1715945938,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 405380743,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 707150610,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 2103394699,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 1498728548,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1299897877,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1403224110,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 18900179,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1553892208,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 787333174,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1001062939,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1248098779,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 649529860,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1166426894,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 2048773196,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 656489971,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 189375420,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 2076308984,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1010361123,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1678956820,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 1928656546,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 731053094,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 708313240,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 898427699,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 1327259775,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 713704846,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 338863397,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 197634473,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 805685390,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 618922765,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 1700463615,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1423106746,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 1120937697,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 107178697,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 339117884,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1214139204,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 504001768,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 630412089,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 460378720,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 735839528,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1411205381,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1544640547,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 898833097,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 677878662,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 968598883,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1678637006,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 1824291814,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 134049598,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 1191769253,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 134108882,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 1861740357,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1040040793,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 602303299,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 665836730,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 1534184100,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 824237169,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1385402212,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1556886743,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 841709137,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1997130932,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1626276926,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 923890238,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 978483001,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1499366490,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "return"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1969099216,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "return"
+  },
+  {
+    "route": "flank",
+    "seed": 1031560022,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 894396543,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1402286518,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 795805413,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1623074180,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 703256984,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 27543870,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1750802917,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 913429817,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1086123883,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 674814920,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 534218065,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 894884145,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 401215344,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 852318376,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 871373312,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1316710748,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 473533280,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1595249709,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 2060935066,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1537794116,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1044565062,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 2139443832,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1112975394,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1730762271,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 37852667,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 593721974,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 90549869,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 421822474,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 2026173039,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1500267220,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 2112870712,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 2025337935,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1380598527,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 206847653,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 714092598,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1505579489,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1875713884,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 878459975,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 369012133,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1622900615,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 738405986,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1328811371,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 608156758,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1458837595,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1987169249,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 2092758996,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 747892582,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 546392553,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1670783350,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1505238993,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1423240612,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 60058165,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 545907442,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 3418730,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 573703136,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 802866412,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1841488964,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 674224935,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 805801075,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 312068013,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 2058147794,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 841559535,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1246621251,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 381704425,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 830481334,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1239505562,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1590226326,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 25069419,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1014369557,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1500064696,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 984338253,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 210769423,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1540317538,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1323623114,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1984325182,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1658248408,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 600412984,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1167729795,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1521356605,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 101827171,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 321009913,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 2126824941,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1151422942,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 397107533,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 671115228,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 221272075,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1167388161,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1235680170,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 905574690,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 730756513,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1347327989,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1985335198,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1271148379,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 5910228,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 148493602,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 553920125,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "static_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1001224438,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 673464450,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 375606843,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "static_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 580051202,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 525724770,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 465744742,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1825508888,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 2138446865,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1364526273,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1093164682,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 844577144,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1544621481,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1931909267,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 642773901,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 858217784,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1259949630,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1087468548,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 385055087,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1077925075,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1332864639,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1481014681,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 384386066,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 455392614,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1428080803,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1194674184,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 963595502,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 257131877,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 598345349,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 107874279,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 818480084,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 933140806,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1105989435,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 838853018,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 869130455,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 452298415,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 240203784,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 2072107587,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 304034594,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 2003477485,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1140698424,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 970227516,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1509611879,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 263150660,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 327563075,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 223599376,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1679896004,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 124872686,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 963170287,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 669936734,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1951791845,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 885588900,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 61816309,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1699642245,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1284960788,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1690681467,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 321293211,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 164982255,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 547059774,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 837860679,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1304438386,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1455451158,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1287119995,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1884142828,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 2131573036,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 374909929,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1281227286,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 2105076523,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 235866230,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 681429922,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 311957555,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1442546103,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1239532077,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 799951345,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 856373786,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 188742195,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1253166535,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 420270794,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 917693393,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 453692346,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 530300227,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 509246817,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 410415263,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1419374696,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1362847133,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 191855502,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1563743375,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1053057752,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 1846070915,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 2143493653,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1826131139,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 265661781,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1340736715,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 112935597,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 910125617,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 95883422,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1509700568,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1059152714,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 195115103,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 804770920,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1720185716,
+    "spawn_index": 1,
+    "split": "train",
+    "target_index": 2,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_lower",
+    "seed": 1874664823,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  },
+  {
+    "route": "flank",
+    "seed": 1377863462,
+    "spawn_index": 2,
+    "split": "train",
+    "target_index": 1,
+    "task": "moving_hit"
+  },
+  {
+    "route": "direct_upper",
+    "seed": 561401831,
+    "spawn_index": 0,
+    "split": "train",
+    "target_index": 0,
+    "task": "moving_hit"
+  }
+]
