@@ -1,0 +1,62 @@
+{
+  "action_counts": {
+    "host:ATTACK": 1629,
+    "host:FORWARD_ATTACK": 2895,
+    "host:FORWARD_TURN_LEFT": 98,
+    "host:FORWARD_TURN_RIGHT": 108,
+    "host:MOVE_FORWARD": 1286,
+    "host:TURN_LEFT": 396,
+    "host:TURN_LEFT_ATTACK": 1545,
+    "host:TURN_RIGHT": 292,
+    "host:TURN_RIGHT_ATTACK": 1751,
+    "opponent:FORWARD_TURN_LEFT": 595,
+    "opponent:FORWARD_TURN_RIGHT": 608,
+    "opponent:IDLE": 162,
+    "opponent:MOVE_FORWARD": 7078,
+    "opponent:TURN_LEFT": 791,
+    "opponent:TURN_RIGHT": 766
+  },
+  "cleaned_workers": true,
+  "completed_decisions": 10000,
+  "dispatched_decisions": 10042,
+  "episode_count": 49,
+  "event_counts": {
+    "host:pickup": 9,
+    "host:valid_hit": 1240,
+    "opponent:death": 110,
+    "opponent:drop": 33,
+    "opponent:pickup": 180,
+    "opponent:respawn": 110,
+    "opponent:score": 131
+  },
+  "host_teacher": "aggressive_script",
+  "incomplete_terminal_boundaries": 42,
+  "max_peer_tic_lag": 0,
+  "opponent_teacher": "objective_first",
+  "passed": true,
+  "protocol_errors": 0,
+  "scenario_hash": "fe8d63033287ecd719b777218c87f8ab6fc197baaec112bedbecba1c963d5b06",
+  "seed": 20260720,
+  "teacher_mode_counts": {
+    "host:intercept": 10000,
+    "opponent:evade": 4797,
+    "opponent:objective": 3557,
+    "opponent:recover": 1646
+  },
+  "teacher_transitions": {
+    "opponent:evade->objective": 56,
+    "opponent:evade->recover": 53,
+    "opponent:objective->evade": 68,
+    "opponent:objective->recover": 61,
+    "opponent:recover->evade": 85,
+    "opponent:recover->objective": 24
+  },
+  "tic_mismatches": 0,
+  "video_bytes": 721519,
+  "video_duration_seconds": 20.0,
+  "video_fps": 10,
+  "video_frames": 200,
+  "video_path": "docs/assets/m2-sync-duel.mp4",
+  "wall_seconds": 60.889,
+  "worker_timeouts": 0
+}
