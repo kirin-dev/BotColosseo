@@ -124,3 +124,83 @@ command-line ACS builds, and SLADE is not required for M0.
   second map representation before that decision.
 - GZDoom and original Doom assets: ViZDoom plus Freedoom is the approved runtime
   and licensing path.
+
+## Action required: M2 full demonstration generation
+
+The reproducibility code and 200-transition real smoke have passed. The full
+100,000-train / 20,000-validation generation is expected to take roughly
+60--90 minutes because each balanced case starts a real two-process ViZDoom
+match. Run it in the M2 worktree while the machine can be left unattended:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+mkdir -p runs/m2
+nohup env \
+  PYTHONPATH=/home/wencong/BotColosseo/.worktrees/m2-base-training/src \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/generate_demonstrations.py \
+  --split all \
+  --output-dir data/generated/m2 \
+  --report reports/m2/demonstrations-manifest.json \
+  --plot docs/assets/m2-demonstration-distribution.png \
+  > runs/m2/demonstrations.log 2>&1 &
+echo $! > runs/m2/demonstrations.pid
+cat runs/m2/demonstrations.pid
+```
+
+Monitor without modifying the run:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+tail -n 40 runs/m2/demonstrations.log
+ps -p "$(cat runs/m2/demonstrations.pid)" -o pid,etime,%cpu,%mem,stat,cmd
+```
+
+When the PID has exited, the log must contain the final JSON and no
+`Traceback`. Run this exact artifact gate:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m2-base-training
+env PYTHONPATH="$PWD/src" \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python - <<'PY'
+import json
+from pathlib import Path
+
+from botcolosseo.data.demonstrations import (
+    load_demonstration_shard,
+    sha256_file,
+)
+from botcolosseo.data.schema import find_privileged_keys
+
+report = json.loads(Path("reports/m2/demonstrations-manifest.json").read_text())
+expected = {"train": 100_000, "validation": 20_000}
+assert report["test_cases_accessed"] is False
+assert not find_privileged_keys(report)
+assert {item["split"] for item in report["splits"]} == set(expected)
+for split in report["splits"]:
+    name = split["split"]
+    assert split["transitions"] == split["requested_transitions"] == expected[name]
+    assert split["privileged_leak_count"] == 0
+    assert split["test_cases_accessed"] is False
+    assert sum(split["opponent_counts"].values()) == expected[name]
+    assert len(set(split["opponent_counts"].values())) == 1
+    shard_total = 0
+    for item in split["shards"]:
+        path = Path("data/generated/m2") / name / item["file"]
+        assert sha256_file(path) == item["sha256"]
+        shard_total += load_demonstration_shard(path)["frame"].shape[0]
+    assert shard_total == expected[name]
+assert Path("docs/assets/m2-demonstration-distribution.png").stat().st_size > 10_000
+print("M2 full demonstration gate: PASS")
+PY
+! grep -n "Traceback" runs/m2/demonstrations.log
+ps -eo pid,ppid,stat,cmd | grep -E '[b]otcolosseo-duel|[v]izdoom' || true
+git status --short
+```
+
+Expected tracked changes after success are only the refreshed
+`reports/m2/demonstrations-manifest.json` and
+`docs/assets/m2-demonstration-distribution.png`. The full NPZ shards are under
+ignored `data/generated/` and must not be committed. Return the final log tail,
+artifact-gate output, and `git status --short` before the Task 6 gate is marked
+passed.
