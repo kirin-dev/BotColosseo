@@ -48,7 +48,7 @@ Primary references:
 ## 3. Crystal Run duel scenario
 
 The source-built WAD gains `MAP07`, reusing the reviewed arena geometry and
-adding two player starts. The ACS protocol is extended in a backwards-compatible
+adding two deterministic deathmatch starts. The ACS protocol is extended in a backwards-compatible
 versioned block for:
 
 - current carrier (`none`, host, opponent);

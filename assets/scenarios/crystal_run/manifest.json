@@ -31,6 +31,11 @@
     "TEXTMAP",
     "BEHAVIOR",
     "SCRIPTS",
+    "ENDMAP",
+    "MAP07",
+    "TEXTMAP",
+    "BEHAVIOR",
+    "SCRIPTS",
     "ENDMAP"
   ],
   "maps": [
@@ -39,15 +44,16 @@
     "MAP03",
     "MAP04",
     "MAP05",
-    "MAP06"
+    "MAP06",
+    "MAP07"
   ],
-  "protocol_version": 1,
+  "protocol_version": 2,
   "schema_version": 1,
   "source_sha256": {
-    "crystal_run.acs": "2937dde91aaa86a85a8b85c69d9e6da859b4bb2fd57482ede4a8b83814134f79",
-    "map.udmf": "33c2be3ef80d297784695904b39410b4e83c3ac8767527c47748c3380019ac4c",
+    "crystal_run.acs": "82d4cbf33d03dea2d0cee07aafb0478120786d172379beb6cf03529827ec0796",
+    "map.udmf": "dbb58efeb61a67d6643415521d01dac25e197e893761cad6f74c30655d61862c",
     "regions.yaml": "a7c1d69683c972d817a643ae3c4da33d8b816c19b91b20403a74ef608458806a",
     "task_variants.yaml": "c6543766cd355c1473321a855e78d5f612dc603888bd75ccd5b00ab457fd2318"
   },
-  "wad_sha256": "b6206daf98e4c6f4f492a7bda619663efe4e43dccb7b69117e422984126a6037"
+  "wad_sha256": "fdfbb94d6b906ab8e11a89c1a8fcb506d660ab648f15e5656efd7dbdeaed3d98"
 }

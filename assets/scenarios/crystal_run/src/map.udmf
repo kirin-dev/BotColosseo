@@ -15,6 +15,9 @@ thing
     single = true;
 }
 
+thing { x = -640.0; y = 0.0; angle = 0; type = 11; id = 11; dm = true; }
+thing { x = 640.0; y = 0.0; angle = 180; type = 11; id = 12; dm = true; }
+
 thing { x = -384.0; y = 96.0; type = 30; skill1 = true; skill2 = true; skill3 = true; skill4 = true; skill5 = true; single = true; }
 thing { x = -192.0; y = 96.0; type = 30; skill1 = true; skill2 = true; skill3 = true; skill4 = true; skill5 = true; single = true; }
 thing { x = 0.0; y = 96.0; type = 30; skill1 = true; skill2 = true; skill3 = true; skill4 = true; skill5 = true; single = true; }

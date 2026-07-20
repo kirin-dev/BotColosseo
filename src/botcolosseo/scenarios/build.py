@@ -13,7 +13,7 @@ from pathlib import Path
 
 from botcolosseo.scenarios.wad import WadLump, inspect_pwad, write_pwad
 
-MAPS = tuple(f"MAP{index:02d}" for index in range(1, 7))
+MAPS = tuple(f"MAP{index:02d}" for index in range(1, 8))
 Runner = Callable[..., subprocess.CompletedProcess[str]]
 
 
@@ -149,7 +149,7 @@ def build_crystal_run(
     }
     manifest = ScenarioManifest(
         schema_version=1,
-        protocol_version=1,
+        protocol_version=2,
         built_on=date.today().isoformat(),
         acc_version=acc_version,
         source_sha256=source_hashes,
