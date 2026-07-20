@@ -1,0 +1,53 @@
+{
+  "acc_version": "This is version 1.60 (Jul 20 2026)",
+  "built_on": "2026-07-20",
+  "lump_names": [
+    "MAP01",
+    "TEXTMAP",
+    "BEHAVIOR",
+    "SCRIPTS",
+    "ENDMAP",
+    "MAP02",
+    "TEXTMAP",
+    "BEHAVIOR",
+    "SCRIPTS",
+    "ENDMAP",
+    "MAP03",
+    "TEXTMAP",
+    "BEHAVIOR",
+    "SCRIPTS",
+    "ENDMAP",
+    "MAP04",
+    "TEXTMAP",
+    "BEHAVIOR",
+    "SCRIPTS",
+    "ENDMAP",
+    "MAP05",
+    "TEXTMAP",
+    "BEHAVIOR",
+    "SCRIPTS",
+    "ENDMAP",
+    "MAP06",
+    "TEXTMAP",
+    "BEHAVIOR",
+    "SCRIPTS",
+    "ENDMAP"
+  ],
+  "maps": [
+    "MAP01",
+    "MAP02",
+    "MAP03",
+    "MAP04",
+    "MAP05",
+    "MAP06"
+  ],
+  "protocol_version": 1,
+  "schema_version": 1,
+  "source_sha256": {
+    "crystal_run.acs": "2937dde91aaa86a85a8b85c69d9e6da859b4bb2fd57482ede4a8b83814134f79",
+    "map.udmf": "33c2be3ef80d297784695904b39410b4e83c3ac8767527c47748c3380019ac4c",
+    "regions.yaml": "a7c1d69683c972d817a643ae3c4da33d8b816c19b91b20403a74ef608458806a",
+    "task_variants.yaml": "c6543766cd355c1473321a855e78d5f612dc603888bd75ccd5b00ab457fd2318"
+  },
+  "wad_sha256": "b6206daf98e4c6f4f492a7bda619663efe4e43dccb7b69117e422984126a6037"
+}

@@ -1,0 +1,260 @@
+#include "zcommon.acs"
+
+#define TASK_FULL 1
+#define TASK_NAVIGATION 2
+#define TASK_PICKUP 3
+#define TASK_RETURN 4
+#define TASK_STATIC_HIT 5
+#define TASK_MOVING_HIT 6
+#define CORE_TID 100
+#define TARGET_TID 200
+
+global int 0:reward;
+global int 1:protocol_version;
+global int 2:engine_tic;
+global int 3:task_phase;
+global int 4:core_state;
+global int 5:pickup_count;
+global int 6:drop_count;
+global int 7:score_count;
+global int 8:valid_hit_count;
+global int 9:death_count;
+global int 10:respawn_count;
+global int 11:core_return_count;
+global int 12:task_success_count;
+global int 13:target_state;
+global int 14:home_score;
+global int 15:away_score;
+global int 16:reserved_zero;
+global int 17:core_x;
+global int 18:core_y;
+global int 19:target_x;
+global int 20:target_y;
+
+int previous_has_core;
+int previous_target_health;
+int player_was_dead;
+int core_returned;
+
+function int InsideHome(void)
+{
+    int x = GetActorX(0);
+    int y = GetActorY(0);
+    return x >= -768.0 && x < -512.0 && y >= -256.0 && y < 256.0;
+}
+
+function int InsideCenter(void)
+{
+    int x = GetActorX(0);
+    int y = GetActorY(0);
+    return x >= -128.0 && x < 128.0 && y >= -128.0 && y < 128.0;
+}
+
+function void SpawnCore(void)
+{
+    int candidate = Random(0, 2);
+    Thing_Remove(CORE_TID);
+    if (candidate == 0)
+    {
+        core_x = 0.0;
+        core_y = 0.0;
+    }
+    else if (candidate == 1)
+    {
+        core_x = -64.0;
+        core_y = 64.0;
+    }
+    else
+    {
+        core_x = 64.0;
+        core_y = -64.0;
+    }
+    SpawnForced("RedCard", core_x, core_y, 0.0, CORE_TID, 0);
+    core_state = 0;
+}
+
+function void SpawnTarget(int moving)
+{
+    Thing_Remove(TARGET_TID);
+    target_x = 256.0;
+    target_y = 0.0;
+    SpawnForced("Zombieman", target_x, target_y, 0.0, TARGET_TID, 128);
+    SetActorProperty(TARGET_TID, APROP_Health, 20);
+    if (!moving)
+    {
+        SetActorProperty(TARGET_TID, APROP_Speed, 0);
+        Thing_Hate(TARGET_TID, 300, 6);
+    }
+    previous_target_health = GetActorProperty(TARGET_TID, APROP_Health);
+    target_state = 1;
+}
+
+function void CompleteTask(void)
+{
+    task_success_count++;
+    Exit_Normal(0);
+}
+
+script 1 OPEN
+{
+    reward = 0;
+    protocol_version = 1;
+    engine_tic = 0;
+    task_phase = BOTC_TASK_ID;
+    core_state = 0;
+    pickup_count = 0;
+    drop_count = 0;
+    score_count = 0;
+    valid_hit_count = 0;
+    death_count = 0;
+    respawn_count = 0;
+    core_return_count = 0;
+    task_success_count = 0;
+    target_state = 0;
+    home_score = 0;
+    away_score = 0;
+    reserved_zero = 0;
+    core_x = 0;
+    core_y = 0;
+    target_x = 0;
+    target_y = 0;
+    previous_has_core = 0;
+    previous_target_health = 0;
+    player_was_dead = 0;
+    core_returned = 0;
+
+    if (BOTC_TASK_ID == TASK_FULL || BOTC_TASK_ID == TASK_PICKUP)
+    {
+        SpawnCore();
+    }
+    else if (BOTC_TASK_ID == TASK_STATIC_HIT)
+    {
+        SpawnTarget(0);
+    }
+    else if (BOTC_TASK_ID == TASK_MOVING_HIT)
+    {
+        SpawnTarget(1);
+    }
+}
+
+script 2 ENTER
+{
+    TakeInventory("Fist", 1);
+    TakeInventory("RedCard", 1);
+    GiveInventory("Pistol", 1);
+    GiveInventory("Clip", 50);
+
+    if (BOTC_TASK_ID == TASK_NAVIGATION)
+    {
+        int start = Random(0, 2);
+        SetActorPosition(0, -640.0, (start - 1) * 160.0, 0.0, 0);
+        SetActorAngle(0, 0.0);
+    }
+    else if (BOTC_TASK_ID == TASK_RETURN)
+    {
+        int return_start = Random(0, 2);
+        SetActorPosition(0, 384.0, (return_start - 1) * 160.0, 0.0, 0);
+        SetActorAngle(0, 0.5);
+        GiveInventory("RedCard", 1);
+        core_state = 1;
+    }
+    else if (BOTC_TASK_ID == TASK_STATIC_HIT || BOTC_TASK_ID == TASK_MOVING_HIT)
+    {
+        SetActorPosition(0, -128.0, 0.0, 0.0, 0);
+        SetActorAngle(0, 0.0);
+    }
+
+    previous_has_core = CheckInventory("RedCard") > 0;
+    ACS_ExecuteAlways(3, 0);
+}
+
+script 3 (void)
+{
+    while (TRUE)
+    {
+        engine_tic++;
+        int has_core = CheckInventory("RedCard") > 0;
+        int player_health = GetActorProperty(0, APROP_Health);
+
+        if (has_core)
+        {
+            core_x = GetActorX(0);
+            core_y = GetActorY(0);
+            core_state = 1;
+        }
+        else if (ThingCount(0, CORE_TID) > 0)
+        {
+            core_x = GetActorX(CORE_TID);
+            core_y = GetActorY(CORE_TID);
+        }
+
+        if (has_core && !previous_has_core)
+        {
+            pickup_count++;
+            if (BOTC_TASK_ID == TASK_PICKUP)
+            {
+                CompleteTask();
+            }
+        }
+
+        if (has_core && InsideHome())
+        {
+            TakeInventory("RedCard", 1);
+            core_state = 3;
+            score_count++;
+            home_score++;
+            if (BOTC_TASK_ID == TASK_RETURN)
+            {
+                CompleteTask();
+            }
+            else if (BOTC_TASK_ID == TASK_FULL)
+            {
+                SpawnCore();
+            }
+        }
+
+        if (BOTC_TASK_ID == TASK_NAVIGATION && InsideCenter())
+        {
+            CompleteTask();
+        }
+
+        if (BOTC_TASK_ID == TASK_STATIC_HIT || BOTC_TASK_ID == TASK_MOVING_HIT)
+        {
+            int target_health = GetActorProperty(TARGET_TID, APROP_Health);
+            target_x = GetActorX(TARGET_TID);
+            target_y = GetActorY(TARGET_TID);
+            target_state = target_health > 0;
+            if (target_health < previous_target_health)
+            {
+                valid_hit_count++;
+                CompleteTask();
+            }
+            previous_target_health = target_health;
+        }
+
+        if (player_health <= 0 && !player_was_dead)
+        {
+            death_count++;
+            player_was_dead = 1;
+            if (has_core)
+            {
+                TakeInventory("RedCard", 1);
+                core_x = GetActorX(0);
+                core_y = GetActorY(0);
+                SpawnForced("RedCard", core_x, core_y, 0.0, CORE_TID, 0);
+                core_state = 2;
+                drop_count++;
+            }
+        }
+
+        if (!has_core && ThingCount(0, CORE_TID) > 0 && engine_tic >= 350 && !core_returned)
+        {
+            SpawnCore();
+            core_return_count++;
+            core_returned = 1;
+        }
+
+        previous_has_core = has_core;
+        Delay(1);
+    }
+}
