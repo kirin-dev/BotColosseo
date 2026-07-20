@@ -50,10 +50,10 @@
   "protocol_version": 2,
   "schema_version": 1,
   "source_sha256": {
-    "crystal_run.acs": "d0e4ddf5460a835c4ceb9a53a3c88af7d713b636b5fb1bcbf36cbcf8d215d85f",
+    "crystal_run.acs": "86fa884971c88284335f05e8f646554016fac5c1efa1783a1da8755ad39b323c",
     "map.udmf": "dbb58efeb61a67d6643415521d01dac25e197e893761cad6f74c30655d61862c",
     "regions.yaml": "a7c1d69683c972d817a643ae3c4da33d8b816c19b91b20403a74ef608458806a",
     "task_variants.yaml": "c6543766cd355c1473321a855e78d5f612dc603888bd75ccd5b00ab457fd2318"
   },
-  "wad_sha256": "fe8d63033287ecd719b777218c87f8ab6fc197baaec112bedbecba1c963d5b06"
+  "wad_sha256": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8"
 }

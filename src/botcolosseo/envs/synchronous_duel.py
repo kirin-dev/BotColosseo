@@ -292,8 +292,11 @@ class SynchronousDuelEnv:
         host = self._require_client(self._host)
         opponent = self._require_client(self._opponent)
         for _ in range(max_tics + 1):
-            if self._valid_player_state(host_state) and self._valid_player_state(
-                opponent_state
+            protocol_tic = int(host_state["protocol_values"][1])
+            if (
+                self._valid_player_state(host_state)
+                and self._valid_player_state(opponent_state)
+                and protocol_tic >= 10
             ):
                 return host_state, opponent_state
             if bool(host_state["dead"]) or bool(opponent_state["dead"]):

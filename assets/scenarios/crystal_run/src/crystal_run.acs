@@ -242,6 +242,16 @@ script 2 ENTER
         int player = PlayerNumber();
         if (player >= 0 && player < 2)
         {
+            if (player == 0)
+            {
+                SetActorPosition(0, -640.0, 0.0, 0.0, 0);
+                SetActorAngle(0, 0.0);
+            }
+            else
+            {
+                SetActorPosition(0, 640.0, 0.0, 0.0, 0);
+                SetActorAngle(0, 0.5);
+            }
             duel_previous_has_core[player] = 0;
             ACS_ExecuteAlways(4, 0, player);
         }
@@ -439,7 +449,17 @@ script 7 RESPAWN
     if (BOTC_TASK_ID == TASK_DUEL)
     {
         int player = PlayerNumber();
-        if (player == 0) { duel_host_respawns++; }
-        else if (player == 1) { duel_opponent_respawns++; }
+        if (player == 0)
+        {
+            SetActorPosition(0, -640.0, 0.0, 0.0, 0);
+            SetActorAngle(0, 0.0);
+            duel_host_respawns++;
+        }
+        else if (player == 1)
+        {
+            SetActorPosition(0, 640.0, 0.0, 0.0, 0);
+            SetActorAngle(0, 0.5);
+            duel_opponent_respawns++;
+        }
     }
 }
