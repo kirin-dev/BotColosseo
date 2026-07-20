@@ -14,7 +14,6 @@ from botcolosseo.evaluation.m2_evidence_audit import (
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Audit official M2 release evidence")
     parser.add_argument("--report-dir", type=Path, default=Path("reports/m2"))
-    parser.add_argument("--pairs-per-opponent", type=int, default=50)
     parser.add_argument("--allow-pending", action="store_true")
     args = parser.parse_args(argv)
     root = Path(__file__).resolve().parents[3]
@@ -31,9 +30,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if not all(existing):
         raise FileNotFoundError("Official M2 evidence is missing or partially written")
-    result = audit_official_evidence(
-        report_dir, pairs_per_opponent=args.pairs_per_opponent
-    )
+    result = audit_official_evidence(report_dir)
     result = audit_repository_provenance(root, report_dir, result)
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0

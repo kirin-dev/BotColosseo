@@ -147,6 +147,19 @@ def test_audit_cli_can_report_intentionally_pending_evidence(
     assert '"official_status": "pending"' in capsys.readouterr().out
 
 
+def test_audit_cli_cannot_weaken_the_frozen_pair_count(tmp_path: Path) -> None:
+    with pytest.raises(SystemExit):
+        audit_main(
+            [
+                "--report-dir",
+                str(tmp_path),
+                "--allow-pending",
+                "--pairs-per-opponent",
+                "1",
+            ]
+        )
+
+
 def test_repository_provenance_rechecks_tracked_inputs_and_checkpoints(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
