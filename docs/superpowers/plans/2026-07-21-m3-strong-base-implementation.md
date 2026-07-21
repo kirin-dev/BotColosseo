@@ -305,11 +305,11 @@ The script adapter calls `privileged_state()`; the checkpoint adapter must not. 
 - Create: `tests/unit/test_strong_base_selection.py`
 - Create: `tests/unit/test_update_historical_pool_cli.py`
 
-- [ ] Test the exact lexicographic order: integrity, historical worst-case, script average, full objective rate, earliest environment step. Test that test/held-out evidence paths are rejected as selection inputs.
-- [ ] Run RED.
-- [ ] Implement pure selection functions first, then thin CLIs. Pool update must verify every referenced hash and emit an admission decision report even when rejected.
-- [ ] Run GREEN with tied synthetic candidates covering every tie-break.
-- [ ] Commit: `feat: add validation-only Strong Base selection`.
+- [x] Test the exact lexicographic order: integrity, historical worst-case, script average, full objective rate, earliest environment step. Test that test/held-out evidence paths are rejected as selection inputs.
+- [x] Run RED.
+- [x] Implement pure selection functions first, then thin CLIs. Pool update must verify every referenced hash and emit an admission decision report even when rejected.
+- [x] Run GREEN with tied synthetic candidates covering every tie-break.
+- [x] Commit: `feat: add validation-only Strong Base selection`.
 
 ### Task 10: Implement the frozen M3 evaluator and statistical gate
 

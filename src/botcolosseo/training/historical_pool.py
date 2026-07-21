@@ -14,6 +14,9 @@ from botcolosseo.agents.league_opponents import sha256_file
 
 _SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 _POLICY_ID_PATTERN = re.compile(r"[a-z0-9][a-z0-9._-]*\Z")
+_FORBIDDEN_EVIDENCE_SPLIT = re.compile(
+    r"(?:^|[-_.])(test|heldout|held-out|held_out)(?:[-_.]|$)"
+)
 _POOL_FIELDS = {
     "schema_version",
     "pool_version",
@@ -75,8 +78,11 @@ class PoolEntry:
             raise ValueError("Pool checkpoint path must be relative")
         if not _valid_relative_path(self.validation_report):
             raise ValueError("Pool validation report path must be relative")
-        if "test" in PurePosixPath(self.validation_report).name.lower():
-            raise ValueError("Pool admission evidence must not be test-derived")
+        if any(
+            _FORBIDDEN_EVIDENCE_SPLIT.search(part.lower())
+            for part in PurePosixPath(self.validation_report).parts
+        ):
+            raise ValueError("Pool admission evidence must be validation-only")
         for name, value in (
             ("checkpoint", self.checkpoint_sha256),
             ("parent checkpoint", self.parent_checkpoint_sha256),
