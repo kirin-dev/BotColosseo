@@ -23,6 +23,7 @@ from botcolosseo.evaluation.crossplay import (
     summarize_payoff_matrix,
     write_crossplay_csv_atomic,
 )
+from botcolosseo.scenarios.duel_splits import DUEL_OPPONENTS
 from botcolosseo.scenarios.league_splits import load_league_cases
 from botcolosseo.scenarios.regions import RegionGraph
 from botcolosseo.training.duel_rollout import (
@@ -122,6 +123,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--max-decisions", type=int, default=525)
     parser.add_argument("--max-attempts", type=int, default=2)
+    parser.add_argument("--candidate-checkpoint", type=Path)
+    parser.add_argument("--candidate-id")
+    parser.add_argument("--include-scripts", action="store_true")
     parser.add_argument("--preflight", action="store_true")
     return parser
 
@@ -130,6 +134,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.max_decisions <= 0 or args.max_attempts <= 0:
         raise ValueError("Cross-play limits must be positive")
+    if (args.candidate_checkpoint is None) != (args.candidate_id is None):
+        raise ValueError("Candidate checkpoint and ID must be provided together")
     root = _project_root()
     pool_path = _resolve(root, args.pool)
     cases_path = _resolve(root, args.cases)
@@ -145,16 +151,54 @@ def main(argv: Sequence[str] | None = None) -> int:
     )["wad_sha256"]
     if any(entry.scenario_hash != scenario_hash for entry in pool.entries):
         raise ValueError("Cross-play pool differs from the current scenario")
-    specs = _pool_specs(pool, root=root)
+    specs = list(_pool_specs(pool, root=root))
+    candidate_hash: str | None = None
+    if args.candidate_checkpoint is not None:
+        candidate_path = _resolve(root, args.candidate_checkpoint)
+        candidate_hash = sha256_file(candidate_path)
+        specs.append(
+            OpponentSpec(
+                opponent_id=args.candidate_id,
+                kind="checkpoint",
+                checkpoint=str(candidate_path),
+                checkpoint_sha256=candidate_hash,
+                scenario_hash=scenario_hash,
+                selection_evidence="validation:candidate",
+            )
+        )
+    if args.include_scripts:
+        specs.extend(
+            OpponentSpec(
+                opponent_id=name,
+                kind="script",
+                checkpoint=None,
+                checkpoint_sha256=None,
+                scenario_hash=scenario_hash,
+                selection_evidence=f"builtin:{name}",
+            )
+            for name in DUEL_OPPONENTS
+        )
+    if len({spec.opponent_id for spec in specs}) != len(specs):
+        raise ValueError("Cross-play roster contains duplicate policy IDs")
+    ordered_specs = tuple(sorted(specs, key=lambda spec: spec.opponent_id))
     preflight = {
+        "candidate_checkpoint_sha256": candidate_hash,
         "cases_sha256": sha256_file(cases_path),
-        "expected_executed_rows": 5 * len(specs) * (len(specs) + 1),
-        "policy_count": len(specs),
+        "expected_executed_rows": 5 * len(ordered_specs) * (len(ordered_specs) + 1),
+        "policy_count": len(ordered_specs),
         "pool_manifest_sha256": pool.manifest_sha256,
         "preflight_passed": True,
         "scenario_hash": scenario_hash,
         "split": "validation",
         "test_cases_accessed": False,
+        "roster": [
+            {
+                "checkpoint_sha256": spec.checkpoint_sha256,
+                "kind": spec.kind,
+                "policy_id": spec.opponent_id,
+            }
+            for spec in ordered_specs
+        ],
     }
     ensure_evidence_targets_absent(output_dir)
     if args.preflight:
@@ -193,9 +237,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"M3 cross-play progress: {completed}/{total}", flush=True)
         return row
 
-    rows = evaluate_crossplay(specs, cases, episode_runner=runner)
+    rows = evaluate_crossplay(ordered_specs, cases, episode_runner=runner)
     matrix = summarize_payoff_matrix(
-        rows, policy_ids=tuple(spec.opponent_id for spec in specs)
+        rows, policy_ids=tuple(spec.opponent_id for spec in ordered_specs)
     )
     output_dir.mkdir(parents=True, exist_ok=True)
     csv_path = output_dir / "crossplay.csv"

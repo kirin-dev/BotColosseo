@@ -15,6 +15,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Audit official M2 release evidence")
     parser.add_argument("--report-dir", type=Path, default=Path("reports/m2"))
     parser.add_argument("--allow-pending", action="store_true")
+    parser.add_argument("--integrity-only", action="store_true")
     args = parser.parse_args(argv)
     root = Path(__file__).resolve().parents[3]
     report_dir = (
@@ -30,7 +31,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if not all(existing):
         raise FileNotFoundError("Official M2 evidence is missing or partially written")
-    result = audit_official_evidence(report_dir)
+    result = audit_official_evidence(
+        report_dir, require_capability_pass=not args.integrity_only
+    )
     result = audit_repository_provenance(root, report_dir, result)
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0

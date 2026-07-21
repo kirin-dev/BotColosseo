@@ -140,6 +140,28 @@ def test_official_evidence_audit_rejects_failed_gate(tmp_path: Path) -> None:
         audit_official_evidence(report_dir, pairs_per_opponent=1)
 
 
+def test_integrity_only_audit_preserves_failed_capability_result(tmp_path: Path) -> None:
+    report_dir = tmp_path / "m2"
+    _write_fixture(report_dir)
+    summary_path = report_dir / "summary.json"
+    summary = json.loads(summary_path.read_text())
+    summary["passed"] = False
+    summary["gates"]["ppo_win_rate_minus_bc"] = False
+    summary_path.write_text(json.dumps(summary), encoding="utf-8")
+    manifest_path = report_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["summary_sha256"] = _sha256(summary_path)
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    result = audit_official_evidence(
+        report_dir, pairs_per_opponent=1, require_capability_pass=False
+    )
+
+    assert result["integrity_passed"] is True
+    assert result["capability_passed"] is False
+    assert result["passed"] is False
+
+
 def test_audit_cli_can_report_intentionally_pending_evidence(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

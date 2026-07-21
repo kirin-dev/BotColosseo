@@ -42,7 +42,7 @@ def _entry(root: Path, policy_id: str, *, anchor: bool, payoff: float) -> PoolEn
         script_average_win_rate=0.75,
         script_worst_case_win_rate=0.60,
         objective_rate=0.90,
-        payoff_by_policy={"axis": payoff},
+        payoff_by_policy={"policy-anchor": payoff},
         anchor=anchor,
         admission_reason="anchor" if anchor else "candidate",
     )
@@ -69,8 +69,8 @@ def _inputs(tmp_path: Path, *, integrity_ok: bool) -> tuple[Path, Path, Path]:
         active_script_average=0.75,
         candidate_historical_worst_case=0.65,
         active_historical_worst_case=0.50,
-        candidate_payoffs={"axis": 1.0},
-        active_payoffs={"policy-anchor": {"axis": 0.0}},
+        candidate_payoffs={"policy-anchor": 1.0},
+        active_payoffs={"policy-anchor": {"policy-anchor": 0.0}},
     )
     metrics_path = tmp_path / "reports/m3/admission-metrics.json"
     metrics_path.write_text(
@@ -114,6 +114,7 @@ def test_pool_update_verifies_all_artifacts_and_writes_new_version(tmp_path: Pat
     pool, entry, metrics = _inputs(tmp_path, integrity_ok=True)
     output_pool = tmp_path / "reports/m3/pool-v1.json"
     decision = tmp_path / "reports/m3/admission-decision.json"
+    payoffs = tmp_path / "reports/m3/payoffs-v1.json"
 
     assert (
         main(
@@ -130,6 +131,8 @@ def test_pool_update_verifies_all_artifacts_and_writes_new_version(tmp_path: Pat
                 str(output_pool),
                 "--decision-report",
                 str(decision),
+                "--output-payoffs",
+                str(payoffs),
             ]
         )
         == 0
@@ -140,3 +143,11 @@ def test_pool_update_verifies_all_artifacts_and_writes_new_version(tmp_path: Pat
     assert len(updated.entries) == 2
     assert report["eligible"] is True
     assert report["new_pool_manifest_sha256"] == updated.manifest_sha256
+    payoff_report = json.loads(payoffs.read_text(encoding="utf-8"))
+    assert payoff_report == {
+        "pool_manifest_sha256": updated.manifest_sha256,
+        "schema_version": 1,
+        "split": "validation",
+        "win_rates": {"policy-anchor": 1.0, "policy-candidate": 0.5},
+    }
+    assert report["new_payoff_report_sha256"] == sha256_file(payoffs)

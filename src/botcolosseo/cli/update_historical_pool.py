@@ -50,6 +50,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--entry", type=Path, required=True)
     parser.add_argument("--metrics", type=Path, required=True)
     parser.add_argument("--output-pool", type=Path, required=True)
+    parser.add_argument("--output-payoffs", type=Path)
     parser.add_argument("--decision-report", type=Path, required=True)
     parser.add_argument("--artifact-root", type=Path)
     args = parser.parse_args(argv)
@@ -59,8 +60,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     entry_path = _resolve(root, args.entry)
     metrics_path = _resolve(root, args.metrics)
     output_pool = _resolve(root, args.output_pool)
+    output_payoffs = (
+        _resolve(root, args.output_payoffs) if args.output_payoffs is not None else None
+    )
     decision_report = _resolve(root, args.decision_report)
-    if output_pool.exists() or decision_report.exists():
+    if (
+        output_pool.exists()
+        or decision_report.exists()
+        or (output_payoffs is not None and output_payoffs.exists())
+    ):
         raise FileExistsError("Historical-pool output evidence already exists")
     pool = load_pool(pool_path, artifact_root=root)
     try:
@@ -85,12 +93,34 @@ def main(argv: Sequence[str] | None = None) -> int:
         "reason": decision.reason,
         "replacement_policy_id": decision.replacement_policy_id,
         "new_pool_manifest_sha256": None,
+        "new_payoff_report_sha256": None,
     }
     if decision.eligible:
         updated = admit_candidate(pool, entry, metrics)
         output_pool.parent.mkdir(parents=True, exist_ok=True)
         write_pool_atomic(updated, output_pool)
         payload["new_pool_manifest_sha256"] = updated.manifest_sha256
+        if output_payoffs is not None:
+            active_ids = {active.policy_id for active in updated.entries}
+            win_rates = {
+                policy_id: value
+                for policy_id, value in metrics.candidate_payoffs.items()
+                if policy_id in active_ids
+            }
+            win_rates[entry.policy_id] = 0.5
+            if set(win_rates) != active_ids:
+                raise ValueError("Candidate payoff evidence cannot bind the updated pool")
+            output_payoffs.parent.mkdir(parents=True, exist_ok=True)
+            _atomic_json(
+                {
+                    "schema_version": 1,
+                    "split": "validation",
+                    "pool_manifest_sha256": updated.manifest_sha256,
+                    "win_rates": win_rates,
+                },
+                output_payoffs,
+            )
+            payload["new_payoff_report_sha256"] = sha256_file(output_payoffs)
     decision_report.parent.mkdir(parents=True, exist_ok=True)
     _atomic_json(payload, decision_report)
     print(json.dumps(payload, indent=2, sort_keys=True))

@@ -162,3 +162,47 @@ def load_league_checkpoint(
     if restore_rng:
         _restore_rng_state(payload["rng"])
     return state
+
+
+def load_league_transition(
+    path: Path,
+    *,
+    model: torch.nn.Module,
+    optimizer: torch.optim.Optimizer,
+    scheduler: torch.optim.lr_scheduler.LRScheduler,
+    next_identity: LeagueRunIdentity,
+    restore_rng: bool = False,
+) -> tuple[LeagueCheckpointState, LeagueRunIdentity]:
+    """Load a checkpoint at an audited pool/payoff validation boundary."""
+    payload = torch.load(path, map_location="cpu", weights_only=False)
+    if payload.get("schema_version") != 1:
+        raise ValueError("Unsupported league checkpoint schema version")
+    try:
+        previous_identity = LeagueRunIdentity(**payload["identity"])
+        state = LeagueCheckpointState(**payload["state"])
+    except (KeyError, TypeError) as error:
+        raise ValueError("Invalid league checkpoint metadata") from error
+    immutable_fields = (
+        "base_checkpoint_sha256",
+        "config_hash",
+        "train_manifest_hash",
+        "scenario_hash",
+    )
+    if any(
+        getattr(previous_identity, field) != getattr(next_identity, field)
+        for field in immutable_fields
+    ):
+        raise ValueError("League transition changed an immutable run identity field")
+    if (
+        previous_identity.pool_manifest_hash == next_identity.pool_manifest_hash
+        and previous_identity.payoff_report_hash == next_identity.payoff_report_hash
+    ):
+        raise ValueError("League transition requires a new pool or payoff report")
+    if state.episodes % 2 != 0:
+        raise ValueError("League transition requires a paired episode boundary")
+    model.load_state_dict(payload["model"], strict=True)
+    optimizer.load_state_dict(payload["optimizer"])
+    scheduler.load_state_dict(payload["scheduler"])
+    if restore_rng:
+        _restore_rng_state(payload["rng"])
+    return state, previous_identity

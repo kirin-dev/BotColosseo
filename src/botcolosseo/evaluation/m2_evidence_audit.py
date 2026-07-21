@@ -22,6 +22,7 @@ REQUIRED_GATES = {
     "paired_score_lcb_positive",
     "per_opponent_floor",
 }
+INTEGRITY_GATES = {"official", "complete", "protocol_clean", "artifact_clean"}
 
 
 def _load_json(path: Path) -> dict[str, object]:
@@ -32,7 +33,10 @@ def _load_json(path: Path) -> dict[str, object]:
 
 
 def audit_official_evidence(
-    report_dir: Path, *, pairs_per_opponent: int = 50
+    report_dir: Path,
+    *,
+    pairs_per_opponent: int = 50,
+    require_capability_pass: bool = True,
 ) -> dict[str, object]:
     if pairs_per_opponent <= 0:
         raise ValueError("pairs_per_opponent must be positive")
@@ -46,11 +50,9 @@ def audit_official_evidence(
     expected_episodes = (
         len(M2_POLICIES) * len(DUEL_OPPONENTS) * pairs_per_opponent * 2
     )
-    if not (
-        summary.get("official") is True
-        and summary.get("complete") is True
-        and summary.get("passed") is True
-    ):
+    if not (summary.get("official") is True and summary.get("complete") is True):
+        raise ValueError("Official M2 summary is incomplete")
+    if require_capability_pass and summary.get("passed") is not True:
         raise ValueError("Official M2 summary did not pass")
     if summary.get("episodes") != expected_episodes or summary.get(
         "expected_episodes"
@@ -63,7 +65,12 @@ def audit_official_evidence(
     gates = summary.get("gates")
     if not isinstance(gates, dict) or not REQUIRED_GATES <= gates.keys():
         raise ValueError("Official M2 summary is missing required gates")
-    if any(gates[name] is not True for name in REQUIRED_GATES):
+    if any(gates[name] is not True for name in INTEGRITY_GATES):
+        raise ValueError("Official M2 summary contains a failed integrity gate")
+    capability_passed = summary.get("passed") is True and all(
+        gates[name] is True for name in REQUIRED_GATES
+    )
+    if require_capability_pass and not capability_passed:
         raise ValueError("Official M2 summary contains a failed gate")
     policies = summary.get("policies")
     if not isinstance(policies, dict) or set(policies) != set(M2_POLICIES):
@@ -149,7 +156,9 @@ def audit_official_evidence(
         "episodes": len(rows),
         "official": True,
         "pair_groups": len(groups),
-        "passed": True,
+        "capability_passed": capability_passed,
+        "integrity_passed": True,
+        "passed": capability_passed,
     }
 
 

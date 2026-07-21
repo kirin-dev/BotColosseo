@@ -36,6 +36,7 @@ from botcolosseo.training.league_checkpoint import (
     LeagueCheckpointState,
     LeagueRunIdentity,
     load_league_checkpoint,
+    load_league_transition,
     save_league_checkpoint,
     warm_start_from_m2,
 )
@@ -98,11 +99,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--payoffs", type=Path, required=True)
     parser.add_argument("--run-dir", type=Path, required=True)
     parser.add_argument("--device", default="cuda:0")
-    parser.add_argument("--resume", type=Path)
+    continuation = parser.add_mutually_exclusive_group()
+    continuation.add_argument("--resume", type=Path)
+    continuation.add_argument("--transition-from", type=Path)
     parser.add_argument("--environment-steps", type=int)
     parser.add_argument("--stop-after-steps", type=int)
     parser.add_argument("--rollout-steps", type=int)
-    parser.add_argument("--allow-provisional-base", action="store_true")
+    base_authorization = parser.add_mutually_exclusive_group()
+    base_authorization.add_argument("--allow-provisional-base", action="store_true")
+    base_authorization.add_argument(
+        "--allow-integrity-qualified-base", action="store_true"
+    )
     parser.add_argument("--preflight", action="store_true")
     return parser
 
@@ -144,6 +151,7 @@ def _validate_base_authorization(
     audit_result: dict[str, object] | None,
     *,
     allow_provisional: bool,
+    allow_integrity_qualified: bool = False,
 ) -> bool:
     if audit_result is None:
         if not allow_provisional:
@@ -151,11 +159,16 @@ def _validate_base_authorization(
                 "M2 base remains provisional; use --allow-provisional-base only for smoke"
             )
         return False
-    if audit_result.get("passed") is not True:
-        raise ValueError("M2 evidence audit did not pass")
     hashes = audit_result.get("checkpoint_sha256")
     if not isinstance(hashes, dict) or hashes.get("ppo") != base_checkpoint_sha256:
         raise ValueError("M2 audit checkpoint does not match the requested base checkpoint")
+    if audit_result.get("passed") is not True:
+        if not (
+            allow_integrity_qualified
+            and audit_result.get("integrity_passed") is True
+        ):
+            raise ValueError("M2 capability gate did not pass")
+        return False
     return True
 
 
@@ -234,7 +247,9 @@ def _resolve(root: Path, path: Path) -> Path:
     return path.expanduser().resolve() if path.is_absolute() else root / path
 
 
-def _m2_audit_result(root: Path) -> dict[str, object] | None:
+def _m2_audit_result(
+    root: Path, *, integrity_only: bool = False
+) -> dict[str, object] | None:
     report_dir = root / "reports/m2"
     targets = tuple(report_dir / name for name in ("episodes.csv", "summary.json", "manifest.json"))
     existing = tuple(path.exists() for path in targets)
@@ -242,7 +257,9 @@ def _m2_audit_result(root: Path) -> dict[str, object] | None:
         return None
     if not all(existing):
         raise FileNotFoundError("Official M2 evidence is partially written")
-    result = audit_official_evidence(report_dir)
+    result = audit_official_evidence(
+        report_dir, require_capability_pass=not integrity_only
+    )
     return audit_repository_provenance(root, report_dir, result)
 
 
@@ -283,11 +300,14 @@ def main(argv: list[str] | None = None) -> int:
     if not isinstance(scenario_hash, str):
         raise ValueError("Scenario manifest is missing wad_sha256")
     base_hash = sha256_file(base_checkpoint)
-    audit_result = _m2_audit_result(root)
+    audit_result = _m2_audit_result(
+        root, integrity_only=args.allow_integrity_qualified_base
+    )
     base_promoted = _validate_base_authorization(
         base_hash,
         audit_result,
         allow_provisional=args.allow_provisional_base,
+        allow_integrity_qualified=args.allow_integrity_qualified_base,
     )
     pool = load_pool(pool_path, artifact_root=root)
     if pool.entries[0].checkpoint_sha256 != base_hash:
@@ -341,7 +361,11 @@ def main(argv: list[str] | None = None) -> int:
         print(_status_json(preflight))
         return 0
     metrics_path = run_dir / "metrics.jsonl"
-    if metrics_path.exists() and args.resume is None:
+    if (
+        metrics_path.exists()
+        and args.resume is None
+        and args.transition_from is None
+    ):
         raise FileExistsError(f"M3 league output already exists: {metrics_path}")
     device = torch.device(args.device)
     if device.type == "cuda" and not torch.cuda.is_available():
@@ -369,6 +393,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     environment_steps = 0
     episode_index = 0
+    transition_record: dict[str, object] | None = None
     if args.resume is not None:
         resume_path = _resolve(root, args.resume)
         state = load_league_checkpoint(
@@ -383,6 +408,43 @@ def main(argv: list[str] | None = None) -> int:
         environment_steps = state.environment_steps
         episode_index = state.episodes
         _reconcile_metrics(metrics_path, committed_environment_steps=environment_steps)
+    elif args.transition_from is not None:
+        transition_path = _resolve(root, args.transition_from)
+        transition_hash = sha256_file(transition_path)
+        state, previous_identity = load_league_transition(
+            transition_path,
+            model=model,
+            optimizer=trainer.optimizer,
+            scheduler=trainer.scheduler,
+            next_identity=identity,
+            restore_rng=True,
+        )
+        trainer.updates = state.updates
+        environment_steps = state.environment_steps
+        episode_index = state.episodes
+        _reconcile_metrics(metrics_path, committed_environment_steps=environment_steps)
+        archive_dir = run_dir / "transitions"
+        archive_dir.mkdir(parents=True, exist_ok=True)
+        archive = archive_dir / (
+            f"parent-{environment_steps:07d}-{transition_hash[:12]}.pt"
+        )
+        if archive.exists() and sha256_file(archive) != transition_hash:
+            raise ValueError("League transition archive hash conflicts with source")
+        if not archive.exists():
+            _copy_checkpoint(transition_path, archive)
+        transition_record = {
+            "archive_checkpoint": str(archive),
+            "boundary_state": asdict(state),
+            "next_identity": asdict(identity),
+            "previous_identity": asdict(previous_identity),
+            "schema_version": 1,
+            "source_checkpoint": str(transition_path),
+            "source_checkpoint_sha256": transition_hash,
+        }
+        _atomic_json(
+            transition_record,
+            archive_dir / f"transition-{environment_steps:07d}.json",
+        )
     if environment_steps > stop_after:
         raise ValueError("Resume checkpoint is beyond --stop-after-steps")
     (
@@ -508,6 +570,7 @@ def main(argv: list[str] | None = None) -> int:
                 "opponent_counts": dict(sorted(opponent_counts.items())),
                 "opponent_source_counts": dict(sorted(source_counts.items())),
                 "pfsp_probabilities": dict(schedule.pfsp_probabilities),
+                "transition": transition_record,
                 "updates": trainer.updates,
             }
             _atomic_json(summary, run_dir / "summary.json")

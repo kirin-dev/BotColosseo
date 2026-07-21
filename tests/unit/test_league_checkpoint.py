@@ -12,6 +12,7 @@ from botcolosseo.training.league_checkpoint import (
     LeagueCheckpointState,
     LeagueRunIdentity,
     load_league_checkpoint,
+    load_league_transition,
     save_league_checkpoint,
     warm_start_from_m2,
 )
@@ -164,6 +165,79 @@ def test_league_resume_rejects_each_identity_drift(tmp_path: Path, field: str) -
             optimizer=optimizer,
             scheduler=scheduler,
             expected_identity=changed,
+        )
+
+
+def test_league_transition_allows_only_pool_payoff_drift_at_paired_boundary(
+    tmp_path: Path,
+) -> None:
+    model, optimizer, scheduler = _components()
+    path = save_league_checkpoint(
+        tmp_path / "league.pt",
+        model=model,
+        optimizer=optimizer,
+        scheduler=scheduler,
+        identity=_identity(),
+        state=LeagueCheckpointState(200_000, 20, 4, 2),
+    )
+    next_identity = replace(
+        _identity(), pool_manifest_hash="a" * 64, payoff_report_hash="b" * 64
+    )
+    resumed_model, resumed_optimizer, resumed_scheduler = _components()
+
+    state, previous_identity = load_league_transition(
+        path,
+        model=resumed_model,
+        optimizer=resumed_optimizer,
+        scheduler=resumed_scheduler,
+        next_identity=next_identity,
+        restore_rng=True,
+    )
+
+    assert state == LeagueCheckpointState(200_000, 20, 4, 2)
+    assert previous_identity == _identity()
+    with pytest.raises(ValueError, match="pool or payoff"):
+        load_league_transition(
+            path,
+            model=resumed_model,
+            optimizer=resumed_optimizer,
+            scheduler=resumed_scheduler,
+            next_identity=_identity(),
+        )
+    with pytest.raises(ValueError, match="immutable"):
+        load_league_transition(
+            path,
+            model=resumed_model,
+            optimizer=resumed_optimizer,
+            scheduler=resumed_scheduler,
+            next_identity=replace(
+                next_identity, train_manifest_hash="c" * 64
+            ),
+        )
+
+
+def test_league_transition_rejects_unpaired_episode_boundary(tmp_path: Path) -> None:
+    model, optimizer, scheduler = _components()
+    path = save_league_checkpoint(
+        tmp_path / "league.pt",
+        model=model,
+        optimizer=optimizer,
+        scheduler=scheduler,
+        identity=_identity(),
+        state=LeagueCheckpointState(200_000, 20, 3, 1),
+    )
+
+    with pytest.raises(ValueError, match="paired episode boundary"):
+        load_league_transition(
+            path,
+            model=model,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            next_identity=replace(
+                _identity(),
+                pool_manifest_hash="a" * 64,
+                payoff_report_hash="b" * 64,
+            ),
         )
 
 

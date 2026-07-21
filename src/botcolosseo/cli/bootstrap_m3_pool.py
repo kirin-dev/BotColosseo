@@ -45,6 +45,7 @@ def bootstrap_initial_pool(
     policy_id: str,
     admitted_at_utc: str,
     audited_checkpoint_sha256: str,
+    base_capability_passed: bool = True,
 ) -> HistoricalPoolManifest:
     root = artifact_root.expanduser().resolve()
     checkpoint = checkpoint.expanduser().resolve()
@@ -111,7 +112,11 @@ def bootstrap_initial_pool(
         objective_rate=objective,
         payoff_by_policy={policy_id: 0.5},
         anchor=True,
-        admission_reason="audited_m2_anchor",
+        admission_reason=(
+            "audited_m2_anchor"
+            if base_capability_passed
+            else "integrity_qualified_m2_anchor_capability_gate_failed"
+        ),
     )
     pool = HistoricalPoolManifest(
         schema_version=1,
@@ -144,6 +149,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--policy-id", default="m2-anchor")
     parser.add_argument("--admitted-at-utc", required=True)
     parser.add_argument("--m2-report-dir", type=Path, default=Path("reports/m2"))
+    parser.add_argument("--allow-integrity-qualified-base", action="store_true")
     args = parser.parse_args(argv)
     root = Path(__file__).resolve().parents[3]
 
@@ -151,7 +157,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return path.resolve() if path.is_absolute() else (root / path).resolve()
 
     report_dir = resolve(args.m2_report_dir)
-    audited = audit_official_evidence(report_dir)
+    audited = audit_official_evidence(
+        report_dir,
+        require_capability_pass=not args.allow_integrity_qualified_base,
+    )
     audited = audit_repository_provenance(root, report_dir, audited)
     hashes = audited.get("checkpoint_sha256")
     if not isinstance(hashes, dict) or not isinstance(hashes.get("ppo"), str):
@@ -165,6 +174,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         policy_id=args.policy_id,
         admitted_at_utc=args.admitted_at_utc,
         audited_checkpoint_sha256=hashes["ppo"],
+        base_capability_passed=audited.get("capability_passed") is True,
     )
     print(
         json.dumps(

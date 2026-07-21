@@ -170,6 +170,23 @@ def test_parser_requires_base_pool_payoffs_and_run_dir() -> None:
         ]
     )
     assert parsed.device == "cuda:0"
+    with pytest.raises(SystemExit):
+        parser.parse_args(
+            [
+                "--base-checkpoint",
+                "base.pt",
+                "--pool",
+                "pool.json",
+                "--payoffs",
+                "payoffs.json",
+                "--run-dir",
+                "run",
+                "--resume",
+                "latest.pt",
+                "--transition-from",
+                "candidate.pt",
+            ]
+        )
 
 
 def test_config_is_frozen_and_cannot_reference_test_manifests() -> None:
@@ -195,7 +212,7 @@ def test_base_authorization_distinguishes_promoted_and_explicit_provisional() ->
         )
         is True
     )
-    with pytest.raises(ValueError, match="audit"):
+    with pytest.raises(ValueError, match="capability"):
         _validate_base_authorization(
             base_hash,
             {"passed": False, "checkpoint_sha256": {"ppo": base_hash}},
@@ -206,6 +223,29 @@ def test_base_authorization_distinguishes_promoted_and_explicit_provisional() ->
             base_hash,
             {"passed": True, "checkpoint_sha256": {"ppo": "0" * 64}},
             allow_provisional=True,
+        )
+    assert (
+        _validate_base_authorization(
+            base_hash,
+            {
+                "passed": False,
+                "integrity_passed": True,
+                "checkpoint_sha256": {"ppo": base_hash},
+            },
+            allow_provisional=False,
+            allow_integrity_qualified=True,
+        )
+        is False
+    )
+    with pytest.raises(ValueError, match="capability"):
+        _validate_base_authorization(
+            base_hash,
+            {
+                "passed": False,
+                "integrity_passed": True,
+                "checkpoint_sha256": {"ppo": base_hash},
+            },
+            allow_provisional=False,
         )
 
 
@@ -493,3 +533,78 @@ def test_fake_training_runtime_writes_checkpoint_candidate_metrics_and_summary(
     assert (run_dir / "latest.pt").is_file()
     assert (run_dir / "candidate-0000002.pt").is_file()
     assert (run_dir / "metrics.jsonl").is_file()
+
+    previous_pool = train_league.load_pool(pool_path, artifact_root=root)
+    transition_source = run_dir / "latest.pt"
+    validation_report = root / "reports/validation-candidate.json"
+    validation_report.write_text("validation", encoding="utf-8")
+    candidate = replace(
+        _entry(1, anchor=False),
+        checkpoint="runs/m3/fake/latest.pt",
+        checkpoint_sha256=sha256_file(transition_source),
+        parent_checkpoint_sha256=sha256_file(base),
+        validation_report="reports/validation-candidate.json",
+        validation_report_sha256=sha256_file(validation_report),
+    )
+    next_pool = HistoricalPoolManifest(
+        1,
+        1,
+        previous_pool.manifest_sha256,
+        "2026-07-21T01:00:00Z",
+        (*previous_pool.entries, candidate),
+    )
+    next_pool_path = root / "reports/pool-v1.json"
+    write_pool_atomic(next_pool, next_pool_path)
+    next_payoffs = root / "reports/payoffs-v1.json"
+    next_payoffs.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "split": "validation",
+                "pool_manifest_sha256": next_pool.manifest_sha256,
+                "win_rates": {"policy-0": 0.5, "policy-1": 0.5},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert (
+        main(
+            [
+                "--config",
+                str(config),
+                "--base-checkpoint",
+                str(base),
+                "--pool",
+                str(next_pool_path),
+                "--payoffs",
+                str(next_payoffs),
+                "--run-dir",
+                str(run_dir),
+                "--allow-provisional-base",
+                "--device",
+                "cpu",
+                "--environment-steps",
+                "2",
+                "--rollout-steps",
+                "1",
+                "--transition-from",
+                str(transition_source),
+            ]
+        )
+        == 0
+    )
+    transition = json.loads(
+        (run_dir / "transitions/transition-0000002.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert transition["previous_identity"]["pool_manifest_hash"] == (
+        previous_pool.manifest_sha256
+    )
+    assert transition["next_identity"]["pool_manifest_hash"] == (
+        next_pool.manifest_sha256
+    )
+    assert sha256_file(Path(transition["archive_checkpoint"])) == (
+        transition["source_checkpoint_sha256"]
+    )

@@ -7,6 +7,7 @@ import torch
 from botcolosseo.agents.league_opponents import OpponentSpec
 from botcolosseo.cli.evaluate_crossplay import (
     CrossplayControllerFactory,
+    build_parser,
     ensure_evidence_targets_absent,
     run_case_with_retries,
 )
@@ -156,3 +157,24 @@ def test_crossplay_refuses_to_overwrite_any_evidence_target(tmp_path: Path) -> N
 
     with pytest.raises(FileExistsError, match="crossplay.csv"):
         ensure_evidence_targets_absent(tmp_path)
+
+
+def test_candidate_roster_arguments_are_explicit_and_paired() -> None:
+    parser = build_parser()
+    parsed = parser.parse_args(
+        [
+            "--pool",
+            "pool.json",
+            "--output-dir",
+            "out",
+            "--candidate-checkpoint",
+            "candidate.pt",
+            "--candidate-id",
+            "candidate-0200000",
+            "--include-scripts",
+        ]
+    )
+
+    assert parsed.candidate_checkpoint == Path("candidate.pt")
+    assert parsed.candidate_id == "candidate-0200000"
+    assert parsed.include_scripts is True
