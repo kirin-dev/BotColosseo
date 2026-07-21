@@ -72,6 +72,8 @@ class FakeClient:
         *,
         invalid_initial: bool = False,
         dead_initial: bool = False,
+        dead_at_or_after: int | None = None,
+        finish_at: int | None = None,
     ) -> None:
         self.role = role
         self.log = log
@@ -79,6 +81,8 @@ class FakeClient:
         self.time = 10
         self.invalid_initial = invalid_initial
         self.dead_initial = dead_initial
+        self.dead_at_or_after = dead_at_or_after
+        self.finish_at = finish_at
         self.last_command = ""
 
     def submit(self, command: str, payload: object) -> int:
@@ -92,8 +96,14 @@ class FakeClient:
         self.log.append((self.role, "receive"))
         x = -640.0 if self.role == "host" else 640.0
         health = -999900.0 if self.invalid_initial and self.last_command == "init" else 100.0
-        dead = self.dead_initial and self.time < 12
-        return worker_state(tic=request_id, x=x, health=health, dead=dead)
+        dead = (self.dead_initial and self.time < 12) or (
+            self.dead_at_or_after is not None and self.time >= self.dead_at_or_after
+        )
+        state = worker_state(tic=request_id, x=x, health=health, dead=dead)
+        if self.finish_at is not None and self.time >= self.finish_at:
+            state["finished"] = True
+            state["frame"] = None
+        return state
 
     def close(self) -> None:
         self.closed = True
@@ -103,7 +113,12 @@ class FakeClient:
 
 
 def make_env(
-    log: list[tuple[str, str]], *, invalid_initial: bool = False, dead_initial: bool = False
+    log: list[tuple[str, str]],
+    *,
+    invalid_initial: bool = False,
+    dead_initial: bool = False,
+    dead_at_or_after: int | None = None,
+    finish_at: int | None = None,
 ) -> SynchronousDuelEnv:
     graph = RegionGraph.from_yaml(Path("assets/scenarios/crystal_run/src/regions.yaml"))
     return SynchronousDuelEnv(
@@ -115,6 +130,8 @@ def make_env(
             log,
             invalid_initial=invalid_initial,
             dead_initial=dead_initial,
+            dead_at_or_after=dead_at_or_after,
+            finish_at=finish_at,
         ),
         port_allocator=lambda: 17432,
     )
@@ -180,6 +197,30 @@ def test_dead_players_auto_respawn_through_symmetric_idle_barriers() -> None:
     assert info.engine_tic == 12
     assert not any(entry == ("host", "submit:respawn") for entry in log)
     assert not any(entry == ("opponent", "submit:respawn") for entry in log)
+
+
+def test_episode_finishing_during_respawn_returns_a_truncated_step() -> None:
+    log: list[tuple[str, str]] = []
+    env = make_env(log, dead_at_or_after=14, finish_at=15)
+    try:
+        env.reset()
+        dead_step = env.step(MacroAction.IDLE, MacroAction.IDLE)
+        log_before_terminal_step = len(log)
+        terminal_step = env.step(MacroAction.IDLE, MacroAction.IDLE)
+    finally:
+        env.close()
+
+    assert dead_step.host.health == dead_step.opponent.health == 0.0
+    assert not dead_step.terminated and not dead_step.truncated
+    assert terminal_step.truncated and not terminal_step.terminated
+    assert terminal_step.pre_action_tics == 1
+    assert terminal_step.action_tics == 0
+    assert terminal_step.engine_tic == 15
+    assert log[log_before_terminal_step : log_before_terminal_step + 2] == [
+        ("host", "submit:step"),
+        ("opponent", "submit:step"),
+    ]
+    assert len(log) == log_before_terminal_step + 4
 
 
 def test_shaping_scale_is_bounded() -> None:

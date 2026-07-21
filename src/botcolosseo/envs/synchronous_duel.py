@@ -158,6 +158,18 @@ class SynchronousDuelEnv:
             if self._last_host_state is None:
                 raise RuntimeError("Duel environment has no pre-action host state")
             action_start_tic = int(self._last_host_state["protocol_values"][1])
+            if bool(
+                self._last_host_state["finished"]
+                or self._last_opponent_state["finished"]
+            ):
+                return self._finalize_step(
+                    self._last_host_state,
+                    self._last_opponent_state,
+                    MacroAction.IDLE,
+                    MacroAction.IDLE,
+                    pre_action_tics=pre_action_tics,
+                    action_start_tic=action_start_tic,
+                )
             host_state: dict[str, object] | None = None
             opponent_state: dict[str, object] | None = None
             for tic_index in range(self._frame_skip):
@@ -174,54 +186,73 @@ class SynchronousDuelEnv:
                 self._validate_engine_tic(host_state, opponent_state)
             if host_state is None or opponent_state is None:
                 raise RuntimeError("Duel step advanced no engine tics")
-            snapshot, engine_tic = self._validate_pair(host_state, opponent_state)
-            self._decision_index += 1
-            events = self._with_native_hit_events(
-                self._decoder.decode(
-                    snapshot,
-                    episode_id=self._episode_id,
-                    decision_index=self._decision_index,
-                ),
+            return self._finalize_step(
                 host_state,
                 opponent_state,
-                engine_tic,
-            )
-            rewards = self._ledger.apply(events, shaping_scale=self._shaping_scale)
-            observations = self._make_observations(
-                host_state,
-                opponent_state,
-                snapshot,
                 host_macro,
                 opponent_macro,
-            )
-            self._update_privileged(host_state, opponent_state, snapshot, engine_tic)
-            self._last_host_state = host_state
-            self._last_opponent_state = opponent_state
-            terminated = snapshot.winner > 0 or snapshot.round_state == 2
-            engine_finished = bool(host_state["finished"] or opponent_state["finished"])
-            truncated = not terminated and (
-                engine_finished or self._decision_index >= self._max_decisions
-            )
-            return DuelStep(
-                host=observations.host,
-                opponent=observations.opponent,
-                host_reward=rewards.host,
-                opponent_reward=rewards.opponent,
-                terminated=terminated,
-                truncated=truncated,
-                events=events,
-                decision_index=self._decision_index,
-                engine_tic=engine_tic,
-                peer_tic_lag=abs(
-                    int(host_state["protocol_values"][1])
-                    - int(opponent_state["protocol_values"][1])
-                ),
                 pre_action_tics=pre_action_tics,
-                action_tics=engine_tic - action_start_tic,
+                action_start_tic=action_start_tic,
             )
         except BaseException:
             self.close()
             raise
+
+    def _finalize_step(
+        self,
+        host_state: dict[str, object],
+        opponent_state: dict[str, object],
+        host_action: MacroAction,
+        opponent_action: MacroAction,
+        *,
+        pre_action_tics: int,
+        action_start_tic: int,
+    ) -> DuelStep:
+        snapshot, engine_tic = self._validate_pair(host_state, opponent_state)
+        self._decision_index += 1
+        events = self._with_native_hit_events(
+            self._decoder.decode(
+                snapshot,
+                episode_id=self._episode_id,
+                decision_index=self._decision_index,
+            ),
+            host_state,
+            opponent_state,
+            engine_tic,
+        )
+        rewards = self._ledger.apply(events, shaping_scale=self._shaping_scale)
+        observations = self._make_observations(
+            host_state,
+            opponent_state,
+            snapshot,
+            host_action,
+            opponent_action,
+        )
+        self._update_privileged(host_state, opponent_state, snapshot, engine_tic)
+        self._last_host_state = host_state
+        self._last_opponent_state = opponent_state
+        terminated = snapshot.winner > 0 or snapshot.round_state == 2
+        engine_finished = bool(host_state["finished"] or opponent_state["finished"])
+        truncated = not terminated and (
+            engine_finished or self._decision_index >= self._max_decisions
+        )
+        return DuelStep(
+            host=observations.host,
+            opponent=observations.opponent,
+            host_reward=rewards.host,
+            opponent_reward=rewards.opponent,
+            terminated=terminated,
+            truncated=truncated,
+            events=events,
+            decision_index=self._decision_index,
+            engine_tic=engine_tic,
+            peer_tic_lag=abs(
+                int(host_state["protocol_values"][1])
+                - int(opponent_state["protocol_values"][1])
+            ),
+            pre_action_tics=pre_action_tics,
+            action_tics=engine_tic - action_start_tic,
+        )
 
     def teacher_state(self) -> DuelPrivilegedState:
         if self._privileged is None:
@@ -345,6 +376,8 @@ class SynchronousDuelEnv:
         max_tics: int,
     ) -> tuple[dict[str, object], dict[str, object]]:
         for _ in range(max_tics + 1):
+            if bool(host_state["finished"] or opponent_state["finished"]):
+                return host_state, opponent_state
             if self._valid_player_state(host_state) and self._valid_player_state(
                 opponent_state
             ):
