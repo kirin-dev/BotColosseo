@@ -376,10 +376,10 @@ The script adapter calls `privileged_state()`; the checkpoint adapter must not. 
 - Create after real results: `docs/milestones/m3.md`
 - Create after real results: `models/strong-base/MODEL_CARD.md`
 
-- [ ] Test deterministic labels, matrix ordering, missing-cell failure, figure dimensions, and that renderer output metrics equal raw CSV recomputation.
-- [ ] Run RED, implement a pure data-to-figure layer, then run GREEN.
-- [ ] Do not create claimed final evidence from smoke or synthetic rows. Documentation templates may exist only with an explicit `status: pending` marker until the real gate passes.
-- [ ] Commit code now as `feat: add M3 evidence rendering`; commit real evidence only after the official audit passes.
+- [x] Test deterministic labels, matrix ordering, missing-cell failure, figure dimensions, and that renderer output metrics equal raw CSV recomputation.
+- [x] Run RED, implement a pure data-to-figure layer, then run GREEN.
+- [x] Do not create claimed final evidence from smoke or synthetic rows. Documentation templates may exist only with an explicit `status: pending` marker until the real gate passes.
+- [x] Commit code now as `feat: add M3 evidence rendering`; commit real evidence only after the official audit passes.
 
 ### Task 14: Run the deterministic preflight and full regression gate
 
