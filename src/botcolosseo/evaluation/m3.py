@@ -2,13 +2,19 @@ from __future__ import annotations
 
 import math
 from collections import Counter, defaultdict
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Protocol
 
 import numpy as np
 
 from botcolosseo.envs.actions import MacroAction
+from botcolosseo.envs.duel_protocol import DuelEventType
+from botcolosseo.envs.duel_types import DuelActorObservation, DuelPrivilegedState
+from botcolosseo.envs.synchronous_duel import DuelObservations, SynchronousDuelEnv
 from botcolosseo.evaluation.m1 import wilson_interval
+from botcolosseo.evaluation.m2 import valid_action_tic_boundary
 from botcolosseo.evaluation.paired_bootstrap import (
     FROZEN_BOOTSTRAP_CONFIDENCE,
     FROZEN_BOOTSTRAP_SAMPLES,
@@ -17,6 +23,8 @@ from botcolosseo.evaluation.paired_bootstrap import (
     paired_bootstrap_difference,
 )
 from botcolosseo.scenarios.duel_splits import DUEL_OPPONENTS
+from botcolosseo.scenarios.league_splits import LeagueCase
+from botcolosseo.scenarios.regions import RegionGraph
 
 STRONG_BASE_POLICY = "strong_base"
 M2_BASELINE_POLICY = "m2_baseline"
@@ -40,6 +48,29 @@ class NoOpponentController:
 
     def act(self, observation: object, state: object) -> MacroAction:
         del observation, state
+        return MacroAction.IDLE
+
+
+class M3Controller(Protocol):
+    def reset(self, *, seed: int) -> None: ...
+
+    def act(
+        self,
+        observation: DuelActorObservation,
+        privileged_state: Callable[[], DuelPrivilegedState],
+    ) -> MacroAction: ...
+
+
+class NoOpponentDuelController:
+    def reset(self, *, seed: int) -> None:
+        del seed
+
+    def act(
+        self,
+        observation: DuelActorObservation,
+        privileged_state: Callable[[], DuelPrivilegedState],
+    ) -> MacroAction:
+        del observation, privileged_state
         return MacroAction.IDLE
 
 
@@ -80,6 +111,156 @@ class M3EpisodeRecord:
 
     def to_dict(self) -> dict[str, object]:
         return {**asdict(self), "score_difference": self.score_difference}
+
+
+def run_m3_episode(
+    case: LeagueCase,
+    *,
+    policy_name: str,
+    category: str,
+    opponent_name: str,
+    learner: M3Controller,
+    opponent: M3Controller,
+    graph: RegionGraph,
+    config_path: Path,
+    max_decisions: int,
+    environment_factory: Callable[[LeagueCase], SynchronousDuelEnv] | None = None,
+) -> M3EpisodeRecord:
+    if category not in M3_CATEGORIES or max_decisions <= 0:
+        raise ValueError("Invalid M3 episode category or decision limit")
+    environment = (
+        environment_factory(case)
+        if environment_factory is not None
+        else SynchronousDuelEnv(
+            config_path=config_path,
+            region_graph=graph,
+            seed=case.seed,
+            max_decisions=max_decisions,
+        )
+    )
+    action_tic_inconsistent = False
+    score_event_counts: Counter[str] = Counter()
+    learner_events: Counter[DuelEventType] = Counter()
+    peer_tic_lag_max = 0
+    decisions = 0
+    terminated = False
+    truncated = False
+    goal_reached = False
+    low_health_seen = False
+    disengage_success = False
+    try:
+        observations, reset_info = environment.reset()
+        environment.set_shaping_scale(0.0)
+        learner.reset(seed=case.seed ^ 0xA5A5A5A5)
+        opponent.reset(seed=case.seed ^ 0x5A5A5A5A)
+        initial_state = environment.teacher_state()
+        actual_core = (initial_state.core_x, initial_state.core_y)
+        initial_scores = {
+            "host": observations.host.own_score,
+            "opponent": observations.opponent.own_score,
+        }
+        while not (terminated or truncated):
+            state = environment.teacher_state()
+            learner_observation = (
+                observations.host
+                if case.learner_side == "host"
+                else observations.opponent
+            )
+            opponent_observation = (
+                observations.opponent
+                if case.learner_side == "host"
+                else observations.host
+            )
+            learner_action = learner.act(learner_observation, environment.teacher_state)
+            opponent_action = opponent.act(
+                opponent_observation, environment.teacher_state
+            )
+            host_action, away_action = (
+                (learner_action, opponent_action)
+                if case.learner_side == "host"
+                else (opponent_action, learner_action)
+            )
+            step = environment.step(host_action, away_action)
+            observations = DuelObservations(step.host, step.opponent)
+            decisions += 1
+            terminated, truncated = step.terminated, step.truncated
+            peer_tic_lag_max = max(peer_tic_lag_max, step.peer_tic_lag)
+            action_tic_inconsistent |= not valid_action_tic_boundary(
+                step.action_tics,
+                terminated=terminated,
+                truncated=truncated,
+            )
+            for event in step.events:
+                if event.type is DuelEventType.SCORE:
+                    score_event_counts[event.side] += 1
+                if event.side == case.learner_side:
+                    learner_events[event.type] += 1
+            own_x, own_y, own_health = (
+                (state.host_x, state.host_y, state.host_health)
+                if case.learner_side == "host"
+                else (state.opponent_x, state.opponent_y, state.opponent_health)
+            )
+            other_x, other_y = (
+                (state.opponent_x, state.opponent_y)
+                if case.learner_side == "host"
+                else (state.host_x, state.host_y)
+            )
+            goal_reached |= math.hypot(state.core_x - own_x, state.core_y - own_y) <= 64.0
+            low_health_seen |= own_health <= 25.0
+            disengage_success |= low_health_seen and math.hypot(
+                other_x - own_x, other_y - own_y
+            ) >= 256.0
+        learner_observation = (
+            observations.host
+            if case.learner_side == "host"
+            else observations.opponent
+        )
+        learner_score = learner_observation.own_score
+        opponent_score = learner_observation.opponent_score
+        final_scores = {
+            "host": observations.host.own_score,
+            "opponent": observations.opponent.own_score,
+        }
+        score_event_inconsistent = any(
+            score_event_counts[side] != final_scores[side] - initial_scores[side]
+            for side in ("host", "opponent")
+        )
+        difference = learner_score - opponent_score
+        outcome = "win" if difference > 0 else "loss" if difference < 0 else "draw"
+        pickup = learner_events[DuelEventType.PICKUP] > 0
+        objective = learner_events[DuelEventType.SCORE] > 0
+        return M3EpisodeRecord(
+            policy=policy_name,
+            category=category,
+            split=case.split,
+            opponent=opponent_name,
+            pair_index=case.pair_index,
+            seed=case.seed,
+            learner_side=case.learner_side,
+            outcome=outcome,
+            objective_completed=objective,
+            goal_reached=goal_reached or pickup,
+            pickup_completed=pickup,
+            return_completed=objective,
+            valid_hit=learner_events[DuelEventType.VALID_HIT] > 0,
+            disengage_success=disengage_success,
+            learner_score=learner_score,
+            opponent_score=opponent_score,
+            actual_core_x=actual_core[0],
+            actual_core_y=actual_core[1],
+            decisions=decisions,
+            terminated=terminated,
+            truncated=truncated,
+            peer_tic_lag_max=peer_tic_lag_max,
+            protocol_inconsistent=False,
+            action_tic_inconsistent=action_tic_inconsistent,
+            score_event_inconsistent=score_event_inconsistent,
+            fairness_schema_inconsistent=False,
+            scenario_hash=reset_info.scenario_hash,
+            environment_attempts=1,
+        )
+    finally:
+        environment.close()
 
 
 @dataclass(frozen=True)

@@ -339,12 +339,12 @@ The script adapter calls `privileged_state()`; the checkpoint adapter must not. 
 - Create: `tests/unit/test_evaluate_m3_cli.py`
 - Create: `tests/unit/test_m3_evidence_audit.py`
 
-- [ ] Test preflight-only mode, manifest/hash binding, atomic resumable row append, exact duplicate suppression, conflicting duplicate rejection, selected-checkpoint binding, split isolation, and audit failure on any missing/tampered artifact.
-- [ ] Run RED.
-- [ ] Implement `--preflight`, `--resume`, `--output-dir`, `--selected-checkpoint`, `--pool`, `--m2-baseline`, and `--device`. On resume, validate the complete run identity before accepting prior rows. A bounded retry retains the exact seed, side, opponent, policy, and row identity and increments an explicit retry counter.
-- [ ] Audit must recompute all hashes/counts/metrics from raw rows rather than trust summary JSON.
-- [ ] Run GREEN, then interrupt/resume a fake 20-row run and compare bytes with uninterrupted output.
-- [ ] Commit: `feat: add resumable M3 official evaluation`.
+- [x] Test preflight-only mode, manifest/hash binding, atomic resumable row append, exact duplicate suppression, conflicting duplicate rejection, selected-checkpoint binding, split isolation, and audit failure on any missing/tampered artifact.
+- [x] Run RED.
+- [x] Implement `--preflight`, `--resume`, `--output-dir`, `--selected-checkpoint`, `--pool`, `--m2-baseline`, and `--device`. On resume, validate the complete run identity before accepting prior rows. A bounded retry retains the exact seed, side, opponent, policy, and row identity and increments an explicit retry counter.
+- [x] Audit must recompute all hashes/counts/metrics from raw rows rather than trust summary JSON.
+- [x] Run GREEN, then interrupt/resume a fake 20-row run and compare bytes with uninterrupted output.
+- [x] Commit: `feat: add resumable M3 official evaluation`.
 
 ### Task 12: Pass short real-runtime and GPU integration gates
 
