@@ -167,15 +167,23 @@ def test_league_resume_rejects_each_identity_drift(tmp_path: Path, field: str) -
         )
 
 
-def test_league_checkpoint_requires_complete_pair_boundary(tmp_path: Path) -> None:
+def test_league_checkpoint_binds_pair_slot_to_episode_index(tmp_path: Path) -> None:
     model, optimizer, scheduler = _components()
 
-    with pytest.raises(ValueError, match="pair boundary"):
+    save_league_checkpoint(
+        tmp_path / "odd-side.pt",
+        model=model,
+        optimizer=optimizer,
+        scheduler=scheduler,
+        identity=_identity(),
+        state=LeagueCheckpointState(100, 1, 3, 1),
+    )
+    with pytest.raises(ValueError, match="pair slot"):
         save_league_checkpoint(
             tmp_path / "league.pt",
             model=model,
             optimizer=optimizer,
             scheduler=scheduler,
             identity=_identity(),
-            state=LeagueCheckpointState(100, 1, 3, 1),
+            state=LeagueCheckpointState(100, 1, 3, 2),
         )

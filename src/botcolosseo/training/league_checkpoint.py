@@ -49,8 +49,8 @@ class LeagueCheckpointState:
             self.next_pair_slot,
         ) < 0:
             raise ValueError("League checkpoint counters must be nonnegative")
-        if self.episodes % 2 or self.next_pair_slot != self.episodes // 2:
-            raise ValueError("League checkpoints require a complete pair boundary")
+        if self.next_pair_slot != self.episodes // 2:
+            raise ValueError("League checkpoint pair slot does not match episode index")
 
 
 def _rng_state() -> dict[str, Any]:
