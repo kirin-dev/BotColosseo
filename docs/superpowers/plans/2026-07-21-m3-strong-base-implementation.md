@@ -13,6 +13,7 @@
 ## Global Constraints
 
 - Run Python as `/home/wencong/miniconda3/envs/botcolosseo/bin/python`.
+- Before Python/pytest/script commands in the linked worktree, run `export PYTHONPATH="$PWD/src"`; the conda environment's editable install points at the main checkout and must not shadow worktree code.
 - Work only in `.worktrees/m3-strong-base`; do not inspect, modify, or monitor the running M2 official evaluation.
 - Treat `runs/m2/ppo-full/selected.pt` as provisional until the M2 artifact gate passes.
 - Do not change the WAD, scenario hash, 13-action contract, Actor observation schema, `configs/m2/`, or frozen M2 evaluator.
