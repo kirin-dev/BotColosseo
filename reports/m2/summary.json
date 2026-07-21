@@ -1,0 +1,497 @@
+{
+  "artifact_inconsistencies": 0,
+  "complete": true,
+  "environment_retries": 0,
+  "episodes": 1500,
+  "expected_episodes": 1500,
+  "gates": {
+    "artifact_clean": true,
+    "complete": true,
+    "official": true,
+    "paired_score_lcb_positive": false,
+    "per_opponent_floor": false,
+    "ppo_objective_rate_minus_bc": false,
+    "ppo_win_rate_minus_bc": false,
+    "ppo_win_rate_minus_random": true,
+    "protocol_clean": true
+  },
+  "official": true,
+  "paired_score_difference_ci": [
+    -0.048,
+    0.12
+  ],
+  "passed": false,
+  "policies": {
+    "bc": {
+      "draws": {
+        "rate": 0.118,
+        "successes": 59,
+        "trials": 500,
+        "wilson_lower": 0.09259300825150649,
+        "wilson_upper": 0.14923198786111944
+      },
+      "episodes": 500,
+      "mean_score_difference": 1.408,
+      "objectives": {
+        "rate": 0.978,
+        "successes": 489,
+        "trials": 500,
+        "wilson_lower": 0.9610391387886836,
+        "wilson_upper": 0.9876719917300725
+      },
+      "opponents": {
+        "aggressive_script": {
+          "draws": {
+            "rate": 0.01,
+            "successes": 1,
+            "trials": 100,
+            "wilson_lower": 0.0017674320641406435,
+            "wilson_upper": 0.054486196178705294
+          },
+          "episodes": 100,
+          "mean_score_difference": 2.65,
+          "objectives": {
+            "rate": 1.0,
+            "successes": 100,
+            "trials": 100,
+            "wilson_lower": 0.9630065017930143,
+            "wilson_upper": 1.0
+          },
+          "wins": {
+            "rate": 0.99,
+            "successes": 99,
+            "trials": 100,
+            "wilson_lower": 0.9455138038212947,
+            "wilson_upper": 0.9982325679358592
+          }
+        },
+        "defensive_script": {
+          "draws": {
+            "rate": 0.07,
+            "successes": 7,
+            "trials": 100,
+            "wilson_lower": 0.03431926106727268,
+            "wilson_upper": 0.13749514739073498
+          },
+          "episodes": 100,
+          "mean_score_difference": 1.69,
+          "objectives": {
+            "rate": 1.0,
+            "successes": 100,
+            "trials": 100,
+            "wilson_lower": 0.9630065017930143,
+            "wilson_upper": 1.0
+          },
+          "wins": {
+            "rate": 0.91,
+            "successes": 91,
+            "trials": 100,
+            "wilson_lower": 0.837737871472837,
+            "wilson_upper": 0.9519274599974348
+          }
+        },
+        "fixed_route": {
+          "draws": {
+            "rate": 0.23,
+            "successes": 23,
+            "trials": 100,
+            "wilson_lower": 0.15843265880303448,
+            "wilson_upper": 0.3215438302287377
+          },
+          "episodes": 100,
+          "mean_score_difference": 1.37,
+          "objectives": {
+            "rate": 1.0,
+            "successes": 100,
+            "trials": 100,
+            "wilson_lower": 0.9630065017930143,
+            "wilson_upper": 1.0
+          },
+          "wins": {
+            "rate": 0.77,
+            "successes": 77,
+            "trials": 100,
+            "wilson_lower": 0.6784561697712622,
+            "wilson_upper": 0.8415673411969654
+          }
+        },
+        "objective_first": {
+          "draws": {
+            "rate": 0.26,
+            "successes": 26,
+            "trials": 100,
+            "wilson_lower": 0.18404698464748132,
+            "wilson_upper": 0.3537098944918718
+          },
+          "episodes": 100,
+          "mean_score_difference": -0.73,
+          "objectives": {
+            "rate": 0.89,
+            "successes": 89,
+            "trials": 100,
+            "wilson_lower": 0.8136870349691969,
+            "wilson_upper": 0.9374580364293543
+          },
+          "wins": {
+            "rate": 0.11,
+            "successes": 11,
+            "trials": 100,
+            "wilson_lower": 0.0625419635706457,
+            "wilson_upper": 0.1863129650308031
+          }
+        },
+        "random_legal": {
+          "draws": {
+            "rate": 0.02,
+            "successes": 2,
+            "trials": 100,
+            "wilson_lower": 0.005501967550162357,
+            "wilson_upper": 0.07001179072854387
+          },
+          "episodes": 100,
+          "mean_score_difference": 2.06,
+          "objectives": {
+            "rate": 1.0,
+            "successes": 100,
+            "trials": 100,
+            "wilson_lower": 0.9630065017930143,
+            "wilson_upper": 1.0
+          },
+          "wins": {
+            "rate": 0.98,
+            "successes": 98,
+            "trials": 100,
+            "wilson_lower": 0.929988209271456,
+            "wilson_upper": 0.9944980324498376
+          }
+        }
+      },
+      "wins": {
+        "rate": 0.752,
+        "successes": 376,
+        "trials": 500,
+        "wilson_lower": 0.7123215407533253,
+        "wilson_upper": 0.7878357916540525
+      }
+    },
+    "ppo": {
+      "draws": {
+        "rate": 0.102,
+        "successes": 51,
+        "trials": 500,
+        "wilson_lower": 0.07843435210316954,
+        "wilson_upper": 0.13163462290422606
+      },
+      "episodes": 500,
+      "mean_score_difference": 1.444,
+      "objectives": {
+        "rate": 0.932,
+        "successes": 466,
+        "trials": 500,
+        "wilson_lower": 0.9064790772661258,
+        "wilson_upper": 0.9509334925750932
+      },
+      "opponents": {
+        "aggressive_script": {
+          "draws": {
+            "rate": 0.0,
+            "successes": 0,
+            "trials": 100,
+            "wilson_lower": 0.0,
+            "wilson_upper": 0.03699349820698566
+          },
+          "episodes": 100,
+          "mean_score_difference": 2.57,
+          "objectives": {
+            "rate": 1.0,
+            "successes": 100,
+            "trials": 100,
+            "wilson_lower": 0.9630065017930143,
+            "wilson_upper": 1.0
+          },
+          "wins": {
+            "rate": 1.0,
+            "successes": 100,
+            "trials": 100,
+            "wilson_lower": 0.9630065017930143,
+            "wilson_upper": 1.0
+          }
+        },
+        "defensive_script": {
+          "draws": {
+            "rate": 0.01,
+            "successes": 1,
+            "trials": 100,
+            "wilson_lower": 0.0017674320641406435,
+            "wilson_upper": 0.054486196178705294
+          },
+          "episodes": 100,
+          "mean_score_difference": 1.86,
+          "objectives": {
+            "rate": 1.0,
+            "successes": 100,
+            "trials": 100,
+            "wilson_lower": 0.9630065017930143,
+            "wilson_upper": 1.0
+          },
+          "wins": {
+            "rate": 0.98,
+            "successes": 98,
+            "trials": 100,
+            "wilson_lower": 0.929988209271456,
+            "wilson_upper": 0.9944980324498376
+          }
+        },
+        "fixed_route": {
+          "draws": {
+            "rate": 0.23,
+            "successes": 23,
+            "trials": 100,
+            "wilson_lower": 0.15843265880303448,
+            "wilson_upper": 0.3215438302287377
+          },
+          "episodes": 100,
+          "mean_score_difference": 1.16,
+          "objectives": {
+            "rate": 0.81,
+            "successes": 81,
+            "trials": 100,
+            "wilson_lower": 0.7222115462093562,
+            "wilson_upper": 0.8748524849023126
+          },
+          "wins": {
+            "rate": 0.68,
+            "successes": 68,
+            "trials": 100,
+            "wilson_lower": 0.5833738138954762,
+            "wilson_upper": 0.7633085267500092
+          }
+        },
+        "objective_first": {
+          "draws": {
+            "rate": 0.25,
+            "successes": 25,
+            "trials": 100,
+            "wilson_lower": 0.17545211362287674,
+            "wilson_upper": 0.34304463548061603
+          },
+          "episodes": 100,
+          "mean_score_difference": -0.46,
+          "objectives": {
+            "rate": 0.85,
+            "successes": 85,
+            "trials": 100,
+            "wilson_lower": 0.7671644040916764,
+            "wilson_upper": 0.9069401471634336
+          },
+          "wins": {
+            "rate": 0.23,
+            "successes": 23,
+            "trials": 100,
+            "wilson_lower": 0.15843265880303448,
+            "wilson_upper": 0.3215438302287377
+          }
+        },
+        "random_legal": {
+          "draws": {
+            "rate": 0.02,
+            "successes": 2,
+            "trials": 100,
+            "wilson_lower": 0.005501967550162357,
+            "wilson_upper": 0.07001179072854387
+          },
+          "episodes": 100,
+          "mean_score_difference": 2.09,
+          "objectives": {
+            "rate": 1.0,
+            "successes": 100,
+            "trials": 100,
+            "wilson_lower": 0.9630065017930143,
+            "wilson_upper": 1.0
+          },
+          "wins": {
+            "rate": 0.96,
+            "successes": 96,
+            "trials": 100,
+            "wilson_lower": 0.9016292856411208,
+            "wilson_upper": 0.9843366960084523
+          }
+        }
+      },
+      "wins": {
+        "rate": 0.77,
+        "successes": 385,
+        "trials": 500,
+        "wilson_lower": 0.7311377813252322,
+        "wilson_upper": 0.8047450748255296
+      }
+    },
+    "random_legal": {
+      "draws": {
+        "rate": 0.322,
+        "successes": 161,
+        "trials": 500,
+        "wilson_lower": 0.2825360924255015,
+        "wilson_upper": 0.36417817277881126
+      },
+      "episodes": 500,
+      "mean_score_difference": 0.11,
+      "objectives": {
+        "rate": 0.22,
+        "successes": 110,
+        "trials": 500,
+        "wilson_lower": 0.18590093257162363,
+        "wilson_upper": 0.2583686980868456
+      },
+      "opponents": {
+        "aggressive_script": {
+          "draws": {
+            "rate": 0.01,
+            "successes": 1,
+            "trials": 100,
+            "wilson_lower": 0.0017674320641406435,
+            "wilson_upper": 0.054486196178705294
+          },
+          "episodes": 100,
+          "mean_score_difference": 2.74,
+          "objectives": {
+            "rate": 1.0,
+            "successes": 100,
+            "trials": 100,
+            "wilson_lower": 0.9630065017930143,
+            "wilson_upper": 1.0
+          },
+          "wins": {
+            "rate": 0.99,
+            "successes": 99,
+            "trials": 100,
+            "wilson_lower": 0.9455138038212947,
+            "wilson_upper": 0.9982325679358592
+          }
+        },
+        "defensive_script": {
+          "draws": {
+            "rate": 0.51,
+            "successes": 51,
+            "trials": 100,
+            "wilson_lower": 0.41348011934027173,
+            "wilson_upper": 0.6057800106955886
+          },
+          "episodes": 100,
+          "mean_score_difference": 0.07,
+          "objectives": {
+            "rate": 0.08,
+            "successes": 8,
+            "trials": 100,
+            "wilson_lower": 0.04109346148438063,
+            "wilson_upper": 0.14998107700948732
+          },
+          "wins": {
+            "rate": 0.27,
+            "successes": 27,
+            "trials": 100,
+            "wilson_lower": 0.1926958414957634,
+            "wilson_upper": 0.36432116767944994
+          }
+        },
+        "fixed_route": {
+          "draws": {
+            "rate": 0.52,
+            "successes": 52,
+            "trials": 100,
+            "wilson_lower": 0.4231657776522397,
+            "wilson_upper": 0.615354482419481
+          },
+          "episodes": 100,
+          "mean_score_difference": 0.0,
+          "objectives": {
+            "rate": 0.0,
+            "successes": 0,
+            "trials": 100,
+            "wilson_lower": 0.0,
+            "wilson_upper": 0.03699349820698566
+          },
+          "wins": {
+            "rate": 0.24,
+            "successes": 24,
+            "trials": 100,
+            "wilson_lower": 0.16691325556948777,
+            "wilson_upper": 0.3323233634981447
+          }
+        },
+        "objective_first": {
+          "draws": {
+            "rate": 0.01,
+            "successes": 1,
+            "trials": 100,
+            "wilson_lower": 0.0017674320641406435,
+            "wilson_upper": 0.054486196178705294
+          },
+          "episodes": 100,
+          "mean_score_difference": -2.24,
+          "objectives": {
+            "rate": 0.01,
+            "successes": 1,
+            "trials": 100,
+            "wilson_lower": 0.0017674320641406435,
+            "wilson_upper": 0.054486196178705294
+          },
+          "wins": {
+            "rate": 0.0,
+            "successes": 0,
+            "trials": 100,
+            "wilson_lower": 0.0,
+            "wilson_upper": 0.03699349820698566
+          }
+        },
+        "random_legal": {
+          "draws": {
+            "rate": 0.56,
+            "successes": 56,
+            "trials": 100,
+            "wilson_lower": 0.4622810465167699,
+            "wilson_upper": 0.653279733698392
+          },
+          "episodes": 100,
+          "mean_score_difference": -0.02,
+          "objectives": {
+            "rate": 0.01,
+            "successes": 1,
+            "trials": 100,
+            "wilson_lower": 0.0017674320641406435,
+            "wilson_upper": 0.054486196178705294
+          },
+          "wins": {
+            "rate": 0.22,
+            "successes": 22,
+            "trials": 100,
+            "wilson_lower": 0.15001282384605397,
+            "wilson_upper": 0.31070353514985793
+          }
+        }
+      },
+      "wins": {
+        "rate": 0.344,
+        "successes": 172,
+        "trials": 500,
+        "wilson_lower": 0.3036929655617379,
+        "wilson_upper": 0.38668582866226636
+      }
+    }
+  },
+  "protocol_counts": {
+    "action_tic_inconsistency_rows": 0,
+    "duplicate_rows": 0,
+    "environment_retry_rows": 0,
+    "explicit_inconsistency_rows": 0,
+    "fairness_schema_rows": 0,
+    "invalid_terminal_boundary_rows": 0,
+    "outcome_score_mismatch_rows": 0,
+    "peer_tic_lag_rows": 0,
+    "scenario_mismatch_rows": 0,
+    "score_event_inconsistency_rows": 0,
+    "terminated_rows": 607,
+    "truncated_rows": 893
+  },
+  "protocol_inconsistencies": 0
+}
