@@ -73,6 +73,10 @@ class LeagueSchedule:
     def opponent_specs(self) -> Mapping[str, OpponentSpec]:
         return self._opponent_specs
 
+    @property
+    def pfsp_probabilities(self) -> Mapping[str, float]:
+        return MappingProxyType(dict(self._pfsp))
+
     def _validate_cases(self) -> None:
         if not self._cases or len(self._cases) % 2:
             raise ValueError("League schedule requires complete paired cases")

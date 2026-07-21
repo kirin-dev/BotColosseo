@@ -270,12 +270,12 @@ The script adapter calls `privileged_state()`; the checkpoint adapter must not. 
 - Create: `tests/unit/test_train_league_cli.py`
 - Create: `tests/integration/test_train_league_smoke.py`
 
-- [ ] Test config validation, provisional-base refusal unless `--allow-provisional-base` is explicit, candidate cadence, resume identity, no test-manifest reads, and sorted JSON status output.
-- [ ] Run RED.
-- [ ] Implement a separate CLI that reuses the M2 PPO update functions, starts with fresh optimizer/scheduler state, trains for `2_000_000` environment steps, and writes candidates every `200_000` steps. Required arguments: `--config`, `--base-checkpoint`, `--pool`, `--payoffs`, `--run-dir`, `--device`, and optional `--resume`.
-- [ ] Add a CPU fake-runtime smoke and a real CUDA 2,048-step smoke; neither is a long experiment.
-- [ ] Run GREEN and confirm no files under `configs/m2/` changed.
-- [ ] Commit: `feat: add auditable M3 league trainer`.
+- [x] Test config validation, provisional-base refusal unless `--allow-provisional-base` is explicit, candidate cadence, resume identity, no test-manifest reads, and sorted JSON status output.
+- [x] Run RED.
+- [x] Implement a separate CLI that reuses the M2 PPO update functions, starts with fresh optimizer/scheduler state, trains for `2_000_000` environment steps, and writes candidates every `200_000` steps. Required arguments: `--config`, `--base-checkpoint`, `--pool`, `--payoffs`, `--run-dir`, `--device`, and optional `--resume`.
+- [x] Add a CPU fake-runtime smoke and a real CUDA 2,048-step smoke; neither is a long experiment.
+- [x] Run GREEN and confirm no files under `configs/m2/` changed.
+- [x] Commit: `feat: add auditable M3 league trainer`.
 
 ### Task 8: Implement raw cross-play and validation payoff evidence
 
