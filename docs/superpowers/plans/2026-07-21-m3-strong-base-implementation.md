@@ -416,6 +416,6 @@ git status --short
 - [x] Commands use one outer `nohup`, physical GPU 1 exposed as process-local `cuda:0`, unbuffered Python, PID file, log file, exit-code file, and immediately runnable progress commands; all phases run serially.
 - [x] Add recovery instructions that never delete valid completed rows and verify run identity before exact resume or validation-boundary transition.
 - [x] Run deterministic preflight and short smoke coverage. Do not start the long experiment from Codex.
-- [ ] Mark the active goal blocked and tell the user exactly which single command to run first, expected duration range, log/progress commands, success marker, and next automatic command.
+- [x] Mark the active goal blocked and tell the user exactly which single command to run first, expected duration range, log/progress commands, success marker, and next automatic command.
 
 Long-run success is not inferred from process exit alone. M3 completes only when `scripts/audit_m3_evidence.py` returns zero, the frozen Strong Base gate reports PASS, all tracked evidence is derived from raw rows, and the selected checkpoint hash matches the model card and pool manifest.
