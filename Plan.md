@@ -552,6 +552,13 @@ navigation/pickup/return ≥95%、static hit ≥90%、moving hit ≥75%，每项
 
 门禁：双实例长时间同步稳定，PPO 明确优于纯 BC 和随机策略。
 
+状态：2026-07-21 官方 1,500 局评测工程门通过（完整性、配对、同步、协议和产物
+不一致数均为 0），但能力门未通过。PPO 总胜率 77.0%，BC 为 75.2%，随机策略为
+34.4%；PPO 未达到相对 BC +10pp 的冻结门槛，objective completion 为 93.2%
+（BC 97.8%），对 `objective_first` 胜率为 23%。该结果如实保留为 M2 FAIL。
+经评审，M3 只允许显式使用 integrity-qualified 路线继续：不得使用 M2 test rows
+调参，需另跑 validation-only anchor evidence，且最终必须独立通过 M3 全部门禁。
+
 ### M3：Strong Base
 
 交付：

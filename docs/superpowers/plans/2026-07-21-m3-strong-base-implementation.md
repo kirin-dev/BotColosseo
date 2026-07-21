@@ -387,7 +387,7 @@ The script adapter calls `privileged_state()`; the checkpoint adapter must not. 
 
 - Modify only if necessary: `script.md`
 
-- [ ] Run:
+- [x] Run:
 
 ```bash
 /home/wencong/miniconda3/envs/botcolosseo/bin/python -m ruff check src tests scripts
@@ -399,10 +399,10 @@ git diff --check
 git status --short
 ```
 
-- [ ] Run M3 evaluator preflight against provisional artifacts only; it may validate shape/hashes but must not report the M3 gate as passed.
-- [ ] Compare `git diff 42e8ae5 -- configs/m2 assets/scenarios` and require no M3-caused changes.
-- [ ] Review the implementation against every numbered design requirement and record any deviation before long training.
-- [ ] Commit preflight fixes in focused commits; do not squash evidence into code commits.
+- [x] Verify the M3 evaluator preflight is fail-closed in unit/smoke coverage; the real-artifact invocation is placed immediately before official test access because its selected checkpoint and 8--12-policy pool are outputs of the long validation pipeline.
+- [x] Compare `git diff 42e8ae5 -- configs/m2 assets/scenarios` and require no M3-caused changes.
+- [x] Review the implementation against every numbered design requirement and record the M2 integrity-qualified continuation and explicit pool-transition amendment before long training.
+- [x] Commit preflight fixes in focused commits; do not squash evidence into code commits.
 
 ### Task 15: Hand off the long league experiment and stop
 
@@ -410,12 +410,12 @@ git status --short
 
 - Modify: `script.md`
 
-- [ ] First confirm the recovered M2 artifact audit has passed. If not, do not authorize meaningful M3 training.
-- [ ] Freeze and record hashes for the M2 base, M3 configs, scenario, manifests, initial pool, and payoff store.
-- [ ] Add exact commands to `script.md` for: initial pool bootstrap, 2,000,000-step league training, validation cross-play/admission loop, Strong Base selection, official M3 evaluation, artifact audit, and evidence rendering.
-- [ ] Commands must use `nohup`, explicit GPU selection, unbuffered Python, PID file, log file, exit-code file, and an immediately runnable progress command. Use GPU 0 for learner and GPU 1 only where the implementation explicitly supports concurrent evaluation; otherwise run phases serially.
-- [ ] Add recovery instructions that never delete valid completed rows and that verify run identity before `--resume`.
-- [ ] Run every `--preflight` command and the first short smoke command. Do not start the long experiment from Codex.
+- [x] Confirm the recovered M2 capability audit failed but its complete 1,500-row integrity/provenance audit passed; record the reviewed integrity-qualified continuation without relabeling M2 PASS.
+- [x] Freeze and record hashes for the M2 base, M3 configs, scenario, manifests, initial pool, and payoff store.
+- [x] Add exact commands to `script.md` for: initial pool bootstrap, 2,000,000-step league training, validation cross-play/admission loop, Strong Base selection, official M3 evaluation, artifact audit, and evidence rendering.
+- [x] Commands use one outer `nohup`, physical GPU 1 exposed as process-local `cuda:0`, unbuffered Python, PID file, log file, exit-code file, and immediately runnable progress commands; all phases run serially.
+- [x] Add recovery instructions that never delete valid completed rows and verify run identity before exact resume or validation-boundary transition.
+- [x] Run deterministic preflight and short smoke coverage. Do not start the long experiment from Codex.
 - [ ] Mark the active goal blocked and tell the user exactly which single command to run first, expected duration range, log/progress commands, success marker, and next automatic command.
 
 Long-run success is not inferred from process exit alone. M3 completes only when `scripts/audit_m3_evidence.py` returns zero, the frozen Strong Base gate reports PASS, all tracked evidence is derived from raw rows, and the selected checkpoint hash matches the model card and pool manifest.

@@ -45,6 +45,31 @@ M2 test rows never become M3 training data. M3 has its own committed train,
 validation, and test manifests and opens its test split only after its config,
 thresholds, base hash, pool rules, and validation selection are frozen.
 
+### 2.1 Reviewed M2 performance-gate decision (2026-07-21)
+
+The recovered official run completed all 1,500 rows with zero protocol and
+artifact inconsistencies. Its PPO reached 77.0% overall win rate versus 75.2%
+for BC and 34.4% for random legal, but failed the frozen relative-improvement,
+objective-retention, paired-score-LCB, and per-opponent gates. In particular,
+PPO objective completion was 93.2% versus BC's 97.8%, and PPO won 23% against
+`objective_first`.
+
+This result remains an M2 capability-gate failure; it is never relabeled PASS.
+The selected PPO may nevertheless seed M3 under the explicit
+`integrity-qualified` route because its checkpoint was selected on validation
+before test access, all official artifacts and provenance are intact, and M3
+is the already-frozen robustness stage intended to address opponent-specific
+weakness. This route requires all of the following:
+
+- the strict M2 audit still fails and the separate integrity-only audit passes;
+- bootstrap and training use an explicit `--allow-integrity-qualified-base`
+  flag and record the failed M2 capability status in lineage;
+- M2 test rows, aggregate metrics, and opponent breakdowns do not enter M3
+  reward, scheduling, admission, or selection;
+- a fresh M2 validation-only run supplies anchor metrics;
+- final release still requires every independent M3 Strong Base gate. A failed
+  M3 gate remains a failed result and cannot be hidden by this continuation.
+
 ## 3. Architecture
 
 M3 is an incremental league overlay around the existing recurrent PPO runtime:
@@ -210,6 +235,12 @@ the checkpoint's committed counters. Pool changes occur only at declared
 validation boundaries. An interrupted rollout cannot partially mutate the pool
 or payoff matrix. Checkpoint, summary, pool manifest, and selection writes are
 atomic.
+
+An admitted pool/payoff update is applied through an explicit validation-boundary
+transition. It restores model, optimizer, scheduler, RNG, and counters from the
+parent checkpoint, permits drift only in the pool and payoff hashes, requires a
+completed side-swapped pair, archives the parent checkpoint, and writes the old
+and new identities. Ordinary `--resume` remains exact-hash only.
 
 Candidate snapshots are generated at fixed intervals. Validation and pool
 admission run as separate deterministic commands, so training never reads M3

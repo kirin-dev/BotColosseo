@@ -624,3 +624,122 @@ git status --short
 Return the official gate output, final log tail, and process/GPU checks. A
 failed performance gate is still the official result: do not rerun, tune, or
 replace checkpoints after observing it.
+
+## Action required: M3 Strong Base integrity-qualified pipeline
+
+The recovered M2 run completed 1,500/1,500 rows with zero protocol and artifact
+inconsistencies, but the frozen capability gate failed. The result remains M2
+FAIL: PPO win rate was 77.0% versus BC 75.2%, PPO objective completion was
+93.2% versus BC 97.8%, and PPO won 23% against `objective_first`. M3 therefore
+uses the reviewed `integrity-qualified` route. This does not change the M2
+thresholds or consume M2 test rows during M3 training, admission, or selection.
+
+The driver is serial and restart-aware. It copies the immutable M2 checkpoint
+and evidence into the M3 worktree, verifies strict-audit failure plus
+integrity-audit success, produces fresh validation-only anchor evidence, trains
+to 2,000,000 environment steps, validates candidates at 200k boundaries,
+updates PFSP only at completed side-swapped boundaries, selects Strong Base on
+validation, then opens M3 test exactly once. It refuses test access unless the
+active pool contains 8--12 policies. Physical GPU 1 is exposed as the process's
+`cuda:0`; physical GPU 0 is not used.
+
+Run this short preflight first. It does not start validation or training:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m3-strong-base
+export PYTHONPATH="$PWD/src"
+bash -n scripts/run_m3_pipeline.sh
+/home/wencong/miniconda3/envs/botcolosseo/bin/python -m ruff check src tests scripts
+/home/wencong/miniconda3/envs/botcolosseo/bin/python -m pip check
+M3_PREFLIGHT_ONLY=1 M3_PHYSICAL_GPU=1 scripts/run_m3_pipeline.sh
+```
+
+Expected final line:
+
+```text
+M3 PIPELINE PREFLIGHT PASS
+```
+
+Start the complete long pipeline with this single command:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m3-strong-base
+mkdir -p runs/m3
+test ! -f runs/m3/pipeline.pid || \
+  ! ps -p "$(cat runs/m3/pipeline.pid)" >/dev/null 2>&1
+nohup bash -c '
+  set -o pipefail
+  cd /home/wencong/BotColosseo/.worktrees/m3-strong-base
+  env \
+    BOTCOLOSSEO_PYTHON=/home/wencong/miniconda3/envs/botcolosseo/bin/python \
+    M2_WORKTREE=/home/wencong/BotColosseo/.worktrees/m2-base-training \
+    M3_PHYSICAL_GPU=1 \
+    scripts/run_m3_pipeline.sh
+  status=$?
+  printf "%s\n" "$status" > runs/m3/pipeline.exit
+  exit "$status"
+' > runs/m3/pipeline.log 2>&1 &
+echo $! > runs/m3/pipeline.pid
+cat runs/m3/pipeline.pid
+```
+
+The expected end-to-end duration is approximately 12--20 hours. The largest
+components are the fresh 500-game M2 validation anchor, ten league phases,
+validation cross-play as the pool grows, and the final 1,340--1,660-game M3
+official suite. Environment synchronization, rather than A100 utilization, is
+usually the bottleneck.
+
+Use these commands to inspect progress without changing the run:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m3-strong-base
+ps -p "$(cat runs/m3/pipeline.pid)" -o pid,etime,%cpu,%mem,stat,cmd
+tail -n 80 runs/m3/pipeline.log
+rg 'M2 evaluation progress|M3 cross-play progress|M3 evaluation progress|environment_steps|PIPELINE' \
+  runs/m3/pipeline.log | tail -n 30
+test ! -f runs/m3/league-full/summary.json || \
+  jq '{environment_steps,episode_count,updates,opponent_source_counts,pfsp_probabilities}' \
+  runs/m3/league-full/summary.json
+test ! -f runs/m3/league-full/pipeline-state.json || \
+  jq . runs/m3/league-full/pipeline-state.json
+nvidia-smi --query-gpu=index,utilization.gpu,memory.used,memory.total \
+  --format=csv,noheader
+test ! -f runs/m3/pipeline.exit || cat runs/m3/pipeline.exit
+```
+
+Recovery rules:
+
+- If training is interrupted, rerun the same `nohup` command. The driver reads
+  `pipeline-state.json`; if `latest.pt` matches the current pool/payoff identity,
+  it uses exact `--resume`. If a validated pool changed, it uses the archived
+  parent candidate with `--transition-from`.
+- Official M3 rows are append-only. When `reports/m3/official/episodes.jsonl`
+  exists, the driver passes `--resume`; it verifies the complete run identity,
+  suppresses only exact duplicates, and never deletes valid rows.
+- Candidate cross-play writes its three evidence files only after completing
+  the matrix. If the driver reports a partial candidate directory, preserve it
+  by moving that one directory to
+  `runs/m3/recovery/<timestamp>/`; never remove a completed matrix whose
+  `manifest.json` hashes match its CSV and matrix.
+- Do not edit configs, manifests, pool JSON, payoff JSON, checkpoint files, or
+  selection reports between attempts. Identity drift is intentionally fatal.
+- A nonzero `pipeline.exit` caused by pool size below 8 or a failed M3 gate is
+  an experimental result, not permission to extend the 2M budget or tune from
+  M3 test rows.
+
+Completion requires all of the following:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m3-strong-base
+test "$(cat runs/m3/pipeline.exit)" -eq 0
+tail -n 1 runs/m3/pipeline.log | rg '^M3 PIPELINE PASS$'
+env PYTHONPATH="$PWD/src" \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/audit_m3_evidence.py --report-dir reports/m3/official
+jq '{passed, gates, selected_checkpoint_sha256, pool_manifest_sha256}' \
+  reports/m3/official/summary.json
+```
+
+Process exit alone is not success. Only an audit return code of zero, a frozen
+M3 gate PASS, matching selected checkpoint/pool hashes, and the literal final
+marker `M3 PIPELINE PASS` complete M3.
