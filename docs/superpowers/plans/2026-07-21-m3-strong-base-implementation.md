@@ -254,11 +254,11 @@ The script adapter calls `privileged_state()`; the checkpoint adapter must not. 
 - Create: `src/botcolosseo/training/league_checkpoint.py`
 - Create: `tests/unit/test_league_checkpoint.py`
 
-- [ ] Test warm-start copies model weights but not optimizer/scheduler state; resume restores all learner/RNG/schedule state; pool/payoff/config/base/scenario hash drift rejects resume; atomic save leaves no partial file.
-- [ ] Run RED.
-- [ ] Implement `LeagueRunIdentity`, `warm_start_from_m2`, `save_league_checkpoint`, and `load_league_checkpoint`. The payload must include environment steps, updates, model/optimizer/scheduler state, Python/NumPy/Torch RNG states, next pair slot, run identity, and schema version.
-- [ ] Run GREEN and a save/load continuation test whose next ten assignments and losses exactly match uninterrupted execution.
-- [ ] Commit: `feat: add exact M3 checkpoint resume`.
+- [x] Test warm-start copies model weights but not optimizer/scheduler state; resume restores all learner/RNG/schedule state; pool/payoff/config/base/scenario hash drift rejects resume; atomic save leaves no partial file.
+- [x] Run RED.
+- [x] Implement `LeagueRunIdentity`, `warm_start_from_m2`, `save_league_checkpoint`, and `load_league_checkpoint`. The payload must include environment steps, updates, model/optimizer/scheduler state, Python/NumPy/Torch RNG states, next pair slot, run identity, and schema version.
+- [x] Run GREEN and a save/load continuation test whose next ten assignments and losses exactly match uninterrupted execution.
+- [x] Commit: `feat: add exact M3 checkpoint resume`.
 
 ### Task 7: Build the separate league-training CLI
 
