@@ -165,20 +165,26 @@ def sha256_file(path: Path) -> str: ...
 - Create: `src/botcolosseo/training/historical_pool.py`
 - Create: `tests/unit/test_historical_pool.py`
 
-- [ ] Test schema versioning, duplicate IDs/hashes, missing artifacts, canonical round-trip, manifest self-hash, immutable old entries, 8–12 capacity behavior, and each admission rejection independently.
-- [ ] Run RED.
-- [ ] Implement:
+- [x] Test schema versioning, duplicate IDs/hashes, missing artifacts, canonical round-trip, manifest self-hash, immutable old entries, 8–12 capacity behavior, and each admission rejection independently.
+- [x] Run RED.
+- [x] Implement:
 
 ```python
 @dataclass(frozen=True)
 class AdmissionMetrics:
     integrity_ok: bool
+    validation_complete: bool
+    paired_side_swapped: bool
+    protocol_inconsistencies: int
+    source_split: str
     candidate_script_average: float
     active_script_average: float
+    candidate_historical_worst_case: float
+    active_historical_worst_case: float
     candidate_payoffs: dict[str, float]
-    active_payoffs: dict[str, float]
+    active_payoffs: dict[str, dict[str, float]]
 
-def load_pool(path: Path, *, verify_artifacts: bool = True) -> HistoricalPoolManifest: ...
+def load_pool(path: Path, *, verify_artifacts: bool = True, artifact_root: Path | None = None) -> HistoricalPoolManifest: ...
 def write_pool_atomic(pool: HistoricalPoolManifest, path: Path) -> None: ...
 def admission_decision(pool: HistoricalPoolManifest, entry: PoolEntry, metrics: AdmissionMetrics) -> AdmissionDecision: ...
 def admit_candidate(pool: HistoricalPoolManifest, entry: PoolEntry, metrics: AdmissionMetrics) -> HistoricalPoolManifest: ...
@@ -186,8 +192,8 @@ def admit_candidate(pool: HistoricalPoolManifest, entry: PoolEntry, metrics: Adm
 
 Admission passes only if integrity and complete paired finite rows are true, script average is no more than `0.10` below active, and either historical worst-case strictly improves or the payoff-vector L1 distance is at least `0.10` from every active non-anchor entry. Until capacity 12, every eligible candidate is admitted. At capacity, protect the M2 anchor and newest admitted entry, and replace a deterministic redundant non-anchor only when the candidate increases the minimum pairwise distance or improves historical worst-case performance; ties use `(environment_steps, policy_id)`.
 
-- [ ] Run GREEN and a negative test against a tampered checkpoint.
-- [ ] Commit: `feat: add immutable historical policy pool`.
+- [x] Run GREEN and a negative test against a tampered checkpoint.
+- [x] Commit: `feat: add immutable historical policy pool`.
 
 ### Task 4: Implement deterministic PFSP and paired scheduling
 
