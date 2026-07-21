@@ -131,3 +131,19 @@ def test_checkpoint_policy_is_greedy_recurrent_and_reset_only_at_episode_boundar
     assert torch.equal(policy._hidden, torch.zeros_like(policy._hidden))
     assert policy.act(_observation()).value == 4
     assert torch.equal(policy._hidden, first_hidden)
+
+
+def test_checkpoint_policy_fork_shares_frozen_actor_but_not_recurrent_state(
+    tmp_path: Path,
+) -> None:
+    path = _write_checkpoint(tmp_path / "policy.pt")
+    first = CheckpointOpponentPolicy.load(_spec(path), device=torch.device("cpu"))
+    second = first.fork()
+
+    first.reset()
+    second.reset()
+    first.act(_observation())
+
+    assert first._actor is second._actor
+    assert not torch.equal(first._hidden, second._hidden)
+    assert all(not parameter.requires_grad for parameter in second._actor.parameters())

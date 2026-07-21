@@ -99,6 +99,9 @@ class CheckpointOpponentPolicy:
         self._hidden = self._actor.initial_state(1, device=self._device)
         self._episode_start = True
 
+    def fork(self) -> CheckpointOpponentPolicy:
+        return CheckpointOpponentPolicy(self.spec, self._actor, device=self._device)
+
     @torch.inference_mode()
     def act(self, observation: DuelActorObservation) -> MacroAction:
         if self._hidden is None:

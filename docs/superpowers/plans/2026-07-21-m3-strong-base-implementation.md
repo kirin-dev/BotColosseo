@@ -287,11 +287,11 @@ The script adapter calls `privileged_state()`; the checkpoint adapter must not. 
 - Create: `tests/unit/test_crossplay.py`
 - Create: `tests/integration/test_crossplay_smoke.py`
 
-- [ ] Test ordered matrix cells including diagonals, first five validation seed-pairs, both sides, deterministic row order, public-observation checkpoint policies, script Teacher isolation, and protocol inconsistency propagation.
-- [ ] Run RED.
-- [ ] Implement `CrossplayRow`, `evaluate_crossplay`, `write_crossplay_csv_atomic`, and `summarize_payoff_matrix`. Raw CSV is authoritative; JSON is a deterministic summary derived from it.
-- [ ] Run a two-policy fake matrix and a one-pair real duel smoke. Verify `5*N*(N+1)` executed raw rows for `N` learned policies: each unordered pair including the diagonal uses five seed-pairs and both sides, then deterministically populates both ordered matrix cells without rerunning equivalent matchups.
-- [ ] Commit: `feat: add complete M3 cross-play evaluation`.
+- [x] Test ordered matrix cells including diagonals, first five validation seed-pairs, both sides, deterministic row order, public-observation checkpoint policies, script Teacher isolation, and protocol inconsistency propagation.
+- [x] Run RED.
+- [x] Implement `CrossplayRow`, `evaluate_crossplay`, `write_crossplay_csv_atomic`, and `summarize_payoff_matrix`. Raw CSV is authoritative; JSON is a deterministic summary derived from it.
+- [x] Run a two-policy fake matrix and a one-pair real duel smoke. Verify `5*N*(N+1)` executed raw rows for `N` learned policies: each unordered pair including the diagonal uses five seed-pairs and both sides, then deterministically populates both ordered matrix cells without rerunning equivalent matchups.
+- [x] Commit: `feat: add complete M3 cross-play evaluation`.
 
 ### Task 9: Implement validation-only candidate selection and pool updates
 
