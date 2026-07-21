@@ -321,12 +321,12 @@ The script adapter calls `privileged_state()`; the checkpoint adapter must not. 
 - Create: `tests/unit/test_m3_evaluation.py`
 - Create: `tests/unit/test_paired_bootstrap.py`
 
-- [ ] Test official episode counts, category thresholds, zero inconsistency requirement, baseline pairing, deterministic 10,000-resample bootstrap, score-difference lower confidence bound, and fail-closed missing rows.
-- [ ] Run RED.
-- [ ] Implement the frozen counts: 500 script episodes, 100 no-opponent episodes, 100 held-out episodes, and `pool_size*20*2*2` historical episodes (20 pairs, both sides, Strong Base and M2 baseline). Require script average `>=0.70`, every major script `>=0.55`, no-opponent full objective `>=0.90`, held-out `>=0.80`, historical worst-case strictly above M2, paired bootstrap LCB `>=0`, pool size 8–12, and zero inconsistencies. Report Wilson 95% intervals for rates and actual protocol core-coordinate strata for held-out rows.
-- [ ] No-opponent evaluation must use a literal no-op controller; do not substitute an easy script.
-- [ ] Run GREEN and snapshot the exact report schema.
-- [ ] Commit: `feat: freeze the M3 Strong Base gate`.
+- [x] Test official episode counts, category thresholds, zero inconsistency requirement, baseline pairing, deterministic 10,000-resample bootstrap, score-difference lower confidence bound, and fail-closed missing rows.
+- [x] Run RED.
+- [x] Implement the frozen counts: 500 script episodes, 100 no-opponent episodes, 100 held-out episodes, and `pool_size*20*2*2` historical episodes (20 pairs, both sides, Strong Base and M2 baseline). Require script average `>=0.70`, every major script `>=0.55`, no-opponent full objective `>=0.90`, held-out `>=0.80`, historical worst-case strictly above M2, paired bootstrap LCB `>=0`, pool size 8–12, and zero inconsistencies. Report Wilson 95% intervals for rates and actual protocol core-coordinate strata for held-out rows.
+- [x] No-opponent evaluation must use a literal no-op controller; do not substitute an easy script.
+- [x] Run GREEN and snapshot the exact report schema.
+- [x] Commit: `feat: freeze the M3 Strong Base gate`.
 
 ### Task 11: Add official-evaluation CLI and artifact audit
 
