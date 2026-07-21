@@ -494,7 +494,7 @@ the process/GPU checks, and `git status --short`. Do not run the official M2
 test evaluator; checkpoint selection and its tracked provenance must be
 reviewed and committed first.
 
-## Action required: official M2 paired learning gate
+## Action required: recovered official M2 paired learning gate
 
 The evaluator, frozen thresholds, BC/PPO validation selections, and bounded
 same-case respawn retry are committed before this run. The official test uses
@@ -502,15 +502,27 @@ three policies, five opponents, 50 seed-pairs per opponent, and both learner
 sides: exactly 1,500 games. It is expected to take approximately 2.5--3 hours.
 Do not inspect partial policy outcomes or change code/config after starting.
 
+Two attempts on 2026-07-21 stopped at 1,470/1,500 without writing any official
+or temporary evidence. Both exposed the same environment lifecycle bug: a
+death immediately before the 2,100-tic engine timeout entered the respawn loop
+after the episode had finished. Commit `acf4d8a` makes that boundary a normal
+truncation and adds a deterministic regression test. This is infrastructure
+recovery, not a policy rerun after observing test results; selections, seeds,
+thresholds, episode horizon, and evaluation rows remain frozen.
+
 Run this preflight first. It verifies tracked selection provenance and loads
 both learned Actors without parsing test episode rows:
 
 ```bash
 cd /home/wencong/BotColosseo/.worktrees/m2-base-training
 test -z "$(git status --porcelain)"
+git merge-base --is-ancestor acf4d8a HEAD
 test ! -e reports/m2/episodes.csv
 test ! -e reports/m2/summary.json
 test ! -e reports/m2/manifest.json
+test ! -e reports/m2/.episodes.csv.tmp
+test ! -e reports/m2/.summary.json.tmp
+test ! -e reports/m2/.manifest.json.tmp
 env PYTHONPATH="$PWD/src" \
   /home/wencong/miniconda3/envs/botcolosseo/bin/python - <<'PY'
 import hashlib
@@ -549,11 +561,23 @@ print("M2 official preflight: PASS")
 PY
 ```
 
-Start the official evaluation exactly once:
+Archive the second failed-attempt log and start one clean recovery run. Do not
+append to a failed log because the final evidence gate rejects historical
+tracebacks:
 
 ```bash
 cd /home/wencong/BotColosseo/.worktrees/m2-base-training
 mkdir -p runs/m2
+if test -f runs/m2/official-evaluation.pid && \
+   ps -p "$(cat runs/m2/official-evaluation.pid)" >/dev/null 2>&1; then
+  echo "official evaluation is already running" >&2
+  exit 1
+fi
+if test -f runs/m2/official-evaluation.log; then
+  failed_evaluation_log="runs/m2/official-evaluation.failed-$(date +%Y%m%d-%H%M%S).log"
+  mv runs/m2/official-evaluation.log "$failed_evaluation_log"
+  echo "archived $failed_evaluation_log"
+fi
 nohup env \
   PYTHONPATH=/home/wencong/BotColosseo/.worktrees/m2-base-training/src \
   /home/wencong/miniconda3/envs/botcolosseo/bin/python -u \
@@ -578,9 +602,10 @@ nvidia-smi --query-compute-apps=pid,process_name,used_memory \
 ```
 
 The evaluator writes the three official artifacts only after all games finish.
-If the process is externally interrupted before those files exist, restart the
-same command with `>> runs/m2/official-evaluation.log`; do not change any
-selection, seed, threshold, or policy. After the PID exits, run this gate:
+If the process is externally interrupted before those files exist, preserve
+that failed log under a timestamped `official-evaluation.failed-*.log` name and
+restart with a fresh `>` log; do not change any selection, seed, threshold, or
+policy. After the PID exits, run this gate:
 
 ```bash
 cd /home/wencong/BotColosseo/.worktrees/m2-base-training
