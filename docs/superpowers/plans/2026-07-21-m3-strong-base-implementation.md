@@ -93,8 +93,8 @@ The pool manifest schema version is `1`. The league master seed and bootstrap se
 - Create: `configs/m3/heldout.json`
 - Create: `tests/unit/test_league_splits.py`
 
-- [ ] Write tests requiring 250/50/50/50 seed-pairs, two side-swapped rows per pair, signed-32-bit seeds, split-disjoint seeds, balanced core/route labels, deterministic bytes, and strict schema rejection.
-- [ ] Run RED:
+- [x] Write tests requiring 250/50/50/50 seed-pairs, two side-swapped rows per pair, signed-32-bit seeds, split-disjoint seeds, balanced core/route labels, deterministic bytes, and strict schema rejection.
+- [x] Run RED:
 
 ```bash
 /home/wencong/miniconda3/envs/botcolosseo/bin/python -m pytest tests/unit/test_league_splits.py -q
@@ -102,7 +102,7 @@ The pool manifest schema version is `1`. The league master seed and bootstrap se
 
 Expected: import failure for `botcolosseo.scenarios.league_splits`.
 
-- [ ] Implement these public functions:
+- [x] Implement these public functions:
 
 ```python
 PAIR_COUNTS = {"train": 250, "validation": 50, "test": 50, "heldout": 50}
@@ -114,8 +114,8 @@ def load_league_cases(path: Path, *, expected_split: str, expected_pairs: int) -
 
 Generation must use one local `random.Random(master_seed)`, sample unique seeds before assigning splits, and emit canonical sorted/indented JSON with a final newline. `LeagueCase.to_duel_case(opponent_id)` may adapt to the existing runtime; core/route are protocol strata, not claims that the current WAD consumes them.
 
-- [ ] Add a thin CLI with `--output-root` and `--master-seed`; generate the four committed manifests once.
-- [ ] Run GREEN and determinism check:
+- [x] Add a thin CLI with `--output-root` and `--master-seed`; generate the four committed manifests once.
+- [x] Run GREEN and determinism check:
 
 ```bash
 /home/wencong/miniconda3/envs/botcolosseo/bin/python -m pytest tests/unit/test_league_splits.py -q
@@ -126,7 +126,7 @@ diff -ru /tmp/m3-splits-a /tmp/m3-splits-b
 
 Expected: tests pass and `diff` is empty.
 
-- [ ] Commit: `feat: freeze M3 league splits`.
+- [x] Commit: `feat: freeze M3 league splits`.
 
 ### Task 2: Implement auditable opponent descriptors and legal checkpoint policies
 
