@@ -81,6 +81,12 @@ def test_crossplay_executes_each_unordered_pair_once_and_derives_ordered_matrix(
     assert summary["win_rate"]["policy-b"]["policy-a"] == 0.0
     assert summary["score_difference"]["policy-a"]["policy-b"] == 2.0
     assert summary["score_difference"]["policy-b"]["policy-a"] == -2.0
+    assert summary["win_rate_ci95"]["policy-a"]["policy-b"]["lower"] > 0.72
+    assert summary["win_rate_ci95"]["policy-a"]["policy-b"]["upper"] == 1.0
+    assert summary["objective_rate_ci95"]["policy-b"]["policy-a"][
+        "lower"
+    ] == pytest.approx(0.0, abs=1e-12)
+    assert summary["draw_rate_ci95"]["policy-a"]["policy-a"]["upper"] == 1.0
 
 
 def test_crossplay_uses_first_five_validation_pairs_with_both_sides() -> None:

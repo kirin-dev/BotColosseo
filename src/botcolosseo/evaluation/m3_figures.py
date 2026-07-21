@@ -19,6 +19,7 @@ class CrossplayFigureEvidence:
     draw_rate: tuple[tuple[float, ...], ...]
     objective_rate: tuple[tuple[float, ...], ...]
     score_difference: tuple[tuple[float, ...], ...]
+    rate_intervals: dict[str, object]
     source_sha256: str
 
 
@@ -107,6 +108,14 @@ def load_crossplay_evidence(path: Path) -> CrossplayFigureEvidence:
         draw_rate=values("draw_rate"),
         objective_rate=values("objective_rate"),
         score_difference=values("score_difference"),
+        rate_intervals={
+            name: matrix[name]
+            for name in (
+                "win_rate_ci95",
+                "draw_rate_ci95",
+                "objective_rate_ci95",
+            )
+        },
         source_sha256=sha256_file(path),
     )
 
@@ -274,6 +283,7 @@ def _matrix_payload(evidence: CrossplayFigureEvidence) -> dict[str, object]:
         "draw_rate": cells(evidence.draw_rate),
         "objective_rate": cells(evidence.objective_rate),
         "score_difference": cells(evidence.score_difference),
+        **evidence.rate_intervals,
     }
 
 

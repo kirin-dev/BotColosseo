@@ -13,6 +13,7 @@ from pathlib import Path
 from botcolosseo.agents.league_opponents import OpponentSpec
 from botcolosseo.envs.duel_protocol import DuelEventType
 from botcolosseo.envs.synchronous_duel import DuelObservations, SynchronousDuelEnv
+from botcolosseo.evaluation.m1 import wilson_interval
 from botcolosseo.evaluation.m2 import valid_action_tic_boundary
 from botcolosseo.scenarios.league_splits import LeagueCase
 from botcolosseo.scenarios.regions import RegionGraph
@@ -299,6 +300,15 @@ def summarize_payoff_matrix(
     draws = _matrix(policies, 0.0)
     objectives = _matrix(policies, 0.0)
     scores = _matrix(policies, 0.0)
+    win_intervals: dict[str, dict[str, dict[str, float]]] = {
+        left: {} for left in policies
+    }
+    draw_intervals: dict[str, dict[str, dict[str, float]]] = {
+        left: {} for left in policies
+    }
+    objective_intervals: dict[str, dict[str, dict[str, float]]] = {
+        left: {} for left in policies
+    }
     for left in policies:
         for right in policies:
             pair = tuple(sorted((left, right)))
@@ -306,16 +316,26 @@ def summarize_payoff_matrix(
             forward = left == pair[0]
             trials = len(pair_rows)
             games[left][right] = trials
-            wins[left][right] = sum(
+            win_count = sum(
                 row.outcome == ("win" if forward else "loss") for row in pair_rows
-            ) / trials
-            draws[left][right] = sum(row.outcome == "draw" for row in pair_rows) / trials
-            objectives[left][right] = sum(
+            )
+            draw_count = sum(row.outcome == "draw" for row in pair_rows)
+            objective_count = sum(
                 row.left_objective_completed
                 if forward
                 else row.right_objective_completed
                 for row in pair_rows
-            ) / trials
+            )
+            wins[left][right] = win_count / trials
+            draws[left][right] = draw_count / trials
+            objectives[left][right] = objective_count / trials
+            for target, successes in (
+                (win_intervals, win_count),
+                (draw_intervals, draw_count),
+                (objective_intervals, objective_count),
+            ):
+                lower, upper = wilson_interval(successes, trials)
+                target[left][right] = {"lower": lower, "upper": upper}
             direction = 1 if forward else -1
             scores[left][right] = sum(
                 direction * row.score_difference for row in pair_rows
@@ -328,6 +348,9 @@ def summarize_payoff_matrix(
         "draw_rate": draws,
         "objective_rate": objectives,
         "score_difference": scores,
+        "win_rate_ci95": win_intervals,
+        "draw_rate_ci95": draw_intervals,
+        "objective_rate_ci95": objective_intervals,
     }
 
 
