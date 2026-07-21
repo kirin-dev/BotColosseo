@@ -135,9 +135,9 @@ Expected: tests pass and `diff` is empty.
 - Create: `src/botcolosseo/agents/league_opponents.py`
 - Create: `tests/unit/test_league_opponents.py`
 
-- [ ] Test `OpponentSpec` validation, checkpoint hash mismatch, scenario mismatch, deterministic recurrent reset, greedy action selection, episode-only hidden-state reset, and absence of privileged arguments from `CheckpointOpponentPolicy.act`.
-- [ ] Run RED for the focused file.
-- [ ] Implement:
+- [x] Test `OpponentSpec` validation, checkpoint hash mismatch, scenario mismatch, deterministic recurrent reset, greedy action selection, episode-only hidden-state reset, and absence of privileged arguments from `CheckpointOpponentPolicy.act`.
+- [x] Run RED for the focused file.
+- [x] Implement:
 
 ```python
 class CheckpointOpponentPolicy:
@@ -155,8 +155,8 @@ def sha256_file(path: Path) -> str: ...
 
 `CheckpointOpponentPolicy.load` must instantiate the existing recurrent actor architecture, verify declared hashes before loading, use `torch.inference_mode()`, take `argmax`, and retain hidden state between decisions. Never add `DuelPrivilegedState` to its method signature or object fields.
 
-- [ ] Run GREEN plus `ruff check` on the two files.
-- [ ] Commit: `feat: add legal league opponent policies`.
+- [x] Run GREEN plus `ruff check` on the two files.
+- [x] Commit: `feat: add legal league opponent policies`.
 
 ### Task 3: Add the immutable historical-pool schema and admission rules
 
