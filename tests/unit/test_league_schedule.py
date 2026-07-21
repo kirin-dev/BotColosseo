@@ -77,6 +77,22 @@ def test_pair_assignments_share_case_opponent_source_and_probability() -> None:
     assert host.sampling_probability == opponent.sampling_probability
 
 
+def test_schedule_exposes_immutable_opponent_descriptor_lookup() -> None:
+    schedule = _schedule()
+
+    specs = schedule.opponent_specs
+
+    assert set(specs) == {
+        "objective_first",
+        "aggressive_script",
+        "defensive_script",
+        "policy-00",
+        "policy-01",
+        "policy-02",
+    }
+    assert specs["policy-00"].kind == "checkpoint"
+
+
 def test_schedule_is_restart_safe() -> None:
     first = _schedule()
     second = _schedule()

@@ -6,7 +6,7 @@ from collections import Counter
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 import numpy as np
 import torch
@@ -45,6 +45,32 @@ class DuelRolloutCollection:
     environment_steps: int
     episodes: tuple[DuelEpisodeResult, ...]
     event_counts: dict[str, int]
+
+
+class DuelOpponentController(Protocol):
+    def reset(self, *, seed: int) -> None: ...
+
+    def act(
+        self,
+        observation: DuelActorObservation,
+        privileged_state: Callable[[], DuelPrivilegedState],
+    ) -> MacroAction: ...
+
+
+class ScriptDuelOpponentController:
+    def __init__(self, teacher: Any) -> None:
+        self._teacher = teacher
+
+    def reset(self, *, seed: int) -> None:
+        self._teacher.reset(seed=seed)
+
+    def act(
+        self,
+        observation: DuelActorObservation,
+        privileged_state: Callable[[], DuelPrivilegedState],
+    ) -> MacroAction:
+        del observation
+        return MacroAction(self._teacher.act(privileged_state()))
 
 
 def _sha256(path: Path) -> str:
@@ -149,6 +175,10 @@ class DuelRolloutCollector:
         gae_lambda: float = 0.95,
         environment_factory: Callable[[DuelCase], Any] | None = None,
         teacher_factory: Callable[..., Any] = create_duel_teacher,
+        opponent_factory: Callable[
+            [DuelCase, RegionGraph, str], DuelOpponentController
+        ]
+        | None = None,
         action_sampler: Callable[[torch.distributions.Categorical], torch.Tensor]
         | None = None,
     ) -> None:
@@ -170,9 +200,10 @@ class DuelRolloutCollector:
         self.gae_lambda = gae_lambda
         self._environment_factory = environment_factory or self._make_environment
         self._teacher_factory = teacher_factory
+        self._opponent_factory = opponent_factory or self._make_script_opponent
         self._action_sampler = action_sampler or (lambda distribution: distribution.sample())
         self._environment: Any | None = None
-        self._teacher: Any | None = None
+        self._opponent_controller: DuelOpponentController | None = None
         self._observations: DuelObservations | None = None
         self._case: DuelCase | None = None
         self._hidden: torch.Tensor | None = None
@@ -189,20 +220,26 @@ class DuelRolloutCollector:
             max_decisions=self.max_decisions,
         )
 
+    def _make_script_opponent(
+        self, case: DuelCase, graph: RegionGraph, side: str
+    ) -> DuelOpponentController:
+        teacher = self._teacher_factory(case.opponent, graph, side=side)
+        return ScriptDuelOpponentController(teacher)
+
     def _start_episode(self, environment_steps: int) -> None:
         case = self.curriculum.case(environment_steps, self.episode_index)
         environment = self._environment_factory(case)
         opponent_side = "opponent" if case.learner_side == "host" else "host"
-        teacher = self._teacher_factory(case.opponent, self.graph, side=opponent_side)
+        opponent = self._opponent_factory(case, self.graph, opponent_side)
         try:
             observations, _ = environment.reset()
-            teacher.reset(seed=case.seed)
+            opponent.reset(seed=case.seed)
         except BaseException:
             environment.close()
             raise
         learner = observations.host if case.learner_side == "host" else observations.opponent
         self._environment = environment
-        self._teacher = teacher
+        self._opponent_controller = opponent
         self._observations = observations
         self._case = case
         self._hidden = torch.zeros(1, 1, 256, device=self.device)
@@ -220,6 +257,15 @@ class DuelRolloutCollector:
             else self._observations.opponent
         )
 
+    def _opponent_observation(self) -> DuelActorObservation:
+        if self._case is None or self._observations is None:
+            raise RuntimeError("Duel collector has no active episode")
+        return (
+            self._observations.opponent
+            if self._case.learner_side == "host"
+            else self._observations.host
+        )
+
     @torch.no_grad()
     def collect(
         self, *, steps: int, start_environment_step: int
@@ -235,10 +281,10 @@ class DuelRolloutCollector:
                 if self._environment is None:
                     self._start_episode(global_step)
                 environment = self._environment
-                teacher = self._teacher
+                opponent = self._opponent_controller
                 case = self._case
                 hidden = self._hidden
-                if environment is None or teacher is None or case is None or hidden is None:
+                if environment is None or opponent is None or case is None or hidden is None:
                     raise RuntimeError("Duel collector episode state is incomplete")
                 environment.set_shaping_scale(
                     self.curriculum.shaping_scale(global_step)
@@ -259,7 +305,9 @@ class DuelRolloutCollector:
                 action = self._action_sampler(distribution)
                 log_prob = distribution.log_prob(action)
                 learner_action = MacroAction(int(action[0, 0]))
-                opponent_action = MacroAction(teacher.act(environment.teacher_state()))
+                opponent_action = opponent.act(
+                    self._opponent_observation(), environment.teacher_state
+                )
                 host_action, away_action = (
                     (learner_action, opponent_action)
                     if case.learner_side == "host"
@@ -342,7 +390,7 @@ class DuelRolloutCollector:
 
     def _close_episode(self) -> None:
         environment, self._environment = self._environment, None
-        self._teacher = None
+        self._opponent_controller = None
         self._observations = None
         self._case = None
         self._hidden = None

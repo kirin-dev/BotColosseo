@@ -227,13 +227,14 @@ Use SHA-256 over canonical JSON to derive deterministic random bits. A pair slot
 **Files:**
 
 - Modify: `src/botcolosseo/training/duel_rollout.py`
+- Modify: `src/botcolosseo/training/league_schedule.py`
 - Create: `src/botcolosseo/training/league_rollout.py`
 - Modify: `tests/unit/test_duel_rollout.py`
 - Create: `tests/unit/test_league_rollout.py`
 
-- [ ] Add regression tests proving the default M2 script path produces the same actions/metadata, then tests proving a checkpoint opponent consumes the opposite side's public observation, keeps hidden state within an episode, resets at the next episode, and never evaluates a privileged-state callback.
-- [ ] Run both test files RED.
-- [ ] Add a narrow controller boundary:
+- [x] Add regression tests proving the default M2 script path produces the same actions/metadata, then tests proving a checkpoint opponent consumes the opposite side's public observation, keeps hidden state within an episode, resets at the next episode, and never evaluates a privileged-state callback.
+- [x] Run both test files RED.
+- [x] Add a narrow controller boundary:
 
 ```python
 class DuelOpponentController(Protocol):
@@ -243,8 +244,8 @@ class DuelOpponentController(Protocol):
 
 The script adapter calls `privileged_state()`; the checkpoint adapter must not. Preserve the existing constructor behavior by supplying the script adapter by default. `LeagueRolloutCollector` supplies assignments from `LeagueSchedule` and records `opponent_id`, `opponent_kind`, `source`, `pair_slot`, and probability with each completed episode.
 
-- [ ] Run GREEN, then all rollout/curriculum tests.
-- [ ] Commit: `feat: support learned opponents in duel rollouts`.
+- [x] Run GREEN, then all rollout/curriculum tests.
+- [x] Commit: `feat: support learned opponents in duel rollouts`.
 
 ### Task 6: Add M2 warm-start and exact league resume contracts
 

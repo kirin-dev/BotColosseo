@@ -142,6 +142,20 @@ class FakeEnv:
         self.closed = True
 
 
+class PublicOnlyOpponent:
+    def __init__(self) -> None:
+        self.reset_seeds: list[int] = []
+        self.previous_actions: list[int] = []
+
+    def reset(self, *, seed: int) -> None:
+        self.reset_seeds.append(seed)
+
+    def act(self, observation, privileged_state):
+        self.previous_actions.append(observation.previous_action)
+        assert callable(privileged_state)
+        return 0
+
+
 def make_curriculum() -> OpponentCurriculum:
     cases = generate_duel_splits(master_seed=5, pairs_per_opponent=2)["train"]
     return OpponentCurriculum(
@@ -218,6 +232,32 @@ def test_collector_closes_environment_on_failure() -> None:
         collector.collect(steps=1, start_environment_step=0)
 
     assert environment.closed
+
+
+def test_collector_supplies_opposite_public_observation_to_custom_opponent() -> None:
+    controller = PublicOnlyOpponent()
+    environment = FakeEnv(make_curriculum().case(0, 0))
+    environment.reset = lambda: (
+        DuelObservations(
+            observation(previous_action=2), observation(previous_action=3)
+        ),
+        object(),
+    )
+    collector = DuelRolloutCollector(
+        FakeModel(),
+        curriculum=make_curriculum(),
+        graph=RegionGraph.from_yaml(Path("assets/scenarios/crystal_run/src/regions.yaml")),
+        device=torch.device("cpu"),
+        environment_factory=lambda case: environment,
+        opponent_factory=lambda case, graph, side: controller,
+        action_sampler=lambda distribution: distribution.logits.argmax(dim=-1),
+    )
+
+    collector.collect(steps=1, start_environment_step=0)
+    collector.close()
+
+    assert controller.reset_seeds == [environment.case.seed]
+    assert controller.previous_actions == [3]
 
 
 def test_bc_actor_checkpoint_loads_actor_only_with_provenance(tmp_path: Path) -> None:

@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import Literal
 
 from botcolosseo.agents.league_opponents import OpponentSpec
@@ -55,6 +56,10 @@ class LeagueSchedule:
             )
             for entry in pool.entries
         )
+        specs = {spec.opponent_id: spec for spec in (*self._scripts, *self._history)}
+        if len(specs) != len(self._scripts) + len(self._history):
+            raise ValueError("League opponent IDs must be unique")
+        self._opponent_specs = MappingProxyType(specs)
         expected_ids = {spec.opponent_id for spec in self._history}
         if len(self._history) >= 2 and set(win_rates) != expected_ids:
             raise ValueError("PFSP payoff data is missing or stale")
@@ -63,6 +68,10 @@ class LeagueSchedule:
         self._pfsp = (
             pfsp_probabilities(win_rates) if len(self._history) >= 2 else {}
         )
+
+    @property
+    def opponent_specs(self) -> Mapping[str, OpponentSpec]:
+        return self._opponent_specs
 
     def _validate_cases(self) -> None:
         if not self._cases or len(self._cases) % 2:
