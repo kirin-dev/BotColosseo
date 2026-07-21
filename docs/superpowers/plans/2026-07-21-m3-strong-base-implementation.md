@@ -204,9 +204,9 @@ Admission passes only if integrity and complete paired finite rows are true, scr
 - Create: `tests/unit/test_pfsp.py`
 - Create: `tests/unit/test_league_schedule.py`
 
-- [ ] Test `w=max(0.05,(1-p)^2)`, normalization, stable ordering, 40/50/10 source mixture after two historical policies, script/history fallback before that point, side pairing, and invariance to process restart.
-- [ ] Run RED.
-- [ ] Implement:
+- [x] Test `w=max(0.05,(1-p)^2)`, normalization, stable ordering, 40/50/10 source mixture after two historical policies, script/history fallback before that point, side pairing, and invariance to process restart.
+- [x] Run RED.
+- [x] Implement:
 
 ```python
 def pfsp_probabilities(win_rates: Mapping[str, float], *, floor: float = 0.05) -> dict[str, float]: ...
@@ -214,13 +214,13 @@ def pfsp_probabilities(win_rates: Mapping[str, float], *, floor: float = 0.05) -
 def stable_uniform(*, master_seed: int, pair_slot: int, pool_hash: str, payoff_hash: str, stream: str) -> float: ...
 
 class LeagueSchedule:
-    def assignment(self, pair_slot: int) -> LeagueEpisodeAssignment: ...
+    def assignments(self, pair_slot: int) -> tuple[LeagueEpisodeAssignment, LeagueEpisodeAssignment]: ...
 ```
 
 Use SHA-256 over canonical JSON to derive deterministic random bits. A pair slot chooses one opponent and one neutral seed-pair, then yields host and join rows consecutively; it must not resample between sides. Store the actual source probability in every assignment.
 
-- [ ] Run GREEN and verify that assignments `0..999` are byte-identical in two fresh processes.
-- [ ] Commit: `feat: add deterministic PFSP league schedule`.
+- [x] Run GREEN and verify that assignments `0..999` are byte-identical in two fresh processes.
+- [x] Commit: `feat: add deterministic PFSP league schedule`.
 
 ### Task 5: Integrate learned opponents into the existing rollout path
 
