@@ -11,6 +11,7 @@ from botcolosseo.agents.league_opponents import (
     sha256_file,
 )
 from botcolosseo.agents.model import AsymmetricActorCritic
+from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.duel_types import DuelActorObservation
 
 
@@ -147,3 +148,34 @@ def test_checkpoint_policy_fork_shares_frozen_actor_but_not_recurrent_state(
     assert first._actor is second._actor
     assert not torch.equal(first._hidden, second._hidden)
     assert all(not parameter.requires_grad for parameter in second._actor.parameters())
+
+
+def test_checkpoint_policy_loads_auditable_league_checkpoint(tmp_path: Path) -> None:
+    path = tmp_path / "candidate.pt"
+    model = AsymmetricActorCritic()
+    torch.save(
+        {
+            "schema_version": 1,
+            "identity": {
+                "base_checkpoint_sha256": "a" * 64,
+                "config_hash": "b" * 64,
+                "train_manifest_hash": "c" * 64,
+                "pool_manifest_hash": "d" * 64,
+                "payoff_report_hash": "e" * 64,
+                "scenario_hash": "scenario",
+            },
+            "state": {
+                "environment_steps": 200_000,
+                "updates": 10,
+                "episodes": 4,
+                "next_pair_slot": 2,
+            },
+            "model": model.state_dict(),
+        },
+        path,
+    )
+
+    policy = CheckpointOpponentPolicy.load(_spec(path), device=torch.device("cpu"))
+
+    policy.reset()
+    assert isinstance(policy.act(_observation()), MacroAction)

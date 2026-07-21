@@ -18,6 +18,20 @@ from botcolosseo.training.duel_rollout import actor_observation_tensors
 
 _ID_PATTERN = re.compile(r"[a-z0-9][a-z0-9._-]*\Z")
 _SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
+_LEAGUE_IDENTITY_FIELDS = {
+    "base_checkpoint_sha256",
+    "config_hash",
+    "train_manifest_hash",
+    "pool_manifest_hash",
+    "payoff_report_hash",
+    "scenario_hash",
+}
+_LEAGUE_STATE_FIELDS = {
+    "environment_steps",
+    "updates",
+    "episodes",
+    "next_pair_slot",
+}
 
 
 @dataclass(frozen=True)
@@ -57,6 +71,38 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _checkpoint_scenario_hash(payload: dict[str, object]) -> str:
+    if "metadata" in payload:
+        try:
+            return CheckpointMetadata(**payload["metadata"]).scenario_hash  # type: ignore[arg-type]
+        except TypeError as error:
+            raise ValueError("Invalid opponent checkpoint metadata") from error
+    identity = payload.get("identity")
+    state = payload.get("state")
+    if (
+        not isinstance(identity, dict)
+        or set(identity) != _LEAGUE_IDENTITY_FIELDS
+        or not isinstance(state, dict)
+        or set(state) != _LEAGUE_STATE_FIELDS
+    ):
+        raise ValueError("Invalid opponent checkpoint metadata")
+    hash_fields = _LEAGUE_IDENTITY_FIELDS - {"scenario_hash"}
+    if any(
+        not isinstance(identity[field], str)
+        or _SHA256_PATTERN.fullmatch(identity[field]) is None
+        for field in hash_fields
+    ):
+        raise ValueError("Invalid opponent league-checkpoint identity")
+    scenario_hash = identity["scenario_hash"]
+    if not isinstance(scenario_hash, str) or not scenario_hash:
+        raise ValueError("Invalid opponent league-checkpoint scenario hash")
+    if any(type(state[field]) is not int or state[field] < 0 for field in state):
+        raise ValueError("Invalid opponent league-checkpoint counters")
+    if state["next_pair_slot"] != state["episodes"] // 2:
+        raise ValueError("Invalid opponent league-checkpoint pair slot")
+    return scenario_hash
+
+
 class CheckpointOpponentPolicy:
     def __init__(
         self, spec: OpponentSpec, actor: RecurrentActor, *, device: torch.device
@@ -82,11 +128,8 @@ class CheckpointOpponentPolicy:
         payload = torch.load(path, map_location="cpu", weights_only=False)
         if payload.get("schema_version") != 1:
             raise ValueError("Unsupported opponent checkpoint schema version")
-        try:
-            metadata = CheckpointMetadata(**payload["metadata"])
-        except (KeyError, TypeError) as error:
-            raise ValueError("Invalid opponent checkpoint metadata") from error
-        if metadata.scenario_hash != spec.scenario_hash:
+        scenario_hash = _checkpoint_scenario_hash(payload)
+        if scenario_hash != spec.scenario_hash:
             raise ValueError("Opponent checkpoint scenario hash does not match")
         model = AsymmetricActorCritic()
         try:

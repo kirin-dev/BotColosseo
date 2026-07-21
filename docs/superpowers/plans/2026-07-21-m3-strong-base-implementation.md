@@ -352,13 +352,13 @@ The script adapter calls `privileged_state()`; the checkpoint adapter must not. 
 
 - Create: `tests/integration/test_checkpoint_opponent_duel.py`
 - Create: `tests/integration/test_m3_cuda_smoke.py`
-- Produce locally: `runs/m3/smoke/`
+- Produce locally: `runs/m3/cuda-smoke/`
 
-- [ ] Create a tiny deterministic checkpoint fixture at test runtime; do not commit a binary fixture.
-- [ ] Run one real side-swapped seed-pair against it and assert synchronized tics, public observation shapes, recurrent reset count, zero protocol inconsistencies, clean workers, and bounded runtime.
-- [ ] Run the 2,048-step CUDA trainer smoke on one GPU and verify finite losses, a reloadable candidate, valid hashes, and non-empty opponent-source counts.
-- [ ] Run all integration tests that do not consume official splits.
-- [ ] Commit: `test: pass M3 runtime and CUDA smoke gates`.
+- [x] Create a tiny deterministic checkpoint fixture at test runtime; do not commit a binary fixture.
+- [x] Run one real side-swapped seed-pair against it and assert synchronized tics, public observation shapes, recurrent reset count, zero protocol inconsistencies, clean workers, and bounded runtime.
+- [x] Run the 2,048-step CUDA trainer smoke on one GPU and verify finite losses, a reloadable candidate, valid hashes, and non-empty opponent-source counts.
+- [x] Run all integration tests that do not consume official splits.
+- [x] Commit: `test: pass M3 runtime and CUDA smoke gates`.
 
 ### Task 13: Generate product-facing evidence without changing raw results
 
