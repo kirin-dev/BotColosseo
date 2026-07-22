@@ -271,10 +271,6 @@ while (( BOUNDARY <= 2000000 )); do
       --admitted-at-utc "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   fi
 
-  if (( BOUNDARY == 2000000 )); then
-    break
-  fi
-
   SOURCE_VERSION=$(json_value "$POOL" pool_version)
   NEXT_VERSION=$((SOURCE_VERSION + 1))
   NEXT_POOL="$POOL_DIR/pool-v$NEXT_VERSION.json"
@@ -305,10 +301,14 @@ while (( BOUNDARY <= 2000000 )); do
     CONTINUATION_MODE=resume
   fi
   CONTINUATION_CHECKPOINT="$CANDIDATE"
+  FINAL_BOUNDARY=$((BOUNDARY == 2000000))
   BOUNDARY=$((BOUNDARY + 200000))
   write_state \
     "$POOL" "$PAYOFFS" "$BOUNDARY" \
     "$CONTINUATION_MODE" "$CONTINUATION_CHECKPOINT"
+  if (( FINAL_BOUNDARY )); then
+    break
+  fi
 done
 
 POOL_SIZE=$("$PYTHON" - "$POOL" <<'PY'
