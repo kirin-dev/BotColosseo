@@ -1,7 +1,7 @@
 # M4 Showcase Foundation Design
 
 **Date:** 2026-07-22
-**Status:** Awaiting written-spec review
+**Status:** Approved
 **Branch:** `feat/m4-showcase-foundation`
 
 ## 1. Purpose
@@ -112,6 +112,8 @@ The implementation adds the following small units:
 - `src/botcolosseo/cli/render_showcase.py`: orchestration and atomic output;
 - `scripts/render_showcase.py`: thin repository entry point;
 - `configs/showcase/development.yaml`: non-public M2 PPO/BC pipeline check;
+- `configs/showcase/development-validation.json`: one frozen M2 validation case
+  used only by the non-public smoke;
 - `configs/showcase/m4-validation.json`: eight frozen validation showcase
   cases, committed before Aggressive training results are known;
 - `configs/showcase/m4.yaml`: added only when the real Strong Base and
@@ -146,6 +148,7 @@ policies:
 render:
   fps: 10
   gif_seconds: 18
+  gif_max_bytes: 10000000
   max_decisions: 525
   output_dir: docs/assets/showcase
 evidence_dir: reports/showcase/m4
