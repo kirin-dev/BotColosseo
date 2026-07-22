@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -7,12 +8,16 @@ import pytest
 import yaml
 
 from botcolosseo.evaluation.showcase import (
+    build_showcase_manifest,
+    canonical_json,
     case_id,
     load_metric_evidence,
     load_showcase_cases,
     load_showcase_config,
+    publish_staged_files,
     select_highlight_window,
     select_showcase_case,
+    write_jsonl,
 )
 
 
@@ -213,3 +218,84 @@ def test_select_highlight_window_breaks_equal_totals_at_earliest_window() -> Non
     assert select_highlight_window(
         (0.0, 1.0, 1.0, 0.0, 1.0), window_frames=3
     ) == (0, 3)
+
+
+def test_canonical_json_and_jsonl_are_stable(tmp_path: Path) -> None:
+    assert canonical_json({"z": 1, "a": 2}) == b'{"a":2,"z":1}\n'
+
+    output = write_jsonl(tmp_path / "episodes.jsonl", ({"z": 1, "a": 2},))
+
+    assert output.read_bytes() == b'{"a":2,"z":1}\n'
+
+
+def test_manifest_is_hash_bound_and_labels_validation_only(tmp_path: Path) -> None:
+    root = Path.cwd()
+    config = load_showcase_config(
+        Path("configs/showcase/development.yaml"), root=root
+    )
+    episodes = tmp_path / "episodes.jsonl"
+    episodes.write_bytes(b'{"episode":1}\n')
+    media = (
+        {
+            "path": "artifacts/showcase-development/media/development-comparison.gif",
+            "sha256": "4" * 64,
+            "bytes": 1234,
+            "frame_count": 180,
+            "dimensions": [332, 512],
+            "fps": 10,
+        },
+    )
+
+    manifest = build_showcase_manifest(
+        git_commit="a" * 40,
+        git_dirty=False,
+        config=config,
+        scenario_hash="1" * 64,
+        case_manifest_sha256="2" * 64,
+        checkpoint_sha256={"ppo": "3" * 64, "bc": "4" * 64},
+        metric_sha256=None,
+        episodes_path=episodes,
+        selected_case="random_legal:250:host",
+        highlight=(0, 180),
+        media=media,
+        gate_passed=False,
+    )
+
+    assert manifest["split"] == "validation"
+    assert manifest["official_test_result"] is False
+    assert manifest["test_cases_accessed"] is False
+    assert manifest["episode_log_sha256"] == hashlib.sha256(
+        episodes.read_bytes()
+    ).hexdigest()
+    assert len(manifest["run_identity"]) == 64
+    assert manifest["media"] == list(media)
+
+
+def test_publication_replaces_manifest_last_and_rejects_identity_drift(
+    tmp_path: Path,
+) -> None:
+    staged_media = tmp_path / "staged.gif"
+    staged_media.write_bytes(b"GIF89a")
+    target_media = tmp_path / "published/showcase.gif"
+    staged_manifest = tmp_path / "staged-manifest.json"
+    staged_manifest.write_bytes(canonical_json({"run_identity": "a" * 64}))
+    target_manifest = tmp_path / "published/manifest.json"
+
+    publish_staged_files(
+        ((staged_media, target_media),),
+        staged_manifest=staged_manifest,
+        target_manifest=target_manifest,
+        run_identity="a" * 64,
+    )
+
+    assert target_media.read_bytes() == b"GIF89a"
+    assert json.loads(target_manifest.read_text())["run_identity"] == "a" * 64
+
+    staged_manifest.write_bytes(canonical_json({"run_identity": "b" * 64}))
+    with pytest.raises(ValueError, match="identity"):
+        publish_staged_files(
+            ((staged_media, target_media),),
+            staged_manifest=staged_manifest,
+            target_manifest=target_manifest,
+            run_identity="b" * 64,
+        )

@@ -7,6 +7,8 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.figure import Figure
 from numpy.typing import NDArray
 
 from botcolosseo.envs.actions import MacroAction
@@ -18,7 +20,7 @@ from botcolosseo.evaluation.m2 import (
     TeacherEvaluationPolicy,
     valid_action_tic_boundary,
 )
-from botcolosseo.evaluation.showcase import case_id
+from botcolosseo.evaluation.showcase import ShowcaseMetricEvidence, case_id
 from botcolosseo.scenarios.duel_splits import DuelCase
 from botcolosseo.scenarios.regions import RegionGraph
 from botcolosseo.training.league_rollout import PublicCheckpointPolicy
@@ -85,6 +87,54 @@ class CheckpointEvaluationPolicy:
 
 
 EnvironmentFactory = Callable[[DuelCase], SynchronousDuelEnv]
+
+
+def render_metrics_card(
+    evidence: ShowcaseMetricEvidence, output: Path
+) -> Path:
+    output = output.expanduser().resolve()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = output.with_name(f".{output.stem}.tmp{output.suffix}")
+    labels = (
+        ("Base win rate", f"{evidence.base_win_rate:.1%}"),
+        ("Aggressive style shift", f"{evidence.aggressive_style_delta:+.3f}"),
+        ("Skill retention", f"{evidence.skill_retention:.1%}"),
+        ("Episodes", f"{evidence.episodes:,}"),
+    )
+    figure = Figure(figsize=(12, 2.4), dpi=150, facecolor="#111827")
+    FigureCanvasAgg(figure)
+    try:
+        for index, (label, value) in enumerate(labels):
+            axis = figure.add_subplot(1, 4, index + 1)
+            axis.set_facecolor("#111827")
+            axis.axis("off")
+            axis.text(
+                0.5,
+                0.60,
+                value,
+                ha="center",
+                va="center",
+                color="white",
+                fontsize=22,
+                fontweight="bold",
+            )
+            axis.text(
+                0.5,
+                0.30,
+                label,
+                ha="center",
+                va="center",
+                color="#cbd5e1",
+                fontsize=10,
+            )
+        figure.savefig(temporary, facecolor=figure.get_facecolor())
+        temporary.replace(output)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
+    finally:
+        figure.clear()
+    return output
 
 
 def record_showcase_episode(

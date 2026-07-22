@@ -3,8 +3,10 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import re
-from collections.abc import Mapping, Sequence
+import shutil
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -395,6 +397,146 @@ def select_highlight_window(
     return best, best + width
 
 
+def canonical_json(payload: object) -> bytes:
+    return (
+        json.dumps(
+            payload,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            allow_nan=False,
+        )
+        + "\n"
+    ).encode("utf-8")
+
+
+def write_jsonl(path: Path, rows: Iterable[Mapping[str, object]]) -> Path:
+    path = path.expanduser().resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.tmp")
+    try:
+        with temporary.open("wb") as handle:
+            for row in rows:
+                handle.write(canonical_json(dict(row)))
+            handle.flush()
+            os.fsync(handle.fileno())
+        temporary.replace(path)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
+    return path
+
+
+def build_showcase_manifest(
+    *,
+    git_commit: str,
+    git_dirty: bool,
+    config: ShowcaseConfig,
+    scenario_hash: str,
+    case_manifest_sha256: str,
+    checkpoint_sha256: Mapping[str, str],
+    metric_sha256: str | None,
+    episodes_path: Path,
+    selected_case: str,
+    highlight: tuple[int, int],
+    media: Sequence[Mapping[str, object]],
+    gate_passed: bool,
+) -> dict[str, object]:
+    if not git_commit or not isinstance(git_dirty, bool):
+        raise ValueError("Showcase manifest requires Git provenance")
+    _validate_sha256(scenario_hash, "Showcase scenario hash")
+    _validate_sha256(case_manifest_sha256, "Showcase case-manifest hash")
+    checkpoints = _load_hash_map(
+        checkpoint_sha256, "Showcase manifest checkpoint hashes"
+    )
+    if tuple(checkpoints) != tuple(policy.policy_id for policy in config.policies):
+        raise ValueError("Showcase manifest checkpoint order does not match config")
+    if config.publication:
+        _validate_sha256(metric_sha256, "Showcase metric hash")
+    elif metric_sha256 is not None or gate_passed:
+        raise ValueError("Development showcase cannot claim metric or gate evidence")
+    if not isinstance(gate_passed, bool):
+        raise ValueError("Showcase gate state must be boolean")
+    if not selected_case:
+        raise ValueError("Showcase manifest requires a selected case")
+    if (
+        len(highlight) != 2
+        or any(type(value) is not int for value in highlight)
+        or highlight[0] < 0
+        or highlight[1] <= highlight[0]
+    ):
+        raise ValueError("Showcase highlight range is invalid")
+    media_rows = [_validate_media_row(row) for row in media]
+    if not media_rows:
+        raise ValueError("Showcase manifest requires media")
+
+    identity_payload = {
+        "config_sha256": config.config_sha256,
+        "scenario_hash": scenario_hash,
+        "case_manifest_sha256": case_manifest_sha256,
+        "checkpoint_sha256": checkpoints,
+        "metric_sha256": metric_sha256,
+        "selected_case": selected_case,
+        "highlight": list(highlight),
+    }
+    run_identity = hashlib.sha256(canonical_json(identity_payload)).hexdigest()
+    root = config.config_path.parents[2]
+    return {
+        "schema_version": 1,
+        "stage": config.stage,
+        "publication": config.publication,
+        "git_commit": git_commit,
+        "git_dirty": git_dirty,
+        "config_sha256": config.config_sha256,
+        "scenario_hash": scenario_hash,
+        "case_manifest_sha256": case_manifest_sha256,
+        "checkpoint_sha256": checkpoints,
+        "metric_sha256": metric_sha256,
+        "policies": [
+            {"id": policy.policy_id, "label": policy.label}
+            for policy in config.policies
+        ],
+        "episode_log": str((config.evidence_dir / "episodes.jsonl").relative_to(root)),
+        "episode_log_sha256": hashlib.sha256(episodes_path.read_bytes()).hexdigest(),
+        "selected_case": selected_case,
+        "highlight": list(highlight),
+        "media": media_rows,
+        "gate_identity": config.stage,
+        "gate_passed": gate_passed,
+        "split": "validation",
+        "official_test_result": False,
+        "test_cases_accessed": False,
+        "run_identity": run_identity,
+    }
+
+
+def publish_staged_files(
+    files: Iterable[tuple[Path, Path]],
+    *,
+    staged_manifest: Path,
+    target_manifest: Path,
+    run_identity: str,
+) -> None:
+    _validate_sha256(run_identity, "Showcase run identity")
+    staged_payload = _load_json_object(staged_manifest, "Staged showcase manifest")
+    if staged_payload.get("run_identity") != run_identity:
+        raise ValueError("Staged showcase manifest identity does not match")
+    if target_manifest.exists():
+        target_payload = _load_json_object(target_manifest, "Published showcase manifest")
+        if target_payload.get("run_identity") != run_identity:
+            raise ValueError("Published showcase manifest identity does not match")
+
+    transfers = tuple(files)
+    if not transfers or any(not source.is_file() for source, _ in transfers):
+        raise ValueError("Showcase publication requires every staged file")
+    targets = [target.resolve() for _, target in transfers]
+    if len(set(targets)) != len(targets) or target_manifest.resolve() in targets:
+        raise ValueError("Showcase publication targets must be unique")
+    for source, target in transfers:
+        _copy_atomic(source, target)
+    _copy_atomic(staged_manifest, target_manifest)
+
+
 def _load_policy(payload: Any, *, root: Path) -> ShowcasePolicySpec:
     _require_fields(payload, _POLICY_FIELDS, "Showcase policy")
     return ShowcasePolicySpec(
@@ -481,6 +623,7 @@ def _load_json_list(path: Path, description: str) -> list[Any]:
 def _load_hash_map(payload: Any, description: str) -> dict[str, str]:
     if not isinstance(payload, Mapping) or not all(
         isinstance(key, str)
+        and isinstance(value, str)
         and _SHA256.fullmatch(value) is not None
         for key, value in payload.items()
     ):
@@ -573,3 +716,53 @@ def _ineligibility_reasons(record: Mapping[str, object]) -> tuple[str, ...]:
         (record["score_event_inconsistent"] is True, "score event was inconsistent"),
     )
     return tuple(reason for failed, reason in checks if failed)
+
+
+def _validate_sha256(value: object, description: str) -> str:
+    if not isinstance(value, str) or _SHA256.fullmatch(value) is None:
+        raise ValueError(f"{description} must be a lowercase SHA-256")
+    return value
+
+
+def _validate_media_row(row: Mapping[str, object]) -> dict[str, object]:
+    expected = {"path", "sha256", "bytes", "frame_count", "dimensions", "fps"}
+    if not isinstance(row, Mapping) or set(row) != expected:
+        raise ValueError("Showcase media metadata has unknown or missing keys")
+    path = row["path"]
+    relative = PurePosixPath(path) if isinstance(path, str) else None
+    if (
+        relative is None
+        or not path
+        or relative.is_absolute()
+        or ".." in relative.parts
+    ):
+        raise ValueError("Showcase media path must be relative")
+    _validate_sha256(row["sha256"], "Showcase media hash")
+    if any(
+        type(row[field]) is not int or row[field] <= 0
+        for field in ("bytes", "frame_count", "fps")
+    ):
+        raise ValueError("Showcase media numeric metadata must be positive integers")
+    dimensions = row["dimensions"]
+    if (
+        not isinstance(dimensions, list)
+        or len(dimensions) != 2
+        or any(type(value) is not int or value <= 0 for value in dimensions)
+    ):
+        raise ValueError("Showcase media dimensions must be two positive integers")
+    return dict(row)
+
+
+def _copy_atomic(source: Path, target: Path) -> None:
+    target = target.expanduser().resolve()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temporary = target.with_name(f".{target.name}.tmp")
+    try:
+        with source.open("rb") as reader, temporary.open("wb") as writer:
+            shutil.copyfileobj(reader, writer)
+            writer.flush()
+            os.fsync(writer.fileno())
+        temporary.replace(target)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise

@@ -12,11 +12,13 @@ from botcolosseo.demo.showcase import (
     compose_learner_frame,
     compose_showcase_comparison,
     record_showcase_episode,
+    render_metrics_card,
 )
 from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.duel_protocol import DuelEvent, DuelEventType
 from botcolosseo.envs.duel_types import DuelActorObservation, DuelPrivilegedState, DuelStep
 from botcolosseo.envs.synchronous_duel import DuelObservations, DuelResetInfo
+from botcolosseo.evaluation.showcase import ShowcaseMetricEvidence
 from botcolosseo.scenarios.duel_splits import DuelCase
 from botcolosseo.scenarios.regions import RegionGraph
 
@@ -110,6 +112,25 @@ def test_comparison_rejects_empty_stream() -> None:
             (("Strong Base", valid), ("Aggressive", [])),
             subtitle="validation",
         )
+
+
+def test_metrics_card_is_an_atomic_nonempty_png(tmp_path: Path) -> None:
+    evidence = ShowcaseMetricEvidence(
+        episodes=800,
+        base_win_rate=0.72,
+        aggressive_style_delta=0.31,
+        skill_retention=0.89,
+        checkpoint_sha256={"strong_base": "1" * 64, "aggressive": "2" * 64},
+        case_contrast_scores={"case": 0.5},
+        decision_contrast_scores={"case": (0.0, 1.0)},
+        source_sha256="3" * 64,
+    )
+
+    output = render_metrics_card(evidence, tmp_path / "metrics.png")
+
+    assert output.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+    assert output.stat().st_size > 10_000
+    assert not (tmp_path / ".metrics.tmp.png").exists()
 
 
 def test_recorded_episode_serializes_without_frames() -> None:
