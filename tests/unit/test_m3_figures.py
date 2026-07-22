@@ -98,6 +98,46 @@ def test_crossplay_loader_fails_on_missing_or_conflicting_cells(tmp_path: Path) 
         load_crossplay_evidence(conflicting)
 
 
+def test_pool_history_accepts_empty_pfsp_only_for_single_policy_bootstrap(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "history.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "snapshots": [
+                    {
+                        "environment_steps": 0,
+                        "pool_size": 1,
+                        "pfsp_probabilities": {},
+                    },
+                    {
+                        "environment_steps": 200_000,
+                        "pool_size": 2,
+                        "pfsp_probabilities": {
+                            "m2-anchor": 0.5,
+                            "policy-0200000": 0.5,
+                        },
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    history = load_pool_history(path)
+
+    assert history.snapshots[0].pfsp_probabilities == {}
+    assert history.snapshots[0].pool_size == 1
+
+    invalid = json.loads(path.read_text(encoding="utf-8"))
+    invalid["snapshots"][1]["pfsp_probabilities"] = {}
+    path.write_text(json.dumps(invalid), encoding="utf-8")
+    with pytest.raises(ValueError, match="snapshot values"):
+        load_pool_history(path)
+
+
 def test_figures_have_frozen_dimensions_and_bundle_metrics_match_raw_csv(
     tmp_path: Path,
 ) -> None:
