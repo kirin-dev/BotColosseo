@@ -19,3 +19,17 @@ def test_final_paired_candidate_is_admitted_before_pipeline_leaves_training_loop
     final_exit = loop.index('if (( FINAL_BOUNDARY )); then')
 
     assert admission < state_update < final_exit
+
+
+def test_capability_failure_is_packaged_before_pipeline_returns_nonzero() -> None:
+    script = Path("scripts/run_m3_pipeline.sh").read_text(encoding="utf-8")
+    official = script.split('OFFICIAL="$REPORT_ROOT/official"', 1)[1]
+
+    capture = official.index("EVALUATION_STATUS=$?")
+    audit = official.index("--integrity-only")
+    render = official.index("scripts/render_m3_evidence.py")
+    failed_marker = official.index("M3 PIPELINE COMPLETE: CAPABILITY FAIL")
+    final_exit = official.index('exit "$EVALUATION_STATUS"')
+
+    assert capture < audit < render < failed_marker < final_exit
+    assert official.index("M3 PIPELINE PASS") > render

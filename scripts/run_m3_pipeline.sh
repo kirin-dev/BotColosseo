@@ -396,6 +396,7 @@ OFFICIAL_ARGS=()
 if [[ -f "$OFFICIAL/episodes.jsonl" ]]; then
   OFFICIAL_ARGS=(--resume)
 fi
+set +e
 "$PYTHON" -u scripts/evaluate_m3.py \
   --selection-report "$SELECTION" \
   --selected-checkpoint "$SELECTED_CHECKPOINT" \
@@ -404,11 +405,20 @@ fi
   --output-dir "$OFFICIAL" \
   --device cuda:0 \
   "${OFFICIAL_ARGS[@]}"
+EVALUATION_STATUS=$?
+set -e
 
-"$PYTHON" scripts/audit_m3_evidence.py --report-dir "$OFFICIAL"
+"$PYTHON" scripts/audit_m3_evidence.py \
+  --report-dir "$OFFICIAL" \
+  --integrity-only
 "$PYTHON" scripts/render_m3_evidence.py \
   --official-report-dir "$OFFICIAL" \
   --crossplay-csv "$REPORT_ROOT/crossplay.csv" \
   --pool-history "$REPORT_ROOT/pool-history.json"
 
-echo "M3 PIPELINE PASS"
+if (( EVALUATION_STATUS == 0 )); then
+  echo "M3 PIPELINE PASS"
+else
+  echo "M3 PIPELINE COMPLETE: CAPABILITY FAIL"
+fi
+exit "$EVALUATION_STATUS"

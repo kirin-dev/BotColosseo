@@ -44,7 +44,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         return path if path.is_absolute() else root / path
 
     audit = audit_m3_evidence(
-        resolve(args.official_report_dir), artifact_root=root
+        resolve(args.official_report_dir),
+        artifact_root=root,
+        require_capability_pass=False,
     )
     payload = render_evidence_bundle(
         crossplay_csv=resolve(args.crossplay_csv),
