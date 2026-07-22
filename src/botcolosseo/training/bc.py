@@ -58,6 +58,7 @@ class DemonstrationChunkDataset(Dataset[dict[str, torch.Tensor]]):
         *,
         chunk_length: int,
         max_transitions: int | None = None,
+        allow_masked: bool = False,
     ) -> None:
         if not shard_paths or chunk_length <= 0:
             raise ValueError("shard_paths and chunk_length must be nonempty")
@@ -66,9 +67,11 @@ class DemonstrationChunkDataset(Dataset[dict[str, torch.Tensor]]):
         loaded: dict[str, list[np.ndarray]] = {}
         remaining = max_transitions
         for path in shard_paths:
-            arrays = load_demonstration_shard(path)
-            take = len(arrays["frame"]) if remaining is None else min(
-                remaining, len(arrays["frame"])
+            arrays = load_demonstration_shard(path, require_all_valid=not allow_masked)
+            take = (
+                len(arrays["frame"])
+                if remaining is None
+                else min(remaining, len(arrays["frame"]))
             )
             for name, array in arrays.items():
                 loaded.setdefault(name, []).append(array[:take])
@@ -81,7 +84,18 @@ class DemonstrationChunkDataset(Dataset[dict[str, torch.Tensor]]):
         }
         self.chunk_length = chunk_length
         self.transition_count = len(self._arrays["frame"])
-        self._starts = tuple(range(0, self.transition_count, chunk_length))
+        starts = tuple(range(0, self.transition_count, chunk_length))
+        if allow_masked:
+            starts = tuple(
+                start
+                for start in starts
+                if bool(
+                    np.any(self._arrays["valid_mask"][start : start + chunk_length])
+                )
+            )
+        self._starts = starts
+        if not self._starts:
+            raise ValueError("Demonstration dataset contains no supervised chunks")
 
     def __len__(self) -> int:
         return len(self._starts)
@@ -95,12 +109,14 @@ class DemonstrationChunkDataset(Dataset[dict[str, torch.Tensor]]):
         previous_actions = np.zeros(self.chunk_length, dtype=np.int64)
         actions = np.zeros(self.chunk_length, dtype=np.int64)
         valid = np.zeros(self.chunk_length, dtype=np.bool_)
+        present = np.zeros(self.chunk_length, dtype=np.bool_)
         masks = np.zeros(self.chunk_length, dtype=np.float32)
         frames[:size, 0] = self._arrays["frame"][start:stop]
         scalars[:size] = self._arrays["scalars"][start:stop]
         previous_actions[:size] = self._arrays["previous_action"][start:stop]
         actions[:size] = self._arrays["teacher_action"][start:stop]
         valid[:size] = self._arrays["valid_mask"][start:stop]
+        present[:size] = True
         episode_start = self._arrays["episode_start"][start:stop]
         masks[:size] = (~episode_start).astype(np.float32)
         masks[0] = 0.0
@@ -111,6 +127,7 @@ class DemonstrationChunkDataset(Dataset[dict[str, torch.Tensor]]):
             "actions": torch.from_numpy(actions),
             "masks": torch.from_numpy(masks),
             "valid": torch.from_numpy(valid),
+            "present": torch.from_numpy(present),
         }
 
 
@@ -295,11 +312,11 @@ class BCTrainer:
             total += metrics.valid_count
         if total == 0:
             raise ValueError("Validation loader contains no valid transitions")
-        return BCEvaluationMetrics(weighted_loss / total, weighted_accuracy / total, total)
+        return BCEvaluationMetrics(
+            weighted_loss / total, weighted_accuracy / total, total
+        )
 
-    def save(
-        self, path: Path, *, config_hash: str, scenario_hash: str
-    ) -> Path:
+    def save(self, path: Path, *, config_hash: str, scenario_hash: str) -> Path:
         return save_training_checkpoint(
             path,
             model=self.model,
@@ -450,9 +467,7 @@ def evaluate_closed_loop_episode(
             episode_start = False
             terminated, truncated = step.terminated, step.truncated
         final_observation = (
-            observations.host
-            if case.learner_side == "host"
-            else observations.opponent
+            observations.host if case.learner_side == "host" else observations.opponent
         )
         objective_completed = final_observation.own_score > initial_score
         return {

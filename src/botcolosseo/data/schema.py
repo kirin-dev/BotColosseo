@@ -56,7 +56,9 @@ def find_privileged_keys(value: Any) -> tuple[str, ...]:
     return tuple(sorted(found))
 
 
-def validate_demonstration_shard(arrays: Mapping[str, np.ndarray]) -> int:
+def validate_demonstration_shard(
+    arrays: Mapping[str, np.ndarray], *, require_all_valid: bool = True
+) -> int:
     if set(arrays) != set(DEMONSTRATION_FIELDS):
         raise ValueError("Demonstration shard fields do not match the frozen schema")
     lengths = {np.asarray(value).shape[0] for value in arrays.values()}
@@ -79,20 +81,14 @@ def validate_demonstration_shard(arrays: Mapping[str, np.ndarray]) -> int:
     for name, (shape, dtype) in expected.items():
         array = np.asarray(arrays[name])
         if array.shape != shape or array.dtype != dtype:
-            raise ValueError(
-                f"Invalid {name} shape/dtype: {array.shape}/{array.dtype}"
-            )
+            raise ValueError(f"Invalid {name} shape/dtype: {array.shape}/{array.dtype}")
     if not bool(arrays["episode_start"][0]):
         raise ValueError("Every shard must begin at an episode boundary")
-    if not bool(np.all(arrays["valid_mask"])):
+    if require_all_valid and not bool(np.all(arrays["valid_mask"])):
         raise ValueError("Stored demonstrations must have an all-true valid mask")
-    if np.any(arrays["previous_action"] < 0) or np.any(
-        arrays["previous_action"] >= 13
-    ):
+    if np.any(arrays["previous_action"] < 0) or np.any(arrays["previous_action"] >= 13):
         raise ValueError("Previous action ID is outside the fixed action space")
-    if np.any(arrays["teacher_action"] < 0) or np.any(
-        arrays["teacher_action"] >= 13
-    ):
+    if np.any(arrays["teacher_action"] < 0) or np.any(arrays["teacher_action"] >= 13):
         raise ValueError("Teacher action ID is outside the fixed action space")
     if np.any(arrays["opponent_id"] >= 5):
         raise ValueError("Opponent ID is outside the frozen opponent set")

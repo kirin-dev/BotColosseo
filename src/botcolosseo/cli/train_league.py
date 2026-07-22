@@ -48,6 +48,7 @@ from botcolosseo.training.league_checkpoint import (
 from botcolosseo.training.league_rollout import LeagueRolloutCollector
 from botcolosseo.training.league_schedule import LeagueSchedule
 from botcolosseo.training.ppo import ExcessiveKLError, PPOTrainer
+from botcolosseo.training.style_distillation import load_style_distillation_checkpoint
 from botcolosseo.training.style_ppo import StylePPOTrainer
 
 _CONFIG_FIELDS = {
@@ -132,6 +133,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--preflight", action="store_true")
     parser.add_argument("--style", choices=("aggressive",))
+    parser.add_argument("--style-warm-start", type=Path)
     return parser
 
 
@@ -174,7 +176,10 @@ def _validate_config(config: dict[str, Any], *, style: str | None = None) -> Non
             raise ValueError("Requested style does not match style config")
         if int(style_config["bottleneck"]) <= 0:
             raise ValueError("Style adapter bottleneck must be positive")
-        if float(style_config["lambda_style"]) < 0 or float(style_config["beta_kl"]) < 0:
+        if (
+            float(style_config["lambda_style"]) < 0
+            or float(style_config["beta_kl"]) < 0
+        ):
             raise ValueError("Style coefficients must be nonnegative")
         reward = style_config["reward"]
         if not isinstance(reward, dict):
@@ -197,20 +202,19 @@ def _validate_base_authorization(
         return False
     hashes = audit_result.get("checkpoint_sha256")
     if not isinstance(hashes, dict) or hashes.get("ppo") != base_checkpoint_sha256:
-        raise ValueError("M2 audit checkpoint does not match the requested base checkpoint")
+        raise ValueError(
+            "M2 audit checkpoint does not match the requested base checkpoint"
+        )
     if audit_result.get("passed") is not True:
         if not (
-            allow_integrity_qualified
-            and audit_result.get("integrity_passed") is True
+            allow_integrity_qualified and audit_result.get("integrity_passed") is True
         ):
             raise ValueError("M2 capability gate did not pass")
         return False
     return True
 
 
-def _load_payoff_report(
-    path: Path, pool: HistoricalPoolManifest
-) -> dict[str, float]:
+def _load_payoff_report(path: Path, pool: HistoricalPoolManifest) -> dict[str, float]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict) or payload.get("schema_version") != 1:
         raise ValueError("Invalid M3 payoff report schema")
@@ -309,7 +313,9 @@ def _m2_audit_result(
     root: Path, *, integrity_only: bool = False
 ) -> dict[str, object] | None:
     report_dir = root / "reports/m2"
-    targets = tuple(report_dir / name for name in ("episodes.csv", "summary.json", "manifest.json"))
+    targets = tuple(
+        report_dir / name for name in ("episodes.csv", "summary.json", "manifest.json")
+    )
     existing = tuple(path.exists() for path in targets)
     if not any(existing):
         return None
@@ -337,6 +343,12 @@ def _script_specs(scenario_hash: str) -> tuple[OpponentSpec, ...]:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.style_warm_start is not None and args.style is None:
+        raise ValueError("--style-warm-start requires --style")
+    if args.style_warm_start is not None and (
+        args.resume is not None or args.transition_from is not None
+    ):
+        raise ValueError("Style warm start may only initialize a new run")
     root = _project_root()
     config_path = _resolve(root, args.config)
     config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
@@ -349,7 +361,9 @@ def main(argv: list[str] | None = None) -> int:
     if not 0 < stop_after <= target_steps or rollout_steps <= 0:
         raise ValueError("Invalid M3 stop or rollout step count")
     if args.finish_paired_boundary and stop_after >= target_steps:
-        raise ValueError("Paired-boundary padding requires room below the target budget")
+        raise ValueError(
+            "Paired-boundary padding requires room below the target budget"
+        )
     base_checkpoint = _resolve(root, args.base_checkpoint)
     pool_path = _resolve(root, args.pool)
     payoff_path = _resolve(root, args.payoffs)
@@ -360,6 +374,10 @@ def main(argv: list[str] | None = None) -> int:
     if not isinstance(scenario_hash, str):
         raise ValueError("Scenario manifest is missing wad_sha256")
     base_hash = sha256_file(base_checkpoint)
+    style_warm_path = (
+        None if args.style_warm_start is None else _resolve(root, args.style_warm_start)
+    )
+    style_warm_hash = None if style_warm_path is None else sha256_file(style_warm_path)
     if args.style is None:
         audit_result = _m2_audit_result(
             root, integrity_only=args.allow_integrity_qualified_base
@@ -388,10 +406,15 @@ def main(argv: list[str] | None = None) -> int:
         payoff_hash=sha256_file(payoff_path),
         master_seed=int(config["seed"]),
     )
+    identity_config_hash = sha256_file(config_path)
+    if style_warm_hash is not None:
+        identity_config_hash = hashlib.sha256(
+            f"{identity_config_hash}:{style_warm_hash}".encode()
+        ).hexdigest()
     identity = LeagueRunIdentity(
         base_checkpoint_sha256=base_hash,
         config_hash=_run_config_hash(
-            sha256_file(config_path),
+            identity_config_hash,
             target_steps=target_steps,
             rollout_steps=rollout_steps,
         ),
@@ -421,10 +444,19 @@ def main(argv: list[str] | None = None) -> int:
         model = StyledActorCritic.from_base(
             base_model, bottleneck=int(style_config["bottleneck"])
         )
+        if style_warm_path is not None:
+            load_style_distillation_checkpoint(
+                style_warm_path,
+                model=model,
+                expected_base_checkpoint_sha256=base_hash,
+                expected_scenario_hash=scenario_hash,
+            )
     preflight = {
         "base_checkpoint_sha256": base_hash,
         "base_promoted": base_promoted,
         "style": args.style,
+        "style_warm_start": None if style_warm_path is None else str(style_warm_path),
+        "style_warm_start_sha256": style_warm_hash,
         "style_base_capability_passed": None if args.style is None else False,
         "config_hash": identity.config_hash,
         "payoff_report_hash": identity.payoff_report_hash,
@@ -440,11 +472,7 @@ def main(argv: list[str] | None = None) -> int:
         print(_status_json(preflight))
         return 0
     metrics_path = run_dir / "metrics.jsonl"
-    if (
-        metrics_path.exists()
-        and args.resume is None
-        and args.transition_from is None
-    ):
+    if metrics_path.exists() and args.resume is None and args.transition_from is None:
         raise FileExistsError(f"M3 league output already exists: {metrics_path}")
     device = torch.device(args.device)
     if device.type == "cuda" and not torch.cuda.is_available():
@@ -458,7 +486,9 @@ def main(argv: list[str] | None = None) -> int:
         minibatch_sequences=int(config["minibatch_sequences"]),
         update_epochs=int(config["update_epochs"]),
     )
-    trainer_factory = PPOTrainer.create if args.style is None else StylePPOTrainer.create
+    trainer_factory = (
+        PPOTrainer.create if args.style is None else StylePPOTrainer.create
+    )
     trainer_kwargs = dict(
         learning_rate=float(config["learning_rate"]),
         weight_decay=float(config["weight_decay"]),
@@ -587,9 +617,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             environment_steps += collection.environment_steps
             event_counts.update(collection.event_counts)
-            style_reward_components.update(
-                getattr(collection, "reward_components", {})
-            )
+            style_reward_components.update(getattr(collection, "reward_components", {}))
             append_jsonl(
                 metrics_path,
                 {
@@ -665,9 +693,7 @@ def main(argv: list[str] | None = None) -> int:
                 target=target_steps,
             )
             if candidate_step is not None:
-                _copy_checkpoint(
-                    latest, run_dir / f"candidate-{candidate_step:07d}.pt"
-                )
+                _copy_checkpoint(latest, run_dir / f"candidate-{candidate_step:07d}.pt")
             summary = {
                 **preflight,
                 "candidate_checkpoints": _candidate_manifest(run_dir),
