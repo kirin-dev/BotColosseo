@@ -6,6 +6,7 @@ PUBLIC_DOCS = (
     Path("docs/milestones/m0.md"),
     Path("docs/milestones/m1.md"),
     Path("docs/milestones/m2.md"),
+    Path("docs/milestones/m3.md"),
     Path("assets/scenarios/crystal_run/README.md"),
     Path("THIRD_PARTY_NOTICES.md"),
 )
@@ -47,3 +48,16 @@ def test_public_documentation_local_links_resolve() -> None:
                 broken.append((str(document), target))
 
     assert broken == []
+
+
+def test_public_docs_report_m3_as_complete_but_not_passed() -> None:
+    readme = Path("README.md").read_text(encoding="utf-8")
+    milestone = Path("docs/milestones/m3.md").read_text(encoding="utf-8")
+
+    assert "M3 capability gate did **not** pass" in readme
+    assert "M3: FAIL" in milestone
+    assert "historical_worst_case_improved" in milestone
+    assert "12.5%" in milestone
+    assert "15.0%" in milestone
+    assert "M3 passed" not in readme
+    assert "M3 PASS" not in milestone

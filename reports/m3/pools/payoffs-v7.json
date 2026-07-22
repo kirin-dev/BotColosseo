@@ -1,0 +1,15 @@
+{
+  "pool_manifest_sha256": "cbe9cf972fccb4915964fbd3ef60ce2a1f70e2f1b758bb61e26f12b6a2e7fbc0",
+  "schema_version": 1,
+  "split": "validation",
+  "win_rates": {
+    "m2-anchor": 0.2,
+    "policy-0200000": 0.5,
+    "policy-0800000": 0.6,
+    "policy-1000256": 0.3,
+    "policy-1400000": 0.2,
+    "policy-1603584": 0.2,
+    "policy-1800768": 0.1,
+    "policy-2000000": 0.5
+  }
+}

@@ -570,6 +570,13 @@ navigation/pickup/return ≥95%、static hit ≥90%、moving hit ≥75%，每项
 
 门禁：通过第 8 节冻结的 Strong Base 能力门槛。
 
+状态：2026-07-22 完成 2,000,000 环境步 league 训练、8-policy historical pool、
+360 局 final cross-play 和 1,340 局官方评测。完整性门通过：协议与产物不一致均为
+0；能力门未通过。唯一失败项为 `historical_worst_case_improved`：validation-selected
+`policy-0200000` 对历史策略的官方最差胜率为 12.5%，低于 M2 baseline 的 15.0%。
+该结果保留为 M3 FAIL。后续风格主线允许将其作为 `style base candidate` 使用，但不得
+声称 Strong Base 已通过；未通过 gate 留待产品闭环后修复。
+
 ### M4：Aggressive 垂直闭环
 
 交付：

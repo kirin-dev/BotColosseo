@@ -1,0 +1,53 @@
+{
+  "action_selection": "greedy",
+  "bootstrap": {
+    "confidence": 0.95,
+    "samples": 10000,
+    "seed": 20260721
+  },
+  "config": "configs/m3/evaluation.yaml",
+  "config_sha256": "d5a63e5e9991b4bac628676a7c8ce3bf711e9a0c0338e7993633821b2d27b5d0",
+  "expected_episodes": 1340,
+  "git_commit": "a396832d6d6a845362ed03451b472fd4825becae",
+  "git_dirty": false,
+  "heldout_manifest": "configs/m3/heldout.json",
+  "heldout_manifest_sha256": "f1369bace1fabcbbff925774fedd5d305b3c6294d7ad4c84f4bc606700fe43fa",
+  "historical_policy_ids": [
+    "m2-anchor",
+    "policy-0200000",
+    "policy-0800000",
+    "policy-1000256",
+    "policy-1400000",
+    "policy-1603584",
+    "policy-1800768",
+    "policy-2000000"
+  ],
+  "m2_baseline": "runs/m2/ppo-full/selected.pt",
+  "m2_baseline_sha256": "41bc3040faf260f928d2b14cf970d6e338fc56f3d80d0df50742b774d51d6647",
+  "m2_selection_report": "reports/m2/ppo-training-summary.json",
+  "m2_selection_report_sha256": "75c01df8def01304066e1dcfbea345973cc60d4513d5d4f30f97a117c5511e7b",
+  "max_environment_attempts": 2,
+  "max_episode_decisions": 525,
+  "official": true,
+  "pool": "reports/m3/pools/pool-v7.json",
+  "pool_file_sha256": "7616e3ede230e70d89ce2b16e1cb26697519834169bf1a5265323ca91fbf938d",
+  "pool_manifest_sha256": "cbe9cf972fccb4915964fbd3ef60ce2a1f70e2f1b758bb61e26f12b6a2e7fbc0",
+  "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+  "scenario_manifest_sha256": "bb8ae0b509d9d03ac034b1bd0d426f8af25d6a4186accdfb38795ae92f77dff6",
+  "schema_version": 1,
+  "selected_checkpoint": "runs/m3/league-full/candidate-boundary-0200000.pt",
+  "selected_checkpoint_sha256": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a",
+  "selection_report": "reports/m3/strong-base-selection.json",
+  "selection_report_sha256": "7d17397e8a1bb3626b9f4698701483c3306df700bc41ba397a0c499f907de067",
+  "test_cases_accessed": true,
+  "test_manifest": "configs/m3/test.json",
+  "test_manifest_sha256": "cd027692e310a1f25f71b019b47cf69b8cc084d5846f21381a9152cf1407437b",
+  "thresholds": {
+    "heldout_full_objective_rate": 0.8,
+    "no_opponent_full_objective_rate": 0.9,
+    "paired_score_lcb": 0.0,
+    "script_average_win_rate": 0.7,
+    "script_per_opponent_win_rate": 0.55
+  },
+  "training_test_cases_accessed": false
+}

@@ -140,13 +140,18 @@ def load_pool_history(path: Path) -> PoolHistoryEvidence:
         }:
             raise ValueError("PFSP pool snapshot fields do not match schema")
         probabilities = row["pfsp_probabilities"]
+        bootstrap_without_opponent = (
+            row["environment_steps"] == 0
+            and row["pool_size"] == 1
+            and probabilities == {}
+        )
         if (
             type(row["environment_steps"]) is not int
             or row["environment_steps"] < 0
             or type(row["pool_size"]) is not int
             or not 1 <= row["pool_size"] <= 12
             or not isinstance(probabilities, dict)
-            or not probabilities
+            or (not probabilities and not bootstrap_without_opponent)
             or any(
                 not isinstance(policy_id, str)
                 or not policy_id
@@ -155,7 +160,10 @@ def load_pool_history(path: Path) -> PoolHistoryEvidence:
                 or value < 0.0
                 for policy_id, value in probabilities.items()
             )
-            or not math.isclose(sum(probabilities.values()), 1.0, abs_tol=1e-9)
+            or (
+                probabilities
+                and not math.isclose(sum(probabilities.values()), 1.0, abs_tol=1e-9)
+            )
         ):
             raise ValueError("PFSP pool snapshot values are invalid")
         snapshots.append(

@@ -1,0 +1,57 @@
+{
+  "candidate_checkpoint_sha256": null,
+  "cases_sha256": "1af280329241e244a6a83a143854c3eeb53f60a52f7f5fc986e4df88c40a8eb2",
+  "crossplay_csv_sha256": "7a5c1e308af4134584d2cec5bef46f1e1c2f261b60df0e1edef55b3b778f110f",
+  "executed_rows": 360,
+  "expected_executed_rows": 360,
+  "matrix_sha256": "c656bc40fb7c3283683a16cd4874846875438101a74885d64481ea477a5398bf",
+  "policy_count": 8,
+  "pool_manifest_sha256": "cbe9cf972fccb4915964fbd3ef60ce2a1f70e2f1b758bb61e26f12b6a2e7fbc0",
+  "preflight_passed": true,
+  "protocol_inconsistencies": 0,
+  "roster": [
+    {
+      "checkpoint_sha256": "41bc3040faf260f928d2b14cf970d6e338fc56f3d80d0df50742b774d51d6647",
+      "kind": "checkpoint",
+      "policy_id": "m2-anchor"
+    },
+    {
+      "checkpoint_sha256": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a",
+      "kind": "checkpoint",
+      "policy_id": "policy-0200000"
+    },
+    {
+      "checkpoint_sha256": "46406d184ecd0b41fba6a2770259dba54d97f17f44ca5c89066e2bbfd97fb791",
+      "kind": "checkpoint",
+      "policy_id": "policy-0800000"
+    },
+    {
+      "checkpoint_sha256": "633dc1721475219f29717ae83dc0548cae687e1fcfc2f94e415d5fa49135eebe",
+      "kind": "checkpoint",
+      "policy_id": "policy-1000256"
+    },
+    {
+      "checkpoint_sha256": "ca08668fc65a8634ce3b9d1a92690ab23f02c7f488fe1b042755e7ac9e52c786",
+      "kind": "checkpoint",
+      "policy_id": "policy-1400000"
+    },
+    {
+      "checkpoint_sha256": "3c9e2ee405f4984ef769a4c0ca53372ad2eea65205804c79a35a2bb5415ad9d5",
+      "kind": "checkpoint",
+      "policy_id": "policy-1603584"
+    },
+    {
+      "checkpoint_sha256": "5d8533cb00da50e181ee6ca3844e36e73d0d9605ae090cbcabc6f63cfda26e5a",
+      "kind": "checkpoint",
+      "policy_id": "policy-1800768"
+    },
+    {
+      "checkpoint_sha256": "a4ad26cd3c4230fb8950231501dc58d24a689ffcf42a7126f516eb4d63f17d45",
+      "kind": "checkpoint",
+      "policy_id": "policy-2000000"
+    }
+  ],
+  "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+  "split": "validation",
+  "test_cases_accessed": false
+}
