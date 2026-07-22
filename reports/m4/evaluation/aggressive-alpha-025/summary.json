@@ -1,0 +1,68 @@
+{
+  "checkpoint_sha256": {
+    "aggressive": "74771ff9ea05feb8658ac62de4fd19763390ce3c396b59c752cbed90b20b9446",
+    "strong_base": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a"
+  },
+  "complete": true,
+  "engagement_initiation_delta": 0.09981267010430274,
+  "engagement_initiation_delta_ci": [
+    0.046023431341881235,
+    0.1705857317831762
+  ],
+  "environment_retries": 0,
+  "episodes": 200,
+  "expected_episodes": 200,
+  "gates": {
+    "complete": true,
+    "engagement_shift": true,
+    "objective_chase_controlled": true,
+    "per_opponent_retention": true,
+    "protocol_clean": true,
+    "skill_retention": true,
+    "valid_attack_rate": true
+  },
+  "passed": true,
+  "per_opponent_retention": {
+    "aggressive_script": 1.0,
+    "defensive_script": 0.9875,
+    "fixed_route": 0.9615384615384616,
+    "objective_first": 1.0615384615384615,
+    "random_legal": 1.0
+  },
+  "policies": {
+    "aggressive": {
+      "attack_rate": 0.008584191105068945,
+      "engagement_initiations_per_100_decisions": 0.09322198485142746,
+      "episodes": 100,
+      "forward_hit_rate": 0.0,
+      "invalid_attack_rate": 0.7330316742081447,
+      "mean_score_difference": 1.79,
+      "objective_chase_rate": 0.09049773755656108,
+      "objective_rate": 0.99,
+      "performance": 0.9575,
+      "retreat_rate": 0.0,
+      "valid_attack_rate": 0.2669683257918552,
+      "win_rate": 0.89
+    },
+    "strong_base": {
+      "attack_rate": 0.0,
+      "engagement_initiations_per_100_decisions": 0.0,
+      "episodes": 100,
+      "forward_hit_rate": 0.0,
+      "invalid_attack_rate": 0.0,
+      "mean_score_difference": 1.83,
+      "objective_chase_rate": 0.0,
+      "objective_rate": 1.0,
+      "performance": 0.9575,
+      "retreat_rate": 0.0,
+      "valid_attack_rate": 0.0,
+      "win_rate": 0.87
+    }
+  },
+  "protocol_inconsistencies": 0,
+  "schema_version": 1,
+  "skill_retention": 1.0,
+  "split": "validation",
+  "stage": "m4",
+  "test_cases_accessed": false
+}
