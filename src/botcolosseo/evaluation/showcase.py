@@ -481,6 +481,15 @@ def build_showcase_manifest(
     }
     run_identity = hashlib.sha256(canonical_json(identity_payload)).hexdigest()
     root = config.config_path.parents[2]
+    episode_target = config.evidence_dir / "episodes.jsonl"
+    try:
+        episode_log = episode_target.relative_to(root).as_posix()
+    except ValueError:
+        if config.publication:
+            raise ValueError(
+                "Public showcase evidence must stay inside the repository"
+            ) from None
+        episode_log = episode_target.name
     return {
         "schema_version": 1,
         "stage": config.stage,
@@ -496,7 +505,7 @@ def build_showcase_manifest(
             {"id": policy.policy_id, "label": policy.label}
             for policy in config.policies
         ],
-        "episode_log": str((config.evidence_dir / "episodes.jsonl").relative_to(root)),
+        "episode_log": episode_log,
         "episode_log_sha256": hashlib.sha256(episodes_path.read_bytes()).hexdigest(),
         "selected_case": selected_case,
         "highlight": list(highlight),
