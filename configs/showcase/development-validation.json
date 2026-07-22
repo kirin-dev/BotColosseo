@@ -1,0 +1,16 @@
+{
+  "cases": [
+    {
+      "core_spawn_index": 0,
+      "learner_side": "host",
+      "opponent": "random_legal",
+      "pair_index": 250,
+      "route": "direct_lower",
+      "seed": 656489971,
+      "split": "validation"
+    }
+  ],
+  "schema_version": 1,
+  "source": "configs/m2/validation.json",
+  "source_sha256": "3f5d0c4f6ac26541c6d159f53413f7c1c1cc44702c49159983a84a2ff5270993"
+}

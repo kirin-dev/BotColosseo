@@ -1,0 +1,22 @@
+schema_version: 1
+stage: development
+publication: false
+split: validation
+cases: configs/showcase/development-validation.json
+metrics: null
+policies:
+  - id: ppo
+    label: PPO
+    checkpoint: runs/m2/ppo-full/selected.pt
+    expected_sha256: 41bc3040faf260f928d2b14cf970d6e338fc56f3d80d0df50742b774d51d6647
+  - id: bc
+    label: BC
+    checkpoint: runs/m2/bc-full/best.pt
+    expected_sha256: 7eef23a06ea7177d5090ba90be65f8f2f1a847ecb15d81035c21a7e4567949d4
+render:
+  fps: 10
+  gif_seconds: 18
+  gif_max_bytes: 10000000
+  max_decisions: 525
+  output_dir: artifacts/showcase-development/media
+evidence_dir: artifacts/showcase-development/evidence

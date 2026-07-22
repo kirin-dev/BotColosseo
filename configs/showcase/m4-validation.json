@@ -1,0 +1,15 @@
+{
+  "cases": [
+    {"core_spawn_index": 1, "learner_side": "host", "opponent": "fixed_route", "pair_index": 250, "route": "direct_upper", "seed": 1019181764, "split": "validation"},
+    {"core_spawn_index": 1, "learner_side": "opponent", "opponent": "fixed_route", "pair_index": 250, "route": "direct_upper", "seed": 1019181764, "split": "validation"},
+    {"core_spawn_index": 2, "learner_side": "host", "opponent": "objective_first", "pair_index": 251, "route": "direct_lower", "seed": 245721494, "split": "validation"},
+    {"core_spawn_index": 2, "learner_side": "opponent", "opponent": "objective_first", "pair_index": 251, "route": "direct_lower", "seed": 245721494, "split": "validation"},
+    {"core_spawn_index": 0, "learner_side": "host", "opponent": "aggressive_script", "pair_index": 252, "route": "flank", "seed": 1891682600, "split": "validation"},
+    {"core_spawn_index": 0, "learner_side": "opponent", "opponent": "aggressive_script", "pair_index": 252, "route": "flank", "seed": 1891682600, "split": "validation"},
+    {"core_spawn_index": 1, "learner_side": "host", "opponent": "defensive_script", "pair_index": 253, "route": "direct_lower", "seed": 1200430541, "split": "validation"},
+    {"core_spawn_index": 1, "learner_side": "opponent", "opponent": "defensive_script", "pair_index": 253, "route": "direct_lower", "seed": 1200430541, "split": "validation"}
+  ],
+  "schema_version": 1,
+  "source": "configs/m3/validation.json",
+  "source_sha256": "1af280329241e244a6a83a143854c3eeb53f60a52f7f5fc986e4df88c40a8eb2"
+}
