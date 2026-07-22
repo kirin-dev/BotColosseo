@@ -14,6 +14,7 @@ import yaml
 
 from botcolosseo.agents.league_opponents import OpponentSpec, sha256_file
 from botcolosseo.agents.model import AsymmetricActorCritic
+from botcolosseo.agents.style_model import StyledActorCritic
 from botcolosseo.cli.train_ppo import (
     _atomic_json,
     _copy_checkpoint,
@@ -30,6 +31,10 @@ from botcolosseo.evaluation.m2_evidence_audit import (
 from botcolosseo.scenarios.duel_splits import DUEL_OPPONENTS
 from botcolosseo.scenarios.league_splits import load_league_cases
 from botcolosseo.scenarios.regions import RegionGraph
+from botcolosseo.training.aggressive_reward import (
+    AggressiveRewardConfig,
+    AggressiveRewardLedger,
+)
 from botcolosseo.training.bc import append_jsonl, seed_everything
 from botcolosseo.training.historical_pool import HistoricalPoolManifest, load_pool
 from botcolosseo.training.league_checkpoint import (
@@ -43,6 +48,7 @@ from botcolosseo.training.league_checkpoint import (
 from botcolosseo.training.league_rollout import LeagueRolloutCollector
 from botcolosseo.training.league_schedule import LeagueSchedule
 from botcolosseo.training.ppo import ExcessiveKLError, PPOTrainer
+from botcolosseo.training.style_ppo import StylePPOTrainer
 
 _CONFIG_FIELDS = {
     "schema_version",
@@ -68,6 +74,7 @@ _CONFIG_FIELDS = {
     "max_kl",
     "shaping_decay_steps",
 }
+_STYLE_FIELDS = {"name", "bottleneck", "lambda_style", "beta_kl", "reward"}
 
 
 def _candidate_checkpoint_step(
@@ -124,11 +131,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--allow-integrity-qualified-base", action="store_true"
     )
     parser.add_argument("--preflight", action="store_true")
+    parser.add_argument("--style", choices=("aggressive",))
     return parser
 
 
-def _validate_config(config: dict[str, Any]) -> None:
-    if set(config) != _CONFIG_FIELDS:
+def _validate_config(config: dict[str, Any], *, style: str | None = None) -> None:
+    expected = _CONFIG_FIELDS | ({"style"} if style is not None else set())
+    if set(config) != expected:
         raise ValueError("M3 league config fields do not match the frozen schema")
     if config["schema_version"] != 1:
         raise ValueError("Unsupported M3 league config schema")
@@ -157,6 +166,20 @@ def _validate_config(config: dict[str, Any]) -> None:
         raise ValueError("M3 league config contains nonpositive training values")
     if int(config["burn_in"]) < 0 or float(config["weight_decay"]) < 0.0:
         raise ValueError("M3 league config contains invalid regularization values")
+    if style is not None:
+        style_config = config["style"]
+        if not isinstance(style_config, dict) or set(style_config) != _STYLE_FIELDS:
+            raise ValueError("Style config fields do not match the frozen schema")
+        if style_config["name"] != style:
+            raise ValueError("Requested style does not match style config")
+        if int(style_config["bottleneck"]) <= 0:
+            raise ValueError("Style adapter bottleneck must be positive")
+        if float(style_config["lambda_style"]) < 0 or float(style_config["beta_kl"]) < 0:
+            raise ValueError("Style coefficients must be nonnegative")
+        reward = style_config["reward"]
+        if not isinstance(reward, dict):
+            raise ValueError("Style reward config must be a mapping")
+        AggressiveRewardConfig(**reward)
 
 
 def _validate_base_authorization(
@@ -216,8 +239,11 @@ def _status_json(payload: dict[str, object]) -> str:
 
 def _load_history(
     path: Path,
-) -> tuple[Counter[str], Counter[str], Counter[str], int, int, float, int]:
+) -> tuple[
+    Counter[str], Counter[str], Counter[str], Counter[str], int, int, float, int
+]:
     events: Counter[str] = Counter()
+    style_rewards: Counter[str] = Counter()
     sources: Counter[str] = Counter()
     opponents: Counter[str] = Counter()
     episodes = 0
@@ -225,11 +251,21 @@ def _load_history(
     reward = 0.0
     kl_stops = 0
     if not path.exists():
-        return events, sources, opponents, episodes, objectives, reward, kl_stops
+        return (
+            events,
+            style_rewards,
+            sources,
+            opponents,
+            episodes,
+            objectives,
+            reward,
+            kl_stops,
+        )
     for line in path.read_text(encoding="utf-8").splitlines():
         record = json.loads(line)
         if record.get("kind") == "rollout":
             events.update(record["event_counts"])
+            style_rewards.update(record.get("style_reward_components", {}))
         elif record.get("kind") == "episode":
             episodes += 1
             objectives += int(record["objective_completed"])
@@ -238,7 +274,16 @@ def _load_history(
             opponents[str(record["opponent"])] += 1
         elif record.get("kind") == "kl_early_stop":
             kl_stops += 1
-    return events, sources, opponents, episodes, objectives, reward, kl_stops
+    return (
+        events,
+        style_rewards,
+        sources,
+        opponents,
+        episodes,
+        objectives,
+        reward,
+        kl_stops,
+    )
 
 
 def _candidate_manifest(run_dir: Path) -> list[dict[str, object]]:
@@ -297,7 +342,7 @@ def main(argv: list[str] | None = None) -> int:
     config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
     if not isinstance(config, dict):
         raise ValueError("M3 league config must be a mapping")
-    _validate_config(config)
+    _validate_config(config, style=args.style)
     target_steps = args.environment_steps or int(config["environment_steps"])
     stop_after = args.stop_after_steps or target_steps
     rollout_steps = args.rollout_steps or int(config["rollout_steps"])
@@ -315,17 +360,20 @@ def main(argv: list[str] | None = None) -> int:
     if not isinstance(scenario_hash, str):
         raise ValueError("Scenario manifest is missing wad_sha256")
     base_hash = sha256_file(base_checkpoint)
-    audit_result = _m2_audit_result(
-        root, integrity_only=args.allow_integrity_qualified_base
-    )
-    base_promoted = _validate_base_authorization(
-        base_hash,
-        audit_result,
-        allow_provisional=args.allow_provisional_base,
-        allow_integrity_qualified=args.allow_integrity_qualified_base,
-    )
+    if args.style is None:
+        audit_result = _m2_audit_result(
+            root, integrity_only=args.allow_integrity_qualified_base
+        )
+        base_promoted = _validate_base_authorization(
+            base_hash,
+            audit_result,
+            allow_provisional=args.allow_provisional_base,
+            allow_integrity_qualified=args.allow_integrity_qualified_base,
+        )
+    else:
+        base_promoted = False
     pool = load_pool(pool_path, artifact_root=root)
-    if pool.entries[0].checkpoint_sha256 != base_hash:
+    if args.style is None and pool.entries[0].checkpoint_sha256 != base_hash:
         raise ValueError("Historical pool anchor does not match the M2 base checkpoint")
     train_path = _resolve(root, Path(str(config["train_cases"])))
     train_cases = load_league_cases(
@@ -352,16 +400,32 @@ def main(argv: list[str] | None = None) -> int:
         payoff_report_hash=sha256_file(payoff_path),
         scenario_hash=scenario_hash,
     )
-    model = AsymmetricActorCritic()
-    warm_start_from_m2(
-        base_checkpoint,
-        model,
-        expected_checkpoint_sha256=base_hash,
-        expected_scenario_hash=scenario_hash,
-    )
+    base_model = AsymmetricActorCritic()
+    if args.style is None:
+        warm_start_from_m2(
+            base_checkpoint,
+            base_model,
+            expected_checkpoint_sha256=base_hash,
+            expected_scenario_hash=scenario_hash,
+        )
+        model = base_model
+    else:
+        payload = torch.load(base_checkpoint, map_location="cpu", weights_only=False)
+        identity_payload = payload.get("identity")
+        if payload.get("schema_version") != 1 or not isinstance(identity_payload, dict):
+            raise ValueError("Style base must be an M3 league checkpoint")
+        if identity_payload.get("scenario_hash") != scenario_hash:
+            raise ValueError("Style base checkpoint scenario hash does not match")
+        base_model.load_state_dict(payload["model"], strict=True)
+        style_config = config["style"]
+        model = StyledActorCritic.from_base(
+            base_model, bottleneck=int(style_config["bottleneck"])
+        )
     preflight = {
         "base_checkpoint_sha256": base_hash,
         "base_promoted": base_promoted,
+        "style": args.style,
+        "style_base_capability_passed": None if args.style is None else False,
         "config_hash": identity.config_hash,
         "payoff_report_hash": identity.payoff_report_hash,
         "pool_manifest_sha256": pool.manifest_sha256,
@@ -394,8 +458,8 @@ def main(argv: list[str] | None = None) -> int:
         minibatch_sequences=int(config["minibatch_sequences"]),
         update_epochs=int(config["update_epochs"]),
     )
-    trainer = PPOTrainer.create(
-        model,
+    trainer_factory = PPOTrainer.create if args.style is None else StylePPOTrainer.create
+    trainer_kwargs = dict(
         learning_rate=float(config["learning_rate"]),
         weight_decay=float(config["weight_decay"]),
         total_updates=total_updates,
@@ -406,6 +470,9 @@ def main(argv: list[str] | None = None) -> int:
         entropy_coefficient=float(config["entropy_coefficient"]),
         max_kl=float(config["max_kl"]),
     )
+    if args.style is not None:
+        trainer_kwargs["beta_kl"] = float(config["style"]["beta_kl"])
+    trainer = trainer_factory(model, **trainer_kwargs)
     environment_steps = 0
     episode_index = 0
     transition_record: dict[str, object] | None = None
@@ -466,6 +533,7 @@ def main(argv: list[str] | None = None) -> int:
         raise ValueError("Resume checkpoint is beyond --stop-after-steps")
     (
         event_counts,
+        style_reward_components,
         source_counts,
         opponent_counts,
         logged_episodes,
@@ -489,6 +557,15 @@ def main(argv: list[str] | None = None) -> int:
         episode_index=episode_index,
         gamma=float(config["gamma"]),
         gae_lambda=float(config["gae_lambda"]),
+        reward_shaper_factory=(
+            None
+            if args.style is None
+            else lambda side: AggressiveRewardLedger(
+                AggressiveRewardConfig(**config["style"]["reward"]),
+                learner_side=side,
+                scale=float(config["style"]["lambda_style"]),
+            )
+        ),
     )
     run_dir.mkdir(parents=True, exist_ok=True)
     try:
@@ -510,12 +587,18 @@ def main(argv: list[str] | None = None) -> int:
             )
             environment_steps += collection.environment_steps
             event_counts.update(collection.event_counts)
+            style_reward_components.update(
+                getattr(collection, "reward_components", {})
+            )
             append_jsonl(
                 metrics_path,
                 {
                     "kind": "rollout",
                     "environment_steps": environment_steps,
                     "event_counts": collection.event_counts,
+                    "style_reward_components": getattr(
+                        collection, "reward_components", {}
+                    ),
                     "episodes_completed": len(collection.episodes),
                 },
             )
@@ -551,10 +634,14 @@ def main(argv: list[str] | None = None) -> int:
                         )
                         stop_update = True
                         break
-                    append_jsonl(
-                        metrics_path,
-                        {"kind": "train", "epoch": epoch, **asdict(metrics)},
-                    )
+                    train_record = {
+                        "kind": "train",
+                        "epoch": epoch,
+                        **asdict(metrics),
+                    }
+                    if args.style is not None:
+                        train_record["style_base_kl"] = trainer.last_style_kl
+                    append_jsonl(metrics_path, train_record)
                 if stop_update:
                     break
             checkpoint_state = LeagueCheckpointState(
@@ -592,6 +679,9 @@ def main(argv: list[str] | None = None) -> int:
                 "environment_steps": environment_steps,
                 "episode_count": collector.episode_index,
                 "event_counts": dict(sorted(event_counts.items())),
+                "style_reward_components": dict(
+                    sorted(style_reward_components.items())
+                ),
                 "kl_early_stop_count": kl_stops,
                 "objective_completion_count": objectives,
                 "opponent_counts": dict(sorted(opponent_counts.items())),

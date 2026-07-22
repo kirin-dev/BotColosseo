@@ -801,3 +801,46 @@ Do not create `configs/showcase/m4.yaml`, publish files under
 `docs/assets/showcase/`, or add M4 media to README before the production metric
 loader verifies the stage, validation split, gate booleans, policy set, and all
 checkpoint hashes.
+
+## M4 Aggressive candidate training
+
+The 1,024-step CUDA/ViZDoom smoke completed on 2026-07-22 with a real episode,
+16 optimizer updates, capped reward-component logs, and finite style-to-base
+KL. Run the first 400k production candidate on the second physical GPU:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+mkdir -p runs/m4/aggressive-main
+nohup env \
+  CUDA_VISIBLE_DEVICES=1 \
+  PYTHONPATH="$PWD/src" \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python -u \
+  scripts/train_league.py \
+  --style aggressive \
+  --config configs/m4/aggressive.yaml \
+  --base-checkpoint runs/m3/league-full/candidate-boundary-0200000.pt \
+  --pool /home/wencong/BotColosseo/.worktrees/m3-strong-base/reports/m3/pools/pool-v1.json \
+  --payoffs /home/wencong/BotColosseo/.worktrees/m3-strong-base/reports/m3/pools/payoffs-v1.json \
+  --run-dir runs/m4/aggressive-main \
+  --device cuda:0 \
+  > runs/m4/aggressive-main/train.log 2>&1 &
+echo $! > runs/m4/aggressive-main/train.pid
+```
+
+Monitor without modifying the run:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+tail -f runs/m4/aggressive-main/train.log
+```
+
+Or inspect structured progress:
+
+```bash
+jq '{completed, environment_steps, episode_count, updates,
+     style_reward_components, kl_early_stop_count}' \
+  runs/m4/aggressive-main/summary.json
+```
+
+Expected completion is `environment_steps: 400000` and `completed: true`.
+This completes training only; it does not claim the Aggressive or M4 gate.

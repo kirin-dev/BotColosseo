@@ -45,6 +45,7 @@ class DuelRolloutCollection:
     environment_steps: int
     episodes: tuple[DuelEpisodeResult, ...]
     event_counts: dict[str, int]
+    reward_components: dict[str, float]
 
 
 class DuelOpponentController(Protocol):
@@ -55,6 +56,16 @@ class DuelOpponentController(Protocol):
         observation: DuelActorObservation,
         privileged_state: Callable[[], DuelPrivilegedState],
     ) -> MacroAction: ...
+
+
+class StyleRewardShaper(Protocol):
+    def apply(
+        self,
+        action: MacroAction,
+        events: tuple[Any, ...],
+        *,
+        has_core: bool,
+    ) -> Any: ...
 
 
 class ScriptDuelOpponentController:
@@ -181,6 +192,7 @@ class DuelRolloutCollector:
         | None = None,
         action_sampler: Callable[[torch.distributions.Categorical], torch.Tensor]
         | None = None,
+        reward_shaper_factory: Callable[[str], StyleRewardShaper] | None = None,
     ) -> None:
         if (
             max_decisions <= 0
@@ -202,6 +214,8 @@ class DuelRolloutCollector:
         self._teacher_factory = teacher_factory
         self._opponent_factory = opponent_factory or self._make_script_opponent
         self._action_sampler = action_sampler or (lambda distribution: distribution.sample())
+        self._reward_shaper_factory = reward_shaper_factory
+        self._reward_shaper: StyleRewardShaper | None = None
         self._environment: Any | None = None
         self._opponent_controller: DuelOpponentController | None = None
         self._observations: DuelObservations | None = None
@@ -247,6 +261,11 @@ class DuelRolloutCollector:
         self._episode_decisions = 0
         self._episode_reward = 0.0
         self._initial_score = learner.own_score
+        self._reward_shaper = (
+            None
+            if self._reward_shaper_factory is None
+            else self._reward_shaper_factory(case.learner_side)
+        )
 
     def _learner_observation(self) -> DuelActorObservation:
         if self._case is None or self._observations is None:
@@ -275,6 +294,7 @@ class DuelRolloutCollector:
         buffer = RolloutBuffer(capacity=steps, environments=1)
         episodes: list[DuelEpisodeResult] = []
         events: Counter[str] = Counter()
+        reward_components: Counter[str] = Counter()
         try:
             for offset in range(steps):
                 global_step = start_environment_step + offset
@@ -335,6 +355,14 @@ class DuelRolloutCollector:
                     if case.learner_side == "host"
                     else step.opponent_reward
                 )
+                if self._reward_shaper is not None:
+                    shaped = self._reward_shaper.apply(
+                        learner_action,
+                        step.events,
+                        has_core=observation.has_core,
+                    )
+                    reward += float(shaped.total)
+                    reward_components.update(shaped.components)
                 buffer.append(
                     RolloutStep(
                         frames=inputs[0][:, 0].cpu(),
@@ -386,6 +414,7 @@ class DuelRolloutCollector:
             environment_steps=steps,
             episodes=tuple(episodes),
             event_counts=dict(sorted(events.items())),
+            reward_components=dict(sorted(reward_components.items())),
         )
 
     def _close_episode(self) -> None:
@@ -394,6 +423,7 @@ class DuelRolloutCollector:
         self._observations = None
         self._case = None
         self._hidden = None
+        self._reward_shaper = None
         if environment is not None:
             environment.close()
 

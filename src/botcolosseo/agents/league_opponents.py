@@ -11,6 +11,7 @@ import torch
 from botcolosseo.agents.checkpoint import CheckpointMetadata
 from botcolosseo.agents.duel_teachers import create_duel_teacher
 from botcolosseo.agents.model import AsymmetricActorCritic, RecurrentActor
+from botcolosseo.agents.style_model import StyledActorCritic
 from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.duel_types import DuelActorObservation, DuelPrivilegedState
 from botcolosseo.scenarios.regions import RegionGraph
@@ -131,12 +132,24 @@ class CheckpointOpponentPolicy:
         scenario_hash = _checkpoint_scenario_hash(payload)
         if scenario_hash != spec.scenario_hash:
             raise ValueError("Opponent checkpoint scenario hash does not match")
-        model = AsymmetricActorCritic()
+        state_dict = payload.get("model")
+        if not isinstance(state_dict, dict):
+            raise ValueError("Opponent checkpoint is missing model weights")
         try:
-            model.load_state_dict(payload["model"], strict=True)
+            if any(name.startswith("adapter.") for name in state_dict):
+                bottleneck = int(state_dict["adapter.layers.0.weight"].shape[0])
+                styled = StyledActorCritic.from_base(
+                    AsymmetricActorCritic(), bottleneck=bottleneck
+                )
+                styled.load_state_dict(state_dict, strict=True)
+                actor = styled.public_actor()
+            else:
+                model = AsymmetricActorCritic()
+                model.load_state_dict(state_dict, strict=True)
+                actor = model.actor
         except (KeyError, RuntimeError) as error:
             raise ValueError("Opponent checkpoint model dimensions do not match") from error
-        return cls(spec, model.actor, device=device)
+        return cls(spec, actor, device=device)
 
     def reset(self) -> None:
         self._hidden = self._actor.initial_state(1, device=self._device)
