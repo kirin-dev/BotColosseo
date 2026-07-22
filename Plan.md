@@ -1,7 +1,7 @@
 # Bot Colosseo 最终技术方案
 
-> Bot Colosseo: Goal-Oriented Controllable Game Bots via Skill-Preserving Policy Shaping
-> 面向玩家体验的可控风格游戏 Bot：基于能力保持与策略塑形
+> BotColosseo: Controllable Game Bot Styles via Skill-Preserving Policy Shaping
+> BotColosseo：可控风格游戏 Bot——基于能力保持的策略塑形
 
 ## 1. 项目定位
 
