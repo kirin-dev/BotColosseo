@@ -53,3 +53,45 @@ def write_mp4(
         temporary_path.unlink(missing_ok=True)
         raise
     return output_path
+
+
+def write_gif(
+    frames: Iterable[NDArray[np.generic]],
+    output_path: Path,
+    *,
+    fps: int,
+    max_bytes: int,
+) -> Path:
+    if fps <= 0 or max_bytes <= 0:
+        raise ValueError("GIF fps and max_bytes must be positive")
+    output_path = output_path.expanduser().resolve()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = output_path.with_name(f".{output_path.stem}.tmp{output_path.suffix}")
+    try:
+        with imageio.get_writer(
+            temporary,
+            format="GIF",
+            mode="I",
+            duration=1000.0 / fps,
+            loop=0,
+        ) as writer:
+            count = 0
+            for frame in frames:
+                writer.append_data(normalize_rgb_frame(frame))
+                count += 1
+        if count == 0:
+            raise ValueError("Cannot write an empty GIF")
+        if temporary.stat().st_size > max_bytes:
+            raise ValueError("Showcase GIF exceeds the configured byte ceiling")
+        temporary.replace(output_path)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
+    return output_path
+
+
+def read_video_frames(path: Path) -> tuple[NDArray[np.uint8], ...]:
+    frames = tuple(normalize_rgb_frame(frame) for frame in imageio.get_reader(path))
+    if not frames:
+        raise ValueError("Cannot read an empty video")
+    return frames
