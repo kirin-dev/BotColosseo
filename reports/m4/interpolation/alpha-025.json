@@ -1,0 +1,13 @@
+{
+  "alpha": 0.25,
+  "base_checkpoint_sha256": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a",
+  "checkpoint": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/runs/m4/aggressive-interpolation/alpha-025.pt",
+  "checkpoint_sha256": "74771ff9ea05feb8658ac62de4fd19763390ce3c396b59c752cbed90b20b9446",
+  "distilled_checkpoint_sha256": "5889925ad5e63add235abc6f4baa1c54b197e58397acbdf6f951be80849a428b",
+  "frozen_base_actor": true,
+  "interpolation_sha256": "5edd3e59c698c09781e18a2b5bf9d2b2b59f30e1d37871e2b353cc1adab7ebaa",
+  "ppo_checkpoint_sha256": "e375e98a405b6e699054427459c07b787d8bfac2e3f83d9abc8c2ff3e15ae9b2",
+  "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+  "style": "aggressive",
+  "test_cases_accessed": false
+}
