@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import pytest
@@ -21,6 +21,20 @@ class StubSummary:
     complete: bool = True
     passed: bool = True
     pool_size: int = 8
+    protocol_inconsistencies: int = 0
+    artifact_inconsistencies: int = 0
+    gates: dict[str, bool] = field(
+        default_factory=lambda: {
+            "official": True,
+            "complete": True,
+            "pool_size": True,
+            "protocol_clean": True,
+            "artifact_clean": True,
+            "heldout_core_strata_complete": True,
+            "confidence_intervals_finite": True,
+            "historical_worst_case_improved": True,
+        }
+    )
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -30,6 +44,9 @@ class StubSummary:
             "complete": self.complete,
             "passed": self.passed,
             "pool_size": self.pool_size,
+            "protocol_inconsistencies": self.protocol_inconsistencies,
+            "artifact_inconsistencies": self.artifact_inconsistencies,
+            "gates": self.gates,
         }
 
 
@@ -66,7 +83,9 @@ def _row() -> M3EpisodeRecord:
     )
 
 
-def _evidence(tmp_path: Path) -> tuple[Path, StubSummary]:
+def _evidence(
+    tmp_path: Path, *, summary: StubSummary | None = None
+) -> tuple[Path, StubSummary]:
     report_dir = tmp_path / "official"
     report_dir.mkdir(parents=True)
     identity = {
@@ -81,7 +100,7 @@ def _evidence(tmp_path: Path) -> tuple[Path, StubSummary]:
         json.dumps(identity, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     append_episode_row(report_dir / "episodes.jsonl", _row())
-    summary = StubSummary()
+    summary = StubSummary() if summary is None else summary
     write_m3_evidence(report_dir, summary=summary, run_identity=identity)
     return report_dir, summary
 
@@ -134,3 +153,50 @@ def test_audit_rejects_missing_or_tampered_artifacts_even_with_updated_hash(
     (report_dir / "episodes.jsonl").unlink()
     with pytest.raises(FileNotFoundError, match="episodes"):
         audit_m3_evidence(report_dir)
+
+
+def test_integrity_only_accepts_hash_consistent_capability_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    gates = StubSummary().gates | {"historical_worst_case_improved": False}
+    failed = StubSummary(passed=False, gates=gates)
+    report_dir, _ = _evidence(tmp_path, summary=failed)
+    monkeypatch.setattr(
+        "botcolosseo.evaluation.m3_evidence_audit.evaluate_m3_records",
+        lambda rows, **kwargs: failed,
+    )
+
+    with pytest.raises(ValueError, match="did not pass"):
+        audit_m3_evidence(report_dir)
+
+    result = audit_m3_evidence(report_dir, require_capability_pass=False)
+
+    assert result == {
+        "episodes": 1,
+        "official": True,
+        "integrity_passed": True,
+        "capability_passed": False,
+        "passed": False,
+        "failed_gates": ["historical_worst_case_improved"],
+        "pool_size": 8,
+        "selected_checkpoint_sha256": "a" * 64,
+    }
+
+
+def test_integrity_only_still_rejects_integrity_gate_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    gates = StubSummary().gates | {"protocol_clean": False}
+    failed = StubSummary(
+        passed=False,
+        protocol_inconsistencies=1,
+        gates=gates,
+    )
+    report_dir, _ = _evidence(tmp_path, summary=failed)
+    monkeypatch.setattr(
+        "botcolosseo.evaluation.m3_evidence_audit.evaluate_m3_records",
+        lambda rows, **kwargs: failed,
+    )
+
+    with pytest.raises(ValueError, match="integrity"):
+        audit_m3_evidence(report_dir, require_capability_pass=False)

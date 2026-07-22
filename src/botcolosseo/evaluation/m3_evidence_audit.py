@@ -8,6 +8,16 @@ from botcolosseo.cli.evaluate_m3 import load_episode_rows
 from botcolosseo.evaluation.m3 import evaluate_m3_records
 from botcolosseo.training.historical_pool import load_pool
 
+_INTEGRITY_GATES = {
+    "official",
+    "complete",
+    "pool_size",
+    "protocol_clean",
+    "artifact_clean",
+    "heldout_core_strata_complete",
+    "confidence_intervals_finite",
+}
+
 
 def _object(path: Path) -> dict[str, object]:
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -82,8 +92,13 @@ def _audit_repository_bindings(identity: dict[str, object], *, root: Path) -> No
 
 
 def audit_m3_evidence(
-    report_dir: Path, *, artifact_root: Path | None = None
+    report_dir: Path,
+    *,
+    artifact_root: Path | None = None,
+    require_capability_pass: bool = True,
 ) -> dict[str, object]:
+    if not isinstance(require_capability_pass, bool):
+        raise ValueError("M3 capability-pass requirement must be boolean")
     report_dir = report_dir.expanduser().resolve()
     paths = {
         "identity": report_dir / "run-identity.json",
@@ -135,7 +150,15 @@ def audit_m3_evidence(
     recomputed_payload = recomputed.to_dict()
     if recomputed_payload != stored_summary:
         raise ValueError("M3 summary differs from raw-row recomputation")
-    if not (recomputed.official and recomputed.complete and recomputed.passed):
+    failed_gates = sorted(
+        name for name, passed in recomputed.gates.items() if not passed
+    )
+    failed_integrity = sorted(_INTEGRITY_GATES.intersection(failed_gates))
+    if failed_integrity:
+        raise ValueError(
+            f"Recomputed M3 evidence failed integrity gates: {failed_integrity}"
+        )
+    if require_capability_pass and not recomputed.passed:
         raise ValueError("Recomputed M3 evidence did not pass")
     if manifest.get("episodes") != recomputed.episodes:
         raise ValueError("M3 manifest episode count does not match raw rows")
@@ -144,7 +167,10 @@ def audit_m3_evidence(
     return {
         "episodes": recomputed.episodes,
         "official": True,
-        "passed": True,
+        "integrity_passed": True,
+        "capability_passed": recomputed.passed,
+        "passed": recomputed.passed,
+        "failed_gates": failed_gates,
         "pool_size": recomputed.pool_size,
         "selected_checkpoint_sha256": identity["selected_checkpoint_sha256"],
     }
