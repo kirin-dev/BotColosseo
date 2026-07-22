@@ -8,11 +8,13 @@ discarding its task skill. The approved technical design is in [Plan.md](Plan.md
 
 ## Current status
 
-Milestone 1 is complete. Milestone 2 now has a real synchronous 1v1 environment,
-a fair-observation recurrent Actor, 120,000 demonstration transitions, pure-BC
-initialization, and a 1,000,000-step PPO run. The official 1,500-game paired M2
-test is frozen and prepared but has not yet been run, so no PPO-over-BC test
-claim is made here.
+Milestone 1 passed its frozen capability gate. Milestone 2 delivered a real
+synchronous 1v1 environment, a fair-observation recurrent Actor, 120,000
+demonstration transitions, pure-BC initialization, and a 1,000,000-step PPO
+run. Its official 1,500-game paired test is complete and integrity-clean, but
+the frozen capability gate did **not** pass: PPO clearly beat RandomLegal but
+did not improve enough over the strong BC baseline. No M2 capability-pass claim
+is made here.
 
 ![M2 fair-observation learning system](docs/assets/m2-system.png)
 
@@ -29,6 +31,17 @@ These are validation-only selection numbers. See the
 [training summaries](reports/m2/). The showcase uses the selected checkpoints
 on one frozen validation seed; it is qualitative rather than an official
 performance sample.
+
+| Official M2 test (500 games/policy) | Win rate | Objective rate |
+|---|---:|---:|
+| PPO | 77.0% | 93.2% |
+| Behavioral cloning | 75.2% | 97.8% |
+| RandomLegal | 34.4% | 22.0% |
+
+The complete paired rows and frozen gate decisions are tracked in
+[`reports/m2/`](reports/m2/). Historical-opponent/PFSP training is now the M3
+route for testing whether robustness can improve beyond this M2 plateau; its
+Strong Base result remains pending.
 
 Milestone 1 established the source-built Crystal Run scenario, auditable ACS
 event protocol, fair single-agent interface, five deterministic Teachers,

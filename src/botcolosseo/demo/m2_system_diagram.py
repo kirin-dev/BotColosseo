@@ -107,12 +107,12 @@ def diagram_spec() -> SystemDiagramSpec:
         ),
         "official_evaluation": DiagramNode(
             12.7,
-            0.55,
+            0.35,
             2.8,
-            1.35,
+            1.65,
             "Official M2 gate",
-            "1,500 paired test games\nnot run yet",
-            "pending",
+            "1,500 paired test games\nPPO 77.0% | BC 75.2%\ncapability gate not met",
+            "evidence",
         ),
     }
     edges = (
@@ -146,7 +146,7 @@ def diagram_spec() -> SystemDiagramSpec:
         DiagramEdge(
             "validation_evidence",
             "official_evaluation",
-            "pending test",
+            "frozen test",
             source_anchor="bottom",
             target_anchor="top",
         ),
@@ -166,7 +166,6 @@ def render_system_diagram(output: Path) -> Path:
         "runtime": ("#DBEAFE", "#2563EB"),
         "training_only": ("#FFEDD5", "#EA580C"),
         "evidence": ("#D1FAE5", "#059669"),
-        "pending": ("#E2E8F0", "#64748B"),
     }
     fig, axis = plt.subplots(figsize=(16, 8.5), dpi=150)
     fig.patch.set_facecolor("#F8FAFC")

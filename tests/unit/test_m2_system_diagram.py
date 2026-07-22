@@ -14,7 +14,8 @@ def test_diagram_spec_keeps_privileged_state_out_of_actor_inputs() -> None:
         edge.source == "privileged_state" and edge.target == "critic"
         for edge in spec.edges
     )
-    assert spec.nodes["official_evaluation"].status == "pending"
+    assert spec.nodes["official_evaluation"].status == "evidence"
+    assert "capability gate not met" in spec.nodes["official_evaluation"].detail
 
 
 def test_system_diagram_renders_nonempty_png(tmp_path: Path) -> None:
