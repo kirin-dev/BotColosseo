@@ -1,0 +1,11 @@
+{
+  "episodes": 1340,
+  "episodes_sha256": "1a0d6c47cb1e3360c78a12d39a947cbd5b343c8e78af7f960f23442c4bd8be9a",
+  "m2_baseline_sha256": "41bc3040faf260f928d2b14cf970d6e338fc56f3d80d0df50742b774d51d6647",
+  "official": true,
+  "pool_manifest_sha256": "cbe9cf972fccb4915964fbd3ef60ce2a1f70e2f1b758bb61e26f12b6a2e7fbc0",
+  "run_identity_sha256": "7167b481a1c1804e078885cff317c7533f3df0fb909cc04cde4c9fc7991a9692",
+  "schema_version": 1,
+  "selected_checkpoint_sha256": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a",
+  "summary_sha256": "c4efc046d7c24e82b08324f7525325f68524ea25e1369a0a19501b914c423040"
+}

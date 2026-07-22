@@ -39,9 +39,24 @@ performance sample.
 | RandomLegal | 34.4% | 22.0% |
 
 The complete paired rows and frozen gate decisions are tracked in
-[`reports/m2/`](reports/m2/). Historical-opponent/PFSP training is now the M3
-route for testing whether robustness can improve beyond this M2 plateau; its
-Strong Base result remains pending.
+[`reports/m2/`](reports/m2/).
+
+M3 then completed 2,000,000 environment steps of historical-opponent/PFSP
+training, an eight-policy pool, 360-game final cross-play, and a 1,340-game
+official test. The evidence is complete with zero protocol and artifact
+inconsistencies, but the M3 capability gate did **not** pass. The selected
+policy passed every script, objective, held-out, and paired-score gate; its
+12.5% historical worst-case win rate did not strictly improve over the M2
+baseline's 15.0%.
+
+![M3 validation cross-play](docs/assets/m3-crossplay-heatmap.png)
+
+![M3 PFSP pool history](docs/assets/m3-pfsp-pool-history.png)
+
+See the [M3 evidence record](docs/milestones/m3.md) and
+[`reports/m3/official/summary.json`](reports/m3/official/summary.json). The
+validation-selected checkpoint remains useful as a style base candidate, but
+is not presented as a passed Strong Base.
 
 Milestone 1 established the source-built Crystal Run scenario, auditable ACS
 event protocol, fair single-agent interface, five deterministic Teachers,
@@ -61,8 +76,9 @@ The official report records zero event-protocol inconsistencies. See the
 [Teacher montage](docs/assets/m1-teacher-montage.mp4), [M1 runbook](docs/milestones/m1.md),
 and [raw evidence](reports/m1/summary.json).
 
-The M3 Strong Base/PFSP gate, difficulty control, and the learned Aggressive,
-Defensive, and Explorer checkpoints remain pending.
+Difficulty control and the learned Aggressive, Defensive, and Explorer
+checkpoints remain pending. M3's engineering workflow is complete; its failed
+historical worst-case gate is retained for later repair.
 
 ## Quick start
 
