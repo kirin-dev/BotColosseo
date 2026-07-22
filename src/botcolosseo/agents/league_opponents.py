@@ -78,6 +78,29 @@ def _checkpoint_scenario_hash(payload: dict[str, object]) -> str:
             return CheckpointMetadata(**payload["metadata"]).scenario_hash  # type: ignore[arg-type]
         except TypeError as error:
             raise ValueError("Invalid opponent checkpoint metadata") from error
+    if payload.get("kind") == "style_interpolation":
+        required = (
+            "base_checkpoint_sha256",
+            "distilled_checkpoint_sha256",
+            "interpolation_sha256",
+            "ppo_checkpoint_sha256",
+        )
+        hash_values = tuple(payload.get(field) for field in required)
+        alpha = payload.get("alpha")
+        if (
+            payload.get("style") != "aggressive"
+            or any(
+                not isinstance(value, str) or _SHA256_PATTERN.fullmatch(value) is None
+                for value in hash_values
+            )
+            or not isinstance(alpha, (int, float))
+            or not 0.0 < float(alpha) < 1.0
+        ):
+            raise ValueError("Invalid style-interpolation checkpoint metadata")
+        scenario_hash = payload.get("scenario_hash")
+        if not isinstance(scenario_hash, str) or not scenario_hash:
+            raise ValueError("Invalid style-interpolation scenario hash")
+        return scenario_hash
     if payload.get("kind") == "style_distillation":
         required = (
             "base_checkpoint_sha256",
@@ -89,8 +112,7 @@ def _checkpoint_scenario_hash(payload: dict[str, object]) -> str:
         if (
             payload.get("style") != "aggressive"
             or any(
-                not isinstance(value, str)
-                or _SHA256_PATTERN.fullmatch(value) is None
+                not isinstance(value, str) or _SHA256_PATTERN.fullmatch(value) is None
                 for value in hash_values
             )
             or type(updates) is not int
@@ -112,8 +134,7 @@ def _checkpoint_scenario_hash(payload: dict[str, object]) -> str:
         raise ValueError("Invalid opponent checkpoint metadata")
     hash_fields = _LEAGUE_IDENTITY_FIELDS - {"scenario_hash"}
     if any(
-        not isinstance(identity[field], str)
-        or _SHA256_PATTERN.fullmatch(identity[field]) is None
+        not isinstance(identity[field], str) or _SHA256_PATTERN.fullmatch(identity[field]) is None
         for field in hash_fields
     ):
         raise ValueError("Invalid opponent league-checkpoint identity")
@@ -128,9 +149,7 @@ def _checkpoint_scenario_hash(payload: dict[str, object]) -> str:
 
 
 class CheckpointOpponentPolicy:
-    def __init__(
-        self, spec: OpponentSpec, actor: RecurrentActor, *, device: torch.device
-    ) -> None:
+    def __init__(self, spec: OpponentSpec, actor: RecurrentActor, *, device: torch.device) -> None:
         self.spec = spec
         self._actor = actor.to(device).eval()
         self._actor.requires_grad_(False)
@@ -139,9 +158,7 @@ class CheckpointOpponentPolicy:
         self._episode_start = True
 
     @classmethod
-    def load(
-        cls, spec: OpponentSpec, *, device: torch.device
-    ) -> CheckpointOpponentPolicy:
+    def load(cls, spec: OpponentSpec, *, device: torch.device) -> CheckpointOpponentPolicy:
         if spec.kind != "checkpoint" or spec.checkpoint is None:
             raise ValueError("CheckpointOpponentPolicy requires a checkpoint spec")
         path = Path(spec.checkpoint).expanduser().resolve()
@@ -161,9 +178,7 @@ class CheckpointOpponentPolicy:
         try:
             if any(name.startswith("adapter.") for name in state_dict):
                 bottleneck = int(state_dict["adapter.layers.0.weight"].shape[0])
-                styled = StyledActorCritic.from_base(
-                    AsymmetricActorCritic(), bottleneck=bottleneck
-                )
+                styled = StyledActorCritic.from_base(AsymmetricActorCritic(), bottleneck=bottleneck)
                 styled.load_state_dict(state_dict, strict=True)
                 actor = styled.public_actor()
             else:

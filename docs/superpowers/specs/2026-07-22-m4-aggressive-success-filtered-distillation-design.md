@@ -55,3 +55,22 @@ Final acceptance uses the existing paired M4 evaluation: protocol integrity, ski
 ## Scope boundary
 
 This iteration implements Aggressive only. Defensive and Explorer reuse the proven residual-style infrastructure after Aggressive passes. No inference-time action override, privileged runtime observation, or test-set optimization is permitted.
+
+## Approved Pareto interpolation addendum
+
+Validation showed that the distilled endpoint has visible but excessive
+aggression, the 200k PPO endpoint retains capability but has sparse aggression,
+and the 400k endpoint removes greedy attack behavior. The approved correction
+is a fixed checkpoint interpolation between the distilled and 200k endpoints.
+
+For `alpha` in `{0.25, 0.50, 0.75}`, interpolate only `adapter.*` and
+`policy.*` tensors as `(1 - alpha) * ppo_200k + alpha * distilled`. Copy the
+distilled checkpoint's frozen base tensors unchanged and verify them against
+the M3 base identity. Each output records alpha, both source checkpoint hashes,
+the M3 base hash, and scenario hash. It remains a deterministic checkpoint,
+not a runtime action override.
+
+Run the existing 20-episode validation smoke for each alpha. Promote the
+candidate that passes all gates; if none passes, rank candidates by number of
+passed gates, then Skill Retention, then engagement shift. A full 200-episode
+evaluation is permitted only after a smoke candidate passes every gate.
