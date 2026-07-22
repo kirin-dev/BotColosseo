@@ -47,3 +47,10 @@ def test_public_documentation_local_links_resolve() -> None:
                 broken.append((str(document), target))
 
     assert broken == []
+
+
+def test_readme_does_not_claim_m4_media_before_publication() -> None:
+    readme = Path("README.md").read_text(encoding="utf-8")
+
+    assert "m4-base-vs-aggressive.gif" not in readme
+    assert "M4 passed" not in readme

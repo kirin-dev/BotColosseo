@@ -322,7 +322,11 @@ def select_showcase_case(
     records: Sequence[Mapping[str, object]],
     policy_ids: Sequence[str],
     contrast_scores: Mapping[str, float],
+    *,
+    require_normal_termination: bool = True,
 ) -> ShowcaseSelection:
+    if not isinstance(require_normal_termination, bool):
+        raise ValueError("Showcase termination requirement must be boolean")
     configured_policy_ids = tuple(policy_ids)
     if (
         not configured_policy_ids
@@ -358,7 +362,10 @@ def select_showcase_case(
         reasons = tuple(
             reason
             for policy_id in configured_policy_ids
-            for reason in _ineligibility_reasons(by_policy[policy_id])
+            for reason in _ineligibility_reasons(
+                by_policy[policy_id],
+                require_normal_termination=require_normal_termination,
+            )
         )
         if reasons:
             rejection_reasons[case_id_value] = reasons
@@ -713,10 +720,15 @@ def _validate_showcase_record(
     return case_id_value, policy_id
 
 
-def _ineligibility_reasons(record: Mapping[str, object]) -> tuple[str, ...]:
-    checks = (
+def _ineligibility_reasons(
+    record: Mapping[str, object], *, require_normal_termination: bool
+) -> tuple[str, ...]:
+    termination_checks = (
         (record["terminated"] is not True, "episode did not terminate"),
         (record["truncated"] is not False, "episode was truncated"),
+    ) if require_normal_termination else ()
+    checks = (
+        *termination_checks,
         (record["objective_completed"] is not True, "objective was not completed"),
         (record["environment_attempts"] != 1, "environment attempts were not one"),
         (record["peer_tic_lag_max"] != 0, "peer tic lag was nonzero"),

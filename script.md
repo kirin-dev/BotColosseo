@@ -760,3 +760,44 @@ jq '{passed, gates, selected_checkpoint_sha256, pool_manifest_sha256}' \
 Process exit alone is not success. Only an audit return code of zero, a frozen
 M3 gate PASS, matching selected checkpoint/pool hashes, and the literal final
 marker `M3 PIPELINE PASS` complete M3.
+
+## M4 Showcase foundation
+
+This foundation is not an M4 pass. The development command below uses the
+frozen M2 PPO/BC checkpoints and one M2 validation case only to verify real
+ViZDoom recording, MP4/GIF encoding, deterministic selection, and hash-bound
+publication mechanics. Its output is ignored under
+`artifacts/showcase-development/`, never updates README, and is not an official
+test result or evidence of a learned style.
+
+Run the development renderer from the M4 worktree:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-showcase-foundation
+env \
+  CUDA_VISIBLE_DEVICES=0 \
+  PYTHONPATH="$PWD/src" \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/render_showcase.py \
+  --config configs/showcase/development.yaml \
+  --checkpoint-root /home/wencong/BotColosseo/.worktrees/m3-strong-base \
+  --device cuda:0
+```
+
+Production remains unavailable until real Strong Base and Aggressive
+checkpoints, their exact SHA-256 values, and passing M4 validation evidence
+exist. At that point the command changes only the configuration argument:
+
+```bash
+env PYTHONPATH="$PWD/src" \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/render_showcase.py \
+  --config configs/showcase/m4.yaml \
+  --checkpoint-root /path/to/hash-matched/artifacts \
+  --device cuda:0
+```
+
+Do not create `configs/showcase/m4.yaml`, publish files under
+`docs/assets/showcase/`, or add M4 media to README before the production metric
+loader verifies the stage, validation split, gate booleans, policy set, and all
+checkpoint hashes.

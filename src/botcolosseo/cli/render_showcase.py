@@ -167,6 +167,7 @@ def render_showcase(
             episode_rows,
             tuple(policy.policy_id for policy in config.policies),
             contrast_scores,
+            require_normal_termination=config.publication,
         )
         decision_scores = (
             metric_evidence.decision_contrast_scores[selection.selected_case_id]
@@ -231,6 +232,7 @@ def render_showcase(
         selection_payload = {
             **asdict(selection),
             "highlight": list(highlight),
+            "publication_eligibility": config.publication,
         }
         staged_selection = _write_json(
             staging / "evidence/case-selection.json", selection_payload

@@ -192,12 +192,12 @@ Expected: collection fails because `botcolosseo.evaluation.showcase` does not ex
 {
   "cases": [
     {
-      "core_spawn_index": 0,
+      "core_spawn_index": 2,
       "learner_side": "host",
       "opponent": "random_legal",
-      "pair_index": 250,
+      "pair_index": 253,
       "route": "direct_lower",
-      "seed": 656489971,
+      "seed": 1010361123,
       "split": "validation"
     }
   ],

@@ -12,6 +12,7 @@ dist/
 
 # Git worktrees
 .worktrees/
+/.superpowers/
 
 # ViZDoom runtime state
 /_vizdoom/

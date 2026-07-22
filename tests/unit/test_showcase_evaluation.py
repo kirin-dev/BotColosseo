@@ -214,6 +214,33 @@ def test_select_showcase_case_rejects_when_every_case_is_ineligible() -> None:
         )
 
 
+def test_development_selection_keeps_protocol_gates_but_allows_time_limit() -> None:
+    records = [
+        _eligible_record("only", "ppo"),
+        _eligible_record("only", "bc"),
+    ]
+    records[1]["terminated"] = False
+    records[1]["truncated"] = True
+
+    selection = select_showcase_case(
+        records,
+        policy_ids=("ppo", "bc"),
+        contrast_scores={"only": 0.0},
+        require_normal_termination=False,
+    )
+
+    assert selection.selected_case_id == "only"
+
+    records[1]["protocol_inconsistent"] = True
+    with pytest.raises(ValueError, match="No showcase case"):
+        select_showcase_case(
+            records,
+            policy_ids=("ppo", "bc"),
+            contrast_scores={"only": 0.0},
+            require_normal_termination=False,
+        )
+
+
 def test_select_highlight_window_breaks_equal_totals_at_earliest_window() -> None:
     assert select_highlight_window(
         (0.0, 1.0, 1.0, 0.0, 1.0), window_frames=3
