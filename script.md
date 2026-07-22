@@ -678,7 +678,7 @@ nohup bash -c '
   status=$?
   printf "%s\n" "$status" > runs/m3/pipeline.exit
   exit "$status"
-' > runs/m3/pipeline.log 2>&1 &
+' >> runs/m3/pipeline.log 2>&1 &
 echo $! > runs/m3/pipeline.pid
 cat runs/m3/pipeline.pid
 ```
@@ -713,6 +713,12 @@ Recovery rules:
   `pipeline-state.json`; if `latest.pt` matches the current pool/payoff identity,
   it uses exact `--resume`. If a validated pool changed, it uses the archived
   parent candidate with `--transition-from`.
+- The 2026-07-22 run exposed an old boundary-padding defect at 1.8M: repeatedly
+  launching 256-step processes could not finish the pending episode. The fixed
+  driver detects this exact signature, archives the pre-fix `latest.pt`,
+  `summary.json`, and `metrics.jsonl` under `runs/m3/league-full/recovery/`,
+  then resumes from the immutable 1.8M checkpoint and finishes the side-swapped
+  pair inside one trainer process. Do not manually delete or edit those rows.
 - Official M3 rows are append-only. When `reports/m3/official/episodes.jsonl`
   exists, the driver passes `--resume`; it verifies the complete run identity,
   suppresses only exact duplicates, and never deletes valid rows.

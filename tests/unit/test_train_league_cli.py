@@ -11,6 +11,7 @@ from botcolosseo.agents.model import AsymmetricActorCritic
 from botcolosseo.cli import train_league
 from botcolosseo.cli.train_league import (
     _candidate_checkpoint_step,
+    _collection_pending,
     _load_payoff_report,
     _run_config_hash,
     _status_json,
@@ -286,6 +287,27 @@ def test_candidate_cadence_and_status_output_are_deterministic() -> None:
         is None
     )
     assert _status_json({"z": 1, "a": 2}) == '{\n  "a": 2,\n  "z": 1\n}'
+
+
+def test_paired_boundary_collection_stays_in_one_process_until_even_episode() -> None:
+    assert _collection_pending(
+        environment_steps=200_000,
+        stop_after=200_000,
+        episode_index=3,
+        finish_paired_boundary=True,
+    )
+    assert not _collection_pending(
+        environment_steps=200_256,
+        stop_after=200_000,
+        episode_index=4,
+        finish_paired_boundary=True,
+    )
+    assert not _collection_pending(
+        environment_steps=200_000,
+        stop_after=200_000,
+        episode_index=3,
+        finish_paired_boundary=False,
+    )
 
 
 def test_run_config_hash_binds_actual_target_and_rollout() -> None:

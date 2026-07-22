@@ -164,21 +164,45 @@ while (( BOUNDARY <= 2000000 )); do
   LATEST="$RUN_DIR/latest.pt"
   CURRENT_POOL_HASH=$(json_value "$POOL" manifest_sha256)
   CURRENT_STEPS=0
+  CURRENT_EPISODES=0
   if [[ -f "$LATEST" ]]; then
     LATEST_POOL_HASH=$(checkpoint_value "$LATEST" identity.pool_manifest_hash)
     CURRENT_STEPS=$(checkpoint_value "$LATEST" state.environment_steps)
+    CURRENT_EPISODES=$(checkpoint_value "$LATEST" state.episodes)
     if [[ "$LATEST_POOL_HASH" == "$CURRENT_POOL_HASH" ]]; then
       CONTINUATION_MODE=resume
       CONTINUATION_CHECKPOINT="$LATEST"
     fi
   fi
 
-  if (( CURRENT_STEPS < BOUNDARY )); then
+  EXACT_BOUNDARY="$RUN_DIR/candidate-$(printf '%07d' "$BOUNDARY").pt"
+  if (( BOUNDARY < 2000000 && CURRENT_STEPS > BOUNDARY && CURRENT_EPISODES % 2 != 0 )) \
+    && [[ -f "$EXACT_BOUNDARY" ]]; then
+    BOUNDARY_EPISODES=$(checkpoint_value "$EXACT_BOUNDARY" state.episodes)
+    if (( BOUNDARY_EPISODES == CURRENT_EPISODES )); then
+      RECOVERY_DIR="$RUN_DIR/recovery/unpaired-$BOUNDARY-$(date -u +%Y%m%dT%H%M%SZ)"
+      mkdir -p "$RECOVERY_DIR"
+      install -m 0644 "$LATEST" "$RECOVERY_DIR/latest.pt"
+      install -m 0644 "$RUN_DIR/summary.json" "$RECOVERY_DIR/summary.json"
+      install -m 0644 "$RUN_DIR/metrics.jsonl" "$RECOVERY_DIR/metrics.jsonl"
+      echo "Archived incomplete cross-process padding at $RECOVERY_DIR"
+      CONTINUATION_MODE=resume
+      CONTINUATION_CHECKPOINT="$EXACT_BOUNDARY"
+      CURRENT_STEPS=$(checkpoint_value "$EXACT_BOUNDARY" state.environment_steps)
+      CURRENT_EPISODES=$BOUNDARY_EPISODES
+    fi
+  fi
+
+  if (( CURRENT_STEPS < BOUNDARY || (BOUNDARY < 2000000 && CURRENT_EPISODES % 2 != 0) )); then
     TRAIN_ARGS=()
     if [[ "$CONTINUATION_MODE" == resume ]]; then
       TRAIN_ARGS=(--resume "$CONTINUATION_CHECKPOINT")
     elif [[ "$CONTINUATION_MODE" == transition ]]; then
       TRAIN_ARGS=(--transition-from "$CONTINUATION_CHECKPOINT")
+    fi
+    BOUNDARY_ARGS=()
+    if (( BOUNDARY < 2000000 )); then
+      BOUNDARY_ARGS=(--finish-paired-boundary)
     fi
     "$PYTHON" -u scripts/train_league.py \
       --config configs/m3/league.yaml \
@@ -188,6 +212,7 @@ while (( BOUNDARY <= 2000000 )); do
       --run-dir "$RUN_DIR" \
       --device cuda:0 \
       --stop-after-steps "$BOUNDARY" \
+      "${BOUNDARY_ARGS[@]}" \
       "${QUALIFICATION_ARGS[@]}" \
       "${TRAIN_ARGS[@]}"
   fi
@@ -195,21 +220,10 @@ while (( BOUNDARY <= 2000000 )); do
   CURRENT_STEPS=$(checkpoint_value "$LATEST" state.environment_steps)
   EPISODES=$(checkpoint_value "$LATEST" state.episodes)
   if (( BOUNDARY < 2000000 )); then
-    while (( EPISODES % 2 != 0 )); do
-      NEXT_STOP=$((CURRENT_STEPS + 256))
-      "$PYTHON" -u scripts/train_league.py \
-        --config configs/m3/league.yaml \
-        --base-checkpoint "$BASE_CHECKPOINT" \
-        --pool "$POOL" \
-        --payoffs "$PAYOFFS" \
-        --run-dir "$RUN_DIR" \
-        --device cuda:0 \
-        --stop-after-steps "$NEXT_STOP" \
-        --resume "$LATEST" \
-        "${QUALIFICATION_ARGS[@]}"
-      CURRENT_STEPS=$(checkpoint_value "$LATEST" state.environment_steps)
-      EPISODES=$(checkpoint_value "$LATEST" state.episodes)
-    done
+    if (( EPISODES % 2 != 0 )); then
+      echo "Trainer returned before a paired episode boundary" >&2
+      exit 1
+    fi
   elif (( EPISODES % 2 != 0 )); then
     echo "Final 2M checkpoint is unpaired; selecting from earlier paired candidates"
     break

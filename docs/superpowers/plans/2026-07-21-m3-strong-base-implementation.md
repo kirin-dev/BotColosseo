@@ -419,3 +419,15 @@ git status --short
 - [x] Mark the active goal blocked and tell the user exactly which single command to run first, expected duration range, log/progress commands, success marker, and next automatic command.
 
 Long-run success is not inferred from process exit alone. M3 completes only when `scripts/audit_m3_evidence.py` returns zero, the frozen Strong Base gate reports PASS, all tracked evidence is derived from raw rows, and the selected checkpoint hash matches the model card and pool manifest.
+
+### Post-handoff recovery note (2026-07-22)
+
+The first long run reached the 1.8M boundary with an odd episode index. The
+outer pipeline attempted to finish the side-swap by launching fresh 256-step
+trainer processes; because unfinished environment state is not checkpointed,
+each process discarded the partial episode and the episode counter could not
+advance. The corrected CLI uses `--finish-paired-boundary` to keep one
+collector alive beyond the nominal intermediate stop until the episode index is
+even. Recovery preserves the pre-fix artifacts, restores the immutable 1.8M
+checkpoint, reconciles metrics to that committed boundary, and then continues
+under the unchanged 2M target and pool identity.

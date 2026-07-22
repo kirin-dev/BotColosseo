@@ -78,6 +78,18 @@ def _candidate_checkpoint_step(
     )
 
 
+def _collection_pending(
+    *,
+    environment_steps: int,
+    stop_after: int,
+    episode_index: int,
+    finish_paired_boundary: bool,
+) -> bool:
+    return environment_steps < stop_after or (
+        finish_paired_boundary and episode_index % 2 != 0
+    )
+
+
 def _run_config_hash(
     config_file_hash: str, *, target_steps: int, rollout_steps: int
 ) -> str:
@@ -105,6 +117,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--environment-steps", type=int)
     parser.add_argument("--stop-after-steps", type=int)
     parser.add_argument("--rollout-steps", type=int)
+    parser.add_argument("--finish-paired-boundary", action="store_true")
     base_authorization = parser.add_mutually_exclusive_group()
     base_authorization.add_argument("--allow-provisional-base", action="store_true")
     base_authorization.add_argument(
@@ -290,6 +303,8 @@ def main(argv: list[str] | None = None) -> int:
     rollout_steps = args.rollout_steps or int(config["rollout_steps"])
     if not 0 < stop_after <= target_steps or rollout_steps <= 0:
         raise ValueError("Invalid M3 stop or rollout step count")
+    if args.finish_paired_boundary and stop_after >= target_steps:
+        raise ValueError("Paired-boundary padding requires room below the target budget")
     base_checkpoint = _resolve(root, args.base_checkpoint)
     pool_path = _resolve(root, args.pool)
     payoff_path = _resolve(root, args.payoffs)
@@ -445,7 +460,9 @@ def main(argv: list[str] | None = None) -> int:
             transition_record,
             archive_dir / f"transition-{environment_steps:07d}.json",
         )
-    if environment_steps > stop_after:
+    if environment_steps > stop_after and not (
+        args.finish_paired_boundary and episode_index % 2 != 0
+    ):
         raise ValueError("Resume checkpoint is beyond --stop-after-steps")
     (
         event_counts,
@@ -475,9 +492,19 @@ def main(argv: list[str] | None = None) -> int:
     )
     run_dir.mkdir(parents=True, exist_ok=True)
     try:
-        while environment_steps < stop_after:
+        while _collection_pending(
+            environment_steps=environment_steps,
+            stop_after=stop_after,
+            episode_index=collector.episode_index,
+            finish_paired_boundary=args.finish_paired_boundary,
+        ):
             previous_steps = environment_steps
-            count = min(rollout_steps, stop_after - environment_steps)
+            limit = stop_after if environment_steps < stop_after else target_steps
+            count = min(rollout_steps, limit - environment_steps)
+            if count <= 0:
+                raise RuntimeError(
+                    "M3 target budget ended before a paired episode boundary"
+                )
             collection = collector.collect(
                 steps=count, start_environment_step=environment_steps
             )
