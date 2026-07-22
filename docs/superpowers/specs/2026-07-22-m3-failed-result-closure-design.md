@@ -1,7 +1,7 @@
 # M3 Failed-Result Closure Design
 
-**Date:** 2026-07-22  
-**Status:** Approved direction (Approach A)  
+**Date:** 2026-07-22
+**Status:** Approved direction (Approach A)
 **Scope:** Package the completed M3 official evaluation honestly when a frozen
 capability gate fails. This design does not change training, selection,
 thresholds, raw rows, or the official PASS/FAIL decision.
