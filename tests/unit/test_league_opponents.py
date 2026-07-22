@@ -211,3 +211,27 @@ def test_checkpoint_policy_loads_style_adapter_checkpoint(tmp_path: Path) -> Non
     policy.reset()
 
     assert isinstance(policy.act(_observation()), MacroAction)
+
+
+def test_checkpoint_policy_loads_style_distillation_checkpoint(tmp_path: Path) -> None:
+    path = tmp_path / "aggressive-distilled.pt"
+    model = StyledActorCritic.from_base(AsymmetricActorCritic(), bottleneck=16)
+    torch.save(
+        {
+            "schema_version": 1,
+            "kind": "style_distillation",
+            "style": "aggressive",
+            "base_checkpoint_sha256": "a" * 64,
+            "scenario_hash": "scenario",
+            "data_manifest_sha256": "b" * 64,
+            "config_hash": "c" * 64,
+            "updates": 10,
+            "model": model.state_dict(),
+        },
+        path,
+    )
+
+    policy = CheckpointOpponentPolicy.load(_spec(path), device=torch.device("cpu"))
+    policy.reset()
+
+    assert isinstance(policy.act(_observation()), MacroAction)

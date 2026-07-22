@@ -78,6 +78,29 @@ def _checkpoint_scenario_hash(payload: dict[str, object]) -> str:
             return CheckpointMetadata(**payload["metadata"]).scenario_hash  # type: ignore[arg-type]
         except TypeError as error:
             raise ValueError("Invalid opponent checkpoint metadata") from error
+    if payload.get("kind") == "style_distillation":
+        required = (
+            "base_checkpoint_sha256",
+            "config_hash",
+            "data_manifest_sha256",
+        )
+        hash_values = tuple(payload.get(field) for field in required)
+        updates = payload.get("updates")
+        if (
+            payload.get("style") != "aggressive"
+            or any(
+                not isinstance(value, str)
+                or _SHA256_PATTERN.fullmatch(value) is None
+                for value in hash_values
+            )
+            or type(updates) is not int
+            or updates <= 0
+        ):
+            raise ValueError("Invalid style-distillation checkpoint metadata")
+        scenario_hash = payload.get("scenario_hash")
+        if not isinstance(scenario_hash, str) or not scenario_hash:
+            raise ValueError("Invalid style-distillation scenario hash")
+        return scenario_hash
     identity = payload.get("identity")
     state = payload.get("state")
     if (
