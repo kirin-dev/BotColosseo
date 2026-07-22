@@ -667,7 +667,9 @@ cd /home/wencong/BotColosseo/.worktrees/m3-strong-base
 mkdir -p runs/m3
 test ! -f runs/m3/pipeline.pid || \
   ! ps -p "$(cat runs/m3/pipeline.pid)" >/dev/null 2>&1
-nohup bash -c '
+: > runs/m3/pipeline.pid
+nohup setsid -f bash -c '
+  echo $$ > runs/m3/pipeline.pid
   set -o pipefail
   cd /home/wencong/BotColosseo/.worktrees/m3-strong-base
   env \
@@ -678,9 +680,18 @@ nohup bash -c '
   status=$?
   printf "%s\n" "$status" > runs/m3/pipeline.exit
   exit "$status"
-' >> runs/m3/pipeline.log 2>&1 &
-echo $! > runs/m3/pipeline.pid
+' >> runs/m3/pipeline.log 2>&1
+while [[ ! -s runs/m3/pipeline.pid ]]; do sleep 1; done
 cat runs/m3/pipeline.pid
+```
+
+The recorded PID is the detached session leader. If the pipeline must be
+stopped, terminate the entire M3 process group so that the active trainer or
+evaluator cannot survive its wrapper:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m3-strong-base
+kill -TERM -- "-$(cat runs/m3/pipeline.pid)"
 ```
 
 The expected end-to-end duration is approximately 12--20 hours. The largest
