@@ -112,17 +112,17 @@ def record_showcase_episode(
             max_decisions=max_decisions,
         )
     )
-    opponent_side = "opponent" if case.learner_side == "host" else "host"
-    opponent = TeacherEvaluationPolicy(case.opponent, graph, side=opponent_side)
-    frames: list[NDArray[np.uint8]] = []
-    events: list[ShowcaseEvent] = []
-    action_tic_inconsistent = False
-    peer_tic_lag_max = 0
-    score_event_counts: Counter[str] = Counter()
-    decisions = 0
-    terminated = False
-    truncated = False
     try:
+        opponent_side = "opponent" if case.learner_side == "host" else "host"
+        opponent = TeacherEvaluationPolicy(case.opponent, graph, side=opponent_side)
+        frames: list[NDArray[np.uint8]] = []
+        events: list[ShowcaseEvent] = []
+        action_tic_inconsistent = False
+        peer_tic_lag_max = 0
+        score_event_counts: Counter[str] = Counter()
+        decisions = 0
+        terminated = False
+        truncated = False
         observations, reset_info = environment.reset()
         policy.reset(seed=case.seed ^ 0xA5A5A5A5)
         opponent.reset(seed=case.seed ^ 0x5A5A5A5A)
@@ -135,18 +135,18 @@ def record_showcase_episode(
             "opponent": observations.opponent.own_score,
         }
         while not (terminated or truncated):
-            state = environment.teacher_state()
+            teacher_state = environment.teacher_state()
             learner_observation = (
                 observations.host
                 if case.learner_side == "host"
                 else observations.opponent
             )
-            learner_action = policy.act(learner_observation, state)
+            learner_action = policy.act(learner_observation, None)
             opponent_action = opponent.act(
                 observations.opponent
                 if case.learner_side == "host"
                 else observations.host,
-                state,
+                teacher_state,
             )
             host_action, opponent_action = (
                 (learner_action, opponent_action)
@@ -210,6 +210,11 @@ def record_showcase_episode(
             score_event_counts[side] != final_scores[side] - initial_scores[side]
             for side in ("host", "opponent")
         )
+        protocol_inconsistent = (
+            peer_tic_lag_max != 0
+            or action_tic_inconsistent
+            or score_event_inconsistent
+        )
         return RecordedShowcaseEpisode(
             policy_id=policy_id,
             case=case,
@@ -222,7 +227,7 @@ def record_showcase_episode(
             terminated=terminated,
             truncated=truncated,
             peer_tic_lag_max=peer_tic_lag_max,
-            protocol_inconsistent=False,
+            protocol_inconsistent=protocol_inconsistent,
             action_tic_inconsistent=action_tic_inconsistent,
             score_event_inconsistent=score_event_inconsistent,
             environment_attempts=1,

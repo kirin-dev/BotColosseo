@@ -34,6 +34,49 @@ def observation() -> DuelActorObservation:
     )
 
 
+def _episode_observation(
+    *, own_score: int = 0, opponent_score: int = 0
+) -> DuelActorObservation:
+    return DuelActorObservation(
+        frame=np.zeros((84, 84), dtype=np.uint8),
+        health=100.0,
+        armor=0.0,
+        ammo=10.0,
+        own_score=own_score,
+        opponent_score=opponent_score,
+        has_core=False,
+        previous_action=0,
+    )
+
+
+def _episode_step(
+    *,
+    peer_tic_lag: int = 0,
+    action_tics: int = 4,
+    score: int = 0,
+    include_score_event: bool = True,
+) -> DuelStep:
+    events = (
+        (DuelEvent(DuelEventType.SCORE, "host", 0, score, 4),)
+        if include_score_event and score
+        else ()
+    )
+    return DuelStep(
+        host=_episode_observation(own_score=score),
+        opponent=_episode_observation(),
+        host_reward=float(score),
+        opponent_reward=-float(score),
+        terminated=True,
+        truncated=False,
+        events=events,
+        decision_index=0,
+        engine_tic=4,
+        peer_tic_lag=peer_tic_lag,
+        pre_action_tics=0,
+        action_tics=action_tics,
+    )
+
+
 def test_learner_frame_has_fixed_rgb_geometry() -> None:
     frame = compose_learner_frame(
         observation(), policy_label="Aggressive", event_label="VALID_HIT"
@@ -169,22 +212,83 @@ def test_record_showcase_episode_captures_learner_events_and_protocol() -> None:
     assert episode.peer_tic_lag_max == 0
     assert episode.action_tic_inconsistent is False
     assert episode.score_event_inconsistent is False
+    assert len(episode.frames) == episode.decisions
+    assert episode.protocol_inconsistent is False
     assert fake_environment.closed is True
 
 
-def _episode_observation(
-    *, own_score: int = 0, opponent_score: int = 0
-) -> DuelActorObservation:
-    return DuelActorObservation(
-        frame=np.zeros((84, 84), dtype=np.uint8),
-        health=100.0,
-        armor=0.0,
-        ammo=10.0,
-        own_score=own_score,
-        opponent_score=opponent_score,
-        has_core=False,
-        previous_action=0,
+@pytest.mark.parametrize(
+    ("step", "inconsistency_field"),
+    (
+        (
+            _episode_step(peer_tic_lag=1),
+            "peer_tic_lag_max",
+        ),
+        (
+            _episode_step(action_tics=5),
+            "action_tic_inconsistent",
+        ),
+        (
+            _episode_step(score=1, include_score_event=False),
+            "score_event_inconsistent",
+        ),
+    ),
+)
+def test_record_showcase_episode_marks_protocol_inconsistencies(
+    step: DuelStep, inconsistency_field: str
+) -> None:
+    episode = _record_episode(_FakeShowcaseEnvironment((step,)))
+
+    assert getattr(episode, inconsistency_field)
+    assert episode.protocol_inconsistent is True
+
+
+def test_record_showcase_episode_closes_environment_after_opponent_setup_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_environment = _FakeShowcaseEnvironment(())
+
+    def fail_opponent_setup(*args: object, **kwargs: object) -> None:
+        del args, kwargs
+        raise RuntimeError("opponent setup failed")
+
+    monkeypatch.setattr("botcolosseo.demo.showcase.TeacherEvaluationPolicy", fail_opponent_setup)
+
+    with pytest.raises(RuntimeError, match="opponent setup failed"):
+        _record_episode(fake_environment)
+
+    assert fake_environment.closed is True
+
+
+def test_record_showcase_episode_never_passes_privileged_state_to_learner(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    privileged_state = object()
+    fake_environment = _FakeShowcaseEnvironment(
+        (_episode_step(),), teacher_state=privileged_state
     )
+
+    class FakeTeacherPolicy:
+        def __init__(self, *args: object, **kwargs: object) -> None:
+            del args, kwargs
+
+        def reset(self, *, seed: int) -> None:
+            del seed
+
+        def act(self, observation: DuelActorObservation, state: object) -> MacroAction:
+            del observation
+            assert state is privileged_state
+            return MacroAction.IDLE
+
+    class LearnerWithoutPrivilegedState(_FixedPolicy):
+        def act(self, observation: DuelActorObservation, state: object) -> MacroAction:
+            del observation
+            assert state is None
+            return MacroAction.IDLE
+
+    monkeypatch.setattr("botcolosseo.demo.showcase.TeacherEvaluationPolicy", FakeTeacherPolicy)
+
+    _record_episode(fake_environment, policy=LearnerWithoutPrivilegedState())
 
 
 class _FixedPolicy:
@@ -200,10 +304,28 @@ class _FixedPolicy:
         return MacroAction.IDLE
 
 
+def _record_episode(
+    environment: _FakeShowcaseEnvironment, *, policy: _FixedPolicy | None = None
+) -> RecordedShowcaseEpisode:
+    return record_showcase_episode(
+        DuelCase("validation", 1, 7, "fixed_route", "host", 0, "flank"),
+        policy_id="strong_base",
+        policy_label="Strong Base",
+        policy=_FixedPolicy() if policy is None else policy,
+        graph=RegionGraph.from_yaml(Path("assets/scenarios/crystal_run/src/regions.yaml")),
+        config_path=Path("assets/scenarios/crystal_run/crystal_run.cfg"),
+        max_decisions=2,
+        environment_factory=lambda unused_case: environment,
+    )
+
+
 class _FakeShowcaseEnvironment:
-    def __init__(self, steps: tuple[DuelStep, ...]) -> None:
+    def __init__(
+        self, steps: tuple[DuelStep, ...], *, teacher_state: object | None = None
+    ) -> None:
         self._steps = iter(steps)
         self.closed = False
+        self._teacher_state = teacher_state
 
     def reset(self) -> tuple[DuelObservations, DuelResetInfo]:
         initial = _episode_observation()
@@ -212,7 +334,9 @@ class _FakeShowcaseEnvironment:
             DuelResetInfo(7, 0, 0, 0, 2, "a" * 64),
         )
 
-    def teacher_state(self) -> DuelPrivilegedState:
+    def teacher_state(self) -> object:
+        if self._teacher_state is not None:
+            return self._teacher_state
         return DuelPrivilegedState(
             host_x=-1.0,
             host_y=0.0,
