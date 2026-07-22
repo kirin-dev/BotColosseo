@@ -844,3 +844,84 @@ jq '{completed, environment_steps, episode_count, updates,
 
 Expected completion is `environment_steps: 400000` and `completed: true`.
 This completes training only; it does not claim the Aggressive or M4 gate.
+
+## M4 Aggressive alpha 0.25 formal evaluation
+
+The predefined interpolation grid selected alpha 0.25. Its 20-episode smoke
+passed six of seven gates; the only miss was an engagement bootstrap interval
+with lower bound exactly zero. The explicit 2026-07-23 route approval permits
+the fixed candidate to enter the unchanged 200-episode validation evaluation.
+It does not permit more alpha tuning or relax any formal gate.
+
+The preflight uses 10 side-swapped pairs for each of five opponents and two
+policies, for exactly 200 episodes:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+env \
+  PYTHONPATH=src \
+  CUDA_VISIBLE_DEVICES=0 \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/evaluate_style.py \
+  --base-checkpoint runs/m3/league-full/candidate-boundary-0200000.pt \
+  --aggressive-checkpoint runs/m4/aggressive-interpolation/alpha-025.pt \
+  --output-dir reports/m4/evaluation/aggressive-alpha-025 \
+  --pairs-per-opponent 10 \
+  --max-decisions 525 \
+  --max-attempts 2 \
+  --bootstrap-samples 10000 \
+  --bootstrap-seed 20260722 \
+  --device cuda:0 \
+  --preflight
+```
+
+Run the resumable evaluation in a detached session:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+mkdir -p runs/m4 reports/m4/evaluation
+test ! -s runs/m4/aggressive-alpha-025-evaluation.pid || \
+  ! ps -p "$(cat runs/m4/aggressive-alpha-025-evaluation.pid)" >/dev/null 2>&1
+: > runs/m4/aggressive-alpha-025-evaluation.pid
+rm -f runs/m4/aggressive-alpha-025-evaluation.exit
+nohup setsid -f bash -c '
+  echo $$ > runs/m4/aggressive-alpha-025-evaluation.pid
+  cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+  env \
+    PYTHONPATH=src \
+    CUDA_VISIBLE_DEVICES=0 \
+    /home/wencong/miniconda3/envs/botcolosseo/bin/python -u \
+    scripts/evaluate_style.py \
+    --base-checkpoint runs/m3/league-full/candidate-boundary-0200000.pt \
+    --aggressive-checkpoint runs/m4/aggressive-interpolation/alpha-025.pt \
+    --output-dir reports/m4/evaluation/aggressive-alpha-025 \
+    --pairs-per-opponent 10 \
+    --max-decisions 525 \
+    --max-attempts 2 \
+    --bootstrap-samples 10000 \
+    --bootstrap-seed 20260722 \
+    --device cuda:0
+  status=$?
+  printf "%s\n" "$status" > runs/m4/aggressive-alpha-025-evaluation.exit
+  exit "$status"
+' >> runs/m4/aggressive-alpha-025-evaluation.log 2>&1
+while [[ ! -s runs/m4/aggressive-alpha-025-evaluation.pid ]]; do sleep 1; done
+cat runs/m4/aggressive-alpha-025-evaluation.pid
+```
+
+Monitor without changing the append-only ledger:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+ps -p "$(cat runs/m4/aggressive-alpha-025-evaluation.pid)" \
+  -o pid,etime,%cpu,%mem,stat,cmd
+wc -l reports/m4/evaluation/aggressive-alpha-025/episodes.jsonl
+tail -n 40 runs/m4/aggressive-alpha-025-evaluation.log
+test ! -f runs/m4/aggressive-alpha-025-evaluation.exit || \
+  cat runs/m4/aggressive-alpha-025-evaluation.exit
+```
+
+Rerunning the same command resumes from verified episode identities. Do not
+delete a partial `episodes.jsonl`. Completion requires 200 rows plus matching
+`summary.json` and `manifest.json`; exit code zero means the frozen formal gate
+passed, while exit code one is a complete but failed experimental result.
