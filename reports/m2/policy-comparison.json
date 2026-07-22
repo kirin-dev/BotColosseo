@@ -1,0 +1,42 @@
+{
+  "case": {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "opponent": "random_legal",
+    "pair_index": 250,
+    "route": "direct_lower",
+    "seed": 656489971,
+    "split": "validation"
+  },
+  "checkpoint_sha256": {
+    "bc": "7eef23a06ea7177d5090ba90be65f8f2f1a847ecb15d81035c21a7e4567949d4",
+    "ppo": "41bc3040faf260f928d2b14cf970d6e338fc56f3d80d0df50742b774d51d6647"
+  },
+  "episodes": {
+    "bc": {
+      "decisions": 295,
+      "learner_score": 3,
+      "objective_completed": true,
+      "opponent_score": 0,
+      "terminated": true,
+      "truncated": false
+    },
+    "ppo": {
+      "decisions": 161,
+      "learner_score": 3,
+      "objective_completed": true,
+      "opponent_score": 0,
+      "terminated": true,
+      "truncated": false
+    }
+  },
+  "fps": 10,
+  "frame_count": 295,
+  "official_test_result": false,
+  "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+  "schema_version": 1,
+  "split": "validation",
+  "test_cases_accessed": false,
+  "video": "docs/assets/m2-policy-comparison.mp4",
+  "video_sha256": "7292378c4d9a18fb68ae8ef154a22bebb4bc0ce202acae4f839742ce3aadf9a2"
+}

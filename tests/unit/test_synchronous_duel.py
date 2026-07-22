@@ -1,0 +1,232 @@
+from pathlib import Path
+
+import numpy as np
+import pytest
+
+from botcolosseo.envs.actions import MacroAction
+from botcolosseo.envs.synchronous_duel import SynchronousDuelEnv
+from botcolosseo.scenarios.regions import RegionGraph
+
+
+def protocol(*, tic: int = 10, winner: int = 0, round_state: int = 1):
+    return (
+        2,
+        tic,
+        round_state,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        winner,
+        0,
+        0,
+        0,
+        0,
+        0,
+    )
+
+
+def worker_state(
+    *,
+    tic: int = 10,
+    x: float = -640.0,
+    winner: int = 0,
+    health: float = 100.0,
+    dead: bool = False,
+):
+    return {
+        "frame": np.zeros((240, 320), dtype=np.uint8),
+        "episode_time": tic,
+        "server_tic": tic,
+        "finished": winner > 0,
+        "dead": dead,
+        "multiplayer": True,
+        "protocol_values": protocol(tic=tic, winner=winner, round_state=2 if winner else 1),
+        "player_x": x,
+        "player_y": 0.0,
+        "player_angle": 0.0,
+        "health": health,
+        "armor": 0.0,
+        "ammo": 50.0,
+        "hitcount": 0,
+    }
+
+
+class FakeClient:
+    def __init__(
+        self,
+        role: str,
+        log: list[tuple[str, str]],
+        *,
+        invalid_initial: bool = False,
+        dead_initial: bool = False,
+        dead_at_or_after: int | None = None,
+        finish_at: int | None = None,
+    ) -> None:
+        self.role = role
+        self.log = log
+        self.closed = False
+        self.time = 10
+        self.invalid_initial = invalid_initial
+        self.dead_initial = dead_initial
+        self.dead_at_or_after = dead_at_or_after
+        self.finish_at = finish_at
+        self.last_command = ""
+
+    def submit(self, command: str, payload: object) -> int:
+        self.log.append((self.role, f"submit:{command}"))
+        self.last_command = command
+        if command == "step":
+            self.time += 1
+        return self.time
+
+    def receive(self, request_id: int):
+        self.log.append((self.role, "receive"))
+        x = -640.0 if self.role == "host" else 640.0
+        health = -999900.0 if self.invalid_initial and self.last_command == "init" else 100.0
+        dead = (self.dead_initial and self.time < 12) or (
+            self.dead_at_or_after is not None and self.time >= self.dead_at_or_after
+        )
+        state = worker_state(tic=request_id, x=x, health=health, dead=dead)
+        if self.finish_at is not None and self.time >= self.finish_at:
+            state["finished"] = True
+            state["frame"] = None
+        return state
+
+    def close(self) -> None:
+        self.closed = True
+
+    def is_alive(self) -> bool:
+        return not self.closed
+
+
+def make_env(
+    log: list[tuple[str, str]],
+    *,
+    invalid_initial: bool = False,
+    dead_initial: bool = False,
+    dead_at_or_after: int | None = None,
+    finish_at: int | None = None,
+) -> SynchronousDuelEnv:
+    graph = RegionGraph.from_yaml(Path("assets/scenarios/crystal_run/src/regions.yaml"))
+    return SynchronousDuelEnv(
+        config_path=Path("assets/scenarios/crystal_run/crystal_run.cfg"),
+        region_graph=graph,
+        seed=7,
+        client_factory=lambda settings: FakeClient(
+            settings.role.value,
+            log,
+            invalid_initial=invalid_initial,
+            dead_initial=dead_initial,
+            dead_at_or_after=dead_at_or_after,
+            finish_at=finish_at,
+        ),
+        port_allocator=lambda: 17432,
+    )
+
+
+def test_reset_and_step_dispatch_both_sides_before_receive() -> None:
+    log: list[tuple[str, str]] = []
+    env = make_env(log)
+    try:
+        observations, info = env.reset()
+        step = env.step(MacroAction.MOVE_FORWARD, MacroAction.TURN_LEFT)
+    finally:
+        env.close()
+
+    assert observations.host.frame.shape == (84, 84)
+    assert info.port == 17432
+    step_log = log[4:]
+    for index in range(0, len(step_log), 4):
+        assert step_log[index : index + 2] == [
+            ("host", "submit:step"),
+            ("opponent", "submit:step"),
+        ]
+    assert step.engine_tic == 14
+    assert step.peer_tic_lag == 0
+    assert not step.terminated and not step.truncated
+
+
+def test_tic_mismatch_closes_environment() -> None:
+    log: list[tuple[str, str]] = []
+    env = make_env(log)
+    env.reset()
+    env._opponent.time += 3
+
+    with pytest.raises(RuntimeError, match="tic mismatch"):
+        env.step(MacroAction.IDLE, MacroAction.IDLE)
+
+    assert env._host is None and env._opponent is None
+
+
+def test_reset_barriers_until_both_players_have_valid_initial_state() -> None:
+    log: list[tuple[str, str]] = []
+    env = make_env(log, invalid_initial=True)
+    try:
+        observations, info = env.reset()
+    finally:
+        env.close()
+
+    assert observations.host.health == 100.0
+    assert observations.opponent.health == 100.0
+    assert info.engine_tic == 11
+    assert ("host", "submit:step") in log
+
+
+def test_dead_players_auto_respawn_through_symmetric_idle_barriers() -> None:
+    log: list[tuple[str, str]] = []
+    env = make_env(log, dead_initial=True)
+    try:
+        observations, info = env.reset()
+    finally:
+        env.close()
+
+    assert observations.host.health == observations.opponent.health == 100.0
+    assert info.engine_tic == 12
+    assert not any(entry == ("host", "submit:respawn") for entry in log)
+    assert not any(entry == ("opponent", "submit:respawn") for entry in log)
+
+
+def test_episode_finishing_during_respawn_returns_a_truncated_step() -> None:
+    log: list[tuple[str, str]] = []
+    env = make_env(log, dead_at_or_after=14, finish_at=15)
+    try:
+        env.reset()
+        dead_step = env.step(MacroAction.IDLE, MacroAction.IDLE)
+        log_before_terminal_step = len(log)
+        terminal_step = env.step(MacroAction.IDLE, MacroAction.IDLE)
+    finally:
+        env.close()
+
+    assert dead_step.host.health == dead_step.opponent.health == 0.0
+    assert not dead_step.terminated and not dead_step.truncated
+    assert terminal_step.truncated and not terminal_step.terminated
+    assert terminal_step.pre_action_tics == 1
+    assert terminal_step.action_tics == 0
+    assert terminal_step.engine_tic == 15
+    assert log[log_before_terminal_step : log_before_terminal_step + 2] == [
+        ("host", "submit:step"),
+        ("opponent", "submit:step"),
+    ]
+    assert len(log) == log_before_terminal_step + 4
+
+
+def test_shaping_scale_is_bounded() -> None:
+    env = make_env([])
+
+    env.set_shaping_scale(0.25)
+    assert env._shaping_scale == 0.25
+    with pytest.raises(ValueError):
+        env.set_shaping_scale(1.01)

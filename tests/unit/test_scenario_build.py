@@ -62,7 +62,7 @@ def test_resolve_acc_prefers_explicit_then_environment(tmp_path: Path) -> None:
     assert resolve_acc(None, environ={"ACC_PATH": str(environment)}) == environment.resolve()
 
 
-def test_build_crystal_run_has_six_deterministic_map_groups(tmp_path: Path) -> None:
+def test_build_crystal_run_has_seven_deterministic_map_groups(tmp_path: Path) -> None:
     source_dir, include_dir = make_source_tree(tmp_path)
     acc_path = tmp_path / "acc"
     acc_path.touch()
@@ -80,15 +80,16 @@ def test_build_crystal_run_has_six_deterministic_map_groups(tmp_path: Path) -> N
     entries = inspect_pwad(settings.output_wad.read_bytes())
     expected = [
         name
-        for map_name in (f"MAP{index:02d}" for index in range(1, 7))
+        for map_name in (f"MAP{index:02d}" for index in range(1, 8))
         for name in (map_name, "TEXTMAP", "BEHAVIOR", "SCRIPTS", "ENDMAP")
     ]
     assert [entry.name for entry in entries] == expected
-    assert runner.wrapper_headers == [f"#define BOTC_TASK_ID {index}" for index in range(1, 7)]
+    assert runner.wrapper_headers == [f"#define BOTC_TASK_ID {index}" for index in range(1, 8)]
     payload = json.loads(settings.manifest_path.read_text(encoding="utf-8"))
     assert payload["wad_sha256"] == manifest.wad_sha256
     assert list(payload["source_sha256"]) == sorted(payload["source_sha256"])
-    assert payload["maps"] == [f"MAP{index:02d}" for index in range(1, 7)]
+    assert payload["maps"] == [f"MAP{index:02d}" for index in range(1, 8)]
+    assert payload["protocol_version"] == 2
 
 
 def test_compiler_failure_does_not_replace_outputs(tmp_path: Path) -> None:
@@ -119,6 +120,7 @@ def test_tracked_udmf_has_the_reviewed_minimal_geometry() -> None:
     assert text.count("linedef {") == 4
     assert text.count("sidedef {") == 4
     assert text.count("type = 1;") == 1
+    assert text.count("type = 11;") == 2
     assert text.count("type = 30;") >= 12
     texture_names = set(re.findall(r'texture(?:middle|floor|ceiling) = "([A-Z0-9_]+)"', text))
     assert texture_names == {"BRICK9", "FLAT4", "FLOOR0_1"}

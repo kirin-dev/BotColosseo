@@ -1,0 +1,802 @@
+[
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 300,
+    "route": "direct_upper",
+    "seed": 292525364,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 300,
+    "route": "direct_upper",
+    "seed": 292525364,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 301,
+    "route": "direct_lower",
+    "seed": 1004254195,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 301,
+    "route": "direct_lower",
+    "seed": 1004254195,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "host",
+    "pair_index": 302,
+    "route": "flank",
+    "seed": 789582149,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "opponent",
+    "pair_index": 302,
+    "route": "flank",
+    "seed": 789582149,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 303,
+    "route": "direct_lower",
+    "seed": 1621840909,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 303,
+    "route": "direct_lower",
+    "seed": 1621840909,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 304,
+    "route": "flank",
+    "seed": 654052537,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 304,
+    "route": "flank",
+    "seed": 654052537,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "host",
+    "pair_index": 305,
+    "route": "direct_upper",
+    "seed": 438196982,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "opponent",
+    "pair_index": 305,
+    "route": "direct_upper",
+    "seed": 438196982,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 306,
+    "route": "flank",
+    "seed": 221829532,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 306,
+    "route": "flank",
+    "seed": 221829532,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 307,
+    "route": "direct_upper",
+    "seed": 1353171297,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 307,
+    "route": "direct_upper",
+    "seed": 1353171297,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "host",
+    "pair_index": 308,
+    "route": "direct_lower",
+    "seed": 1735147595,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "opponent",
+    "pair_index": 308,
+    "route": "direct_lower",
+    "seed": 1735147595,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 309,
+    "route": "direct_upper",
+    "seed": 1094329881,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 309,
+    "route": "direct_upper",
+    "seed": 1094329881,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 310,
+    "route": "direct_lower",
+    "seed": 1286780720,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 310,
+    "route": "direct_lower",
+    "seed": 1286780720,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "host",
+    "pair_index": 311,
+    "route": "flank",
+    "seed": 1096748114,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "opponent",
+    "pair_index": 311,
+    "route": "flank",
+    "seed": 1096748114,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 312,
+    "route": "direct_lower",
+    "seed": 548211162,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 312,
+    "route": "direct_lower",
+    "seed": 548211162,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 313,
+    "route": "flank",
+    "seed": 1693600143,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 313,
+    "route": "flank",
+    "seed": 1693600143,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "host",
+    "pair_index": 314,
+    "route": "direct_upper",
+    "seed": 99917665,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "opponent",
+    "pair_index": 314,
+    "route": "direct_upper",
+    "seed": 99917665,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 315,
+    "route": "flank",
+    "seed": 826151228,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 315,
+    "route": "flank",
+    "seed": 826151228,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 316,
+    "route": "direct_upper",
+    "seed": 317025593,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 316,
+    "route": "direct_upper",
+    "seed": 317025593,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "host",
+    "pair_index": 317,
+    "route": "direct_lower",
+    "seed": 122266079,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "opponent",
+    "pair_index": 317,
+    "route": "direct_lower",
+    "seed": 122266079,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 318,
+    "route": "direct_upper",
+    "seed": 909371596,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 318,
+    "route": "direct_upper",
+    "seed": 909371596,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 319,
+    "route": "direct_lower",
+    "seed": 1096513379,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 319,
+    "route": "direct_lower",
+    "seed": 1096513379,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "host",
+    "pair_index": 320,
+    "route": "flank",
+    "seed": 1931287407,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "opponent",
+    "pair_index": 320,
+    "route": "flank",
+    "seed": 1931287407,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 321,
+    "route": "direct_lower",
+    "seed": 1756033566,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 321,
+    "route": "direct_lower",
+    "seed": 1756033566,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 322,
+    "route": "flank",
+    "seed": 1445349057,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 322,
+    "route": "flank",
+    "seed": 1445349057,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "host",
+    "pair_index": 323,
+    "route": "direct_upper",
+    "seed": 1933750527,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "opponent",
+    "pair_index": 323,
+    "route": "direct_upper",
+    "seed": 1933750527,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 324,
+    "route": "flank",
+    "seed": 1169978624,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 324,
+    "route": "flank",
+    "seed": 1169978624,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 325,
+    "route": "direct_upper",
+    "seed": 50392072,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 325,
+    "route": "direct_upper",
+    "seed": 50392072,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "host",
+    "pair_index": 326,
+    "route": "direct_lower",
+    "seed": 1406087908,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "opponent",
+    "pair_index": 326,
+    "route": "direct_lower",
+    "seed": 1406087908,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 327,
+    "route": "direct_upper",
+    "seed": 1480560341,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 327,
+    "route": "direct_upper",
+    "seed": 1480560341,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 328,
+    "route": "direct_lower",
+    "seed": 714736983,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 328,
+    "route": "direct_lower",
+    "seed": 714736983,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "host",
+    "pair_index": 329,
+    "route": "flank",
+    "seed": 979367245,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "opponent",
+    "pair_index": 329,
+    "route": "flank",
+    "seed": 979367245,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 330,
+    "route": "direct_lower",
+    "seed": 1630065685,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 330,
+    "route": "direct_lower",
+    "seed": 1630065685,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 331,
+    "route": "flank",
+    "seed": 490772015,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 331,
+    "route": "flank",
+    "seed": 490772015,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "host",
+    "pair_index": 332,
+    "route": "direct_upper",
+    "seed": 1361806342,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "opponent",
+    "pair_index": 332,
+    "route": "direct_upper",
+    "seed": 1361806342,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 333,
+    "route": "flank",
+    "seed": 1774291964,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 333,
+    "route": "flank",
+    "seed": 1774291964,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 334,
+    "route": "direct_upper",
+    "seed": 2025913418,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 334,
+    "route": "direct_upper",
+    "seed": 2025913418,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "host",
+    "pair_index": 335,
+    "route": "direct_lower",
+    "seed": 2091330814,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "opponent",
+    "pair_index": 335,
+    "route": "direct_lower",
+    "seed": 2091330814,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 336,
+    "route": "direct_upper",
+    "seed": 1671230343,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 336,
+    "route": "direct_upper",
+    "seed": 1671230343,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 337,
+    "route": "direct_lower",
+    "seed": 2072123461,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 337,
+    "route": "direct_lower",
+    "seed": 2072123461,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "host",
+    "pair_index": 338,
+    "route": "flank",
+    "seed": 1773047364,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "opponent",
+    "pair_index": 338,
+    "route": "flank",
+    "seed": 1773047364,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 339,
+    "route": "direct_lower",
+    "seed": 1439654701,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 339,
+    "route": "direct_lower",
+    "seed": 1439654701,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 340,
+    "route": "flank",
+    "seed": 379510606,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 340,
+    "route": "flank",
+    "seed": 379510606,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "host",
+    "pair_index": 341,
+    "route": "direct_upper",
+    "seed": 1105478938,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "opponent",
+    "pair_index": 341,
+    "route": "direct_upper",
+    "seed": 1105478938,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 342,
+    "route": "flank",
+    "seed": 1094215521,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 342,
+    "route": "flank",
+    "seed": 1094215521,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 343,
+    "route": "direct_upper",
+    "seed": 1501159715,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 343,
+    "route": "direct_upper",
+    "seed": 1501159715,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "host",
+    "pair_index": 344,
+    "route": "direct_lower",
+    "seed": 1230917945,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "opponent",
+    "pair_index": 344,
+    "route": "direct_lower",
+    "seed": 1230917945,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 345,
+    "route": "direct_upper",
+    "seed": 385432843,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 345,
+    "route": "direct_upper",
+    "seed": 385432843,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 346,
+    "route": "direct_lower",
+    "seed": 1129230489,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 346,
+    "route": "direct_lower",
+    "seed": 1129230489,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "host",
+    "pair_index": 347,
+    "route": "flank",
+    "seed": 999324777,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 2,
+    "learner_side": "opponent",
+    "pair_index": 347,
+    "route": "flank",
+    "seed": 999324777,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "host",
+    "pair_index": 348,
+    "route": "direct_lower",
+    "seed": 1439543311,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 1,
+    "learner_side": "opponent",
+    "pair_index": 348,
+    "route": "direct_lower",
+    "seed": 1439543311,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "host",
+    "pair_index": 349,
+    "route": "flank",
+    "seed": 990419618,
+    "split": "test"
+  },
+  {
+    "core_spawn_index": 0,
+    "learner_side": "opponent",
+    "pair_index": 349,
+    "route": "flank",
+    "seed": 990419618,
+    "split": "test"
+  }
+]

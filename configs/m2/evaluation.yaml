@@ -1,0 +1,40 @@
+schema_version: 1
+splits:
+  train:
+    path: configs/m2/train.json
+    sha256: e7e2f566e84d457303be2c50c59da8d83add757d0c2f791991ee7f478d400dcb
+  validation:
+    path: configs/m2/validation.json
+    sha256: 3f5d0c4f6ac26541c6d159f53413f7c1c1cc44702c49159983a84a2ff5270993
+  test:
+    path: configs/m2/test.json
+    sha256: b26dedbd7a82d0ac53082a55dd723cbb2c9e05559781e84ecb7295f68c4f2bb5
+policies:
+  ppo:
+    kind: ppo
+    checkpoint: runs/m2/ppo-full/selected.pt
+    selection_summary: reports/m2/ppo-training-summary.json
+  bc:
+    kind: bc
+    checkpoint: runs/m2/bc-full/best.pt
+    expected_sha256: 7eef23a06ea7177d5090ba90be65f8f2f1a847ecb15d81035c21a7e4567949d4
+    selection_summary: reports/m2/bc-training-summary.json
+  random_legal:
+    kind: teacher
+official_policies: [ppo, bc, random_legal]
+opponents:
+  [random_legal, fixed_route, objective_first, aggressive_script, defensive_script]
+pairs_per_opponent: 50
+max_episode_decisions: 525
+max_environment_attempts: 2
+action_selection: greedy
+bootstrap:
+  seed: 20260720
+  samples: 10000
+  confidence: 0.95
+thresholds:
+  ppo_win_rate_minus_bc: 0.10
+  ppo_win_rate_minus_random: 0.20
+  ppo_objective_rate_minus_bc: 0.10
+  paired_score_lcb: 0.0
+  per_opponent_ppo_minus_bc_floor: -0.05

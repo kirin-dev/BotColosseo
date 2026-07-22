@@ -1,0 +1,9 @@
+schema_version: 1
+frame_shape: [1, 84, 84]
+scalar_dim: 6
+action_count: 13
+cnn_feature_dim: 256
+scalar_feature_dim: 64
+gru_hidden_dim: 256
+privileged_dim: 12
+privileged_feature_dim: 128

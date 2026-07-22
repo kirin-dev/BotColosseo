@@ -1,0 +1,282 @@
+{
+  "artifact_hashes": {
+    "config": "bf51450cb2a562aa0117c574177573efc5234d2db815adaa857c7187a6073551",
+    "latest_checkpoint": "d2584c9201e6bd653600a571e1fa9f58b86f8f27ad2a4aaae8853726239bc125",
+    "log": "f7f35efd5d355444885df3e22f3969e909dd80f45f969932f5b70ec980be8462",
+    "metrics": "a4b067a22fe75c9662d5a92f52fe0fe2bf644854ad64a0447867978071200194",
+    "selected_checkpoint": "41bc3040faf260f928d2b14cf970d6e338fc56f3d80d0df50742b774d51d6647",
+    "selection": "42739035fe5686e8bac1734bcf7fbe45129f5b9c4bdeb55cf222adc6a46d06d0",
+    "summary": "b4c3f20c27627a7567aed0a80eea3ad3624af4a5330cb8613a748b64f6b483ec",
+    "train_cases": "e7e2f566e84d457303be2c50c59da8d83add757d0c2f791991ee7f478d400dcb",
+    "validation_cases": "3f5d0c4f6ac26541c6d159f53413f7c1c1cc44702c49159983a84a2ff5270993"
+  },
+  "config": {
+    "hash": "e3d8f02e52704721373bc1bba97496bdcb340e86a4bf6456fa717834c7d680b2",
+    "path": "configs/m2/ppo.yaml"
+  },
+  "limitations": [
+    "The run required one exact atomic resume after a transient ViZDoom respawn timeout at 898,304 environment steps; the retained log is therefore not traceback-free.",
+    "Checkpoint selection used 30 validation games per candidate and did not access official test cases.",
+    "These are training and selection results, not the official PPO-versus-BC M2 gate."
+  ],
+  "milestone": "M2",
+  "official_test_result": false,
+  "policy": "ppo",
+  "provenance": {
+    "bc_checkpoint_sha256": "7eef23a06ea7177d5090ba90be65f8f2f1a847ecb15d81035c21a7e4567949d4",
+    "train_cases_hash": "e7e2f566e84d457303be2c50c59da8d83add757d0c2f791991ee7f478d400dcb"
+  },
+  "recorded_from_commit": "e705d04eea58e57ff1630ccaba541777f1569d46",
+  "recovery": {
+    "error": "Duel respawn did not complete within the warm-up limit",
+    "final_completed": true,
+    "interrupted_at_environment_steps": 898304,
+    "interruption_count": 1,
+    "log_clean": false,
+    "log_traceback_count": 1,
+    "recovery_method": "resume from atomic latest.pt with metrics reconciliation",
+    "recovery_verified": true
+  },
+  "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+  "schema_version": 1,
+  "selected": {
+    "checkpoint": "candidate-0800000.pt",
+    "checkpoint_sha256": "41bc3040faf260f928d2b14cf970d6e338fc56f3d80d0df50742b774d51d6647",
+    "environment_steps": 800000,
+    "episodes": 30,
+    "mean_score_difference": 1.4333333333333333,
+    "objective_rate": 1,
+    "protocol_inconsistencies": 0,
+    "win_rate": 0.8333333333333334
+  },
+  "selected_checkpoint": "runs/m2/ppo-full/selected.pt",
+  "selected_checkpoint_sha256": "41bc3040faf260f928d2b14cf970d6e338fc56f3d80d0df50742b774d51d6647",
+  "selection": {
+    "candidate_count": 10,
+    "candidates": [
+      {
+        "checkpoint": "candidate-0100096.pt",
+        "checkpoint_sha256": "854b7ba0f23fbab1c7b04b64206cd961812daf43d729ec147ea6a24a89cd60d7",
+        "environment_steps": 100096,
+        "episodes": 30,
+        "mean_score_difference": 1.4333333333333333,
+        "objective_rate": 0.8333333333333334,
+        "protocol_inconsistencies": 0,
+        "win_rate": 0.7666666666666667
+      },
+      {
+        "checkpoint": "candidate-0200192.pt",
+        "checkpoint_sha256": "84be738d47347a0217935bf60b14fb8dcdad8e49ad1eabed8a312240e0749402",
+        "environment_steps": 200192,
+        "episodes": 30,
+        "mean_score_difference": 1.2666666666666666,
+        "objective_rate": 0.9,
+        "protocol_inconsistencies": 0,
+        "win_rate": 0.7666666666666667
+      },
+      {
+        "checkpoint": "candidate-0300032.pt",
+        "checkpoint_sha256": "d110fbcd154e20f1624182910220ad6d77262d7daba99f230d6d24a25db6759d",
+        "environment_steps": 300032,
+        "episodes": 30,
+        "mean_score_difference": 1.5,
+        "objective_rate": 0.9333333333333333,
+        "protocol_inconsistencies": 0,
+        "win_rate": 0.8333333333333334
+      },
+      {
+        "checkpoint": "candidate-0400128.pt",
+        "checkpoint_sha256": "dc2a82bb3ee5271b5ef7366068f77cbab46d1add3573aadee65fb4bd493fa4e9",
+        "environment_steps": 400128,
+        "episodes": 30,
+        "mean_score_difference": 1.4,
+        "objective_rate": 0.8666666666666667,
+        "protocol_inconsistencies": 0,
+        "win_rate": 0.7
+      },
+      {
+        "checkpoint": "candidate-0500224.pt",
+        "checkpoint_sha256": "bd2ba87266cce0c6f3fdb7718d298b536f66aff7eabe87b2ca43a4ae6b1f545e",
+        "environment_steps": 500224,
+        "episodes": 30,
+        "mean_score_difference": 1.6666666666666667,
+        "objective_rate": 0.9333333333333333,
+        "protocol_inconsistencies": 0,
+        "win_rate": 0.8666666666666667
+      },
+      {
+        "checkpoint": "candidate-0600064.pt",
+        "checkpoint_sha256": "87433fc372c489e52e46eb47da7bf699ea3c2872262d9cb2cb41a6c6f1df3764",
+        "environment_steps": 600064,
+        "episodes": 30,
+        "mean_score_difference": 1.6,
+        "objective_rate": 0.9333333333333333,
+        "protocol_inconsistencies": 0,
+        "win_rate": 0.8
+      },
+      {
+        "checkpoint": "candidate-0700160.pt",
+        "checkpoint_sha256": "44e80a0069226832236b9114f7b03bb4136e2838507be9ee6eea9d464956ae52",
+        "environment_steps": 700160,
+        "episodes": 30,
+        "mean_score_difference": 1.1666666666666667,
+        "objective_rate": 0.9666666666666667,
+        "protocol_inconsistencies": 0,
+        "win_rate": 0.7666666666666667
+      },
+      {
+        "checkpoint": "candidate-0800000.pt",
+        "checkpoint_sha256": "41bc3040faf260f928d2b14cf970d6e338fc56f3d80d0df50742b774d51d6647",
+        "environment_steps": 800000,
+        "episodes": 30,
+        "mean_score_difference": 1.4333333333333333,
+        "objective_rate": 1,
+        "protocol_inconsistencies": 0,
+        "win_rate": 0.8333333333333334
+      },
+      {
+        "checkpoint": "candidate-0900096.pt",
+        "checkpoint_sha256": "149088e4b79e2cb94fd0e2e3b9892b68aeef34f972b083e68e07f22351477dfa",
+        "environment_steps": 900096,
+        "episodes": 30,
+        "mean_score_difference": 1.5333333333333334,
+        "objective_rate": 0.9666666666666667,
+        "protocol_inconsistencies": 0,
+        "win_rate": 0.8
+      },
+      {
+        "checkpoint": "candidate-1000000.pt",
+        "checkpoint_sha256": "d2584c9201e6bd653600a571e1fa9f58b86f8f27ad2a4aaae8853726239bc125",
+        "environment_steps": 1000000,
+        "episodes": 30,
+        "mean_score_difference": 1.5333333333333334,
+        "objective_rate": 0.9333333333333333,
+        "protocol_inconsistencies": 0,
+        "win_rate": 0.7666666666666667
+      }
+    ],
+    "episodes_per_candidate": 30,
+    "evidence": [
+      {
+        "checkpoint": "candidate-0100096.pt",
+        "checkpoint_sha256": "854b7ba0f23fbab1c7b04b64206cd961812daf43d729ec147ea6a24a89cd60d7",
+        "environment_steps": 100096,
+        "episodes_sha256": "6386501ee636a225b46bdbe025da42881f2d414a110efcb17d2eaa135c05eb21",
+        "manifest_sha256": "5190376d40f552762711bc21451bc4fb704ffaff9472cabfe31f7e3e2ac571e6",
+        "summary_sha256": "24ad9c84bdda419c393d532005200ef2f896a372a6a81151e597d952c4e4a436"
+      },
+      {
+        "checkpoint": "candidate-0200192.pt",
+        "checkpoint_sha256": "84be738d47347a0217935bf60b14fb8dcdad8e49ad1eabed8a312240e0749402",
+        "environment_steps": 200192,
+        "episodes_sha256": "206a4fdd01acce5534d9813876fadde681ad56b669658587be9c8cdba0822d0d",
+        "manifest_sha256": "c0b9a0dd36e165a1c0162fc0049f7c2ae24d614821e3fd4a9a695f624b7303e2",
+        "summary_sha256": "5ba11683f0e95b47a04737929cb07253989195c5e633b817b0e538e25d5b2a51"
+      },
+      {
+        "checkpoint": "candidate-0300032.pt",
+        "checkpoint_sha256": "d110fbcd154e20f1624182910220ad6d77262d7daba99f230d6d24a25db6759d",
+        "environment_steps": 300032,
+        "episodes_sha256": "845e0663743e9ecb49ed0363f46988d5d287daab1a4ceb63faa8b3fe7f2a9bf8",
+        "manifest_sha256": "c04b5ec4af0710b89d190397fe18064d08390a7c2218acdcc4a562d23b4f88fa",
+        "summary_sha256": "244b65e34fede64fae9ad4c73c2c8a9ac36e5d9b14178b0b2fca0b75e091fd54"
+      },
+      {
+        "checkpoint": "candidate-0400128.pt",
+        "checkpoint_sha256": "dc2a82bb3ee5271b5ef7366068f77cbab46d1add3573aadee65fb4bd493fa4e9",
+        "environment_steps": 400128,
+        "episodes_sha256": "0839a7c4f17c968034c9408138e16fc0a47dd9dbdfa5cf2be2cabd882e35a1aa",
+        "manifest_sha256": "4b41ca50eca92af54a14bee47fb779a5856e1470152503336196ab45b82d3cd2",
+        "summary_sha256": "200b1f4eb25e53a4b78b688df6e78d7d034b950cc7232046459604295cc781a0"
+      },
+      {
+        "checkpoint": "candidate-0500224.pt",
+        "checkpoint_sha256": "bd2ba87266cce0c6f3fdb7718d298b536f66aff7eabe87b2ca43a4ae6b1f545e",
+        "environment_steps": 500224,
+        "episodes_sha256": "f759fcdbe764215c87a1eeed5cde34d57b5efd74fad3de6f05a25e64d0b8961f",
+        "manifest_sha256": "7679cdc916b8e1c2c6b79eab32b30bb58232d40cc89417e0da419778810713aa",
+        "summary_sha256": "a105e1eaefaa516e3ba3a2cbd92b5a253a60ced4a9aebde93b89ba58f328dfff"
+      },
+      {
+        "checkpoint": "candidate-0600064.pt",
+        "checkpoint_sha256": "87433fc372c489e52e46eb47da7bf699ea3c2872262d9cb2cb41a6c6f1df3764",
+        "environment_steps": 600064,
+        "episodes_sha256": "06164e2952a08ea45dc54134b000360bbde0e3160d7dd6a8faeca75bd94cb7a2",
+        "manifest_sha256": "40e30c780000e333d242400a8f30887addfa3c55a206882383f3befbdabd525f",
+        "summary_sha256": "f95df88365c23b86db8d86ceece9652bdbb25df1d9e41359333382e595e9083b"
+      },
+      {
+        "checkpoint": "candidate-0700160.pt",
+        "checkpoint_sha256": "44e80a0069226832236b9114f7b03bb4136e2838507be9ee6eea9d464956ae52",
+        "environment_steps": 700160,
+        "episodes_sha256": "ec4be3200f90e7acf0a3f53fb651bc11444f271b006becface3e69350f4dcd34",
+        "manifest_sha256": "538e7ae64f56352e03bb35a2fba4ca103c912cd4a8cfca2623ee237b36fbefc8",
+        "summary_sha256": "8b41311cddafa1d7cbe33a969157cba1e562c377d8f7040d661adb25a04eb56c"
+      },
+      {
+        "checkpoint": "candidate-0800000.pt",
+        "checkpoint_sha256": "41bc3040faf260f928d2b14cf970d6e338fc56f3d80d0df50742b774d51d6647",
+        "environment_steps": 800000,
+        "episodes_sha256": "d81b8c9f126d94ba0e68ba2250189ed886604d9eab6898e311362701e1b653ff",
+        "manifest_sha256": "e4fd8a274834246abe19b15f20149541824835ffdfdf9e3c77d8b985cc081819",
+        "summary_sha256": "a87621c30f088a494de2029138b773a3d6ea5983f666e1a7a9258dd6703bf796"
+      },
+      {
+        "checkpoint": "candidate-0900096.pt",
+        "checkpoint_sha256": "149088e4b79e2cb94fd0e2e3b9892b68aeef34f972b083e68e07f22351477dfa",
+        "environment_steps": 900096,
+        "episodes_sha256": "a0b2e896ab5c1c38f5f14659ed35a5aa7a2e9ac65dbee79ad1a967f7db7fc3bb",
+        "manifest_sha256": "35fe1e34b0a9ac8fb726e5abc89a9a608f9d47e71352e9e6a7515b69c21fbb82",
+        "summary_sha256": "93178a9d49213e7ddb19ae0b20f62b8b483bc0c8e165ab64761426a6eb7a8f52"
+      },
+      {
+        "checkpoint": "candidate-1000000.pt",
+        "checkpoint_sha256": "d2584c9201e6bd653600a571e1fa9f58b86f8f27ad2a4aaae8853726239bc125",
+        "environment_steps": 1000000,
+        "episodes_sha256": "5fd18d9380c27b2dfad250cb139fcebd7b75f38a0bb48e302b80a51644fb7257",
+        "manifest_sha256": "fbcd5317eef343f254bdf8fb42c790175fcd02d3785457d4b3962eb9a12e127d",
+        "summary_sha256": "16320fb6a4963c3861d346d5cf43eef3b5afa394c6b14086acead9b5d87d21c4"
+      }
+    ],
+    "pairs_per_opponent": 3,
+    "rationale": "The 800,000-step candidate was the only candidate with validation objective_rate=1.0, so it won at the first lexicographic criterion.",
+    "selection_rule": [
+      "objective_rate_desc",
+      "win_rate_desc",
+      "mean_score_difference_desc",
+      "environment_steps_asc"
+    ],
+    "split": "validation",
+    "test_cases_accessed": false
+  },
+  "source_commit": "e705d04eea58e57ff1630ccaba541777f1569d46",
+  "status": "complete_validation_selected_after_atomic_resume",
+  "test_cases_accessed": false,
+  "training": {
+    "cumulative_episode_reward": 4248.844473933356,
+    "environment_steps": 1000000,
+    "episodes": 3466,
+    "event_counts": {
+      "learner:death": 1115,
+      "learner:drop": 390,
+      "learner:pickup": 7482,
+      "learner:respawn": 1114,
+      "learner:score": 6244,
+      "learner:valid_hit": 22,
+      "opponent:pickup": 2905,
+      "opponent:score": 1691,
+      "opponent:valid_hit": 14857
+    },
+    "finite_metrics": true,
+    "kl_early_stop_count": 0,
+    "max_approximate_kl": 0.019405268132686615,
+    "max_entropy": 0.4269867539405823,
+    "max_post_clip_grad_norm": 0.4999999306333421,
+    "max_pre_clip_grad_norm": 5.07059907913208,
+    "min_entropy": 0.00020139699336141348,
+    "objective_completions": 3170,
+    "objective_rate": 0.914598961338719,
+    "rollouts": 3907,
+    "updates": 15628
+  }
+}

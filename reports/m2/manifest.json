@@ -1,0 +1,45 @@
+{
+  "action_selection": "greedy",
+  "bootstrap": {
+    "confidence": 0.95,
+    "samples": 10000,
+    "seed": 20260720
+  },
+  "checkpoint_sha256": {
+    "bc": "7eef23a06ea7177d5090ba90be65f8f2f1a847ecb15d81035c21a7e4567949d4",
+    "ppo": "41bc3040faf260f928d2b14cf970d6e338fc56f3d80d0df50742b774d51d6647"
+  },
+  "config_sha256": "6ab4cf3b915fdefed9437f781d6a02b872c06480282451254704fce274ff7a3e",
+  "episodes_sha256": "9f973462909f80c2016bd4f8290ad703d4614d85b7fe9370d34621623dbcf742",
+  "git_commit": "42e8ae5cdc578f4b3287d0b641c74a55cf5fd1b5",
+  "git_dirty": false,
+  "max_environment_attempts": 2,
+  "max_episode_decisions": 525,
+  "official": true,
+  "opponents": [
+    "random_legal",
+    "fixed_route",
+    "objective_first",
+    "aggressive_script",
+    "defensive_script"
+  ],
+  "pairs_per_opponent": 50,
+  "policies": [
+    "ppo",
+    "bc",
+    "random_legal"
+  ],
+  "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+  "scenario_manifest_sha256": "bb8ae0b509d9d03ac034b1bd0d426f8af25d6a4186accdfb38795ae92f77dff6",
+  "schema_version": 1,
+  "split": "test",
+  "split_sha256": "b26dedbd7a82d0ac53082a55dd723cbb2c9e05559781e84ecb7295f68c4f2bb5",
+  "summary_sha256": "9184f27f19755b6db1b1e330baef3049cfeef4d76dd9a7c204b294961eb9a8c8",
+  "thresholds": {
+    "paired_score_lcb": 0.0,
+    "per_opponent_ppo_minus_bc_floor": -0.05,
+    "ppo_objective_rate_minus_bc": 0.1,
+    "ppo_win_rate_minus_bc": 0.1,
+    "ppo_win_rate_minus_random": 0.2
+  }
+}

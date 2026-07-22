@@ -49,6 +49,7 @@ def test_each_crystal_run_map_loads_and_exposes_protocol(map_name: str) -> None:
 
         assert state is not None
         assert state.screen_buffer.ndim == 2
-        assert game.get_game_variable(vzd.GameVariable.USER1) == 1
+        expected_protocol = 2 if map_name == "MAP07" else 1
+        assert game.get_game_variable(vzd.GameVariable.USER1) == expected_protocol
     finally:
         game.close()

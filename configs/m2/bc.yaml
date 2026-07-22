@@ -1,0 +1,13 @@
+schema_version: 1
+seed: 20260720
+chunk_length: 16
+batch_size: 32
+learning_rate: 0.0003
+weight_decay: 0.00001
+gradient_clip: 1.0
+updates: 10000
+validation_interval: 250
+smoke_updates: 1000
+train_manifest: data/generated/m2/train/train-manifest.json
+validation_manifest: data/generated/m2/validation/validation-manifest.json
+output_dir: runs/m2/bc

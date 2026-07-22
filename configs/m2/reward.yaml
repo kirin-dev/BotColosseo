@@ -1,0 +1,9 @@
+schema_version: 1
+events:
+  pickup: {weight: 0.10, cap: 1}
+  drop: {weight: -0.10, cap: 1}
+  score: {weight: 1.00, cap: 3}
+  valid_hit: {weight: 0.02, cap: 10}
+  death: {weight: -0.25, cap: 10}
+  respawn: {weight: 0.00, cap: 10}
+  core_return: {weight: 0.00, cap: 3}

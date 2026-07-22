@@ -6,6 +6,7 @@
 #define TASK_RETURN 4
 #define TASK_STATIC_HIT 5
 #define TASK_MOVING_HIT 6
+#define TASK_DUEL 7
 #define CORE_TID 100
 #define TARGET_TID 200
 
@@ -30,11 +31,37 @@ global int 17:core_x;
 global int 18:core_y;
 global int 19:target_x;
 global int 20:target_y;
+global int 21:duel_engine_tic;
+global int 22:duel_round_state;
+global int 23:duel_carrier;
+global int 24:duel_core_state;
+global int 25:duel_host_pickups;
+global int 26:duel_opponent_pickups;
+global int 27:duel_host_drops;
+global int 28:duel_opponent_drops;
+global int 29:duel_host_score_events;
+global int 30:duel_opponent_score_events;
+global int 31:duel_host_valid_hits;
+global int 32:duel_opponent_valid_hits;
+global int 33:duel_host_deaths;
+global int 34:duel_opponent_deaths;
+global int 35:duel_host_respawns;
+global int 36:duel_opponent_respawns;
+global int 37:duel_host_score;
+global int 38:duel_opponent_score;
+global int 39:duel_winner;
+global int 40:duel_core_returns;
+global int 41:duel_core_x;
+global int 42:duel_core_y;
+global int 43:duel_spawn_index;
+global int 44:duel_reserved_zero;
 
 int previous_has_core;
 int previous_target_health;
 int player_was_dead;
 int core_returned;
+int duel_previous_has_core[2];
+int duel_drop_tic;
 
 function int InsideHome(void)
 {
@@ -48,6 +75,13 @@ function int InsideCenter(void)
     int x = GetActorX(0);
     int y = GetActorY(0);
     return x >= -128.0 && x < 128.0 && y >= -128.0 && y < 128.0;
+}
+
+function int InsideAway(void)
+{
+    int x = GetActorX(0);
+    int y = GetActorY(0);
+    return x >= 512.0 && x < 768.0 && y >= -256.0 && y < 256.0;
 }
 
 function void SpawnCore(void)
@@ -71,6 +105,10 @@ function void SpawnCore(void)
     }
     SpawnForced("RedCard", core_x, core_y, 0.0, CORE_TID, 0);
     core_state = 0;
+    duel_core_state = 0;
+    duel_carrier = 0;
+    duel_core_x = core_x;
+    duel_core_y = core_y;
 }
 
 function void SpawnTarget(int moving)
@@ -123,7 +161,42 @@ script 1 OPEN
     player_was_dead = 0;
     core_returned = 0;
 
-    if (BOTC_TASK_ID == TASK_FULL || BOTC_TASK_ID == TASK_PICKUP)
+    duel_engine_tic = 0;
+    duel_round_state = 0;
+    duel_carrier = 0;
+    duel_core_state = 0;
+    duel_host_pickups = 0;
+    duel_opponent_pickups = 0;
+    duel_host_drops = 0;
+    duel_opponent_drops = 0;
+    duel_host_score_events = 0;
+    duel_opponent_score_events = 0;
+    duel_host_valid_hits = 0;
+    duel_opponent_valid_hits = 0;
+    duel_host_deaths = 0;
+    duel_opponent_deaths = 0;
+    duel_host_respawns = 0;
+    duel_opponent_respawns = 0;
+    duel_host_score = 0;
+    duel_opponent_score = 0;
+    duel_winner = 0;
+    duel_core_returns = 0;
+    duel_core_x = 0;
+    duel_core_y = 0;
+    duel_spawn_index = 0;
+    duel_reserved_zero = 0;
+    duel_previous_has_core[0] = 0;
+    duel_previous_has_core[1] = 0;
+    duel_drop_tic = 0;
+
+    if (BOTC_TASK_ID == TASK_DUEL)
+    {
+        protocol_version = 2;
+        duel_round_state = 1;
+        SpawnCore();
+        ACS_ExecuteAlways(5, 0);
+    }
+    else if (BOTC_TASK_ID == TASK_FULL || BOTC_TASK_ID == TASK_PICKUP)
     {
         SpawnCore();
     }
@@ -164,8 +237,30 @@ script 2 ENTER
         SetActorAngle(0, 0.0);
     }
 
-    previous_has_core = CheckInventory("RedCard") > 0;
-    ACS_ExecuteAlways(3, 0);
+    if (BOTC_TASK_ID == TASK_DUEL)
+    {
+        int player = PlayerNumber();
+        if (player >= 0 && player < 2)
+        {
+            if (player == 0)
+            {
+                SetActorPosition(0, -640.0, 0.0, 0.0, 0);
+                SetActorAngle(0, 0.0);
+            }
+            else
+            {
+                SetActorPosition(0, 640.0, 0.0, 0.0, 0);
+                SetActorAngle(0, 0.5);
+            }
+            duel_previous_has_core[player] = 0;
+            ACS_ExecuteAlways(4, 0, player);
+        }
+    }
+    else
+    {
+        previous_has_core = CheckInventory("RedCard") > 0;
+        ACS_ExecuteAlways(3, 0);
+    }
 }
 
 script 3 (void)
@@ -256,5 +351,115 @@ script 3 (void)
 
         previous_has_core = has_core;
         Delay(1);
+    }
+}
+
+script 4 (int player)
+{
+    while (BOTC_TASK_ID == TASK_DUEL && duel_round_state == 1)
+    {
+        int has_core = CheckInventory("RedCard") > 0;
+        if (has_core)
+        {
+            duel_carrier = player + 1;
+            duel_core_state = 1;
+            duel_core_x = GetActorX(0);
+            duel_core_y = GetActorY(0);
+        }
+        if (has_core && !duel_previous_has_core[player])
+        {
+            if (player == 0) { duel_host_pickups++; }
+            else { duel_opponent_pickups++; }
+        }
+        if (has_core && ((player == 0 && InsideHome()) || (player == 1 && InsideAway())))
+        {
+            TakeInventory("RedCard", 1);
+            duel_carrier = 0;
+            duel_core_state = 3;
+            if (player == 0)
+            {
+                duel_host_score_events++;
+                duel_host_score++;
+                if (duel_host_score >= 3) { duel_winner = 1; }
+            }
+            else
+            {
+                duel_opponent_score_events++;
+                duel_opponent_score++;
+                if (duel_opponent_score >= 3) { duel_winner = 2; }
+            }
+            if (duel_winner > 0)
+            {
+                duel_round_state = 2;
+                Exit_Normal(0);
+            }
+            else
+            {
+                SpawnCore();
+            }
+        }
+        duel_previous_has_core[player] = has_core;
+        Delay(1);
+    }
+}
+
+script 5 (void)
+{
+    while (BOTC_TASK_ID == TASK_DUEL && duel_round_state == 1)
+    {
+        duel_engine_tic++;
+        if (duel_carrier == 0 && ThingCount(0, CORE_TID) > 0)
+        {
+            duel_core_x = GetActorX(CORE_TID);
+            duel_core_y = GetActorY(CORE_TID);
+        }
+        if (duel_core_state == 2 && duel_engine_tic - duel_drop_tic >= 350)
+        {
+            SpawnCore();
+            duel_core_returns++;
+        }
+        Delay(1);
+    }
+}
+
+script 6 DEATH
+{
+    if (BOTC_TASK_ID == TASK_DUEL)
+    {
+        int player = PlayerNumber();
+        if (player == 0) { duel_host_deaths++; }
+        else if (player == 1) { duel_opponent_deaths++; }
+        if (CheckInventory("RedCard") > 0)
+        {
+            TakeInventory("RedCard", 1);
+            duel_carrier = 0;
+            duel_core_state = 2;
+            duel_core_x = GetActorX(0);
+            duel_core_y = GetActorY(0);
+            duel_drop_tic = duel_engine_tic;
+            SpawnForced("RedCard", duel_core_x, duel_core_y, 0.0, CORE_TID, 0);
+            if (player == 0) { duel_host_drops++; }
+            else if (player == 1) { duel_opponent_drops++; }
+        }
+    }
+}
+
+script 7 RESPAWN
+{
+    if (BOTC_TASK_ID == TASK_DUEL)
+    {
+        int player = PlayerNumber();
+        if (player == 0)
+        {
+            SetActorPosition(0, -640.0, 0.0, 0.0, 0);
+            SetActorAngle(0, 0.0);
+            duel_host_respawns++;
+        }
+        else if (player == 1)
+        {
+            SetActorPosition(0, 640.0, 0.0, 0.0, 0);
+            SetActorAngle(0, 0.5);
+            duel_opponent_respawns++;
+        }
     }
 }

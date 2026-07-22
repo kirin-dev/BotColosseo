@@ -25,6 +25,8 @@ dist/
 /videos/
 /wandb/
 /tensorboard/
+/data/generated/
+/nohup.out
 
 # Local IDE and OS files
 .idea/

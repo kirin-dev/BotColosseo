@@ -25,15 +25,17 @@ ViZDoom multiplayer is a host/join network game, not two independent local
 simulations. The host launches with `-host 2`; the opponent joins an explicit
 loopback port. Each worker owns exactly one `DoomGame` instance.
 
-Both games run in synchronous `PLAYER` mode. The coordinator sends both macro
-actions before either result is awaited. Each worker then repeats:
+Both games run in synchronous `PLAYER` mode. For each tic of a macro action, the
+coordinator sends both actions before either result is awaited, then collects
+both results as an explicit barrier. Each worker performs exactly:
 
 ```text
 set_action(action)
 advance_action(1, update_state=is_last_tic)
 ```
 
-for the same four engine tics. This is required because ViZDoom's multiplayer
+The coordinator repeats that barrier for the same four engine tics and updates
+the rendered state only on the final tic. This is required because ViZDoom's multiplayer
 FAQ states that synchronous players must each advance one frame before the
 server proceeds; multiplayer frameskip cannot be treated as one independent
 `make_action` call. Process isolation also contains engine crashes, allows hard
@@ -48,12 +50,13 @@ Primary references:
 ## 3. Crystal Run duel scenario
 
 The source-built WAD gains `MAP07`, reusing the reviewed arena geometry and
-adding two player starts. The ACS protocol is extended in a backwards-compatible
+adding two deterministic deathmatch starts. The ACS protocol is extended in a backwards-compatible
 versioned block for:
 
 - current carrier (`none`, host, opponent);
 - host and opponent scores;
-- pickup, drop, score, valid-hit, death, and respawn counters per side;
+- pickup, drop, score, death, and respawn counters per side; valid hits are
+  decoded from each player's native ViZDoom `HITCOUNT` delta;
 - round state and terminal winner;
 - core coordinates and deterministic spawn index.
 
@@ -81,7 +84,8 @@ The coordinator enforces:
 - unique loopback port per live duel;
 - bounded host/join initialization;
 - both commands queued before either result is read;
-- equal engine episode time after every decision;
+- host-authoritative ACS time advances exactly four tics per decision; peer
+  replication lag is recorded and may not exceed two tics around respawn;
 - equal decision counts and shared protocol counters;
 - bounded reset, step, and close;
 - forced worker termination only after graceful close fails;
@@ -109,6 +113,11 @@ are recorded for audit.
 ## 6. Demonstration dataset
 
 Demonstrations are deterministic compressed NPZ shards plus a JSON manifest.
+The deterministic writer produces identical NPZ bytes for identical arrays.
+Because multiplayer sprite interpolation may vary cosmetically across process
+restarts, each shard also records a frame-excluding trajectory hash that proves
+the scalars, actions, labels, and boundaries reproduce from the same cases;
+the full shard hash always validates the exact stored visual artifact.
 Each transition contains only:
 
 - `frame`: uint8 `[84, 84]`;

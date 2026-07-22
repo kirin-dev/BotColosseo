@@ -1,0 +1,29 @@
+schema_version: 1
+splits:
+  test:
+    path: configs/m3/test.json
+    sha256: cd027692e310a1f25f71b019b47cf69b8cc084d5846f21381a9152cf1407437b
+  heldout:
+    path: configs/m3/heldout.json
+    sha256: f1369bace1fabcbbff925774fedd5d305b3c6294d7ad4c84f4bc606700fe43fa
+script_opponents:
+  [random_legal, fixed_route, objective_first, aggressive_script, defensive_script]
+script_pairs_per_opponent: 50
+no_opponent_pairs: 50
+heldout_pairs: 50
+historical_pairs_per_policy: 20
+pool_size_min: 8
+pool_size_max: 12
+max_episode_decisions: 525
+max_environment_attempts: 2
+action_selection: greedy
+bootstrap:
+  seed: 20260721
+  samples: 10000
+  confidence: 0.95
+thresholds:
+  script_average_win_rate: 0.70
+  script_per_opponent_win_rate: 0.55
+  no_opponent_full_objective_rate: 0.90
+  heldout_full_objective_rate: 0.80
+  paired_score_lcb: 0.0
