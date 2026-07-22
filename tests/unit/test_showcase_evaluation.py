@@ -8,9 +8,49 @@ import yaml
 
 from botcolosseo.evaluation.showcase import (
     case_id,
+    load_metric_evidence,
     load_showcase_cases,
     load_showcase_config,
+    select_highlight_window,
+    select_showcase_case,
 )
+
+
+def _metric_payload() -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "stage": "m4",
+        "split": "validation",
+        "passed": True,
+        "style_gate_passed": True,
+        "retention_gate_passed": True,
+        "episodes": 800,
+        "checkpoint_sha256": {"strong_base": "1" * 64, "aggressive": "2" * 64},
+        "headline": {
+            "base_win_rate": 0.72,
+            "aggressive_style_delta": 0.31,
+            "skill_retention": 0.89,
+        },
+        "case_contrast_scores": {"fixed_route:250:host": 0.5},
+        "decision_contrast_scores": {
+            "fixed_route:250:host": [0.0, 1.0, 0.0]
+        },
+    }
+
+
+def _eligible_record(case_id: str, policy_id: str) -> dict[str, object]:
+    return {
+        "case_id": case_id,
+        "policy_id": policy_id,
+        "terminated": True,
+        "truncated": False,
+        "objective_completed": True,
+        "environment_attempts": 1,
+        "peer_tic_lag_max": 0,
+        "protocol_inconsistent": False,
+        "action_tic_inconsistent": False,
+        "score_event_inconsistent": False,
+    }
 
 
 def test_development_config_is_non_public_and_hash_bound() -> None:
@@ -95,3 +135,81 @@ def test_publication_config_rejects_test_split(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="validation"):
         load_showcase_config(path, root=Path.cwd())
+
+
+def test_metric_evidence_is_stage_and_checkpoint_hash_bound(tmp_path: Path) -> None:
+    path = tmp_path / "metrics.json"
+    path.write_text(json.dumps(_metric_payload()), encoding="utf-8")
+
+    evidence = load_metric_evidence(
+        path,
+        expected_stage="m4",
+        expected_hashes={"strong_base": "1" * 64, "aggressive": "2" * 64},
+    )
+
+    assert evidence.skill_retention == 0.89
+    assert evidence.case_contrast_scores["fixed_route:250:host"] == 0.5
+
+
+def test_metric_evidence_accepts_m5_hashes_only_for_m5_stage(tmp_path: Path) -> None:
+    payload = _metric_payload()
+    payload["stage"] = "m5"
+    payload["checkpoint_sha256"] = {
+        "strong_base": "1" * 64,
+        "aggressive": "2" * 64,
+        "defensive": "3" * 64,
+        "explorer": "4" * 64,
+    }
+    path = tmp_path / "metrics.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    hashes = payload["checkpoint_sha256"]
+
+    with pytest.raises(ValueError, match="stage"):
+        load_metric_evidence(path, expected_stage="m4", expected_hashes=hashes)
+
+    evidence = load_metric_evidence(path, expected_stage="m5", expected_hashes=hashes)
+
+    assert evidence.checkpoint_sha256 == hashes
+
+
+def test_select_showcase_case_uses_contrast_then_case_id_and_rejects_truncation() -> None:
+    policy_ids = ("strong_base", "aggressive")
+    records = [
+        _eligible_record("zulu", policy_id) for policy_id in policy_ids
+    ] + [
+        _eligible_record("alpha", policy_id) for policy_id in policy_ids
+    ] + [
+        _eligible_record("truncated", policy_id) for policy_id in policy_ids
+    ]
+    records[-1]["truncated"] = True
+
+    selection = select_showcase_case(
+        records,
+        policy_ids=policy_ids,
+        contrast_scores={"zulu": 0.5, "alpha": 0.5, "truncated": 1.0},
+    )
+
+    assert selection.selected_case_id == "alpha"
+    assert [record["policy_id"] for record in selection.selected_records] == list(
+        policy_ids
+    )
+    assert selection.ranking == (("alpha", 0.5), ("zulu", 0.5))
+    assert "truncated" in selection.rejection_reasons
+
+
+def test_select_showcase_case_rejects_when_every_case_is_ineligible() -> None:
+    records = [_eligible_record("only", "strong_base"), _eligible_record("only", "aggressive")]
+    records[0]["truncated"] = True
+
+    with pytest.raises(ValueError, match="No showcase case satisfies publication eligibility"):
+        select_showcase_case(
+            records,
+            policy_ids=("strong_base", "aggressive"),
+            contrast_scores={"only": 0.5},
+        )
+
+
+def test_select_highlight_window_breaks_equal_totals_at_earliest_window() -> None:
+    assert select_highlight_window(
+        (0.0, 1.0, 1.0, 0.0, 1.0), window_frames=3
+    ) == (0, 3)

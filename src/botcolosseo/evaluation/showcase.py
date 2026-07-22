@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -41,6 +43,34 @@ _CASE_FIELDS = {
     "route",
 }
 _CASE_MANIFEST_FIELDS = {"schema_version", "source", "source_sha256", "cases"}
+_METRIC_FIELDS = {
+    "schema_version",
+    "stage",
+    "split",
+    "passed",
+    "style_gate_passed",
+    "retention_gate_passed",
+    "episodes",
+    "checkpoint_sha256",
+    "headline",
+    "case_contrast_scores",
+    "decision_contrast_scores",
+}
+_HEADLINE_FIELDS = {
+    "base_win_rate",
+    "aggressive_style_delta",
+    "skill_retention",
+}
+_RECORD_ELIGIBILITY_FIELDS = {
+    "terminated",
+    "truncated",
+    "objective_completed",
+    "environment_attempts",
+    "peer_tic_lag_max",
+    "protocol_inconsistent",
+    "action_tic_inconsistent",
+    "score_event_inconsistent",
+}
 _EXPECTED_POLICY_IDS = {
     "development": ("ppo", "bc"),
     "m4": ("strong_base", "aggressive"),
@@ -93,6 +123,26 @@ class ShowcaseConfig:
     evidence_dir: Path
     config_path: Path
     config_sha256: str
+
+
+@dataclass(frozen=True)
+class ShowcaseMetricEvidence:
+    episodes: int
+    base_win_rate: float
+    aggressive_style_delta: float
+    skill_retention: float
+    checkpoint_sha256: dict[str, str]
+    case_contrast_scores: dict[str, float]
+    decision_contrast_scores: dict[str, tuple[float, ...]]
+    source_sha256: str
+
+
+@dataclass(frozen=True)
+class ShowcaseSelection:
+    selected_case_id: str
+    selected_records: tuple[Mapping[str, object], ...]
+    ranking: tuple[tuple[str, float], ...]
+    rejection_reasons: dict[str, tuple[str, ...]]
 
 
 def case_id(case: DuelCase) -> str:
@@ -200,6 +250,151 @@ def load_showcase_cases(
     return tuple(cases)
 
 
+def load_metric_evidence(
+    path: Path,
+    *,
+    expected_stage: str,
+    expected_hashes: Mapping[str, str],
+) -> ShowcaseMetricEvidence:
+    payload_bytes = path.read_bytes()
+    payload = _load_json_object_from_bytes(payload_bytes, "Showcase metric evidence")
+    _require_fields(payload, _METRIC_FIELDS, "Showcase metric evidence")
+    if payload["schema_version"] != 1:
+        raise ValueError("Showcase metric evidence requires schema_version 1")
+    if payload["stage"] != expected_stage:
+        raise ValueError("Showcase metric evidence stage does not match")
+    if payload["split"] != "validation":
+        raise ValueError("Showcase metric evidence must use the validation split")
+    if any(
+        payload[field] is not True
+        for field in ("passed", "style_gate_passed", "retention_gate_passed")
+    ):
+        raise ValueError("Showcase metric evidence requires all gates to pass")
+
+    episodes = payload["episodes"]
+    if not isinstance(episodes, int) or isinstance(episodes, bool) or episodes <= 0:
+        raise ValueError("Showcase metric evidence requires positive episodes")
+
+    checkpoint_sha256 = _load_hash_map(
+        payload["checkpoint_sha256"], "Showcase metric checkpoint hashes"
+    )
+    expected_checkpoint_sha256 = _load_hash_map(
+        expected_hashes, "Expected showcase checkpoint hashes"
+    )
+    if checkpoint_sha256 != expected_checkpoint_sha256:
+        raise ValueError("Showcase metric checkpoint hashes do not match")
+
+    headline = payload["headline"]
+    _require_fields(headline, _HEADLINE_FIELDS, "Showcase metric headline")
+    base_win_rate = _finite_number(headline["base_win_rate"], "Base win rate")
+    aggressive_style_delta = _finite_number(
+        headline["aggressive_style_delta"], "Aggressive style delta"
+    )
+    skill_retention = _finite_number(headline["skill_retention"], "Skill retention")
+    if not 0 <= base_win_rate <= 1 or not 0 <= skill_retention <= 1:
+        raise ValueError("Showcase metric rates must be in [0, 1]")
+    if aggressive_style_delta <= 0:
+        raise ValueError("Showcase metric style delta must be positive")
+
+    case_contrast_scores = _load_score_map(
+        payload["case_contrast_scores"], "Showcase case contrast scores"
+    )
+    decision_contrast_scores = _load_decision_score_map(
+        payload["decision_contrast_scores"], "Showcase decision contrast scores"
+    )
+    if set(case_contrast_scores) != set(decision_contrast_scores):
+        raise ValueError("Showcase contrast score case keys do not match")
+    return ShowcaseMetricEvidence(
+        episodes=episodes,
+        base_win_rate=base_win_rate,
+        aggressive_style_delta=aggressive_style_delta,
+        skill_retention=skill_retention,
+        checkpoint_sha256=checkpoint_sha256,
+        case_contrast_scores=case_contrast_scores,
+        decision_contrast_scores=decision_contrast_scores,
+        source_sha256=hashlib.sha256(payload_bytes).hexdigest(),
+    )
+
+
+def select_showcase_case(
+    records: Sequence[Mapping[str, object]],
+    policy_ids: Sequence[str],
+    contrast_scores: Mapping[str, float],
+) -> ShowcaseSelection:
+    configured_policy_ids = tuple(policy_ids)
+    if (
+        not configured_policy_ids
+        or any(
+            not isinstance(policy_id, str) or not policy_id
+            for policy_id in configured_policy_ids
+        )
+        or len(set(configured_policy_ids)) != len(configured_policy_ids)
+    ):
+        raise ValueError("Showcase policy IDs must be unique non-empty strings")
+    validated_contrast_scores = _load_score_map(
+        contrast_scores, "Showcase case contrast scores"
+    )
+
+    grouped: dict[str, dict[str, dict[str, object]]] = {}
+    for record in records:
+        case_id_value, policy_id = _validate_showcase_record(record, configured_policy_ids)
+        by_policy = grouped.setdefault(case_id_value, {})
+        if policy_id in by_policy:
+            raise ValueError("Showcase records contain duplicate case and policy IDs")
+        by_policy[policy_id] = dict(record)
+
+    expected_policy_set = set(configured_policy_ids)
+    eligible: list[tuple[str, float]] = []
+    rejection_reasons: dict[str, tuple[str, ...]] = {}
+    for case_id_value in sorted(grouped):
+        by_policy = grouped[case_id_value]
+        if set(by_policy) != expected_policy_set:
+            rejection_reasons[case_id_value] = (
+                "policy coverage does not match configured policies",
+            )
+            continue
+        reasons = tuple(
+            reason
+            for policy_id in configured_policy_ids
+            for reason in _ineligibility_reasons(by_policy[policy_id])
+        )
+        if reasons:
+            rejection_reasons[case_id_value] = reasons
+            continue
+        if case_id_value not in validated_contrast_scores:
+            raise ValueError("Eligible showcase case is missing a contrast score")
+        score = validated_contrast_scores[case_id_value]
+        eligible.append((case_id_value, score))
+
+    ranking = tuple(sorted(eligible, key=lambda item: (-item[1], item[0])))
+    if not ranking:
+        raise ValueError("No showcase case satisfies publication eligibility")
+    selected_case_id = ranking[0][0]
+    selected_records = tuple(
+        dict(grouped[selected_case_id][policy_id]) for policy_id in configured_policy_ids
+    )
+    return ShowcaseSelection(
+        selected_case_id=selected_case_id,
+        selected_records=selected_records,
+        ranking=ranking,
+        rejection_reasons=rejection_reasons,
+    )
+
+
+def select_highlight_window(
+    scores: Sequence[float], *, window_frames: int
+) -> tuple[int, int]:
+    if not scores or window_frames <= 0:
+        raise ValueError("Highlight selection requires scores and a positive window")
+    width = min(window_frames, len(scores))
+    totals = [
+        sum(scores[start : start + width])
+        for start in range(len(scores) - width + 1)
+    ]
+    best = max(range(len(totals)), key=lambda index: (totals[index], -index))
+    return best, best + width
+
+
 def _load_policy(payload: Any, *, root: Path) -> ShowcasePolicySpec:
     _require_fields(payload, _POLICY_FIELDS, "Showcase policy")
     return ShowcasePolicySpec(
@@ -269,8 +464,112 @@ def _load_json_object(path: Path, description: str) -> dict[str, Any]:
     return payload
 
 
+def _load_json_object_from_bytes(payload_bytes: bytes, description: str) -> dict[str, Any]:
+    payload = json.loads(payload_bytes)
+    if not isinstance(payload, dict):
+        raise ValueError(f"{description} must be an object")
+    return payload
+
+
 def _load_json_list(path: Path, description: str) -> list[Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, list):
         raise ValueError(f"{description} must be a list")
     return payload
+
+
+def _load_hash_map(payload: Any, description: str) -> dict[str, str]:
+    if not isinstance(payload, Mapping) or not all(
+        isinstance(key, str)
+        and _SHA256.fullmatch(value) is not None
+        for key, value in payload.items()
+    ):
+        raise ValueError(f"{description} must be a lowercase SHA-256 map")
+    return dict(payload)
+
+
+def _finite_number(value: object, description: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{description} must be a finite number")
+    result = float(value)
+    if not math.isfinite(result):
+        raise ValueError(f"{description} must be a finite number")
+    return result
+
+
+def _load_score_map(payload: Any, description: str) -> dict[str, float]:
+    if not isinstance(payload, Mapping):
+        raise ValueError(f"{description} must be an object")
+    scores: dict[str, float] = {}
+    for case_id_value, score in payload.items():
+        if not isinstance(case_id_value, str) or not case_id_value:
+            raise ValueError(f"{description} requires non-empty case IDs")
+        scores[case_id_value] = _finite_number(score, description)
+    return scores
+
+
+def _load_decision_score_map(
+    payload: Any, description: str
+) -> dict[str, tuple[float, ...]]:
+    if not isinstance(payload, Mapping):
+        raise ValueError(f"{description} must be an object")
+    scores: dict[str, tuple[float, ...]] = {}
+    for case_id_value, values in payload.items():
+        if not isinstance(case_id_value, str) or not case_id_value:
+            raise ValueError(f"{description} requires non-empty case IDs")
+        if not isinstance(values, list) or not values:
+            raise ValueError(f"{description} requires non-empty score vectors")
+        scores[case_id_value] = tuple(
+            _finite_number(value, description) for value in values
+        )
+    return scores
+
+
+def _validate_showcase_record(
+    record: Mapping[str, object], policy_ids: Sequence[str]
+) -> tuple[str, str]:
+    if not isinstance(record, Mapping):
+        raise ValueError("Showcase records must be mappings")
+    case_id_value = record.get("case_id")
+    policy_id = record.get("policy_id")
+    if not isinstance(case_id_value, str) or not case_id_value:
+        raise ValueError("Showcase record requires a non-empty case ID")
+    if not isinstance(policy_id, str) or not policy_id:
+        raise ValueError("Showcase record requires a non-empty policy ID")
+    if policy_id not in policy_ids:
+        raise ValueError("Showcase record has an unknown policy ID")
+    missing = _RECORD_ELIGIBILITY_FIELDS - set(record)
+    if missing:
+        raise ValueError("Showcase record is missing publication eligibility fields")
+    if any(
+        not isinstance(record[field], bool)
+        for field in (
+            "terminated",
+            "truncated",
+            "objective_completed",
+            "protocol_inconsistent",
+            "action_tic_inconsistent",
+            "score_event_inconsistent",
+        )
+    ):
+        raise ValueError("Showcase record eligibility flags must be booleans")
+    if any(
+        not isinstance(record[field], int) or isinstance(record[field], bool)
+        for field in ("environment_attempts", "peer_tic_lag_max")
+    ):
+        raise ValueError("Showcase record attempt and tic fields must be integers")
+    return case_id_value, policy_id
+
+
+def _ineligibility_reasons(record: Mapping[str, object]) -> tuple[str, ...]:
+    checks = (
+        (record["terminated"] is not True, "episode did not terminate"),
+        (record["truncated"] is not False, "episode was truncated"),
+        (record["objective_completed"] is not True, "objective was not completed"),
+        (record["environment_attempts"] != 1, "environment attempts were not one"),
+        (record["peer_tic_lag_max"] != 0, "peer tic lag was nonzero"),
+        (record["protocol_inconsistent"] is True, "protocol was inconsistent"),
+        (record["action_tic_inconsistent"] is True, "action tic was inconsistent"),
+        (record["score_event_inconsistent"] is True, "score event was inconsistent"),
+    )
+    return tuple(reason for failed, reason in checks if failed)
