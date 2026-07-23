@@ -231,6 +231,7 @@ def audit_all_style_difficulty(root: Path) -> dict[str, object]:
         "All-style difficulty evidence does not prove zero test-case access",
     )
     passed = all(audit.checks.values())
+    cells = _combined_cells(summaries) if passed else {}
     return {
         "schema_version": 1,
         "stage": "m5-all-style-difficulty",
@@ -243,6 +244,7 @@ def audit_all_style_difficulty(root: Path) -> dict[str, object]:
         "gates": audit.checks,
         "errors": audit.errors,
         "checkpoint_sha256": checkpoints or {},
+        "cells": cells,
         "block_summary_sha256": {
             style: sha256_file(evidence[style]["summary_path"])
             for style in _BLOCKS
@@ -350,6 +352,26 @@ def _strong_base_outcomes_match(
         == projections["defensive"]
         == projections["explorer"]
     )
+
+
+def _combined_cells(
+    summaries: dict[str, dict[str, Any]],
+) -> dict[str, object]:
+    cells: dict[str, object] = {}
+    for style in _BLOCKS:
+        block_cells = summaries[style].get("cells")
+        if not isinstance(block_cells, dict):
+            raise ValueError(f"{style} difficulty summary cells are missing")
+        if style == "aggressive":
+            base = block_cells.get("strong_base")
+            if not isinstance(base, dict):
+                raise ValueError("Strong Base difficulty cells are missing")
+            cells["strong_base"] = base
+        styled = block_cells.get(style)
+        if not isinstance(styled, dict):
+            raise ValueError(f"{style} difficulty cells are missing")
+        cells[style] = styled
+    return cells
 
 
 def _selected_cases_match_ledgers(

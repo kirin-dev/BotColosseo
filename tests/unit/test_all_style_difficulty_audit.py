@@ -149,6 +149,32 @@ def _evidence(root: Path) -> None:
             "expected_episodes": 600,
             "protocol_inconsistencies": 0,
             "gates": {"complete": True, "style": True},
+            "cells": {
+                "strong_base": {
+                    difficulty: {
+                        "episodes": 100,
+                        "performance": performance,
+                        "objective_rate": performance,
+                    }
+                    for difficulty, performance in (
+                        ("easy", 0.8),
+                        ("normal", 0.9),
+                        ("hard", 1.0),
+                    )
+                },
+                style: {
+                    difficulty: {
+                        "episodes": 100,
+                        "performance": performance,
+                        "objective_rate": performance,
+                    }
+                    for difficulty, performance in (
+                        ("easy", 0.8),
+                        ("normal", 0.9),
+                        ("hard", 1.0),
+                    )
+                },
+            },
             "checkpoint_sha256": hashes,
             "config_sha256": _sha(config),
             "scenario_hash": "scenario",
@@ -192,6 +218,12 @@ def test_all_style_audit_accepts_1800_hash_bound_episodes(tmp_path: Path) -> Non
         "defensive": "3" * 64,
         "explorer": "4" * 64,
     }
+    assert tuple(result["cells"]) == (
+        "strong_base",
+        "aggressive",
+        "defensive",
+        "explorer",
+    )
     assert all(result["gates"].values())
 
 

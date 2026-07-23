@@ -1268,6 +1268,15 @@ gates, shared protocol identity, 1,800 unique rows, and exact Strong Base
 outcomes across the three ledgers. It refuses to overwrite
 `reports/m5/difficulty/all-style-summary.json`.
 
+Render the four-policy result card directly from that audited payload:
+
+```bash
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/plot_all_style_difficulty.py \
+  --summary reports/m5/difficulty/all-style-summary.json \
+  --output docs/assets/showcase/m5-all-style-difficulty.png
+```
+
 Only after that audit passes, export the M6 metric payload:
 
 ```bash
