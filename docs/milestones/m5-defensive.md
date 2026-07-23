@@ -107,3 +107,34 @@ also increased. The pre-approved decision rule therefore produced
 `stop_50k`; V2 was not extended to 100k. See the
 [decision record](../../reports/m5/v2/defensive/decision-050000.json) and
 [smoke evidence](../../reports/m5/v2/defensive/smoke-050000/summary.json).
+
+## Product-first hybrid outcome
+
+The failed learned-policy routes above remain unchanged. The approved product
+route instead wraps the exact Strong Base with a deterministic governor that
+accepts only public Actor inputs. It enters short score-triggered Guard,
+health-triggered Disengage, and Base-only Recover states. It never receives a
+case ID, seed, learner side, coordinate, region, Teacher state, or Critic
+feature.
+
+The first 20-episode candidate exposed a real cross-state consecutive-limit
+bug (`13 > 12`) and was preserved as `smoke-a`. Candidate B fixed the shared
+limit without changing the gate and passed its smoke. Its 200-episode formal
+validation result was:
+
+| Hybrid product evidence | Result |
+|---|---:|
+| Skill Retention | 95.91% |
+| Minimum opponent retention | 87.50% |
+| Intervention rate | 5.85% |
+| Maximum consecutive interventions | 12 |
+| Protocol inconsistencies | 0 |
+| Product hard gates | PASS |
+
+The unchanged protective-presence diagnostic moved by `+0.0299`, but its 95%
+interval `[-0.0126, 0.0824]` crosses zero. Accordingly, this is published as a
+**Defensive hybrid governor**, not as a learned Defensive-policy success.
+
+- [Passing formal summary](../../reports/m5/hybrid/defensive/formal-a/summary.json)
+- [Formal manifest](../../reports/m5/hybrid/defensive/formal-a/manifest.json)
+- [Hybrid governor config](../../configs/m5/hybrid/defensive.yaml)

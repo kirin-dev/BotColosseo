@@ -59,6 +59,16 @@ def test_readme_publishes_m4_media_with_validation_boundary() -> None:
     assert "M4 passed" not in readme
 
 
+def test_readme_publishes_hybrid_showcase_without_relabeling_rl_failures() -> None:
+    readme = Path("README.md").read_text(encoding="utf-8")
+
+    assert "hybrid-four-policy.gif" in readme
+    assert "reports/showcase/hybrid-product/manifest.json" in readme
+    assert "hybrid governors" in readme
+    assert re.search(r"not\s+reward-shaped RL successes", readme)
+    assert "validation artifacts, not official test claims" in readme
+
+
 def test_chinese_readme_preserves_failed_gate_and_validation_boundaries() -> None:
     readme = Path("README_CN.md").read_text(encoding="utf-8")
 
@@ -66,4 +76,5 @@ def test_chinese_readme_preserves_failed_gate_and_validation_boundaries() -> Non
     assert "不是 official test 结果" in readme
     assert "M2 真实同步 1v1 与初始 PPO | FAIL" in readme
     assert "M3 historical/PFSP Strong Base | 未通过全部能力门" in readme
-    assert "M5 Defensive / Explorer / Difficulty | 进行中" in readme
+    assert "M5 Defensive / Explorer / Difficulty | 部分通过" in readme
+    assert "hybrid governor" in readme

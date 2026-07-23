@@ -11,6 +11,36 @@ discarding its task skill. The approved technical design is in [Plan.md](Plan.md
 Bot Colosseo 研究如何先训练具备稳定任务能力的视觉游戏 Bot，再在保留能力的
 前提下塑造玩家可感知的 Aggressive、Defensive 与 Explorer 行为风格。
 
+## Four real policies, one validation case
+
+![Strong Base, Aggressive, Defensive, and Explorer in the same arena](docs/assets/showcase/hybrid-four-policy.gif)
+
+![Formal hybrid product metrics](docs/assets/showcase/hybrid-metrics.png)
+
+| Public policy | Implementation | Formal validation evidence |
+|---|---|---:|
+| Strong Base | learned CNN-GRU | 87.0% win rate |
+| Aggressive | learned residual style | +0.100 engagement shift; 100.0% retention |
+| Defensive | deterministic public-observation governor over Base | 95.9% retention; 5.8% intervention |
+| Explorer | deterministic public-observation governor over Base | 100.3% retention; 0.061 route-action signature |
+
+Defensive and Explorer are deliberately labelled **hybrid governors**, not
+reward-shaped RL successes. Their earlier distillation, PPO V1, and
+Teacher-assisted PPO V2 failures remain committed. The product-first policies
+then completed separate 200-episode paired validation evaluations: every hard
+fairness, protocol, retention, intervention, coverage, and executed-action
+signature gate passed. The unchanged legacy style metrics remain visible
+diagnostics and still do not pass every original learned-policy gate.
+
+The displayed case was selected automatically from the formal ledgers before
+rendering; it was not hand-picked from videos. See the full
+[Strong Base](docs/assets/showcase/hybrid-strong-base.mp4),
+[Aggressive](docs/assets/showcase/hybrid-aggressive.mp4),
+[Defensive](docs/assets/showcase/hybrid-defensive.mp4), and
+[Explorer](docs/assets/showcase/hybrid-explorer.mp4) episodes, plus the
+[hash-bound publication manifest](reports/showcase/hybrid-product/manifest.json).
+All are validation artifacts, not official test claims.
+
 ## Strong Base → Aggressive
 
 ![Strong Base and Aggressive Bot on the same validation case](docs/assets/showcase/m4-base-vs-aggressive.gif)
@@ -46,8 +76,9 @@ decision of reaction delay, while Easy adds two decisions of delay and updates
 the policy every two decisions.
 
 This is the passing Strong Base/Aggressive controller calibration, not the
-complete M5 claim. Defensive and Explorer still need to pass their style gates
-and the frozen all-style difficulty extension. See the
+complete all-style difficulty claim. Defensive and Explorer now pass their
+hybrid product gates; their frozen all-style difficulty extension remains
+pending. See the
 [evidence record](docs/milestones/m5-difficulty.md).
 
 ## Current status
@@ -109,14 +140,15 @@ and [raw evidence](reports/m1/summary.json).
 
 The learned Aggressive checkpoint and its M4 validation gate are complete.
 [Defensive](docs/milestones/m5-defensive.md) and
-[Explorer](docs/milestones/m5-explorer.md) each completed a 200k closed-loop
-PPO repair and a second Teacher-assisted 50k repair. V2 passed real CUDA,
-supervision-coverage, checkpoint, and protocol gates, but both primary style
-estimates still moved in the wrong direction; the frozen rule therefore
-stopped both runs at 50k instead of extending to 100k. Their complete negative
-evidence is preserved. Difficulty control passed its 600-episode
-Strong Base/Aggressive calibration; the final all-style M5/M6 product gate
-remains pending.
+[Explorer](docs/milestones/m5-explorer.md) retain their failed learned-policy
+routes, including the stopped Teacher-assisted 50k pilots. The approved
+product-first route now wraps the exact Strong Base with deterministic
+public-observation governors. Defensive passed its 200-episode product
+evaluation at 95.9% Skill Retention; Explorer Candidate C passed at 100.3%,
+with all three modes exercised and a 0.061 executed-action signature distance.
+Difficulty control passed its 600-episode Strong Base/Aggressive calibration;
+the all-style difficulty extension and anonymous recognition study remain
+pending.
 
 ## Quick start
 

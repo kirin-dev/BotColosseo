@@ -1241,9 +1241,9 @@ M5 checkpoints:
 cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
 PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
   scripts/prepare_user_study.py \
-  --aggressive docs/assets/showcase/m6-aggressive.mp4 \
-  --defensive docs/assets/showcase/m6-defensive.mp4 \
-  --explorer docs/assets/showcase/m6-explorer.mp4 \
+  --aggressive docs/assets/showcase/hybrid-aggressive.mp4 \
+  --defensive docs/assets/showcase/hybrid-defensive.mp4 \
+  --explorer docs/assets/showcase/hybrid-explorer.mp4 \
   --output-dir artifacts/m6-user-study \
   --assignments 10
 ```
@@ -1341,3 +1341,47 @@ PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
   --difficulty reports/m5/difficulty/all-style-summary.json \
   --output reports/m6/showcase-metrics.json
 ```
+
+## Product-first hybrid policies and real showcase
+
+The learned Defensive/Explorer routes above remain negative evidence. The
+approved public product uses the exact Strong Base with deterministic,
+fair-observation governors:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+PYTHONPATH=src python scripts/evaluate_hybrid.py \
+  --config configs/m5/hybrid/defensive.yaml \
+  --output-dir reports/m5/hybrid/defensive/formal-a \
+  --pairs-per-opponent 10 \
+  --device cuda:0
+
+PYTHONPATH=src python scripts/evaluate_hybrid.py \
+  --config configs/m5/hybrid/explorer_c.yaml \
+  --output-dir reports/m5/hybrid/explorer/formal-c \
+  --pairs-per-opponent 10 \
+  --device cuda:0
+```
+
+These commands are resumable and refuse identity drift. Their committed
+200-episode results both pass the product hard gates with zero test access.
+Rebuild the automatically selected showcase case and render the real media:
+
+```bash
+PYTHONPATH=src python scripts/select_hybrid_showcase_case.py \
+  --aggressive-episodes reports/m4/evaluation/aggressive-alpha-025/episodes.jsonl \
+  --defensive-episodes reports/m5/hybrid/defensive/formal-a/episodes.jsonl \
+  --defensive-telemetry reports/m5/hybrid/defensive/formal-a/telemetry.jsonl \
+  --explorer-episodes reports/m5/hybrid/explorer/formal-c/episodes.jsonl \
+  --explorer-telemetry reports/m5/hybrid/explorer/formal-c/telemetry.jsonl \
+  --cases configs/m2/validation.json \
+  --output-manifest configs/showcase/hybrid-validation.json \
+  --selection-evidence reports/showcase/hybrid-product/case-selection-source.json
+
+PYTHONPATH=src python scripts/render_hybrid_showcase.py \
+  --config configs/showcase/hybrid-product.yaml \
+  --device cuda:0
+```
+
+The selection and rendering commands refuse overwrite or hash drift. Public
+labels explicitly distinguish learned policies from hybrid governors.

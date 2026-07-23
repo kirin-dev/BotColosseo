@@ -112,3 +112,37 @@ capability retention also failed. The frozen decision rule therefore produced
 `stop_50k`; V2 was not extended to 100k. See the
 [decision record](../../reports/m5/v2/explorer/decision-050000.json) and
 [smoke evidence](../../reports/m5/v2/explorer/smoke-050000/summary.json).
+
+## Product-first hybrid outcome
+
+The approved hybrid route leaves pickup and navigation to the exact Strong
+Base. On the public rising edge of `has_core`, a deterministic governor commits
+to Upper, Lower, or Flank using only episode order, public scalar history,
+Base logits, and executed actions. No side, coordinate, region, seed, case ID,
+Teacher state, or Critic feature enters behavior.
+
+Candidate A retained capability but failed the formal executed-action signature
+gate (`0.0158 < 0.05`). A two-point, validation-only repair grid was frozen
+before its smokes. Both B and C passed; C was selected by the predefined
+highest-signature rule and then completed a fresh 200-episode formal
+evaluation:
+
+| Hybrid product evidence | Result |
+|---|---:|
+| Skill Retention | 100.26% |
+| Minimum opponent retention | 98.75% |
+| Intervention rate | 15.12% |
+| Upper / Lower / Flank coverage | all nonzero |
+| Executed-action signature distance | 0.0607 |
+| Protocol inconsistencies | 0 |
+| Product hard gates | PASS |
+
+The frozen legacy route-entropy/flank diagnostics still do not all pass.
+Accordingly, this is published as an **Explorer hybrid governor**, not as a
+learned Explorer-policy success.
+
+- [Frozen repair grid](../../reports/m5/hybrid/explorer/repair-grid.json)
+- [Candidate selection](../../reports/m5/hybrid/explorer/selection.json)
+- [Passing formal summary](../../reports/m5/hybrid/explorer/formal-c/summary.json)
+- [Formal manifest](../../reports/m5/hybrid/explorer/formal-c/manifest.json)
+- [Selected governor config](../../configs/m5/hybrid/explorer_c.yaml)

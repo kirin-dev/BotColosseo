@@ -1,16 +1,18 @@
 # Anonymous style-recognition study
 
 This is a small product-perception study, not a population-level behavioral
-experiment. Run it only after the three published style checkpoints and their
-videos pass the frozen M5 gates.
+experiment. Aggressive is a learned style policy; Defensive and Explorer are
+honestly disclosed in public documentation as hybrid governors. Study clips
+remain label-blind so the study measures visible behavior rather than wording.
+Run it only after all three public videos pass their applicable product gates.
 
 ## Prepare the blind package
 
 ```bash
 PYTHONPATH=src python scripts/prepare_user_study.py \
-  --aggressive docs/assets/showcase/m6-aggressive.mp4 \
-  --defensive docs/assets/showcase/m6-defensive.mp4 \
-  --explorer docs/assets/showcase/m6-explorer.mp4 \
+  --aggressive docs/assets/showcase/hybrid-aggressive.mp4 \
+  --defensive docs/assets/showcase/hybrid-defensive.mp4 \
+  --explorer docs/assets/showcase/hybrid-explorer.mp4 \
   --output-dir artifacts/m6-user-study \
   --assignments 10
 ```
