@@ -1,0 +1,140 @@
+{
+  "candidate_id": "defensive-hybrid-b",
+  "legacy_diagnostic": {
+    "complete": true,
+    "environment_retries": 0,
+    "episodes": 200,
+    "expected_episodes": 200,
+    "gates": {
+      "complete": true,
+      "denial_recovery_improved": true,
+      "objective_retention": true,
+      "per_opponent_retention": true,
+      "protective_presence_shift": false,
+      "protocol_clean": true,
+      "skill_retention": true,
+      "unnecessary_guard_controlled": true
+    },
+    "passed": false,
+    "per_opponent_retention": {
+      "aggressive_script": 1.0,
+      "defensive_script": 1.0,
+      "fixed_route": 0.9113924050632911,
+      "objective_first": 0.875,
+      "random_legal": 1.0
+    },
+    "policies": {
+      "defensive": {
+        "carrier_denials": 0,
+        "carrier_opportunities": 6124,
+        "denial_recovery_rate": 0.0009787928221859706,
+        "episodes": 100,
+        "low_health_opportunities": 1480,
+        "mean_score_difference": 1.77,
+        "objective_rate": 0.98,
+        "performance": 0.9375,
+        "protective_presence_rate": 0.3313946587537092,
+        "recoveries": 6,
+        "recovery_opportunities": 6,
+        "risk_decisions": 8425,
+        "successful_escapes": 29,
+        "unnecessary_guard_rate": 0.1476345037867611,
+        "win_rate": 0.84
+      },
+      "strong_base": {
+        "carrier_denials": 0,
+        "carrier_opportunities": 7057,
+        "denial_recovery_rate": 0.0008494973807164094,
+        "episodes": 100,
+        "low_health_opportunities": 1545,
+        "mean_score_difference": 1.86,
+        "objective_rate": 1.0,
+        "performance": 0.9775,
+        "protective_presence_rate": 0.30149158997143766,
+        "recoveries": 6,
+        "recovery_opportunities": 6,
+        "risk_decisions": 9453,
+        "successful_escapes": 35,
+        "unnecessary_guard_rate": 0.1450635103926097,
+        "win_rate": 0.93
+      }
+    },
+    "protective_presence_delta": 0.029903068782271558,
+    "protective_presence_delta_ci": [
+      -0.012648225768128546,
+      0.08240912709018912
+    ],
+    "protective_presence_estimator": "paired_cluster_bootstrap_pooled_ratio_v1",
+    "protocol_inconsistencies": 0,
+    "skill_retention": 0.959079283887468
+  },
+  "product": {
+    "complete": true,
+    "decisions": 28759,
+    "episodes": 200,
+    "expected_episodes": 200,
+    "fallbacks": 27077,
+    "gates": {
+      "complete": true,
+      "exact_base_fallback": true,
+      "intervention_bounded": true,
+      "intervention_nonzero": true,
+      "per_opponent_retention": true,
+      "protocol_clean": true,
+      "required_style_coverage": true,
+      "skill_retention": true,
+      "telemetry_complete": true
+    },
+    "intervention_rate": 0.058486039152960814,
+    "interventions": 1682,
+    "legacy_diagnostic_passed": false,
+    "max_consecutive_interventions": 12,
+    "overrides": 0,
+    "passed": true,
+    "per_opponent_retention": {
+      "aggressive_script": 1.0,
+      "defensive_script": 1.0,
+      "fixed_route": 0.9113924050632911,
+      "objective_first": 0.875,
+      "random_legal": 1.0
+    },
+    "protocol_inconsistencies": 0,
+    "reason_counts": {
+      "base_restored": 205,
+      "base_warmup": 100,
+      "disengage_left": 277,
+      "disengage_right": 246,
+      "exact_base_fallback": 11359,
+      "guard_scan_left": 583,
+      "guard_scan_right": 576,
+      "objective_return_priority": 15413
+    },
+    "route_action_signature_distance": null,
+    "route_mode_counts": {},
+    "skill_retention": 0.959079283887468,
+    "state_occupancy": {
+      "base": 26234,
+      "disengage": 523,
+      "guard": 1159,
+      "recover": 843
+    },
+    "style": "defensive",
+    "trigger_counts": {
+      "carrying": 15413,
+      "consecutive_intervention_limit": 11,
+      "cooldown_complete": 205,
+      "initial_observation": 100,
+      "intervention_limit": 203,
+      "low_health": 523,
+      "no_public_trigger": 10516,
+      "own_score_rise": 148,
+      "recover_cooldown": 629,
+      "state_continue": 1011
+    }
+  },
+  "schema_version": 1,
+  "split": "validation",
+  "stage": "m5-hybrid",
+  "style": "defensive",
+  "test_cases_accessed": false
+}
