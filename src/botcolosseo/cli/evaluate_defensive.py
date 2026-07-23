@@ -49,7 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--base-checkpoint", type=Path, required=True)
     parser.add_argument("--defensive-checkpoint", type=Path, required=True)
-    parser.add_argument("--cases", type=Path, default=Path("configs/m3/validation.json"))
+    parser.add_argument("--cases", type=Path, default=Path("configs/m2/validation.json"))
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--pairs-per-opponent", type=int, default=10)
     parser.add_argument("--max-decisions", type=int, default=525)

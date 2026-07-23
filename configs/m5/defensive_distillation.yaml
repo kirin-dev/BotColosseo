@@ -1,6 +1,6 @@
 schema_version: 1
 seed: 20260723
-train_cases: configs/m3/train.json
+train_cases: configs/m2/train.json
 train_manifest: data/generated/m5/defensive/train-manifest.json
 transitions: 50000
 shard_size: 10000
