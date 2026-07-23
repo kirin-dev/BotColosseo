@@ -21,7 +21,7 @@ def build_m6_showcase_metric_payload(
     _require_passed(m4, stage="m4")
     _require_passed(defensive, stage="m5-defensive")
     _require_passed(explorer, stage="m5-explorer")
-    _require_passed(difficulty, stage="m5-difficulty")
+    _require_passed(difficulty, stage="m5-all-style-difficulty")
     upstream = _hash_map(upstream_sha256, "M6 upstream hashes")
     if tuple(upstream) != _UPSTREAMS:
         raise ValueError("M6 upstream evidence order is incomplete")

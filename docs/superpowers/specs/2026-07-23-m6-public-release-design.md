@@ -28,7 +28,8 @@ M6 presentation is downstream of M4/M5 evidence, never an alternate gate.
 - Aggressive must retain its passing M4 validation identity.
 - Defensive and Explorer may enter the final four-policy release only through
   passing closed-loop PPO evidence with the unchanged evaluators.
-- Difficulty claims require the passing 600-episode M5 audit.
+- Difficulty claims require the passing 1,800-episode all-style M5 audit. The
+  already-passing 600-episode Base/Aggressive block is one of its three inputs.
 - A failed candidate remains documented as a negative result. It may be
   rendered locally for diagnosis but is never labelled as a completed style
   in the public M6 publication.

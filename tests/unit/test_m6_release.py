@@ -68,11 +68,11 @@ def _inputs() -> dict[str, object]:
         "route_entropy_delta": 0.12,
     }
     difficulty = {
-        "stage": "m5-difficulty",
+        "stage": "m5-all-style-difficulty",
         "split": "validation",
         "passed": True,
         "complete": True,
-        "episodes": 1200,
+        "episodes": 1800,
         "test_cases_accessed": False,
         "checkpoint_sha256": {
             "strong_base": base,
@@ -101,7 +101,7 @@ def test_m6_payload_binds_all_passing_upstreams() -> None:
     payload = build_m6_showcase_metric_payload(**_inputs())
 
     assert payload["passed"] is True
-    assert payload["episodes"] == 1800
+    assert payload["episodes"] == 2400
     assert payload["checkpoint_sha256"]["defensive"] == "3" * 64
     assert payload["headline_cards"][4] == {
         "label": "Min retention",

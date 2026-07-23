@@ -1253,3 +1253,30 @@ upstream gate has passed and use the detached PID/log wrapper pattern from the
 PPO sections above. A small-sample smoke may be statistically inconclusive; it
 proceeds only when all 60 rows are complete, protocol-clean, and
 validation-only. The 600-episode formal block must pass every frozen gate.
+
+After both native blocks pass, generate the only difficulty artifact accepted
+by M6:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/audit_all_style_difficulty.py
+```
+
+This audit revalidates all three 600-episode hash chains, the upstream style
+gates, shared protocol identity, 1,800 unique rows, and exact Strong Base
+outcomes across the three ledgers. It refuses to overwrite
+`reports/m5/difficulty/all-style-summary.json`.
+
+Only after that audit passes, export the M6 metric payload:
+
+```bash
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/export_m6_showcase_metrics.py \
+  --m4 reports/m4/evaluation/aggressive-alpha-025/summary.json \
+  --m4-showcase reports/m4/showcase-metrics.json \
+  --defensive reports/m5/defensive/ppo-repair/formal/summary.json \
+  --explorer reports/m5/explorer/ppo-repair/formal/summary.json \
+  --difficulty reports/m5/difficulty/all-style-summary.json \
+  --output reports/m6/showcase-metrics.json
+```
