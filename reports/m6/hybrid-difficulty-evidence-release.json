@@ -1,0 +1,24 @@
+{
+  "archive": "botcolosseo-hybrid-difficulty-evidence.tar.gz",
+  "archive_bytes": 2185078,
+  "archive_sha256": "fc45e049b3a92ec574cf8a83c0014484f4497b6e4c0d792652c1db28599725f3",
+  "built_at": "2026-07-23",
+  "episodes": 400,
+  "members": {
+    "defensive/episodes.jsonl": "b64a6a788ef4740408af0db5c6587d8255d2cc3b8b151cd649d2b38a3c293063",
+    "defensive/execution-trace.jsonl": "ffbbe77902982ce407b03631e6da1747f22842e99dd365c5c1a3a47bde3bd4eb",
+    "defensive/manifest.json": "5808efcd47f3e40826bfbcd703d6c217e91f8e457bc859bb1c5cc44aab1cbb29",
+    "defensive/run.json": "ff564030e04c12c14f4262d42aa21c45948f93fbfbc4838483916286f8a70f15",
+    "defensive/summary.json": "1e9bd6c39e4c8bc2689c9ff9dc7be94fcc5f4b1072f4ff126ca8db186f09058d",
+    "defensive/telemetry.jsonl": "08a8924e2c64a63cd2ab4a7c785851767212144644679c0d2e850508e8415f97",
+    "explorer/episodes.jsonl": "cbedf3f275cb35a130c6701114f06779a5a3722927853eea8567952d8c2e5a3e",
+    "explorer/execution-trace.jsonl": "2d2e01b4066c31d84581de363c0a5ecc49b873cdf6139f15c9e8bf95839aa654",
+    "explorer/manifest.json": "6f2100ddacc08dd3118e36c6416219ff7ae77b8d1b55e75839cd9fdfb6ed54b7",
+    "explorer/run.json": "7cd8367927483ce508290e3ef0ee25f085749d7ec4db31130a68de1f24443486",
+    "explorer/summary.json": "4cc812c3b666bf38530e41612178cfb0088c7c7cf4d3902a4a634bf9e675c780",
+    "explorer/telemetry.jsonl": "8b88ddce6ab574481c3bf4f3f94303f418cdfd84f789a6620a40098063766243"
+  },
+  "passed": true,
+  "stage": "m5-hybrid-difficulty-evidence-release",
+  "test_cases_accessed": false
+}

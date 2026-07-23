@@ -1,0 +1,222 @@
+{
+  "cases_sha256": "3f5d0c4f6ac26541c6d159f53413f7c1c1cc44702c49159983a84a2ff5270993",
+  "cells": {
+    "aggressive": {
+      "easy": {
+        "episodes": 100,
+        "mean_score_difference": 1.02,
+        "objective_rate": 0.88,
+        "performance": 0.83,
+        "win_rate": 0.72
+      },
+      "hard": {
+        "episodes": 100,
+        "mean_score_difference": 1.78,
+        "objective_rate": 0.99,
+        "performance": 0.955,
+        "win_rate": 0.88
+      },
+      "normal": {
+        "episodes": 100,
+        "mean_score_difference": 1.49,
+        "objective_rate": 0.94,
+        "performance": 0.89,
+        "win_rate": 0.76
+      }
+    },
+    "defensive": {
+      "easy": {
+        "episodes": 100,
+        "mean_score_difference": 1.0,
+        "objective_rate": 0.87,
+        "performance": 0.8175,
+        "win_rate": 0.69
+      },
+      "hard": {
+        "episodes": 100,
+        "mean_score_difference": 1.77,
+        "objective_rate": 0.98,
+        "performance": 0.9375,
+        "win_rate": 0.84
+      },
+      "normal": {
+        "episodes": 100,
+        "mean_score_difference": 1.4,
+        "objective_rate": 0.93,
+        "performance": 0.8775,
+        "win_rate": 0.78
+      }
+    },
+    "explorer": {
+      "easy": {
+        "episodes": 100,
+        "mean_score_difference": 1.0,
+        "objective_rate": 0.88,
+        "performance": 0.83,
+        "win_rate": 0.73
+      },
+      "hard": {
+        "episodes": 100,
+        "mean_score_difference": 1.83,
+        "objective_rate": 1.0,
+        "performance": 0.96,
+        "win_rate": 0.88
+      },
+      "normal": {
+        "episodes": 100,
+        "mean_score_difference": 1.57,
+        "objective_rate": 0.92,
+        "performance": 0.88,
+        "win_rate": 0.79
+      }
+    },
+    "strong_base": {
+      "easy": {
+        "episodes": 100,
+        "mean_score_difference": 1.03,
+        "objective_rate": 0.87,
+        "performance": 0.82,
+        "win_rate": 0.71
+      },
+      "hard": {
+        "episodes": 100,
+        "mean_score_difference": 1.82,
+        "objective_rate": 0.99,
+        "performance": 0.955,
+        "win_rate": 0.89
+      },
+      "normal": {
+        "episodes": 100,
+        "mean_score_difference": 1.47,
+        "objective_rate": 0.93,
+        "performance": 0.8775,
+        "win_rate": 0.78
+      }
+    }
+  },
+  "complete": true,
+  "config_sha256": "936c837a95d29c2ada8ba9addcbf558562e9759e18c2c2b93c2014932d349131",
+  "difficulty_config_sha256": "b226f7b1d7d12cd979d05b14f145f3be6c56fb1dc669b3070315dbacc331f627",
+  "episodes": 1200,
+  "expected_episodes": 1200,
+  "gates": {
+    "aggregate_monotonic": true,
+    "base_aggressive_source": true,
+    "complete": true,
+    "defensive_extension_source": true,
+    "defensive_hard_source": true,
+    "explorer_extension_source": true,
+    "explorer_hard_source": true,
+    "hybrid_skill_retention": true,
+    "matrix": true,
+    "no_test_access": true,
+    "objective_capability": true,
+    "per_opponent_monotonic": true,
+    "protocol_clean": true,
+    "shared_case_identity": true,
+    "style_sources_passed": true
+  },
+  "monotonic_opponents": {
+    "aggressive": 4,
+    "defensive": 4,
+    "explorer": 4,
+    "strong_base": 4
+  },
+  "passed": true,
+  "policy_artifact_sha256": {
+    "aggressive": "74771ff9ea05feb8658ac62de4fd19763390ce3c396b59c752cbed90b20b9446",
+    "defensive": "fd584f38a90f55a0fc21c314b82c632814a6fd151f9337abf21346c432b9ad6c",
+    "explorer": "367ef8e7c3e5f9abd6202ddf7287428d7f1b70b9fb5d1d920ac2bb27be3baa1a",
+    "strong_base": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a"
+  },
+  "policy_kinds": {
+    "aggressive": "checkpoint",
+    "defensive": "hybrid_config",
+    "explorer": "hybrid_config",
+    "strong_base": "checkpoint"
+  },
+  "protocol_inconsistencies": 0,
+  "retention": {
+    "defensive": {
+      "easy": {
+        "aggregate": 0.9969512195121952,
+        "passed": true,
+        "per_opponent": {
+          "aggressive_script": 1.0,
+          "defensive_script": 1.0,
+          "fixed_route": 0.9594594594594593,
+          "objective_first": 1.0434782608695652,
+          "random_legal": 1.0131578947368423
+        }
+      },
+      "hard": {
+        "aggregate": 0.9816753926701571,
+        "passed": true,
+        "per_opponent": {
+          "aggressive_script": 1.0,
+          "defensive_script": 1.0,
+          "fixed_route": 0.9230769230769231,
+          "objective_first": 0.9843749999999999,
+          "random_legal": 1.0
+        }
+      },
+      "normal": {
+        "aggregate": 1.0,
+        "passed": true,
+        "per_opponent": {
+          "aggressive_script": 1.0,
+          "defensive_script": 0.9873417721518987,
+          "fixed_route": 1.0,
+          "objective_first": 1.0192307692307692,
+          "random_legal": 1.0
+        }
+      }
+    },
+    "explorer": {
+      "easy": {
+        "aggregate": 1.0121951219512195,
+        "passed": true,
+        "per_opponent": {
+          "aggressive_script": 1.0,
+          "defensive_script": 1.0533333333333335,
+          "fixed_route": 1.0405405405405406,
+          "objective_first": 1.0869565217391306,
+          "random_legal": 0.9342105263157895
+        }
+      },
+      "hard": {
+        "aggregate": 1.0052356020942408,
+        "passed": true,
+        "per_opponent": {
+          "aggressive_script": 1.0,
+          "defensive_script": 0.9875,
+          "fixed_route": 1.012820512820513,
+          "objective_first": 1.0312499999999998,
+          "random_legal": 1.0
+        }
+      },
+      "normal": {
+        "aggregate": 1.002849002849003,
+        "passed": true,
+        "per_opponent": {
+          "aggressive_script": 1.0,
+          "defensive_script": 1.0,
+          "fixed_route": 0.9500000000000001,
+          "objective_first": 1.0769230769230769,
+          "random_legal": 1.0
+        }
+      }
+    }
+  },
+  "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+  "schema_version": 1,
+  "source_manifest_sha256": {
+    "base_aggressive": "19491a4f1746bc763b9e98b6bb2def9f18c6b2bb59f79faf296464f496d326e2",
+    "defensive_extension": "5808efcd47f3e40826bfbcd703d6c217e91f8e457bc859bb1c5cc44aab1cbb29",
+    "defensive_hard": "f9acfe14be889f652a0d5303a1af8938e6c80bd57b0a2780dc32f680a2ce092e",
+    "explorer_extension": "6f2100ddacc08dd3118e36c6416219ff7ae77b8d1b55e75839cd9fdfb6ed54b7",
+    "explorer_hard": "c06c4d1764fe273b833449939f17fd910efa8fe1d0594d6916f79645f04bc3dd"
+  },
+  "stage": "m5-hybrid-all-style-difficulty",
+  "test_cases_accessed": false
+}

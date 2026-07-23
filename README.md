@@ -66,19 +66,16 @@ official test result. See the [full Strong Base episode](docs/assets/showcase/m4
 
 ## Fair Easy / Normal / Hard control
 
-![Difficulty performance on 600 paired validation episodes](docs/assets/showcase/m5-difficulty.png)
+![Style and difficulty performance on 1,200 unique validation episodes](docs/assets/showcase/m5-hybrid-all-style-difficulty.png)
 
-The same frozen checkpoints become progressively less restricted from Easy to
-Hard. Strong Base performance is `0.820 → 0.878 → 0.955`; Aggressive is
-`0.830 → 0.890 → 0.955`. All six frozen gates passed with zero retries and
-zero protocol inconsistencies. Hard is the native policy; Normal adds one
-decision of reaction delay, while Easy adds two decisions of delay and updates
-the policy every two decisions.
-
-This is the passing Strong Base/Aggressive controller calibration, not the
-complete all-style difficulty claim. Defensive and Explorer now pass their
-hybrid product gates; their frozen all-style difficulty extension remains
-pending. See the
+The frozen learned and hybrid policies were evaluated in a
+`4 policies × 3 tiers × 100 cases` validation matrix. Performance is monotonic
+from Easy to Hard for every policy and for at least four of five opponents per
+policy. All 1,200 unique episodes passed source-identity, protocol, objective,
+style-coverage, and same-tier hybrid-retention gates; the minimum
+per-opponent retention was 92.3%, with zero protocol inconsistencies and no
+test access. Hard is the native policy; Normal and Easy add only bounded
+public-observation inference restrictions. See the
 [evidence record](docs/milestones/m5-difficulty.md).
 
 ## Current status
@@ -146,12 +143,15 @@ product-first route now wraps the exact Strong Base with deterministic
 public-observation governors. Defensive passed its 200-episode product
 evaluation at 95.9% Skill Retention; Explorer Candidate C passed at 100.3%,
 with all three modes exercised and a 0.061 executed-action signature distance.
-Difficulty control passed its 600-episode Strong Base/Aggressive calibration;
-the all-style difficulty extension and anonymous recognition study remain
-pending. A 22.9 MB hybrid-aware release package has also passed its standalone
-hash, loader, evidence, and portability audit; model binaries remain outside
-normal Git history. Its tracked [release record](reports/m6/hybrid-release.json)
-binds the upload archive to SHA-256.
+Difficulty control now passes the complete 1,200-episode all-style validation
+matrix. The remaining Showcase-ready gate is the anonymous recognition study.
+A hybrid-aware package containing 22.9 MB of policy artifacts, now including
+the difficulty audit,
+M6 metrics, and result card, also passed its standalone hash, loader, evidence,
+and portability audit; model binaries and raw decision ledgers remain outside
+normal Git history. The tracked [release record](reports/m6/hybrid-release.json)
+and [raw-evidence record](reports/m6/hybrid-difficulty-evidence-release.json)
+bind both upload archives to SHA-256.
 
 ## Quick start
 

@@ -1,0 +1,85 @@
+{
+  "base_checkpoint_sha256": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a",
+  "cases_sha256": "3f5d0c4f6ac26541c6d159f53413f7c1c1cc44702c49159983a84a2ff5270993",
+  "complete": true,
+  "difficulty_config_sha256": "b226f7b1d7d12cd979d05b14f145f3be6c56fb1dc669b3070315dbacc331f627",
+  "environment_retries": 0,
+  "episodes": 200,
+  "executed_decisions": 72455,
+  "expected_episodes": 200,
+  "gates": {
+    "complete": true,
+    "evidence_case_identity": true,
+    "protocol_clean": true,
+    "style_mechanism_each_tier": true
+  },
+  "governor_config_sha256": "fd584f38a90f55a0fc21c314b82c632814a6fd151f9337abf21346c432b9ad6c",
+  "governor_decisions": 51846,
+  "passed": true,
+  "product_config_sha256": "936c837a95d29c2ada8ba9addcbf558562e9759e18c2c2b93c2014932d349131",
+  "protocol_inconsistencies": 0,
+  "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+  "schema_version": 1,
+  "split": "validation",
+  "stage": "m5-hybrid-defensive-difficulty-extension",
+  "style": "defensive",
+  "test_cases_accessed": false,
+  "tiers": {
+    "easy": {
+      "episodes": 100,
+      "executed_decisions": 41280,
+      "executed_route_signature_distance": null,
+      "gates": {
+        "evidence_complete": true,
+        "exact_base_fallback": true,
+        "executed_intervention_bounded": true,
+        "intervention_nonzero": true,
+        "proposed_intervention_bounded": true,
+        "required_style_coverage": true,
+        "update_accounting": true,
+        "warmup_accounting": true
+      },
+      "governor_decisions": 20671,
+      "intervention_rate": 0.06331548198636806,
+      "interventions": 2601,
+      "max_consecutive_executed_interventions": 24,
+      "max_consecutive_proposed_interventions": 12,
+      "passed": true,
+      "route_mode_counts": {},
+      "state_occupancy": {
+        "base": 37190,
+        "disengage": 796,
+        "guard": 1805,
+        "recover": 1289
+      }
+    },
+    "normal": {
+      "episodes": 100,
+      "executed_decisions": 31175,
+      "executed_route_signature_distance": null,
+      "gates": {
+        "evidence_complete": true,
+        "exact_base_fallback": true,
+        "executed_intervention_bounded": true,
+        "intervention_nonzero": true,
+        "proposed_intervention_bounded": true,
+        "required_style_coverage": true,
+        "update_accounting": true,
+        "warmup_accounting": true
+      },
+      "governor_decisions": 31175,
+      "intervention_rate": 0.05274336283185841,
+      "interventions": 1639,
+      "max_consecutive_executed_interventions": 12,
+      "max_consecutive_proposed_interventions": 12,
+      "passed": true,
+      "route_mode_counts": {},
+      "state_occupancy": {
+        "base": 28594,
+        "disengage": 546,
+        "guard": 1093,
+        "recover": 842
+      }
+    }
+  }
+}

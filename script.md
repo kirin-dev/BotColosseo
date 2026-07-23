@@ -1409,14 +1409,15 @@ sha256sum artifacts/botcolosseo-hybrid-product-release.tar.gz
 ```
 
 The package contains the exact Strong Base and Aggressive learned checkpoints,
-portable Defensive/Explorer governor configs, the three formal style summaries,
-and the real-showcase publication manifest. Both build and audit load policies
-through the public-observation path, verify every hash, require
+portable Defensive/Explorer governor configs, formal style and difficulty
+evidence, M6 metrics, the result plot, and the real-showcase publication
+manifest. Both build and audit load policies through the public-observation
+path, verify every hash, require
 `test_cases_accessed: false`, and fail closed on identity drift. The verified
 local package is 22,913,221 policy bytes; uploading it to a GitHub Release
 remains a separate explicit publication action. The current deterministic
-archive is 17,038,178 bytes with SHA-256
-`79d6ded79e3eeb4e1b4513cddf47f4832d92ae3e6bc5dea9b6ac7977f7a1266c`;
+archive is 17,111,894 bytes with SHA-256
+`020b6d0134e487de9091a8f329d13a40e93c55f330e5e22212a4b3ab0a3385c9`;
 the tracked release record is `reports/m6/hybrid-release.json`.
 
 ## M5 hybrid-aware all-style difficulty
@@ -1498,3 +1499,22 @@ same-tier hybrid retention, style mechanism coverage, and zero test access.
 The large formal JSONL ledgers are intentionally excluded from ordinary Git
 history; compact run/summary/manifest files remain tracked, while the exact raw
 ledgers are packaged as a hash-bound release artifact after the audit.
+
+The completed formal pipeline exited `0` with 200 Defensive and 200 Explorer
+extension rows. The combined audit passed all gates over 1,200 unique
+validation episodes with zero protocol inconsistencies and no test access.
+Build the deterministic raw-ledger archive with:
+
+```bash
+tar --sort=name --mtime='UTC 1970-01-01' \
+  --owner=0 --group=0 --numeric-owner \
+  -czf artifacts/botcolosseo-hybrid-difficulty-evidence.tar.gz \
+  -C reports/m5/hybrid \
+  defensive/difficulty/formal explorer/difficulty/formal
+sha256sum artifacts/botcolosseo-hybrid-difficulty-evidence.tar.gz
+```
+
+The verified archive is 2,185,078 bytes with SHA-256
+`fc45e049b3a92ec574cf8a83c0014484f4497b6e4c0d792652c1db28599725f3`;
+its tracked member hashes are in
+`reports/m6/hybrid-difficulty-evidence-release.json`.

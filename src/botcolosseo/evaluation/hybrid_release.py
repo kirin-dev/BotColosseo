@@ -35,6 +35,9 @@ def build_hybrid_release(
     root: Path,
     config_path: Path,
     showcase_manifest_path: Path,
+    difficulty_summary_path: Path,
+    m6_metrics_path: Path,
+    difficulty_plot_path: Path,
     output_dir: Path,
 ) -> dict[str, object]:
     root = root.resolve()
@@ -55,6 +58,21 @@ def build_hybrid_release(
     scenario_hash = showcase.get("scenario_hash")
     if not isinstance(scenario_hash, str) or _SHA256.fullmatch(scenario_hash) is None:
         raise ValueError("Hybrid release scenario hash is invalid")
+    difficulty = _json_object(difficulty_summary_path.resolve())
+    m6_metrics = _json_object(m6_metrics_path.resolve())
+    _validate_product_evidence(
+        difficulty=difficulty,
+        m6_metrics=m6_metrics,
+        difficulty_sha256=sha256_file(difficulty_summary_path),
+        policy_artifacts=expected_artifacts,
+        scenario_hash=scenario_hash,
+    )
+    difficulty_plot_path = difficulty_plot_path.resolve()
+    if (
+        not difficulty_plot_path.is_file()
+        or difficulty_plot_path.read_bytes()[:8] != b"\x89PNG\r\n\x1a\n"
+    ):
+        raise ValueError("Hybrid release difficulty plot is invalid")
     output_dir = output_dir.resolve()
     if output_dir.exists():
         raise FileExistsError("Refusing to overwrite a hybrid release")
@@ -87,9 +105,11 @@ def build_hybrid_release(
         checkpoints = staging / "checkpoints"
         governors = staging / "governors"
         evidence_dir = staging / "evidence"
+        assets_dir = staging / "assets"
         checkpoints.mkdir(parents=True)
         governors.mkdir()
         evidence_dir.mkdir()
+        assets_dir.mkdir()
         policy_rows = []
         for row in config.policies:
             if row.kind == "checkpoint":
@@ -146,11 +166,20 @@ def build_hybrid_release(
             )
         showcase_target = evidence_dir / "showcase-manifest.json"
         shutil.copyfile(showcase_manifest_path, showcase_target)
+        difficulty_target = evidence_dir / "difficulty-summary.json"
+        shutil.copyfile(difficulty_summary_path, difficulty_target)
+        metrics_target = evidence_dir / "m6-product-metrics.json"
+        shutil.copyfile(m6_metrics_path, metrics_target)
+        plot_target = assets_dir / "style-difficulty.png"
+        shutil.copyfile(difficulty_plot_path, plot_target)
         manifest = {
-            "schema_version": 1,
+            "schema_version": 2,
             "stage": "hybrid-product-release",
             "scenario_hash": scenario_hash,
             "showcase_manifest_sha256": sha256_file(showcase_target),
+            "difficulty_summary_sha256": sha256_file(difficulty_target),
+            "m6_metrics_sha256": sha256_file(metrics_target),
+            "difficulty_plot_sha256": sha256_file(plot_target),
             "policies": policy_rows,
             "evidence": evidence_rows,
             "total_bytes": sum(int(row["bytes"]) for row in policy_rows),
@@ -168,7 +197,7 @@ def audit_hybrid_release(package_dir: Path) -> dict[str, object]:
     package_dir = package_dir.resolve()
     manifest = _json_object(package_dir / "manifest.json")
     if (
-        manifest.get("schema_version") != 1
+        manifest.get("schema_version") != 2
         or manifest.get("stage") != "hybrid-product-release"
         or manifest.get("distribution") != "github-release"
         or manifest.get("test_cases_accessed") is not False
@@ -242,6 +271,30 @@ def audit_hybrid_release(package_dir: Path) -> dict[str, object]:
     showcase = package_dir / "evidence" / "showcase-manifest.json"
     if sha256_file(showcase) != manifest.get("showcase_manifest_sha256"):
         raise ValueError("Hybrid release showcase manifest hash drifted")
+    difficulty_path = package_dir / "evidence" / "difficulty-summary.json"
+    metrics_path = package_dir / "evidence" / "m6-product-metrics.json"
+    plot_path = package_dir / "assets" / "style-difficulty.png"
+    if sha256_file(difficulty_path) != manifest.get("difficulty_summary_sha256"):
+        raise ValueError("Hybrid release difficulty summary hash drifted")
+    if sha256_file(metrics_path) != manifest.get("m6_metrics_sha256"):
+        raise ValueError("Hybrid release M6 metrics hash drifted")
+    if (
+        sha256_file(plot_path) != manifest.get("difficulty_plot_sha256")
+        or plot_path.read_bytes()[:8] != b"\x89PNG\r\n\x1a\n"
+    ):
+        raise ValueError("Hybrid release difficulty plot drifted")
+    _validate_product_evidence(
+        difficulty=_json_object(difficulty_path),
+        m6_metrics=_json_object(metrics_path),
+        difficulty_sha256=sha256_file(difficulty_path),
+        policy_artifacts={
+            str(row["policy_id"]): str(
+                row.get("source_config_sha256", row["sha256"])
+            )
+            for row in policies
+        },
+        scenario_hash=scenario_hash,
+    )
     return manifest
 
 
@@ -262,3 +315,37 @@ def _json_object(path: Path) -> dict[str, object]:
     if not isinstance(payload, dict):
         raise ValueError(f"Expected JSON object: {path}")
     return payload
+
+
+def _validate_product_evidence(
+    *,
+    difficulty: dict[str, object],
+    m6_metrics: dict[str, object],
+    difficulty_sha256: str,
+    policy_artifacts: dict[str, str],
+    scenario_hash: str,
+) -> None:
+    if (
+        difficulty.get("stage") != "m5-hybrid-all-style-difficulty"
+        or difficulty.get("passed") is not True
+        or difficulty.get("complete") is not True
+        or difficulty.get("episodes") != 1200
+        or difficulty.get("test_cases_accessed") is not False
+        or difficulty.get("scenario_hash") != scenario_hash
+        or difficulty.get("policy_artifact_sha256") != policy_artifacts
+    ):
+        raise ValueError("Hybrid release difficulty evidence is invalid")
+    upstream = m6_metrics.get("upstream_sha256")
+    if (
+        m6_metrics.get("stage") != "m6-hybrid-product-metrics"
+        or m6_metrics.get("passed") is not True
+        or m6_metrics.get("showcase_ready") is not False
+        or m6_metrics.get("anonymous_user_study_required") is not True
+        or m6_metrics.get("episodes") != 1200
+        or m6_metrics.get("test_cases_accessed") is not False
+        or m6_metrics.get("scenario_hash") != scenario_hash
+        or m6_metrics.get("policy_artifact_sha256") != policy_artifacts
+        or not isinstance(upstream, dict)
+        or upstream.get("difficulty") != difficulty_sha256
+    ):
+        raise ValueError("Hybrid release M6 metrics evidence is invalid")

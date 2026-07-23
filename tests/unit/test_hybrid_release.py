@@ -21,6 +21,13 @@ def test_hybrid_release_refuses_overwrite(tmp_path: Path) -> None:
             showcase_manifest_path=Path(
                 "reports/showcase/hybrid-product/manifest.json"
             ),
+            difficulty_summary_path=Path(
+                "reports/m5/difficulty/hybrid-all-style-summary.json"
+            ),
+            m6_metrics_path=Path("reports/m6/hybrid-product-metrics.json"),
+            difficulty_plot_path=Path(
+                "docs/assets/showcase/m5-hybrid-all-style-difficulty.png"
+            ),
             output_dir=output,
         )
 
@@ -37,6 +44,13 @@ def test_hybrid_release_rejects_showcase_identity_drift(tmp_path: Path) -> None:
             root=Path.cwd(),
             config_path=Path("configs/showcase/hybrid-product.yaml"),
             showcase_manifest_path=manifest,
+            difficulty_summary_path=Path(
+                "reports/m5/difficulty/hybrid-all-style-summary.json"
+            ),
+            m6_metrics_path=Path("reports/m6/hybrid-product-metrics.json"),
+            difficulty_plot_path=Path(
+                "docs/assets/showcase/m5-hybrid-all-style-difficulty.png"
+            ),
             output_dir=tmp_path / "release",
         )
 
@@ -105,8 +119,16 @@ def test_hybrid_release_audit_rejects_policy_drift(
         )
     showcase = evidence / "showcase-manifest.json"
     showcase.write_text("{}", encoding="utf-8")
+    difficulty = evidence / "difficulty-summary.json"
+    difficulty.write_text("{}", encoding="utf-8")
+    metrics = evidence / "m6-product-metrics.json"
+    metrics.write_text("{}", encoding="utf-8")
+    assets = package / "assets"
+    assets.mkdir()
+    plot = assets / "style-difficulty.png"
+    plot.write_bytes(b"\x89PNG\r\n\x1a\n")
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "stage": "hybrid-product-release",
         "distribution": "github-release",
         "test_cases_accessed": False,
@@ -118,6 +140,11 @@ def test_hybrid_release_audit_rejects_policy_drift(
         "showcase_manifest_sha256": hashlib.sha256(
             showcase.read_bytes()
         ).hexdigest(),
+        "difficulty_summary_sha256": hashlib.sha256(
+            difficulty.read_bytes()
+        ).hexdigest(),
+        "m6_metrics_sha256": hashlib.sha256(metrics.read_bytes()).hexdigest(),
+        "difficulty_plot_sha256": hashlib.sha256(plot.read_bytes()).hexdigest(),
         "total_bytes": sum(path.stat().st_size for _, _, _, path in policy_specs),
     }
     (package / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")

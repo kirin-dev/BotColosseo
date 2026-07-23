@@ -1,10 +1,12 @@
 {
   "archive": "botcolosseo-hybrid-product-release.tar.gz",
-  "archive_bytes": 17038178,
-  "archive_sha256": "79d6ded79e3eeb4e1b4513cddf47f4832d92ae3e6bc5dea9b6ac7977f7a1266c",
+  "archive_bytes": 17111894,
+  "archive_sha256": "020b6d0134e487de9091a8f329d13a40e93c55f330e5e22212a4b3ab0a3385c9",
   "audit_passed": true,
   "built_at": "2026-07-23",
-  "manifest_sha256": "52ec8cc66af87e89a6275d9686d605bb9e5f0cd90510953ab4dacbebfa3ca1d6",
+  "difficulty_evidence_included": true,
+  "manifest_schema_version": 2,
+  "manifest_sha256": "3f1413715f26d8bc9858df17d3d1657554c9f6ac3c0aa67c6780e2994ffc75fc",
   "policy_bytes": 22913221,
   "policy_kinds": {
     "aggressive": "checkpoint",
