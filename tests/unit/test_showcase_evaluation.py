@@ -8,6 +8,7 @@ import pytest
 import yaml
 
 from botcolosseo.evaluation.showcase import (
+    M6ShowcaseMetricEvidence,
     build_m4_showcase_metric_payload,
     build_showcase_manifest,
     canonical_json,
@@ -41,6 +42,45 @@ def _metric_payload() -> dict[str, object]:
         "decision_contrast_scores": {
             "fixed_route:250:host": [0.0, 1.0, 0.0]
         },
+    }
+
+
+def _m6_metric_payload() -> dict[str, object]:
+    hashes = {
+        "strong_base": "1" * 64,
+        "aggressive": "2" * 64,
+        "defensive": "3" * 64,
+        "explorer": "4" * 64,
+    }
+    return {
+        "schema_version": 2,
+        "stage": "m6",
+        "split": "validation",
+        "passed": True,
+        "style_gate_passed": True,
+        "retention_gate_passed": True,
+        "difficulty_gate_passed": True,
+        "episodes": 1200,
+        "checkpoint_sha256": hashes,
+        "headline_cards": [
+            {"label": "Base win rate", "value": "87.0%"},
+            {"label": "Aggressive shift", "value": "+0.100"},
+            {"label": "Defensive shift", "value": "+0.080"},
+            {"label": "Explorer shift", "value": "+0.120"},
+            {"label": "Min retention", "value": "90.0%"},
+            {"label": "Evidence", "value": "1,200 eps"},
+        ],
+        "case_contrast_scores": {"fixed_route:250:host": 1.0},
+        "decision_contrast_scores": {
+            "fixed_route:250:host": [0.0, 1.0, 0.0]
+        },
+        "upstream_sha256": {
+            "m4": "5" * 64,
+            "defensive": "6" * 64,
+            "explorer": "7" * 64,
+            "difficulty": "8" * 64,
+        },
+        "test_cases_accessed": False,
     }
 
 
@@ -157,6 +197,62 @@ def test_development_config_is_non_public_and_hash_bound() -> None:
     assert config.output_dir == Path.cwd() / "artifacts/showcase-development/media"
 
 
+def test_m6_config_requires_the_frozen_four_policy_order(tmp_path: Path) -> None:
+    payload = {
+        "schema_version": 1,
+        "stage": "m6",
+        "publication": True,
+        "split": "validation",
+        "cases": "configs/showcase/m4-validation.json",
+        "metrics": "reports/m6/showcase-metrics.json",
+        "policies": [
+            {
+                "id": policy_id,
+                "label": label,
+                "checkpoint": f"runs/m6/{policy_id}.pt",
+                "expected_sha256": str(index) * 64,
+            }
+            for index, (policy_id, label) in enumerate(
+                (
+                    ("strong_base", "Strong Base"),
+                    ("aggressive", "Aggressive"),
+                    ("defensive", "Defensive"),
+                    ("explorer", "Explorer"),
+                ),
+                start=1,
+            )
+        ],
+        "render": {
+            "fps": 10,
+            "gif_seconds": 18,
+            "gif_max_bytes": 10_000_000,
+            "max_decisions": 525,
+            "output_dir": "docs/assets/showcase",
+        },
+        "evidence_dir": "reports/showcase/m6",
+    }
+    path = tmp_path / "m6.yaml"
+    path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    config = load_showcase_config(path, root=Path.cwd())
+
+    assert config.stage == "m6"
+    assert tuple(policy.policy_id for policy in config.policies) == (
+        "strong_base",
+        "aggressive",
+        "defensive",
+        "explorer",
+    )
+
+    payload["policies"][2], payload["policies"][3] = (
+        payload["policies"][3],
+        payload["policies"][2],
+    )
+    path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    with pytest.raises(ValueError, match="frozen stage order"):
+        load_showcase_config(path, root=Path.cwd())
+
+
 def test_m4_cases_are_validation_only_and_cover_four_scripts() -> None:
     cases = load_showcase_cases(
         Path("configs/showcase/m4-validation.json"),
@@ -261,6 +357,33 @@ def test_metric_evidence_accepts_m5_hashes_only_for_m5_stage(tmp_path: Path) -> 
     evidence = load_metric_evidence(path, expected_stage="m5", expected_hashes=hashes)
 
     assert evidence.checkpoint_sha256 == hashes
+
+
+def test_m6_metric_evidence_requires_all_gates_and_upstream_hashes(
+    tmp_path: Path,
+) -> None:
+    payload = _m6_metric_payload()
+    path = tmp_path / "metrics.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    evidence = load_metric_evidence(
+        path,
+        expected_stage="m6",
+        expected_hashes=payload["checkpoint_sha256"],
+    )
+
+    assert isinstance(evidence, M6ShowcaseMetricEvidence)
+    assert evidence.episodes == 1200
+    assert evidence.headline_cards[2] == ("Defensive shift", "+0.080")
+
+    payload["difficulty_gate_passed"] = False
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="every frozen gate"):
+        load_metric_evidence(
+            path,
+            expected_stage="m6",
+            expected_hashes=payload["checkpoint_sha256"],
+        )
 
 
 def test_select_showcase_case_uses_contrast_then_case_id_and_rejects_truncation() -> None:

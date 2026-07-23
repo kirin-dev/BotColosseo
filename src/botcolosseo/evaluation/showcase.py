@@ -58,6 +58,22 @@ _METRIC_FIELDS = {
     "case_contrast_scores",
     "decision_contrast_scores",
 }
+_M6_METRIC_FIELDS = {
+    "schema_version",
+    "stage",
+    "split",
+    "passed",
+    "style_gate_passed",
+    "retention_gate_passed",
+    "difficulty_gate_passed",
+    "episodes",
+    "checkpoint_sha256",
+    "headline_cards",
+    "case_contrast_scores",
+    "decision_contrast_scores",
+    "upstream_sha256",
+    "test_cases_accessed",
+}
 _HEADLINE_FIELDS = {
     "base_win_rate",
     "aggressive_style_delta",
@@ -77,6 +93,7 @@ _EXPECTED_POLICY_IDS = {
     "development": ("ppo", "bc"),
     "m4": ("strong_base", "aggressive"),
     "m5": ("strong_base", "aggressive", "defensive", "explorer"),
+    "m6": ("strong_base", "aggressive", "defensive", "explorer"),
 }
 
 
@@ -136,6 +153,17 @@ class ShowcaseMetricEvidence:
     checkpoint_sha256: dict[str, str]
     case_contrast_scores: dict[str, float]
     decision_contrast_scores: dict[str, tuple[float, ...]]
+    source_sha256: str
+
+
+@dataclass(frozen=True)
+class M6ShowcaseMetricEvidence:
+    episodes: int
+    headline_cards: tuple[tuple[str, str], ...]
+    checkpoint_sha256: dict[str, str]
+    case_contrast_scores: dict[str, float]
+    decision_contrast_scores: dict[str, tuple[float, ...]]
+    upstream_sha256: dict[str, str]
     source_sha256: str
 
 
@@ -257,9 +285,15 @@ def load_metric_evidence(
     *,
     expected_stage: str,
     expected_hashes: Mapping[str, str],
-) -> ShowcaseMetricEvidence:
+) -> ShowcaseMetricEvidence | M6ShowcaseMetricEvidence:
     payload_bytes = path.read_bytes()
     payload = _load_json_object_from_bytes(payload_bytes, "Showcase metric evidence")
+    if expected_stage == "m6":
+        return _load_m6_metric_evidence(
+            payload,
+            payload_bytes=payload_bytes,
+            expected_hashes=expected_hashes,
+        )
     _require_fields(payload, _METRIC_FIELDS, "Showcase metric evidence")
     if payload["schema_version"] != 1:
         raise ValueError("Showcase metric evidence requires schema_version 1")
@@ -314,6 +348,84 @@ def load_metric_evidence(
         checkpoint_sha256=checkpoint_sha256,
         case_contrast_scores=case_contrast_scores,
         decision_contrast_scores=decision_contrast_scores,
+        source_sha256=hashlib.sha256(payload_bytes).hexdigest(),
+    )
+
+
+def _load_m6_metric_evidence(
+    payload: dict[str, Any],
+    *,
+    payload_bytes: bytes,
+    expected_hashes: Mapping[str, str],
+) -> M6ShowcaseMetricEvidence:
+    _require_fields(payload, _M6_METRIC_FIELDS, "M6 showcase metric evidence")
+    if (
+        payload["schema_version"] != 2
+        or payload["stage"] != "m6"
+        or payload["split"] != "validation"
+        or payload["test_cases_accessed"] is not False
+        or any(
+            payload[field] is not True
+            for field in (
+                "passed",
+                "style_gate_passed",
+                "retention_gate_passed",
+                "difficulty_gate_passed",
+            )
+        )
+    ):
+        raise ValueError("M6 showcase metrics require every frozen gate")
+    episodes = payload["episodes"]
+    if isinstance(episodes, bool) or not isinstance(episodes, int) or episodes <= 0:
+        raise ValueError("M6 showcase metrics require positive episodes")
+    hashes = _load_hash_map(
+        payload["checkpoint_sha256"], "M6 showcase checkpoint hashes"
+    )
+    expected = _load_hash_map(
+        expected_hashes, "Expected M6 showcase checkpoint hashes"
+    )
+    if tuple(hashes) != _EXPECTED_POLICY_IDS["m6"] or hashes != expected:
+        raise ValueError("M6 showcase checkpoint hashes do not match")
+    upstream = _load_hash_map(
+        payload["upstream_sha256"], "M6 showcase upstream hashes"
+    )
+    if tuple(upstream) != ("m4", "defensive", "explorer", "difficulty"):
+        raise ValueError("M6 showcase upstream evidence is incomplete")
+    cards = _require_list(payload["headline_cards"])
+    if len(cards) != 6:
+        raise ValueError("M6 showcase requires exactly six headline cards")
+    parsed_cards: list[tuple[str, str]] = []
+    for card in cards:
+        _require_fields(card, {"label", "value"}, "M6 showcase headline card")
+        label, value = card["label"], card["value"]
+        if (
+            not isinstance(label, str)
+            or not isinstance(value, str)
+            or not label.strip()
+            or not value.strip()
+            or len(label) > 40
+            or len(value) > 20
+        ):
+            raise ValueError("M6 showcase headline card is invalid")
+        parsed_cards.append((label, value))
+    if len({label for label, _ in parsed_cards}) != len(parsed_cards):
+        raise ValueError("M6 showcase headline card labels must be unique")
+    case_scores = _load_score_map(
+        payload["case_contrast_scores"], "M6 showcase case contrast scores"
+    )
+    decision_scores = _load_decision_score_map(
+        payload["decision_contrast_scores"],
+        "M6 showcase decision contrast scores",
+    )
+    if set(case_scores) != set(decision_scores):
+        raise ValueError("M6 showcase contrast score case keys do not match")
+    return M6ShowcaseMetricEvidence(
+        episodes=episodes,
+        headline_cards=tuple(parsed_cards),
+        checkpoint_sha256=hashes,
+        case_contrast_scores=case_scores,
+        decision_contrast_scores=decision_scores,
+        upstream_sha256=upstream,
         source_sha256=hashlib.sha256(payload_bytes).hexdigest(),
     )
 

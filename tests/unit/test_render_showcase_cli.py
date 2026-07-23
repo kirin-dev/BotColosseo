@@ -99,6 +99,46 @@ def test_m4_target_names_match_the_public_contract(tmp_path: Path) -> None:
     assert targets["metrics_png"].name == "m4-metrics.png"
 
 
+def test_m6_target_names_match_the_four_policy_contract(tmp_path: Path) -> None:
+    root = Path.cwd()
+    development = load_showcase_config(
+        Path("configs/showcase/development.yaml"), root=root
+    )
+    policies = tuple(
+        ShowcasePolicySpec(
+            policy_id,
+            label,
+            root / f"runs/m6/{policy_id}.pt",
+            str(index) * 64,
+        )
+        for index, (policy_id, label) in enumerate(
+            (
+                ("strong_base", "Strong Base"),
+                ("aggressive", "Aggressive"),
+                ("defensive", "Defensive"),
+                ("explorer", "Explorer"),
+            ),
+            start=1,
+        )
+    )
+    config = replace(
+        development,
+        stage="m6",
+        publication=True,
+        policies=policies,
+        output_dir=tmp_path / "media",
+        evidence_dir=tmp_path / "evidence",
+    )
+
+    targets = showcase_cli._target_paths(config)
+
+    assert targets["comparison_gif"].name == "m6-style-comparison.gif"
+    assert targets["strong_base_mp4"].name == "m6-strong-base.mp4"
+    assert targets["defensive_mp4"].name == "m6-defensive.mp4"
+    assert targets["explorer_mp4"].name == "m6-explorer.mp4"
+    assert targets["metrics_png"].name == "m6-metrics.png"
+
+
 def test_development_renderer_stays_non_public_and_aligns_streams(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

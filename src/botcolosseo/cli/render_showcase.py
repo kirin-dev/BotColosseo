@@ -26,6 +26,7 @@ from botcolosseo.demo.showcase import (
 from botcolosseo.envs.video import read_video_frames, write_gif, write_mp4
 from botcolosseo.evaluation.m2 import load_actor_policy
 from botcolosseo.evaluation.showcase import (
+    M6ShowcaseMetricEvidence,
     ShowcaseConfig,
     ShowcaseMetricEvidence,
     ShowcasePolicySpec,
@@ -308,7 +309,7 @@ def _checkpoint_under_root(checkpoint: Path, checkpoint_root: Path) -> Path:
 
 def _load_public_metrics(
     config: ShowcaseConfig, expected_hashes: Mapping[str, str]
-) -> ShowcaseMetricEvidence | None:
+) -> ShowcaseMetricEvidence | M6ShowcaseMetricEvidence | None:
     if not config.publication:
         return None
     if config.metrics_path is None:
@@ -345,6 +346,9 @@ def _target_paths(config: ShowcaseConfig) -> dict[str, Path]:
     elif config.stage == "m4":
         comparison_name = "m4-base-vs-aggressive.gif"
         policy_prefix = "m4"
+    elif config.stage == "m6":
+        comparison_name = "m6-style-comparison.gif"
+        policy_prefix = "m6"
     else:
         comparison_name = "m5-style-comparison.gif"
         policy_prefix = "m5"

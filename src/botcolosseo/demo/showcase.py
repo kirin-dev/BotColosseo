@@ -20,7 +20,11 @@ from botcolosseo.evaluation.m2 import (
     TeacherEvaluationPolicy,
     valid_action_tic_boundary,
 )
-from botcolosseo.evaluation.showcase import ShowcaseMetricEvidence, case_id
+from botcolosseo.evaluation.showcase import (
+    M6ShowcaseMetricEvidence,
+    ShowcaseMetricEvidence,
+    case_id,
+)
 from botcolosseo.scenarios.duel_splits import DuelCase
 from botcolosseo.scenarios.regions import RegionGraph
 from botcolosseo.training.league_rollout import PublicCheckpointPolicy
@@ -90,22 +94,27 @@ EnvironmentFactory = Callable[[DuelCase], SynchronousDuelEnv]
 
 
 def render_metrics_card(
-    evidence: ShowcaseMetricEvidence, output: Path
+    evidence: ShowcaseMetricEvidence | M6ShowcaseMetricEvidence, output: Path
 ) -> Path:
     output = output.expanduser().resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = output.with_name(f".{output.stem}.tmp{output.suffix}")
-    labels = (
-        ("Base win rate", f"{evidence.base_win_rate:.1%}"),
-        ("Aggressive style shift", f"{evidence.aggressive_style_delta:+.3f}"),
-        ("Skill retention", f"{evidence.skill_retention:.1%}"),
-        ("Episodes", f"{evidence.episodes:,}"),
-    )
-    figure = Figure(figsize=(12, 2.4), dpi=150, facecolor="#111827")
+    if isinstance(evidence, M6ShowcaseMetricEvidence):
+        labels = evidence.headline_cards
+        columns, rows = 3, 2
+    else:
+        labels = (
+            ("Base win rate", f"{evidence.base_win_rate:.1%}"),
+            ("Aggressive style shift", f"{evidence.aggressive_style_delta:+.3f}"),
+            ("Skill retention", f"{evidence.skill_retention:.1%}"),
+            ("Episodes", f"{evidence.episodes:,}"),
+        )
+        columns, rows = 4, 1
+    figure = Figure(figsize=(12, 2.4 * rows), dpi=150, facecolor="#111827")
     FigureCanvasAgg(figure)
     try:
         for index, (label, value) in enumerate(labels):
-            axis = figure.add_subplot(1, 4, index + 1)
+            axis = figure.add_subplot(rows, columns, index + 1)
             axis.set_facecolor("#111827")
             axis.axis("off")
             axis.text(

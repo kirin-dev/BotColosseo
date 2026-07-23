@@ -18,7 +18,10 @@ from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.duel_protocol import DuelEvent, DuelEventType
 from botcolosseo.envs.duel_types import DuelActorObservation, DuelPrivilegedState, DuelStep
 from botcolosseo.envs.synchronous_duel import DuelObservations, DuelResetInfo
-from botcolosseo.evaluation.showcase import ShowcaseMetricEvidence
+from botcolosseo.evaluation.showcase import (
+    M6ShowcaseMetricEvidence,
+    ShowcaseMetricEvidence,
+)
 from botcolosseo.scenarios.duel_splits import DuelCase
 from botcolosseo.scenarios.regions import RegionGraph
 
@@ -178,6 +181,40 @@ def test_metrics_card_is_an_atomic_nonempty_png(tmp_path: Path) -> None:
     assert output.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
     assert output.stat().st_size > 10_000
     assert not (tmp_path / ".metrics.tmp.png").exists()
+
+
+def test_m6_metrics_card_renders_six_evidence_items(tmp_path: Path) -> None:
+    evidence = M6ShowcaseMetricEvidence(
+        episodes=1200,
+        headline_cards=(
+            ("Base win rate", "87.0%"),
+            ("Aggressive shift", "+0.100"),
+            ("Defensive shift", "+0.080"),
+            ("Explorer shift", "+0.120"),
+            ("Min retention", "90.0%"),
+            ("Evidence", "1,200 eps"),
+        ),
+        checkpoint_sha256={
+            "strong_base": "1" * 64,
+            "aggressive": "2" * 64,
+            "defensive": "3" * 64,
+            "explorer": "4" * 64,
+        },
+        case_contrast_scores={"case": 1.0},
+        decision_contrast_scores={"case": (0.0, 1.0)},
+        upstream_sha256={
+            "m4": "5" * 64,
+            "defensive": "6" * 64,
+            "explorer": "7" * 64,
+            "difficulty": "8" * 64,
+        },
+        source_sha256="9" * 64,
+    )
+
+    output = render_metrics_card(evidence, tmp_path / "m6-metrics.png")
+
+    assert output.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+    assert output.stat().st_size > 10_000
 
 
 def test_recorded_episode_serializes_without_frames() -> None:
