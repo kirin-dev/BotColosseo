@@ -7,6 +7,11 @@ from typing import Protocol
 import numpy as np
 
 from botcolosseo.envs.actions import MacroAction
+from botcolosseo.envs.defensive_signals import (
+    defensive_risk,
+    in_defensive_half,
+    opponent_carrier_id,
+)
 from botcolosseo.envs.duel_types import DuelPrivilegedState
 from botcolosseo.scenarios.regions import RegionGraph
 
@@ -202,6 +207,45 @@ class DefensiveDuelTeacher:
         if math.hypot(self._base[0] - x, self._base[1] - y) <= 32.0:
             return MacroAction.IDLE
         return _steer(state, self.side, self._base)
+
+
+class ProtectiveDefensiveTeacher:
+    """Training-only Teacher that defends only when the state warrants it."""
+
+    name = "protective_defensive_teacher"
+
+    def __init__(self, graph: RegionGraph, *, side: str) -> None:
+        if side not in ("host", "opponent"):
+            raise ValueError(f"Invalid duel side: {side}")
+        self.side = side
+        self._objective = ObjectiveDuelTeacher(graph, side=side)
+        self._aggressive = AggressiveDuelTeacher(graph, side=side)
+        self.mode = DuelTeacherMode.OBJECTIVE
+
+    def reset(self, *, seed: int) -> None:
+        self._objective.reset(seed=seed)
+        self._aggressive.reset(seed=seed)
+        self.mode = DuelTeacherMode.OBJECTIVE
+
+    def act(self, state: DuelPrivilegedState) -> MacroAction:
+        own_health, opponent_health = _health(state, self.side)
+        if own_health <= 0.0:
+            self.mode = DuelTeacherMode.RECOVER
+            return MacroAction.IDLE
+        if own_health <= 25.0 and opponent_health > own_health:
+            self.mode = DuelTeacherMode.EVADE
+            return _recover(state, self.side)
+        if state.carrier == opponent_carrier_id(self.side):
+            self.mode = DuelTeacherMode.INTERCEPT
+            return self._aggressive.act(state)
+        if state.carrier == 0 and in_defensive_half(state.core_x, self.side):
+            self.mode = DuelTeacherMode.DEFEND
+            return _steer(state, self.side, (state.core_x, state.core_y))
+        if defensive_risk(state, self.side):
+            self.mode = DuelTeacherMode.INTERCEPT
+            return self._aggressive.act(state)
+        self.mode = DuelTeacherMode.OBJECTIVE
+        return self._objective.act(state)
 
 
 class RandomDuelTeacher:
