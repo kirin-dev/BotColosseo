@@ -661,8 +661,9 @@ learned-policy 风格门通过。三风格 Style×Difficulty 的 1,800 局合并
 Aggressive、Defensive hybrid 与 Explorer hybrid Candidate C。case 由三份正式
 ledger 的机制对比自动选择；真实 2×2 GIF、四份完整 MP4、指标卡和 hash-bound
 publication manifest 已生成，中英文 README 已接入。匿名盲测打包、CSV 完整性
-检查、混淆矩阵/Wilson 区间图表和 checkpoint release 审计均已实现。剩余 M6
-门禁是至少 10 人的匿名辨识度数据、hybrid-aware release package，以及上游
+检查、混淆矩阵/Wilson 区间图表均已实现。hybrid-aware release builder 与独立
+审计已通过真实 22.9 MB 本地发布包验证，明确打包两个 learned checkpoint 与两个
+portable governor。剩余 M6 门禁是至少 10 人的匿名辨识度数据，以及上游
 all-style difficulty；在这些完成前不声称 Showcase-ready 全部完成。
 
 ## 17. GitHub 展示结构

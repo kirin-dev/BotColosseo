@@ -148,7 +148,10 @@ evaluation at 95.9% Skill Retention; Explorer Candidate C passed at 100.3%,
 with all three modes exercised and a 0.061 executed-action signature distance.
 Difficulty control passed its 600-episode Strong Base/Aggressive calibration;
 the all-style difficulty extension and anonymous recognition study remain
-pending.
+pending. A 22.9 MB hybrid-aware release package has also passed its standalone
+hash, loader, evidence, and portability audit; model binaries remain outside
+normal Git history. Its tracked [release record](reports/m6/hybrid-release.json)
+binds the upload archive to SHA-256.
 
 ## Quick start
 

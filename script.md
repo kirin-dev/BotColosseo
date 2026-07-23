@@ -1260,11 +1260,11 @@ PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
   --chart docs/assets/showcase/m6-user-study.png
 ```
 
-## M6 checkpoint release package
+## Legacy learned-only M6 checkpoint release package
 
-After `reports/m6/showcase-metrics.json` exists and all four upstream gates
-pass, build a GitHub-Release-ready package without adding model binaries to
-normal Git history:
+This command is retained for the failed learned Defensive/Explorer route and
+must not be used for the approved product release. It requires four learned
+checkpoints and remains useful only as reproducibility evidence:
 
 ```bash
 cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
@@ -1283,8 +1283,7 @@ PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
 
 The builder verifies each checkpoint through the same public-observation loader
 used by evaluation, preserves exact source bytes and hashes, writes one atomic
-manifest, and refuses overwrite or partial publication. Uploading that
-directory to a GitHub Release remains a separate explicit publication action.
+manifest, and refuses overwrite or partial publication.
 
 ## M5 Defensive/Explorer difficulty blocks
 
@@ -1385,3 +1384,36 @@ PYTHONPATH=src python scripts/render_hybrid_showcase.py \
 
 The selection and rendering commands refuse overwrite or hash drift. Public
 labels explicitly distinguish learned policies from hybrid governors.
+
+## M6 hybrid-aware product release
+
+Build the approved GitHub-Release-ready package without adding model binaries
+to normal Git history:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/build_hybrid_release.py \
+  --output-dir artifacts/hybrid-product-release
+
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/audit_hybrid_release.py \
+  --package-dir artifacts/hybrid-product-release
+
+tar --sort=name --mtime='UTC 1970-01-01' \
+  --owner=0 --group=0 --numeric-owner \
+  -C artifacts -czf artifacts/botcolosseo-hybrid-product-release.tar.gz \
+  hybrid-product-release
+sha256sum artifacts/botcolosseo-hybrid-product-release.tar.gz
+```
+
+The package contains the exact Strong Base and Aggressive learned checkpoints,
+portable Defensive/Explorer governor configs, the three formal style summaries,
+and the real-showcase publication manifest. Both build and audit load policies
+through the public-observation path, verify every hash, require
+`test_cases_accessed: false`, and fail closed on identity drift. The verified
+local package is 22,913,221 policy bytes; uploading it to a GitHub Release
+remains a separate explicit publication action. The current deterministic
+archive is 17,038,178 bytes with SHA-256
+`79d6ded79e3eeb4e1b4513cddf47f4832d92ae3e6bc5dea9b6ac7977f7a1266c`;
+the tracked release record is `reports/m6/hybrid-release.json`.
