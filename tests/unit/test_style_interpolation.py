@@ -7,6 +7,7 @@ from botcolosseo.agents.model import AsymmetricActorCritic
 from botcolosseo.agents.style_model import StyledActorCritic
 from botcolosseo.training.style_interpolation import (
     interpolate_defensive_checkpoints,
+    interpolate_explorer_checkpoints,
     interpolate_style_checkpoints,
 )
 
@@ -87,8 +88,10 @@ def test_interpolation_rejects_changed_frozen_actor(tmp_path: Path) -> None:
         interpolate_style_checkpoints(distilled_path, ppo_path, tmp_path / "out.pt", alpha=0.5)
 
 
-def test_defensive_interpolation_uses_neutral_branch_and_preserves_base(
+@pytest.mark.parametrize("style", ("defensive", "explorer"))
+def test_neutral_style_interpolation_uses_neutral_branch_and_preserves_base(
     tmp_path: Path,
+    style: str,
 ) -> None:
     base = AsymmetricActorCritic()
     neutral = StyledActorCritic.from_base(base, bottleneck=8)
@@ -110,7 +113,7 @@ def test_defensive_interpolation_uses_neutral_branch_and_preserves_base(
         {
             "schema_version": 1,
             "kind": "style_neutral",
-            "style": "defensive",
+            "style": style,
             "updates": 0,
             "model": neutral.state_dict(),
             **identity,
@@ -121,7 +124,7 @@ def test_defensive_interpolation_uses_neutral_branch_and_preserves_base(
         {
             "schema_version": 1,
             "kind": "style_distillation",
-            "style": "defensive",
+            "style": style,
             "updates": 10,
             "model": distilled.state_dict(),
             **identity,
@@ -130,12 +133,15 @@ def test_defensive_interpolation_uses_neutral_branch_and_preserves_base(
     )
     output = tmp_path / "alpha-050.pt"
 
-    report = interpolate_defensive_checkpoints(
-        neutral_path, distilled_path, output, alpha=0.5
+    interpolate = (
+        interpolate_defensive_checkpoints
+        if style == "defensive"
+        else interpolate_explorer_checkpoints
     )
+    report = interpolate(neutral_path, distilled_path, output, alpha=0.5)
     payload = torch.load(output, map_location="cpu", weights_only=False)
 
-    assert report["style"] == "defensive"
+    assert report["style"] == style
     assert payload["neutral_checkpoint_sha256"] == report["neutral_checkpoint_sha256"]
     for name, value in payload["model"].items():
         if name.startswith(("adapter.", "policy.")):

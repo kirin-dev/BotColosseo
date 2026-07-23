@@ -265,16 +265,18 @@ def test_checkpoint_policy_loads_style_interpolation_checkpoint(tmp_path: Path) 
     assert isinstance(policy.act(_observation()), MacroAction)
 
 
-def test_checkpoint_policy_loads_defensive_interpolation_checkpoint(
+@pytest.mark.parametrize("style", ("defensive", "explorer"))
+def test_checkpoint_policy_loads_neutral_style_interpolation_checkpoint(
     tmp_path: Path,
+    style: str,
 ) -> None:
-    path = tmp_path / "defensive-alpha.pt"
+    path = tmp_path / f"{style}-alpha.pt"
     model = StyledActorCritic.from_base(AsymmetricActorCritic(), bottleneck=16)
     torch.save(
         {
             "schema_version": 1,
             "kind": "style_interpolation",
-            "style": "defensive",
+            "style": style,
             "alpha": 0.5,
             "base_checkpoint_sha256": "a" * 64,
             "scenario_hash": "scenario",

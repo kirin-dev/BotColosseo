@@ -7,6 +7,7 @@ from botcolosseo.agents.style_model import StyledActorCritic
 from botcolosseo.training.style_distillation import (
     StyleDistillationTrainer,
     evaluate_defensive_distillation,
+    evaluate_explorer_distillation,
     evaluate_style_distillation,
     load_style_distillation_checkpoint,
     save_style_distillation_checkpoint,
@@ -151,6 +152,32 @@ def test_defensive_checkpoint_identity_is_style_bound(tmp_path: Path) -> None:
     )
 
     assert metadata["updates"] == 10
+
+
+def test_explorer_evaluation_separates_route_targets_from_base_context() -> None:
+    model = StyledActorCritic.from_base(AsymmetricActorCritic(), bottleneck=8)
+    batch = _batch()
+    with torch.no_grad():
+        base = model.base.actor(
+            batch["frames"],
+            batch["scalars"],
+            batch["previous_actions"],
+            batch["masks"],
+        )
+    base_actions = base.logits.argmax(dim=-1)
+    target = (int(base_actions[0, 0]) + 1) % 13
+    batch["actions"][0, 0] = target
+    batch["actions"][1, 0] = target
+    batch["actions"][0, 1] = base_actions[0, 1]
+    batch["actions"][1, 1] = base_actions[1, 1]
+    model.policy.bias.data[target] += 20.0
+
+    metrics = evaluate_explorer_distillation(model, (batch,))
+
+    assert metrics["route_count"] == 2
+    assert metrics["base_context_count"] == 2
+    assert metrics["route_target_agreement"] == 1.0
+    assert metrics["route_target_agreement_delta"] == 1.0
 
 
 def test_neutral_checkpoint_preserves_zero_update_style_identity(tmp_path: Path) -> None:

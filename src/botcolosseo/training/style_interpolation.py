@@ -161,13 +161,16 @@ def interpolate_style_checkpoints(
     }
 
 
-def interpolate_defensive_checkpoints(
+def _interpolate_neutral_style_checkpoints(
     neutral_path: Path,
     distilled_path: Path,
     output_path: Path,
     *,
     alpha: float,
+    style: str,
 ) -> dict[str, object]:
+    if style not in ("defensive", "explorer"):
+        raise ValueError("Neutral style interpolation requires Defensive or Explorer")
     if not 0.0 < alpha < 1.0:
         raise ValueError("Style interpolation alpha must be strictly between 0 and 1")
     neutral_path = neutral_path.expanduser().resolve()
@@ -180,18 +183,18 @@ def interpolate_defensive_checkpoints(
     if (
         neutral.get("schema_version") != 1
         or neutral.get("kind") != "style_neutral"
-        or neutral.get("style") != "defensive"
+        or neutral.get("style") != style
         or neutral.get("updates") != 0
     ):
-        raise ValueError("Neutral source is not a Defensive style checkpoint")
+        raise ValueError("Neutral source style identity does not match")
     if (
         distilled.get("schema_version") != 1
         or distilled.get("kind") != "style_distillation"
-        or distilled.get("style") != "defensive"
+        or distilled.get("style") != style
         or not isinstance(distilled.get("updates"), int)
         or int(distilled["updates"]) <= 0
     ):
-        raise ValueError("Distilled source is not a Defensive style checkpoint")
+        raise ValueError("Distilled source style identity does not match")
     identity_fields = (
         "base_checkpoint_sha256",
         "scenario_hash",
@@ -199,14 +202,14 @@ def interpolate_defensive_checkpoints(
         "config_hash",
     )
     if any(neutral.get(name) != distilled.get(name) for name in identity_fields):
-        raise ValueError("Defensive interpolation source identities do not match")
+        raise ValueError("Neutral style interpolation source identities do not match")
     neutral_state = _model_state(neutral, label="Neutral")
     distilled_state = _model_state(distilled, label="Distilled")
     if set(neutral_state) != set(distilled_state):
-        raise ValueError("Defensive interpolation model structures do not match")
+        raise ValueError("Neutral style interpolation model structures do not match")
     style_names = tuple(name for name in neutral_state if name.startswith(_STYLE_PREFIXES))
     if not style_names:
-        raise ValueError("Defensive interpolation sources contain no style branch")
+        raise ValueError("Neutral style interpolation sources contain no style branch")
     frozen_names = tuple(name for name in neutral_state if name.startswith("base."))
     if any(not torch.equal(neutral_state[name], distilled_state[name]) for name in frozen_names):
         raise ValueError("Distillation changed the frozen Strong Base")
@@ -217,7 +220,7 @@ def interpolate_defensive_checkpoints(
         if left.shape != right.shape or not (
             left.is_floating_point() and right.is_floating_point()
         ):
-            raise ValueError("Defensive interpolation tensors are incompatible")
+            raise ValueError("Neutral style interpolation tensors are incompatible")
         output_state[name] = torch.lerp(left, right, alpha)
     neutral_hash = sha256_file(neutral_path)
     distilled_hash = sha256_file(distilled_path)
@@ -229,7 +232,7 @@ def interpolate_defensive_checkpoints(
     payload = {
         "schema_version": 1,
         "kind": "style_interpolation",
-        "style": "defensive",
+        "style": style,
         "alpha": alpha,
         "base_checkpoint_sha256": neutral["base_checkpoint_sha256"],
         "scenario_hash": neutral["scenario_hash"],
@@ -268,6 +271,38 @@ def interpolate_defensive_checkpoints(
         "interpolation_sha256": interpolation_hash,
         "neutral_checkpoint_sha256": neutral_hash,
         "scenario_hash": neutral["scenario_hash"],
-        "style": "defensive",
+        "style": style,
         "test_cases_accessed": False,
     }
+
+
+def interpolate_defensive_checkpoints(
+    neutral_path: Path,
+    distilled_path: Path,
+    output_path: Path,
+    *,
+    alpha: float,
+) -> dict[str, object]:
+    return _interpolate_neutral_style_checkpoints(
+        neutral_path,
+        distilled_path,
+        output_path,
+        alpha=alpha,
+        style="defensive",
+    )
+
+
+def interpolate_explorer_checkpoints(
+    neutral_path: Path,
+    distilled_path: Path,
+    output_path: Path,
+    *,
+    alpha: float,
+) -> dict[str, object]:
+    return _interpolate_neutral_style_checkpoints(
+        neutral_path,
+        distilled_path,
+        output_path,
+        alpha=alpha,
+        style="explorer",
+    )

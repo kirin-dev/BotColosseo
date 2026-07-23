@@ -82,7 +82,7 @@ def _checkpoint_scenario_hash(payload: dict[str, object]) -> str:
         style = payload.get("style")
         source_hash = (
             "neutral_checkpoint_sha256"
-            if style == "defensive"
+            if style in ("defensive", "explorer")
             else "ppo_checkpoint_sha256"
         )
         required = (
@@ -94,7 +94,7 @@ def _checkpoint_scenario_hash(payload: dict[str, object]) -> str:
         hash_values = tuple(payload.get(field) for field in required)
         alpha = payload.get("alpha")
         if (
-            style not in ("aggressive", "defensive")
+            style not in ("aggressive", "defensive", "explorer")
             or any(
                 not isinstance(value, str) or _SHA256_PATTERN.fullmatch(value) is None
                 for value in hash_values

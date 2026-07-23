@@ -268,6 +268,60 @@ def evaluate_defensive_distillation(
     }
 
 
+@torch.no_grad()
+def evaluate_explorer_distillation(
+    model: StyledActorCritic,
+    batches: Iterable[dict[str, torch.Tensor]],
+) -> dict[str, float | int | bool]:
+    model.eval()
+    device = next(model.parameters()).device
+    target_matches = 0
+    base_target_matches = 0
+    route_count = 0
+    context_changed = 0
+    context_count = 0
+    for batch in batches:
+        moved = {name: tensor.to(device) for name, tensor in batch.items()}
+        base = model.base.actor(
+            moved["frames"],
+            moved["scalars"],
+            moved["previous_actions"],
+            moved["masks"],
+        )
+        style_logits = model.policy(model.adapter(base.features))
+        style_actions = style_logits.argmax(dim=-1)
+        base_actions = base.logits.argmax(dim=-1)
+        supervised = moved["valid"]
+        route = supervised & (moved["actions"] != base_actions)
+        context = supervised & (moved["actions"] == base_actions)
+        if torch.any(route):
+            target_matches += int(
+                (style_actions[route] == moved["actions"][route]).sum()
+            )
+            base_target_matches += int(
+                (base_actions[route] == moved["actions"][route]).sum()
+            )
+            route_count += int(route.sum())
+        if torch.any(context):
+            context_changed += int((style_actions[context] != base_actions[context]).sum())
+            context_count += int(context.sum())
+    if route_count <= 0 or context_count <= 0:
+        raise ValueError("Explorer evaluation requires route and Base context labels")
+    target_agreement = target_matches / route_count
+    base_target_agreement = base_target_matches / route_count
+    agreement_delta = target_agreement - base_target_agreement
+    context_drift = context_changed / context_count
+    return {
+        "route_target_agreement": target_agreement,
+        "base_route_target_agreement": base_target_agreement,
+        "route_target_agreement_delta": agreement_delta,
+        "route_count": route_count,
+        "base_context_action_drift_rate": context_drift,
+        "base_context_count": context_count,
+        "passed": agreement_delta >= 0.20 and context_drift <= 0.10,
+    }
+
+
 def save_style_distillation_checkpoint(
     path: Path,
     *,
