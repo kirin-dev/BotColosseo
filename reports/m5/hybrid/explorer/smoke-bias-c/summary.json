@@ -1,0 +1,151 @@
+{
+  "candidate_id": "explorer-hybrid-c",
+  "legacy_diagnostic": {
+    "complete": true,
+    "environment_retries": 0,
+    "episodes": 20,
+    "expected_episodes": 20,
+    "gates": {
+      "complete": true,
+      "efficiency_controlled": true,
+      "flank_improved": false,
+      "objective_retention": true,
+      "per_opponent_retention": true,
+      "protocol_clean": true,
+      "route_coverage": false,
+      "route_entropy_shift": false,
+      "skill_retention": true
+    },
+    "passed": false,
+    "per_opponent_retention": {
+      "aggressive_script": 1.0,
+      "defensive_script": 1.0,
+      "fixed_route": 1.0,
+      "objective_first": 0.8571428571428571,
+      "random_legal": 1.0
+    },
+    "policies": {
+      "explorer": {
+        "decisions_per_score": 136.13636363636363,
+        "episodes": 10,
+        "flank_completion_rate": 0.0,
+        "flank_completions": 0,
+        "learner_scores": 22,
+        "lower_completions": 3,
+        "mean_episode_route_entropy": 0.06309297535714574,
+        "mean_score_difference": 1.9,
+        "mean_unique_regions": 5.5,
+        "mixed_or_unknown_completions": 8,
+        "objective_rate": 1.0,
+        "performance": 0.95,
+        "route_entropy": 0.4729419509410569,
+        "upper_completions": 11,
+        "win_rate": 0.8
+      },
+      "strong_base": {
+        "decisions_per_score": 148.08695652173913,
+        "episodes": 10,
+        "flank_completion_rate": 0.0,
+        "flank_completions": 0,
+        "learner_scores": 23,
+        "lower_completions": 2,
+        "mean_episode_route_entropy": 0.0,
+        "mean_score_difference": 2.0,
+        "mean_unique_regions": 5.2,
+        "mixed_or_unknown_completions": 13,
+        "objective_rate": 1.0,
+        "performance": 0.975,
+        "route_entropy": 0.4554859150035952,
+        "upper_completions": 8,
+        "win_rate": 0.9
+      }
+    },
+    "protocol_inconsistencies": 0,
+    "route_entropy_delta": 0.06309297535714574,
+    "route_entropy_delta_ci": [
+      0.0,
+      0.18927892607143723
+    ],
+    "route_entropy_estimator": "paired_episode_normalized_entropy_v1",
+    "skill_retention": 0.9743589743589743
+  },
+  "product": {
+    "complete": true,
+    "decisions": 2995,
+    "episodes": 20,
+    "expected_episodes": 20,
+    "fallbacks": 2495,
+    "gates": {
+      "complete": true,
+      "exact_base_fallback": true,
+      "intervention_bounded": true,
+      "intervention_nonzero": true,
+      "per_opponent_retention": true,
+      "protocol_clean": true,
+      "required_style_coverage": true,
+      "skill_retention": true,
+      "telemetry_complete": true
+    },
+    "intervention_rate": 0.1669449081803005,
+    "interventions": 500,
+    "legacy_diagnostic_passed": false,
+    "max_consecutive_interventions": 24,
+    "overrides": 0,
+    "passed": true,
+    "per_opponent_retention": {
+      "aggressive_script": 1.0,
+      "defensive_script": 1.0,
+      "fixed_route": 1.0,
+      "objective_first": 0.8571428571428571,
+      "random_legal": 1.0
+    },
+    "protocol_inconsistencies": 0,
+    "reason_counts": {
+      "base_restored": 67,
+      "base_warmup": 10,
+      "exact_base_fallback": 2418,
+      "flank_route_phase_0": 21,
+      "flank_route_phase_1": 20,
+      "flank_route_phase_2": 20,
+      "flank_route_phase_3": 20,
+      "flank_route_phase_4": 20,
+      "flank_route_phase_5": 20,
+      "lower_route_phase_0": 70,
+      "lower_route_phase_1": 69,
+      "lower_route_phase_2": 69,
+      "upper_route_phase_0": 58,
+      "upper_route_phase_1": 57,
+      "upper_route_phase_2": 56
+    },
+    "route_action_signature_distance": 0.1058816914080072,
+    "route_mode_counts": {
+      "flank": 121,
+      "lower": 208,
+      "upper": 171
+    },
+    "skill_retention": 0.9743589743589743,
+    "state_occupancy": {
+      "base": 2069,
+      "route_commit": 500,
+      "stall_recovery": 426
+    },
+    "style": "explorer",
+    "trigger_counts": {
+      "cooldown_complete": 67,
+      "core_rise": 23,
+      "health_safety": 38,
+      "initial_observation": 10,
+      "intervention_limit": 17,
+      "no_public_trigger": 1992,
+      "own_score_rise": 18,
+      "recovery_continue": 351,
+      "repeated_action_stall": 2,
+      "route_continue": 477
+    }
+  },
+  "schema_version": 1,
+  "split": "validation",
+  "stage": "m5-hybrid",
+  "style": "explorer",
+  "test_cases_accessed": false
+}

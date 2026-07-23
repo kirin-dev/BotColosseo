@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "stage": "m5-hybrid-explorer-bounded-repair-selection",
+  "grid": "reports/m5/hybrid/explorer/repair-grid.json",
+  "candidates": [
+    {
+      "candidate_id": "explorer-hybrid-b",
+      "summary": "reports/m5/hybrid/explorer/smoke-bias-b/summary.json",
+      "summary_sha256": "2a1967a165975cda678685961c0ccf0930ddbb41a99b50d4c1fb66508d76bf61",
+      "passed": true,
+      "skill_retention": 0.9743589743589743,
+      "route_action_signature_distance": 0.05031876138433517
+    },
+    {
+      "candidate_id": "explorer-hybrid-c",
+      "summary": "reports/m5/hybrid/explorer/smoke-bias-c/summary.json",
+      "summary_sha256": "97c4529564bf71d0cd260cb19762aeebc3e3bfda74c78e2f0189cec5f75e2232",
+      "passed": true,
+      "skill_retention": 0.9743589743589743,
+      "route_action_signature_distance": 0.1058816914080072
+    }
+  ],
+  "selected_candidate_id": "explorer-hybrid-c",
+  "selected_config": "configs/m5/hybrid/explorer_c.yaml",
+  "selected_config_sha256": "367ef8e7c3e5f9abd6202ddf7287428d7f1b70b9fb5d1d920ac2bb27be3baa1a",
+  "selection_reason": "Both candidates passed; Candidate C has the higher route action signature distance with equal Skill Retention.",
+  "test_cases_accessed": false
+}
