@@ -1,7 +1,7 @@
 # M5 Defensive Paired Ratio Estimator Design
 
 Date: 2026-07-23  
-Status: approved in conversation; awaiting written-spec review
+Status: approved by the project owner
 
 ## Problem
 

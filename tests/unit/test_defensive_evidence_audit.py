@@ -92,6 +92,7 @@ def _evidence(root: Path) -> None:
             "selected": {
                 "alpha": 0.5,
                 "eligible": True,
+                "protective_presence_estimator": "paired_cluster_bootstrap_pooled_ratio_v1",
                 "checkpoint": str(selected_checkpoint),
                 "checkpoint_sha256": selected_hash,
             },
@@ -127,6 +128,7 @@ def _evidence(root: Path) -> None:
             "episodes": 200,
             "expected_episodes": 200,
             "gates": {"complete": True, "retention": True},
+            "protective_presence_estimator": "paired_cluster_bootstrap_pooled_ratio_v1",
             "checkpoint_sha256": {
                 "strong_base": base_hash,
                 "defensive": selected_hash,

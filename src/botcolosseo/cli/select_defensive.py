@@ -7,6 +7,7 @@ from pathlib import Path
 
 from botcolosseo.agents.league_opponents import sha256_file
 from botcolosseo.cli.train_ppo import _atomic_json
+from botcolosseo.evaluation.defensive import PROTECTIVE_PRESENCE_ESTIMATOR
 
 _GRID = (0.25, 0.50, 0.75)
 
@@ -46,6 +47,8 @@ def _candidate(
         and report.get("checkpoint_sha256") == checkpoint_hash
         and report.get("test_cases_accessed") is False
         and summary.get("checkpoint_sha256", {}).get("defensive") == checkpoint_hash
+        and summary.get("protective_presence_estimator")
+        == PROTECTIVE_PRESENCE_ESTIMATOR
         and summary.get("test_cases_accessed") is False
         and manifest.get("passed") == summary.get("passed")
         and manifest.get("episodes") == 20
@@ -59,6 +62,9 @@ def _candidate(
         "identity_valid": identity_valid,
         "protective_presence_delta": float(
             summary.get("protective_presence_delta", 0.0)
+        ),
+        "protective_presence_estimator": summary.get(
+            "protective_presence_estimator"
         ),
         "skill_retention": float(summary.get("skill_retention", 0.0)),
         "smoke_manifest_sha256": sha256_file(manifest_path),

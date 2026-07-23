@@ -1,9 +1,13 @@
 from dataclasses import replace
 
+import pytest
+
 from botcolosseo.evaluation.defensive import (
     DEFENSIVE_POLICIES,
+    PROTECTIVE_PRESENCE_ESTIMATOR,
     DefensiveEpisodeRecord,
     evaluate_defensive_records,
+    paired_cluster_bootstrap_ratio_difference,
 )
 from botcolosseo.scenarios.duel_splits import DUEL_OPPONENTS
 
@@ -65,7 +69,8 @@ def test_defensive_summary_passes_style_retention_and_integrity_gates() -> None:
     assert summary.complete is True
     assert summary.passed is True
     assert summary.skill_retention == 1.0
-    assert summary.protective_presence_delta == 0.6
+    assert summary.protective_presence_estimator == PROTECTIVE_PRESENCE_ESTIMATOR
+    assert summary.protective_presence_delta == pytest.approx(0.6)
     assert summary.protective_presence_delta_ci[0] > 0
     assert summary.policies["defensive"].denial_recovery_rate == 0.2
 
@@ -113,3 +118,29 @@ def test_duplicate_or_protocol_error_fails_defensive_integrity() -> None:
     assert summary.complete is False
     assert summary.protocol_inconsistencies > 0
     assert summary.gates["protocol_clean"] is False
+
+
+def test_paired_ratio_bootstrap_does_not_treat_zero_risk_as_failure() -> None:
+    counts = [
+        (0, 0, 38, 40),
+        (50, 100, 40, 100),
+    ]
+
+    first = paired_cluster_bootstrap_ratio_difference(counts, seed=11, samples=500)
+    second = paired_cluster_bootstrap_ratio_difference(counts, seed=11, samples=500)
+
+    assert first == second
+    assert first is not None
+    point, interval = first
+    assert point == pytest.approx(0.5 - 78 / 140)
+    assert point > -0.1
+    assert interval[1] >= point
+
+
+def test_paired_ratio_bootstrap_fails_closed_without_policy_opportunities() -> None:
+    assert (
+        paired_cluster_bootstrap_ratio_difference(
+            [(0, 0, 4, 10)], seed=3, samples=100
+        )
+        is None
+    )

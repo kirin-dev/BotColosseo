@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from botcolosseo.agents.league_opponents import sha256_file
+from botcolosseo.evaluation.defensive import PROTECTIVE_PRESENCE_ESTIMATOR
 from botcolosseo.training.defensive_waiver import validate_defensive_data_admission
 
 
@@ -142,6 +143,8 @@ def audit_defensive_evidence(root: Path) -> dict[str, object]:
         and selection.get("grid") == [0.25, 0.5, 0.75]
         and isinstance(selected, dict)
         and selected.get("eligible") is True
+        and selected.get("protective_presence_estimator")
+        == PROTECTIVE_PRESENCE_ESTIMATOR
         and selected_checkpoint is not None
         and selected_checkpoint.is_file()
         and selected.get("checkpoint_sha256") == sha256_file(selected_checkpoint),
@@ -184,6 +187,8 @@ def audit_defensive_evidence(root: Path) -> dict[str, object]:
         and formal_summary.get("complete") is True
         and formal_summary.get("episodes") == 200
         and formal_summary.get("expected_episodes") == 200
+        and formal_summary.get("protective_presence_estimator")
+        == PROTECTIVE_PRESENCE_ESTIMATOR
         and isinstance(formal_gates, dict)
         and bool(formal_gates)
         and all(value is True for value in formal_gates.values())

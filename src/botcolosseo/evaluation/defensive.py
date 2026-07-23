@@ -19,13 +19,13 @@ from botcolosseo.envs.synchronous_duel import SynchronousDuelEnv
 from botcolosseo.evaluation.m2 import (
     EvaluationPolicy,
     TeacherEvaluationPolicy,
-    paired_bootstrap_interval,
     valid_action_tic_boundary,
 )
 from botcolosseo.scenarios.duel_splits import DUEL_OPPONENTS, DuelCase
 from botcolosseo.scenarios.regions import RegionGraph
 
 DEFENSIVE_POLICIES = ("strong_base", "defensive")
+PROTECTIVE_PRESENCE_ESTIMATOR = "paired_cluster_bootstrap_pooled_ratio_v1"
 
 
 @dataclass(frozen=True)
@@ -155,6 +155,7 @@ class DefensiveEvaluationSummary:
     environment_retries: int
     skill_retention: float
     per_opponent_retention: dict[str, float]
+    protective_presence_estimator: str
     protective_presence_delta: float
     protective_presence_delta_ci: tuple[float, float] | None
     gates: dict[str, bool]
@@ -170,6 +171,46 @@ def _ratio(numerator: float, denominator: float) -> float:
 
 def _retention(style: float, base: float) -> float:
     return style / base if base > 1e-12 else float(style + 1e-12 >= base)
+
+
+def paired_cluster_bootstrap_ratio_difference(
+    paired_counts: Sequence[tuple[int, int, int, int]],
+    *,
+    seed: int,
+    samples: int,
+) -> tuple[float, tuple[float, float]] | None:
+    if not paired_counts or samples <= 0:
+        raise ValueError("Paired ratio bootstrap requires counts and positive samples")
+    counts = np.asarray(paired_counts, dtype=np.int64)
+    if (
+        counts.ndim != 2
+        or counts.shape[1] != 4
+        or np.any(counts < 0)
+        or np.any(counts[:, 0] > counts[:, 1])
+        or np.any(counts[:, 2] > counts[:, 3])
+    ):
+        raise ValueError("Paired ratio bootstrap counts are invalid")
+
+    def difference(selected: np.ndarray) -> float | None:
+        totals = selected.sum(axis=0)
+        if totals[1] == 0 or totals[3] == 0:
+            return None
+        return float(totals[0] / totals[1] - totals[2] / totals[3])
+
+    point = difference(counts)
+    if point is None:
+        return None
+    rng = np.random.default_rng(seed)
+    estimates: list[float] = []
+    for _ in range(samples):
+        selected = counts[rng.integers(0, len(counts), size=len(counts))]
+        estimate = difference(selected)
+        if estimate is not None:
+            estimates.append(estimate)
+    if not estimates:
+        return None
+    low, high = np.quantile(np.asarray(estimates, dtype=np.float64), [0.025, 0.975])
+    return point, (float(low), float(high))
 
 
 def _policy_summary(records: Sequence[DefensiveEpisodeRecord]) -> DefensivePolicySummary:
@@ -293,22 +334,22 @@ def evaluate_defensive_records(
     grouped: dict[tuple[str, int, str], dict[str, DefensiveEpisodeRecord]] = defaultdict(dict)
     for row in records:
         grouped[(row.opponent, row.pair_index, row.learner_side)][row.policy] = row
-    differences = None
+    paired_estimate = None
     if grouped and all(set(pair) == set(DEFENSIVE_POLICIES) for pair in grouped.values()):
-        differences = np.asarray(
+        paired_estimate = paired_cluster_bootstrap_ratio_difference(
             [
-                pair["defensive"].protective_presence_rate
-                - pair["strong_base"].protective_presence_rate
+                (
+                    pair["defensive"].protective_presence_decisions,
+                    pair["defensive"].risk_decisions,
+                    pair["strong_base"].protective_presence_decisions,
+                    pair["strong_base"].risk_decisions,
+                )
                 for _, pair in sorted(grouped.items())
             ],
-            dtype=np.float64,
+            seed=bootstrap_seed,
+            samples=bootstrap_samples,
         )
-    interval = (
-        paired_bootstrap_interval(differences, seed=bootstrap_seed, samples=bootstrap_samples)
-        if differences is not None
-        else None
-    )
-    delta = float(np.mean(differences)) if differences is not None else 0.0
+    delta, interval = paired_estimate if paired_estimate is not None else (0.0, None)
     base = policies.get("strong_base")
     defensive = policies.get("defensive")
     gates = {
@@ -337,6 +378,7 @@ def evaluate_defensive_records(
         environment_retries=sum(row.environment_attempts - 1 for row in records),
         skill_retention=retention,
         per_opponent_retention=per_opponent,
+        protective_presence_estimator=PROTECTIVE_PRESENCE_ESTIMATOR,
         protective_presence_delta=delta,
         protective_presence_delta_ci=interval,
         gates=gates,
