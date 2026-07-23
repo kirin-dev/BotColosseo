@@ -213,14 +213,17 @@ def test_checkpoint_policy_loads_style_adapter_checkpoint(tmp_path: Path) -> Non
     assert isinstance(policy.act(_observation()), MacroAction)
 
 
-def test_checkpoint_policy_loads_style_distillation_checkpoint(tmp_path: Path) -> None:
-    path = tmp_path / "aggressive-distilled.pt"
+@pytest.mark.parametrize("style", ("aggressive", "defensive"))
+def test_checkpoint_policy_loads_style_distillation_checkpoint(
+    tmp_path: Path, style: str
+) -> None:
+    path = tmp_path / f"{style}-distilled.pt"
     model = StyledActorCritic.from_base(AsymmetricActorCritic(), bottleneck=16)
     torch.save(
         {
             "schema_version": 1,
             "kind": "style_distillation",
-            "style": "aggressive",
+            "style": style,
             "base_checkpoint_sha256": "a" * 64,
             "scenario_hash": "scenario",
             "data_manifest_sha256": "b" * 64,

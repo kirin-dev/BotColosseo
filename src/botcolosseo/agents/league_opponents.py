@@ -110,7 +110,7 @@ def _checkpoint_scenario_hash(payload: dict[str, object]) -> str:
         hash_values = tuple(payload.get(field) for field in required)
         updates = payload.get("updates")
         if (
-            payload.get("style") != "aggressive"
+            payload.get("style") not in ("aggressive", "defensive", "explorer")
             or any(
                 not isinstance(value, str) or _SHA256_PATTERN.fullmatch(value) is None
                 for value in hash_values

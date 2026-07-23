@@ -6,9 +6,11 @@ from botcolosseo.agents.model import AsymmetricActorCritic
 from botcolosseo.agents.style_model import StyledActorCritic
 from botcolosseo.training.style_distillation import (
     StyleDistillationTrainer,
+    evaluate_defensive_distillation,
     evaluate_style_distillation,
     load_style_distillation_checkpoint,
     save_style_distillation_checkpoint,
+    save_style_neutral_checkpoint,
     style_distillation_loss,
 )
 
@@ -22,6 +24,7 @@ def _batch() -> dict[str, torch.Tensor]:
         "masks": torch.tensor([[0.0, 1.0, 1.0], [0.0, 1.0, 0.0]]),
         "valid": torch.tensor([[True, True, False], [True, True, False]]),
         "present": torch.tensor([[True, True, True], [True, True, False]]),
+        "task_ids": torch.tensor([[1, 0, 0], [1, 0, 0]]),
     }
 
 
@@ -107,3 +110,66 @@ def test_offline_evaluation_reports_positive_shift_and_negative_collapse() -> No
     assert metrics["negative_count"] == 2
     assert metrics["attack_probability_delta"] > 0
     assert metrics["passed"] is (metrics["negative_attack_prediction_rate"] < 0.5)
+
+
+def test_defensive_evaluation_separates_risk_shift_and_no_risk_drift() -> None:
+    model = StyledActorCritic.from_base(AsymmetricActorCritic(), bottleneck=8)
+    batch = _batch()
+    risk_targets = batch["actions"][batch["task_ids"] != 0]
+    target = int(risk_targets[0])
+    batch["actions"][1, 0] = target
+    model.policy.bias.data[target] += 20.0
+
+    metrics = evaluate_defensive_distillation(model, (batch,))
+
+    assert metrics["risk_count"] == 2
+    assert metrics["no_risk_count"] == 2
+    assert metrics["risk_target_agreement"] == 1.0
+    assert metrics["risk_target_agreement_delta"] > 0
+
+
+def test_defensive_checkpoint_identity_is_style_bound(tmp_path: Path) -> None:
+    model = StyledActorCritic.from_base(AsymmetricActorCritic(), bottleneck=8)
+    path = save_style_distillation_checkpoint(
+        tmp_path / "defensive.pt",
+        model=model,
+        base_checkpoint_sha256="a" * 64,
+        scenario_hash="b" * 64,
+        data_manifest_sha256="c" * 64,
+        config_hash="d" * 64,
+        updates=10,
+        style="defensive",
+    )
+    target = StyledActorCritic.from_base(model.base, bottleneck=8)
+
+    metadata = load_style_distillation_checkpoint(
+        path,
+        model=target,
+        expected_base_checkpoint_sha256="a" * 64,
+        expected_scenario_hash="b" * 64,
+        expected_style="defensive",
+    )
+
+    assert metadata["updates"] == 10
+
+
+def test_neutral_checkpoint_preserves_zero_update_style_identity(tmp_path: Path) -> None:
+    model = StyledActorCritic.from_base(AsymmetricActorCritic(), bottleneck=8)
+
+    path = save_style_neutral_checkpoint(
+        tmp_path / "neutral.pt",
+        model=model,
+        style="defensive",
+        base_checkpoint_sha256="a" * 64,
+        scenario_hash="b" * 64,
+        data_manifest_sha256="c" * 64,
+        config_hash="d" * 64,
+    )
+    payload = torch.load(path, map_location="cpu", weights_only=False)
+
+    assert payload["kind"] == "style_neutral"
+    assert payload["style"] == "defensive"
+    assert payload["updates"] == 0
+    assert all(
+        torch.equal(payload["model"][name], value) for name, value in model.state_dict().items()
+    )

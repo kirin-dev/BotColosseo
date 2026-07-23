@@ -47,6 +47,7 @@ def test_recurrent_chunks_preserve_boundaries_and_pad_valid_mask(tmp_path: Path)
     assert second["masks"].tolist() == [0.0, 0.0, 0.0, 0.0]
     assert second["valid"].tolist() == [True, False, False, False]
     assert second["present"].tolist() == [True, False, False, False]
+    assert first["task_ids"].tolist() == [0, 0, 0, 0]
     assert not ({"host_x", "core_x", "carrier"} & set(first))
 
 

@@ -108,6 +108,7 @@ class DemonstrationChunkDataset(Dataset[dict[str, torch.Tensor]]):
         scalars = np.zeros((self.chunk_length, 6), dtype=np.float32)
         previous_actions = np.zeros(self.chunk_length, dtype=np.int64)
         actions = np.zeros(self.chunk_length, dtype=np.int64)
+        task_ids = np.zeros(self.chunk_length, dtype=np.int64)
         valid = np.zeros(self.chunk_length, dtype=np.bool_)
         present = np.zeros(self.chunk_length, dtype=np.bool_)
         masks = np.zeros(self.chunk_length, dtype=np.float32)
@@ -115,6 +116,7 @@ class DemonstrationChunkDataset(Dataset[dict[str, torch.Tensor]]):
         scalars[:size] = self._arrays["scalars"][start:stop]
         previous_actions[:size] = self._arrays["previous_action"][start:stop]
         actions[:size] = self._arrays["teacher_action"][start:stop]
+        task_ids[:size] = self._arrays["task_id"][start:stop]
         valid[:size] = self._arrays["valid_mask"][start:stop]
         present[:size] = True
         episode_start = self._arrays["episode_start"][start:stop]
@@ -125,6 +127,7 @@ class DemonstrationChunkDataset(Dataset[dict[str, torch.Tensor]]):
             "scalars": torch.from_numpy(scalars),
             "previous_actions": torch.from_numpy(previous_actions),
             "actions": torch.from_numpy(actions),
+            "task_ids": torch.from_numpy(task_ids),
             "masks": torch.from_numpy(masks),
             "valid": torch.from_numpy(valid),
             "present": torch.from_numpy(present),
