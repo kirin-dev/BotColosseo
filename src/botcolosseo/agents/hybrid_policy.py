@@ -6,6 +6,7 @@ from typing import Protocol
 
 import torch
 
+from botcolosseo.agents.hybrid_config import HybridPolicyConfig
 from botcolosseo.agents.league_opponents import (
     OpponentSpec,
     _checkpoint_scenario_hash,
@@ -13,6 +14,10 @@ from botcolosseo.agents.league_opponents import (
 )
 from botcolosseo.agents.model import AsymmetricActorCritic, RecurrentActor
 from botcolosseo.agents.style_governor import (
+    DefensiveGovernor,
+    DefensiveGovernorConfig,
+    ExplorerGovernor,
+    ExplorerGovernorConfig,
     GovernorDecision,
     GovernorTelemetry,
     PublicStyleContext,
@@ -203,6 +208,29 @@ class HybridEvaluationPolicy:
     ) -> MacroAction:
         del state
         return self._policy.act(observation)
+
+
+def build_hybrid_evaluation_policy(
+    config: HybridPolicyConfig,
+    *,
+    device: torch.device,
+) -> HybridEvaluationPolicy:
+    if config.style == "defensive":
+        if not isinstance(config.governor, DefensiveGovernorConfig):
+            raise ValueError("Defensive hybrid config has the wrong governor type")
+        governor: StyleGovernor = DefensiveGovernor(config.governor)
+    else:
+        if not isinstance(config.governor, ExplorerGovernorConfig):
+            raise ValueError("Explorer hybrid config has the wrong governor type")
+        governor = ExplorerGovernor(config.governor)
+    policy = HybridStylePolicy.load(
+        checkpoint=config.base_checkpoint,
+        checkpoint_sha256=config.base_checkpoint_sha256,
+        scenario_hash=config.scenario_hash,
+        governor=governor,
+        device=device,
+    )
+    return HybridEvaluationPolicy(config.style, policy)
 
 
 def checkpoint_spec_for_hybrid(

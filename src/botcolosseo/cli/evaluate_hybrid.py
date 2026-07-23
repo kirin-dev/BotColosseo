@@ -12,17 +12,14 @@ from botcolosseo.agents.hybrid_config import (
     HybridPolicyConfig,
     load_hybrid_policy_config,
 )
-from botcolosseo.agents.hybrid_policy import HybridEvaluationPolicy, HybridStylePolicy
+from botcolosseo.agents.hybrid_policy import (
+    HybridEvaluationPolicy,
+    build_hybrid_evaluation_policy,
+)
 from botcolosseo.agents.league_opponents import (
     CheckpointOpponentPolicy,
     OpponentSpec,
     sha256_file,
-)
-from botcolosseo.agents.style_governor import (
-    DefensiveGovernor,
-    DefensiveGovernorConfig,
-    ExplorerGovernor,
-    ExplorerGovernorConfig,
 )
 from botcolosseo.cli.evaluate_style import select_style_cases
 from botcolosseo.cli.train_ppo import _atomic_json
@@ -122,22 +119,7 @@ def _hybrid_policy(
     *,
     device: torch.device,
 ) -> HybridEvaluationPolicy:
-    if config.style == "defensive":
-        if not isinstance(config.governor, DefensiveGovernorConfig):
-            raise ValueError("Defensive hybrid config has the wrong governor type")
-        governor = DefensiveGovernor(config.governor)
-    else:
-        if not isinstance(config.governor, ExplorerGovernorConfig):
-            raise ValueError("Explorer hybrid config has the wrong governor type")
-        governor = ExplorerGovernor(config.governor)
-    policy = HybridStylePolicy.load(
-        checkpoint=config.base_checkpoint,
-        checkpoint_sha256=config.base_checkpoint_sha256,
-        scenario_hash=config.scenario_hash,
-        governor=governor,
-        device=device,
-    )
-    return HybridEvaluationPolicy(config.style, policy)
+    return build_hybrid_evaluation_policy(config, device=device)
 
 
 def _load_records(path: Path, *, style: str) -> list[EpisodeRecord]:
