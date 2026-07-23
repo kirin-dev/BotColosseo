@@ -19,20 +19,32 @@ def test_frozen_hybrid_configs_bind_strong_base_and_public_validation_only() -> 
         root / "configs/m5/hybrid/defensive.yaml",
         root=root,
     )
-    explorer = load_hybrid_policy_config(
-        root / "configs/m5/hybrid/explorer.yaml",
-        root=root,
-    )
+    explorers = [
+        load_hybrid_policy_config(root / path, root=root)
+        for path in (
+            "configs/m5/hybrid/explorer.yaml",
+            "configs/m5/hybrid/explorer_b.yaml",
+            "configs/m5/hybrid/explorer_c.yaml",
+        )
+    ]
 
     assert defensive.style == "defensive"
-    assert explorer.style == "explorer"
+    assert all(explorer.style == "explorer" for explorer in explorers)
     assert isinstance(defensive.governor, DefensiveGovernorConfig)
-    assert isinstance(explorer.governor, ExplorerGovernorConfig)
-    assert defensive.base_checkpoint == explorer.base_checkpoint
-    assert defensive.base_checkpoint_sha256 == explorer.base_checkpoint_sha256
-    assert defensive.scenario_hash == explorer.scenario_hash
-    assert defensive.test_cases_accessed is explorer.test_cases_accessed is False
-    assert len(defensive.config_sha256) == len(explorer.config_sha256) == 64
+    assert all(
+        isinstance(explorer.governor, ExplorerGovernorConfig)
+        for explorer in explorers
+    )
+    assert all(defensive.base_checkpoint == explorer.base_checkpoint for explorer in explorers)
+    assert all(
+        defensive.base_checkpoint_sha256 == explorer.base_checkpoint_sha256
+        for explorer in explorers
+    )
+    assert all(defensive.scenario_hash == explorer.scenario_hash for explorer in explorers)
+    assert defensive.test_cases_accessed is False
+    assert all(explorer.test_cases_accessed is False for explorer in explorers)
+    assert len(defensive.config_sha256) == 64
+    assert all(len(explorer.config_sha256) == 64 for explorer in explorers)
 
 
 def test_hybrid_config_rejects_unknown_fields_and_test_access(tmp_path: Path) -> None:

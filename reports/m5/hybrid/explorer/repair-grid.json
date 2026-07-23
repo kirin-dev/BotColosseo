@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "stage": "m5-hybrid-explorer-bounded-repair",
+  "reason": "Candidate A retained skill but did not produce sufficiently distinct executed-action signatures.",
+  "source_formal_summary": "reports/m5/hybrid/explorer/formal-a/summary.json",
+  "source_formal_summary_sha256": "056687e36339b2d0253d7690196847f2c2022de7bb518dae888690e8461eedbc",
+  "frozen_gate": {
+    "route_action_signature_distance_minimum": 0.05,
+    "skill_retention_minimum": 0.85,
+    "per_opponent_retention_minimum": 0.75
+  },
+  "candidates": [
+    {
+      "candidate_id": "explorer-hybrid-b",
+      "config": "configs/m5/hybrid/explorer_b.yaml",
+      "config_sha256": "6c839e17a315f5d966b870e74fe6426ea4c516ef9881ebdf9ad71f4680b779ea",
+      "route_bias": 3.0,
+      "flank_bias": 4.0
+    },
+    {
+      "candidate_id": "explorer-hybrid-c",
+      "config": "configs/m5/hybrid/explorer_c.yaml",
+      "config_sha256": "367ef8e7c3e5f9abd6202ddf7287428d7f1b70b9fb5d1d920ac2bb27be3baa1a",
+      "route_bias": 5.0,
+      "flank_bias": 6.0
+    }
+  ],
+  "selection_rule": "Require every frozen product gate, then select the highest route action signature distance; break ties by skill retention.",
+  "test_cases_accessed": false
+}

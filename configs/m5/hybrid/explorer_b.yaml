@@ -1,0 +1,15 @@
+schema_version: 1
+candidate_id: explorer-hybrid-b
+style: explorer
+base_checkpoint: runs/m3/league-full/candidate-boundary-0200000.pt
+base_checkpoint_sha256: fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a
+scenario_hash: 91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8
+test_cases_accessed: false
+governor:
+  route_decisions: 24
+  route_bias: 3.0
+  flank_bias: 4.0
+  stall_repeat_decisions: 8
+  stall_recovery_decisions: 6
+  low_health_threshold: 25.0
+  max_consecutive_interventions: 24
