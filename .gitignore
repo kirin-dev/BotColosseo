@@ -29,6 +29,8 @@ dist/
 /data/generated/
 /nohup.out
 /reports/m5/hybrid/logs/
+/reports/m5/hybrid/*/difficulty/smoke*/
+/reports/m5/hybrid/*/difficulty/formal/*.jsonl
 
 # Local IDE and OS files
 .idea/

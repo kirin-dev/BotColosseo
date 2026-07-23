@@ -1495,3 +1495,6 @@ The evaluator writes per-decision action provenance and fails if its mirror
 differs from the frozen controller output. The audit requires exactly 100
 cases in every policy/tier cell, all source hashes, monotonic difficulty,
 same-tier hybrid retention, style mechanism coverage, and zero test access.
+The large formal JSONL ledgers are intentionally excluded from ordinary Git
+history; compact run/summary/manifest files remain tracked, while the exact raw
+ledgers are packaged as a hash-bound release artifact after the audit.
