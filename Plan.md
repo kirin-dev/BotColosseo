@@ -570,6 +570,11 @@ navigation/pickup/return ≥95%、static hit ≥90%、moving hit ≥75%，每项
 
 门禁：通过第 8 节冻结的 Strong Base 能力门槛。
 
+状态：2026-07-22 已完成 historical pool、PFSP、cross-play、候选选择和证据审计，
+工程与协议完整性合格，但真实结果未通过全部冻结能力门槛。因此选定的 200k checkpoint
+只作为 `integrity-qualified capability anchor`，不声称 M3 正式通过。后续风格实验使用该
+anchor 是经显式评审批准的产品路线继续，不会反向把 M4 的成功包装成 M3 PASS。
+
 ### M4：Aggressive 垂直闭环
 
 交付：
@@ -582,6 +587,13 @@ navigation/pickup/return ≥95%、static hit ≥90%、moving hit ≥75%，每项
 
 门禁：Aggressive 通过风格与 Skill Retention 标准。此时达到 Resume-ready。
 
+状态：已于 2026-07-23 通过。固定 alpha 0.25 checkpoint 完成 200 局 validation
+配对评测，全部七项门禁通过：Strong Base/Aggressive 胜率为 87.0%/89.0%，Skill
+Retention 为 1.000，engagement shift 为 +0.0998/100 decisions，其 95% bootstrap
+区间为 `[0.0460, 0.1706]`。正式 GIF、MP4、指标卡和 hash-bound publication
+manifest 已发布；它们明确是 validation 展示，不冒充 test 结果。此时项目达到
+Resume-ready。
+
 ### M5：完整风格产品
 
 交付：
@@ -592,6 +604,11 @@ navigation/pickup/return ≥95%、static hit ≥90%、moving hit ≥75%，每项
 - 三风格匿名演示素材。
 
 门禁：三种风格均满足能力保持，难度基本单调且不破坏风格辨识度。
+
+当前进展：Defensive 已完成风险条件 Teacher、success-filtered data、adapter
+distillation、固定 alpha grid、配对评测和证据审计的工程实现。生产实验仍在运行，
+尚不声称 Defensive 或 M5 通过。Explorer、difficulty controller、四策略展示和
+用户评测仍待完成。
 
 ### M6：公开发布
 
@@ -681,7 +698,11 @@ README 第一屏按以下顺序组织：
 - M0 的真实 ViZDoom、termination/reset、确定性动作和 MP4 门禁已通过。
 - M1 的场景、ACS 事件协议、单实例环境、五类 Teacher 与 500 回合冻结评测已完成。
 - M1 正式结果为五项 100/100、事件协议不一致数 0；这不是 learned-agent 或 multiplayer 结果。
-- 2 张 NVIDIA A100-PCIE-40GB 的训练可用性应在进入 M2 长训练前再次用目标会话验证。
+- M2 工程与 1,500 局正式评测已完成，但冻结能力门失败；该失败结果被保留。
+- M3 工程与完整性证据已完成，但并非正式 M3 能力门 PASS；其选定模型只作为后续
+  风格塑形的 capability anchor。
+- M4 Aggressive 已完成并通过冻结 validation gate，仓库已经 Resume-ready。
+- 2 张 NVIDIA A100-PCIE-40GB 已在真实训练与评测会话中验证可用。
 
 ## 21. 紧接着的实施顺序
 
@@ -690,6 +711,12 @@ README 第一屏按以下顺序组织：
 3. ~~制作 Crystal Run 地图、ACS 事件协议与单实例环境。~~
 4. ~~完成五类 Teacher 和冻结 train/validation/test 配置。~~
 5. ~~通过 M1 的 500 回合正式 gate 并发布证据。~~
-6. 设计并实现 M2 `SynchronousDuelEnv`、demonstration dataset 与 Base 训练入口。
+6. ~~实现 M2 `SynchronousDuelEnv`、demonstration dataset、BC/PPO 和正式评测；
+   如实保留能力门失败。~~
+7. ~~实现 M3 historical/PFSP 与证据审计；将未完全通过门禁的模型明确标为
+   capability anchor。~~
+8. ~~完成 M4 Aggressive 风格、200 局配对门禁和公开展示，达到 Resume-ready。~~
+9. 完成 M5 Defensive、Explorer、difficulty controller 与 Style × Difficulty 评测。
+10. 完成 M6 用户评测、四策略展示、双语文档、checkpoint 与一键复现入口。
 
 后续实现必须按里程碑逐个验证；如果某阶段的真实证据与本方案假设冲突，应更新本文件中的具体参数和风险判断，但不得悄然改变项目主线、评测隔离或公平边界。
