@@ -140,6 +140,26 @@ def audit_all_style_difficulty(root: Path) -> dict[str, object]:
         )
 
     reference = manifests["aggressive"]
+    source_paths = {
+        "config": root / "configs/difficulty.yaml",
+        "cases": root / "configs/m2/validation.json",
+        "scenario": root / "assets/scenarios/crystal_run/manifest.json",
+    }
+    missing_sources = [
+        str(path) for path in source_paths.values() if not path.is_file()
+    ]
+    if missing_sources:
+        raise FileNotFoundError(
+            "Missing all-style difficulty sources: " + ", ".join(missing_sources)
+        )
+    scenario_manifest = _json(source_paths["scenario"])
+    audit.add(
+        "source_artifact_identity",
+        reference.get("config_sha256") == sha256_file(source_paths["config"])
+        and reference.get("cases_sha256") == sha256_file(source_paths["cases"])
+        and reference.get("scenario_hash") == scenario_manifest.get("wad_sha256"),
+        "Difficulty blocks are not bound to the current config, cases, or scenario",
+    )
     audit.add(
         "shared_protocol_identity",
         all(
@@ -155,6 +175,11 @@ def audit_all_style_difficulty(root: Path) -> dict[str, object]:
             for manifest in manifests.values()
         ),
         "Difficulty blocks do not share the frozen protocol identity",
+    )
+    audit.add(
+        "selected_case_identity",
+        _selected_cases_match_ledgers(manifests, rows),
+        "Selected validation cases do not match the three formal ledgers",
     )
     audit.add(
         "summary_manifest_identity",
@@ -325,3 +350,29 @@ def _strong_base_outcomes_match(
         == projections["defensive"]
         == projections["explorer"]
     )
+
+
+def _selected_cases_match_ledgers(
+    manifests: dict[str, dict[str, Any]],
+    rows: dict[str, list[dict[str, Any]]],
+) -> bool:
+    for style in _BLOCKS:
+        selected = manifests[style].get("selected_case_ids")
+        if not isinstance(selected, list) or len(selected) != 100:
+            return False
+        selected_identities = {
+            tuple(item)
+            for item in selected
+            if isinstance(item, list) and len(item) == 3
+        }
+        ledger_identities = {
+            (
+                row.get("opponent"),
+                row.get("pair_index"),
+                row.get("learner_side"),
+            )
+            for row in rows[style]
+        }
+        if len(selected_identities) != 100 or ledger_identities != selected_identities:
+            return False
+    return True

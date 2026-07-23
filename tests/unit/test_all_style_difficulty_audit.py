@@ -86,7 +86,20 @@ def _evidence(root: Path) -> None:
         "normal": {"reaction_delay": 1, "policy_update_interval": 1},
         "hard": {"reaction_delay": 0, "policy_update_interval": 1},
     }
-    selected = [["opponent", pair, side] for pair in range(10) for side in ("host", "opponent")]
+    config = root / "configs/difficulty.yaml"
+    config.parent.mkdir(parents=True)
+    config.write_text("frozen: true\n", encoding="utf-8")
+    cases = root / "configs/m2/validation.json"
+    cases.parent.mkdir(parents=True)
+    cases.write_text("[]\n", encoding="utf-8")
+    scenario_manifest = root / "assets/scenarios/crystal_run/manifest.json"
+    _write(scenario_manifest, {"wad_sha256": "scenario"})
+    selected = [
+        [f"opponent-{opponent}", pair, side]
+        for opponent in range(5)
+        for pair in range(10)
+        for side in ("host", "opponent")
+    ]
     for style, (
         directory_name,
         upstream_name,
@@ -137,7 +150,7 @@ def _evidence(root: Path) -> None:
             "protocol_inconsistencies": 0,
             "gates": {"complete": True, "style": True},
             "checkpoint_sha256": hashes,
-            "config_sha256": "config",
+            "config_sha256": _sha(config),
             "scenario_hash": "scenario",
             "test_cases_accessed": False,
         }
@@ -151,8 +164,8 @@ def _evidence(root: Path) -> None:
             "episodes_sha256": _sha(episodes),
             "summary_sha256": _sha(summary),
             "checkpoint_sha256": hashes,
-            "config_sha256": "config",
-            "cases_sha256": "cases",
+            "config_sha256": _sha(config),
+            "cases_sha256": _sha(cases),
             "scenario_hash": "scenario",
             "selected_case_ids": selected,
             "profiles": profiles,
