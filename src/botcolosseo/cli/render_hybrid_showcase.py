@@ -8,7 +8,10 @@ import tempfile
 from collections.abc import Sequence
 from pathlib import Path
 
+import imageio.v2 as imageio
 import torch
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.figure import Figure
 
 from botcolosseo.agents.hybrid_config import load_hybrid_policy_config
 from botcolosseo.agents.hybrid_policy import (
@@ -98,7 +101,10 @@ def _load_policies(
     return policies
 
 
-def _validate_evidence(config: HybridShowcaseConfig) -> None:
+def _validate_evidence(
+    config: HybridShowcaseConfig,
+) -> dict[str, dict[str, object]]:
+    result = {}
     for row in config.evidence:
         payload = json.loads(row.summary.read_text(encoding="utf-8"))
         if row.style == "aggressive":
@@ -121,6 +127,86 @@ def _validate_evidence(config: HybridShowcaseConfig) -> None:
             )
         if not valid:
             raise ValueError(f"Hybrid showcase {row.style} evidence has not passed")
+        result[row.style] = payload
+    return result
+
+
+def _metric_value(payload: object, *keys: str) -> float:
+    current = payload
+    for key in keys:
+        if not isinstance(current, dict):
+            raise ValueError("Hybrid showcase metric source is invalid")
+        current = current.get(key)
+    if isinstance(current, bool) or not isinstance(current, (int, float)):
+        raise ValueError("Hybrid showcase metric value is invalid")
+    return float(current)
+
+
+def _render_metric_card(
+    evidence: dict[str, dict[str, object]],
+    output: Path,
+) -> Path:
+    explorer_signature = _metric_value(
+        evidence["explorer"],
+        "product",
+        "route_action_signature_distance",
+    )
+    cards = (
+        (
+            "Strong Base win rate",
+            f"{_metric_value(evidence['aggressive'], 'policies', 'strong_base', 'win_rate'):.1%}",
+        ),
+        (
+            "Aggressive shift",
+            f"{_metric_value(evidence['aggressive'], 'engagement_initiation_delta'):+.3f}",
+        ),
+        (
+            "Defensive retention",
+            f"{_metric_value(evidence['defensive'], 'product', 'skill_retention'):.1%}",
+        ),
+        (
+            "Defensive intervention",
+            f"{_metric_value(evidence['defensive'], 'product', 'intervention_rate'):.1%}",
+        ),
+        (
+            "Explorer retention",
+            f"{_metric_value(evidence['explorer'], 'product', 'skill_retention'):.1%}",
+        ),
+        (
+            "Explorer signature",
+            f"{explorer_signature:.3f}",
+        ),
+    )
+    figure = Figure(figsize=(12, 4.8), dpi=150, facecolor="#111827")
+    FigureCanvasAgg(figure)
+    try:
+        for index, (label, value) in enumerate(cards):
+            axis = figure.add_subplot(2, 3, index + 1)
+            axis.set_facecolor("#111827")
+            axis.axis("off")
+            axis.text(
+                0.5,
+                0.60,
+                value,
+                ha="center",
+                va="center",
+                color="white",
+                fontsize=22,
+                fontweight="bold",
+            )
+            axis.text(
+                0.5,
+                0.30,
+                label,
+                ha="center",
+                va="center",
+                color="#cbd5e1",
+                fontsize=10,
+            )
+        figure.savefig(output, facecolor=figure.get_facecolor())
+    finally:
+        figure.clear()
+    return output
 
 
 def _git_provenance(root: Path) -> tuple[str, bool]:
@@ -165,7 +251,7 @@ def render_hybrid_showcase(
 ) -> dict[str, object]:
     root = root.resolve()
     config = load_hybrid_showcase_config(config_path, root=root)
-    _validate_evidence(config)
+    evidence_payloads = _validate_evidence(config)
     commit, dirty = _git_provenance(root)
     if dirty:
         raise ValueError("Hybrid publication showcase requires no tracked changes")
@@ -252,6 +338,11 @@ def render_hybrid_showcase(
             max_bytes=config.gif_max_bytes,
         )
         staged_media["comparison"] = gif
+        metrics = _render_metric_card(
+            evidence_payloads,
+            staging / "hybrid-metrics.png",
+        )
+        staged_media["metrics"] = metrics
         published_frames = read_video_frames(gif)
         episode_rows = [episode.to_record() for episode in episodes]
         staged_episodes = write_jsonl(staging / "episodes.jsonl", episode_rows)
@@ -287,6 +378,21 @@ def render_hybrid_showcase(
                 "frame_count": len(published_frames),
                 "dimensions": list(published_frames[0].shape[:2]),
                 "fps": config.fps,
+            }
+        )
+        metrics_target = config.output_dir / metrics.name
+        targets["metrics"] = metrics_target
+        metrics_image = imageio.imread(metrics)
+        media.append(
+            {
+                "policy_id": "metrics",
+                "label": "Hybrid product metrics",
+                "path": metrics_target.relative_to(root).as_posix(),
+                "sha256": sha256_file(metrics),
+                "bytes": metrics.stat().st_size,
+                "frame_count": 1,
+                "dimensions": list(metrics_image.shape[:2]),
+                "fps": 1,
             }
         )
         identity = {
@@ -334,6 +440,7 @@ def render_hybrid_showcase(
             for row in config.policies
         ] + [
             (gif, comparison_target),
+            (metrics, metrics_target),
             (staged_episodes, config.evidence_dir / "episodes.jsonl"),
             (staged_telemetry, config.evidence_dir / "telemetry.jsonl"),
             (selection, config.evidence_dir / "selection.json"),
