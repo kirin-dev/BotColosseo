@@ -784,23 +784,38 @@ env \
   --device cuda:0
 ```
 
-Production remains unavailable until real Strong Base and Aggressive
-checkpoints, their exact SHA-256 values, and passing M4 validation evidence
-exist. At that point the command changes only the configuration argument:
+The real Strong Base and Aggressive hashes and the passing 200-episode M4
+validation evidence are now frozen. Export the publication metrics and logged
+highlight scores from those artifacts and the eight predefined validation
+cases:
 
 ```bash
-env PYTHONPATH="$PWD/src" \
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+env PYTHONPATH=src CUDA_VISIBLE_DEVICES=0 \
   /home/wencong/miniconda3/envs/botcolosseo/bin/python \
-  scripts/render_showcase.py \
+  scripts/export_showcase_metrics.py \
   --config configs/showcase/m4.yaml \
-  --checkpoint-root /path/to/hash-matched/artifacts \
+  --evaluation reports/m4/evaluation/aggressive-alpha-025/summary.json \
+  --checkpoint-root . \
   --device cuda:0
 ```
 
-Do not create `configs/showcase/m4.yaml`, publish files under
-`docs/assets/showcase/`, or add M4 media to README before the production metric
-loader verifies the stage, validation split, gate booleans, policy set, and all
-checkpoint hashes.
+Commit the resulting `reports/m4/showcase-metrics.json` so production Git
+provenance is clean, then publish the media and manifest:
+
+```bash
+env PYTHONPATH=src CUDA_VISIBLE_DEVICES=0 \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/render_showcase.py \
+  --config configs/showcase/m4.yaml \
+  --checkpoint-root . \
+  --device cuda:0
+```
+
+The publication loader rejects dirty provenance, checkpoint drift, failed gate
+booleans, non-validation cases, or any policy/hash mismatch. The tracked M4
+publication is qualitative validation material and is not an official test
+result.
 
 ## M4 Aggressive candidate training
 
