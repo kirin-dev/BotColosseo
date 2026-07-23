@@ -1,0 +1,22 @@
+{
+  "checkpoint": "runs/m5/v2/defensive/pilot/latest.pt",
+  "checkpoint_sha256": "92e935cd607dc5bfd6b5817795112b78d41651adb46145cbf26995f97032c8e3",
+  "environment_steps": 50000,
+  "passed": true,
+  "style": "defensive",
+  "style_reward_components": {
+    "carrier_denial": 0.7200000000000002,
+    "defensive_recovery": 0.09,
+    "protective_entry": 2.549999999999999,
+    "risk_concession": -3.389999999999997,
+    "risk_presence": 16.46999999999999,
+    "risk_resolution": 2.8799999999999972,
+    "unnecessary_guard": -4.824000000000002
+  },
+  "supervision_counts": {
+    "tokens": 25496
+  },
+  "test_cases_accessed": false,
+  "train_updates_audited": 784,
+  "training_summary_sha256": "fe9d24e788d66f584c3460e536f630d8a2b650ffb874d6d136c069a5d8119f47"
+}

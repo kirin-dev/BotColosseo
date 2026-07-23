@@ -54,6 +54,7 @@ case "$STAGE" in
       echo "Refusing to overwrite Explorer V2 smoke" >&2
       exit 1
     }
+    status=0
     "$PYTHON" -u "$ROOT/scripts/evaluate_explorer.py" \
       --base-checkpoint "$BASE" \
       --explorer-checkpoint "$PILOT/candidate-0050000.pt" \
@@ -61,7 +62,14 @@ case "$STAGE" in
       --pairs-per-opponent 1 \
       --max-decisions 525 \
       --max-attempts 2 \
-      --device cuda:0
+      --device cuda:0 || status=$?
+    [[ $status -eq 0 || $status -eq 1 ]] || exit "$status"
+    "$PYTHON" "$ROOT/scripts/decide_m5_v2.py" \
+      --style explorer \
+      --training-summary "$PILOT/summary.json" \
+      --candidate "$PILOT/candidate-0050000.pt" \
+      --smoke-dir "$SMOKE" \
+      --output "$ROOT/reports/m5/v2/explorer/decision-050000.json"
     ;;
   continue)
     train --run-dir "$PILOT" --device cuda:0 \

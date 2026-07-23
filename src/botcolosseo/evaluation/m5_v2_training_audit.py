@@ -112,7 +112,9 @@ def audit_m5_v2_training(
         "environment_steps": expected_steps,
         "passed": True,
         "style": style,
+        "style_reward_components": summary.get("style_reward_components", {}),
         "supervision_counts": supervision,
         "test_cases_accessed": False,
         "train_updates_audited": len(train_records),
+        "training_summary_sha256": sha256_file(summary_path),
     }

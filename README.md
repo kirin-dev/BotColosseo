@@ -110,10 +110,11 @@ and [raw evidence](reports/m1/summary.json).
 The learned Aggressive checkpoint and its M4 validation gate are complete.
 [Defensive](docs/milestones/m5-defensive.md) and
 [Explorer](docs/milestones/m5-explorer.md) each completed a 200k closed-loop
-PPO repair, retained task skill, and failed the unchanged 20-episode style
-smoke. Their complete negative evidence is preserved. The approved V2 repair
-uses on-policy Teacher regularization and a fair internal Explorer route mode
-with a bounded 50k/100k budget. Difficulty control passed its 600-episode
+PPO repair and a second Teacher-assisted 50k repair. V2 passed real CUDA,
+supervision-coverage, checkpoint, and protocol gates, but both primary style
+estimates still moved in the wrong direction; the frozen rule therefore
+stopped both runs at 50k instead of extending to 100k. Their complete negative
+evidence is preserved. Difficulty control passed its 600-episode
 Strong Base/Aggressive calibration; the final all-style M5/M6 product gate
 remains pending.
 

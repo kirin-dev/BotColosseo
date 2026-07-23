@@ -613,12 +613,17 @@ Resume-ready。
 门禁，负结果已保留。两项不改变 evaluator 的首版 200k closed-loop PPO repair
 也已完成，但都在 20 局冻结 smoke 中保持能力而未形成目标风格；完整 ledger 与
 失败门禁已保留。经审核批准的 V2 改为 on-policy Teacher 辅助 PPO，Explorer
-增加不读取 case/seed/特权状态的内部 Upper/Lower/Flank 路线模式，并采用
-50k、最多 100k 的分阶段预算。Easy/Normal/Hard 公平观测 controller 已实现，Strong
+增加不读取 case/seed/特权状态的内部 Upper/Lower/Flank 路线模式。两项真实
+2k CUDA 预检和 50k pilot 均工程通过且零 KL early stop，但冻结 20 局 smoke
+仍失败：Defensive retention 为 0.9231、protective-presence delta 为 -0.0183；
+Explorer retention 为 0.7500、route-entropy delta 为 -0.0631。两者 primary
+estimate 均方向错误，因此按预先批准的规则停在 50k，不允许继续到 100k。
+Easy/Normal/Hard 公平观测 controller 已实现，Strong
 Base/Aggressive 的 600 局正式 calibration 已通过全部六项门禁，零重试且零协议
 错误；三风格 Style×Difficulty 的 1,800 局合并协议已经冻结，需等待
 Defensive/Explorer 各自门禁通过后执行。因此可以声称首个 difficulty block
-通过，但暂不声称 Defensive、Explorer、完整 Difficulty 或 M5 通过。
+通过，但暂不声称 Defensive、Explorer、完整 Difficulty 或 M5 通过。任何第三条
+Defensive/Explorer 技术路线均属于新的设计变更，必须重新审核后才能训练。
 
 ### M6：公开发布
 

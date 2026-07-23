@@ -86,3 +86,24 @@ The failed smoke is retained under
 [`reports/m5/defensive/ppo-repair/smoke/`](../../reports/m5/defensive/ppo-repair/smoke/).
 The owner-approved V2 route adds masked on-policy Protective Teacher
 regularization and a bounded 50k/100k budget; it does not change this evaluator.
+
+## Teacher-assisted V2 result
+
+V2 passed both its 2,000-step real CUDA preflight and 50,000-step training
+audit. The production ledger contained 25,496 risk-supervised tokens and,
+unlike V1, recorded both carrier-denial and defensive-recovery rewards. The
+hash-bound 20-episode smoke was complete and protocol-clean:
+
+| Frozen 50k decision input | Result |
+|---|---:|
+| Skill Retention | 92.31% |
+| Protective-presence delta | -0.0183 |
+| 95% interval | `[-0.2361, 0.3026]` |
+| Denial/recovery gate | Pass |
+| Protocol inconsistencies / retries | 0 / 0 |
+
+The primary point estimate still had the wrong sign, while unnecessary guard
+also increased. The pre-approved decision rule therefore produced
+`stop_50k`; V2 was not extended to 100k. See the
+[decision record](../../reports/m5/v2/defensive/decision-050000.json) and
+[smoke evidence](../../reports/m5/v2/defensive/smoke-050000/summary.json).

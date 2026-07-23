@@ -1,0 +1,26 @@
+{
+  "decision_rule": "select at 50k if all smoke gates pass; continue once to 100k only when retention and protocol pass and the primary point estimate is positive; otherwise stop",
+  "decisions": {
+    "defensive": {
+      "decision_sha256": "72563b211ed2294930ddd82cda6e875cbfd2070cdcb9ed66a289be7e491d7dac",
+      "disposition": "stop_50k",
+      "primary_metric": "protective_presence_delta",
+      "primary_point_estimate": -0.018316748186878062,
+      "skill_retention": 0.9230769230769231,
+      "training_audit_sha256": "43869dc4e0ee50c79fb3aa955951a03ff5db1092a39794c9ed33df9dca954e8d"
+    },
+    "explorer": {
+      "decision_sha256": "049111ee0fc19a05380932cbea86197d70affb03180ecd34eb88c499705e4f77",
+      "disposition": "stop_50k",
+      "primary_metric": "route_entropy_delta",
+      "primary_point_estimate": -0.06309297535714574,
+      "skill_retention": 0.75,
+      "training_audit_sha256": "7cd3638c69071a85bca829aaf843bb66a5177a39fa83e37fe7f62e70c0d6b965"
+    }
+  },
+  "passed": false,
+  "protocol_inconsistencies": 0,
+  "schema_version": 1,
+  "stage": "m5-v2-50k-decision",
+  "test_cases_accessed": false
+}

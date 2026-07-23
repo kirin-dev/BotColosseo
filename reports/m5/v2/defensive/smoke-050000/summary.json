@@ -1,0 +1,76 @@
+{
+  "checkpoint_sha256": {
+    "defensive": "92e935cd607dc5bfd6b5817795112b78d41651adb46145cbf26995f97032c8e3",
+    "strong_base": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a"
+  },
+  "complete": true,
+  "environment_retries": 0,
+  "episodes": 20,
+  "expected_episodes": 20,
+  "gates": {
+    "complete": true,
+    "denial_recovery_improved": true,
+    "objective_retention": true,
+    "per_opponent_retention": false,
+    "protective_presence_shift": false,
+    "protocol_clean": true,
+    "skill_retention": true,
+    "unnecessary_guard_controlled": false
+  },
+  "passed": false,
+  "per_opponent_retention": {
+    "aggressive_script": 1.0,
+    "defensive_script": 1.0,
+    "fixed_route": 0.5,
+    "objective_first": 1.1428571428571428,
+    "random_legal": 1.0
+  },
+  "policies": {
+    "defensive": {
+      "carrier_denials": 1,
+      "carrier_opportunities": 631,
+      "denial_recovery_rate": 0.0031645569620253164,
+      "episodes": 10,
+      "low_health_opportunities": 126,
+      "mean_score_difference": 1.9,
+      "objective_rate": 0.9,
+      "performance": 0.9,
+      "protective_presence_rate": 0.3346938775510204,
+      "recoveries": 1,
+      "recovery_opportunities": 1,
+      "risk_decisions": 980,
+      "successful_escapes": 3,
+      "unnecessary_guard_rate": 0.24513096037609133,
+      "win_rate": 0.9
+    },
+    "strong_base": {
+      "carrier_denials": 0,
+      "carrier_opportunities": 632,
+      "denial_recovery_rate": 0.001579778830963665,
+      "episodes": 10,
+      "low_health_opportunities": 185,
+      "mean_score_difference": 2.2,
+      "objective_rate": 1.0,
+      "performance": 0.975,
+      "protective_presence_rate": 0.3530106257378985,
+      "recoveries": 1,
+      "recovery_opportunities": 1,
+      "risk_decisions": 847,
+      "successful_escapes": 4,
+      "unnecessary_guard_rate": 0.1619348054679285,
+      "win_rate": 0.9
+    }
+  },
+  "protective_presence_delta": -0.018316748186878062,
+  "protective_presence_delta_ci": [
+    -0.23611372612671108,
+    0.30255353558489356
+  ],
+  "protective_presence_estimator": "paired_cluster_bootstrap_pooled_ratio_v1",
+  "protocol_inconsistencies": 0,
+  "schema_version": 1,
+  "skill_retention": 0.9230769230769231,
+  "split": "validation",
+  "stage": "m5-defensive",
+  "test_cases_accessed": false
+}

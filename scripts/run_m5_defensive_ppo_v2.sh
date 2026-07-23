@@ -54,6 +54,7 @@ case "$STAGE" in
       echo "Refusing to overwrite Defensive V2 smoke" >&2
       exit 1
     }
+    status=0
     "$PYTHON" -u "$ROOT/scripts/evaluate_defensive.py" \
       --base-checkpoint "$BASE" \
       --defensive-checkpoint "$PILOT/candidate-0050000.pt" \
@@ -63,7 +64,14 @@ case "$STAGE" in
       --max-attempts 2 \
       --bootstrap-samples 10000 \
       --bootstrap-seed 20260723 \
-      --device cuda:0
+      --device cuda:0 || status=$?
+    [[ $status -eq 0 || $status -eq 1 ]] || exit "$status"
+    "$PYTHON" "$ROOT/scripts/decide_m5_v2.py" \
+      --style defensive \
+      --training-summary "$PILOT/summary.json" \
+      --candidate "$PILOT/candidate-0050000.pt" \
+      --smoke-dir "$SMOKE" \
+      --output "$ROOT/reports/m5/v2/defensive/decision-050000.json"
     ;;
   continue)
     train --run-dir "$PILOT" --device cuda:0 \

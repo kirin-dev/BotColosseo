@@ -1,0 +1,17 @@
+{
+  "candidate_checkpoint": "runs/m5/v2/defensive/pilot/candidate-0050000.pt",
+  "candidate_checkpoint_sha256": "92e935cd607dc5bfd6b5817795112b78d41651adb46145cbf26995f97032c8e3",
+  "disposition": "stop_50k",
+  "environment_steps": 50000,
+  "primary_metric": "protective_presence_delta",
+  "primary_point_estimate": -0.018316748186878062,
+  "reasons": [
+    "primary style point estimate has the wrong sign"
+  ],
+  "schema_version": 1,
+  "smoke_manifest_sha256": "36b7dbca85b82029e19f6967730b211811ba20b2be1e8cd48daf54f7d66ecfe1",
+  "smoke_summary_sha256": "abc6421293528ae5dbcde7e30292a567ffccfa4ab29f912da2d2b1bb8f62205f",
+  "style": "defensive",
+  "test_cases_accessed": false,
+  "training_summary_sha256": "fe9d24e788d66f584c3460e536f630d8a2b650ffb874d6d136c069a5d8119f47"
+}

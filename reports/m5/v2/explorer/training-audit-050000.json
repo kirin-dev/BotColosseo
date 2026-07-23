@@ -1,0 +1,35 @@
+{
+  "checkpoint": "runs/m5/v2/explorer/pilot/latest.pt",
+  "checkpoint_sha256": "a9f0998ae38884e46019542c49ede6fb3f4ffafa2dc51cacd2b4727d86fb5e05",
+  "environment_steps": 50000,
+  "passed": true,
+  "style": "explorer",
+  "style_reward_components": {
+    "carry_stall": -6.071999999999998,
+    "distinct_route_completion": 0.9000000000000006,
+    "mode:0:carry_stall": -2.2350000000000003,
+    "mode:0:distinct_route_completion": 0.4800000000000002,
+    "mode:0:novel_carry_region": 0.4890000000000003,
+    "mode:0:target_region": 0.3300000000000002,
+    "mode:0:target_route_score": 1.1999999999999997,
+    "mode:1:carry_stall": -1.947,
+    "mode:1:distinct_route_completion": 0.42000000000000015,
+    "mode:1:novel_carry_region": 0.5040000000000002,
+    "mode:1:target_region": 0.6000000000000004,
+    "mode:1:target_route_score": 1.0499999999999998,
+    "mode:2:carry_stall": -1.8900000000000012,
+    "mode:2:novel_carry_region": 0.3780000000000002,
+    "novel_carry_region": 1.370999999999998,
+    "target_region": 0.9300000000000006,
+    "target_route_score": 2.25
+  },
+  "supervision_counts": {
+    "mode:0": 14771,
+    "mode:1": 17611,
+    "mode:2": 17618,
+    "tokens": 50000
+  },
+  "test_cases_accessed": false,
+  "train_updates_audited": 784,
+  "training_summary_sha256": "7d47cc8d7c4adbbec67f1232f0264b8abb8fc1f72c6ecacc5a70d26ecce4cdba"
+}

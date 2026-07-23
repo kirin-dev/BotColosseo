@@ -1227,6 +1227,11 @@ The `continue` stage resumes the hash-bound 50k `latest.pt` and stops at the
 100k hard ceiling. It is not an automatic extension and must not be invoked
 before reading the 50k smoke summary.
 
+Current result (2026-07-23): both 50k decision records are `stop_50k`.
+Defensive and Explorer primary point estimates had the wrong sign, and
+Explorer also failed Skill Retention. Do **not** run either `continue` command
+for these artifacts. A new repair requires a separately reviewed design.
+
 ## M6 anonymous user-study package
 
 Run this only after the three public style videos are generated from passing

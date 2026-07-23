@@ -90,3 +90,25 @@ The failed smoke is retained under
 [`reports/m5/explorer/ppo-repair/smoke/`](../../reports/m5/explorer/ppo-repair/smoke/).
 The owner-approved V2 route adds three fair internal route branches plus
 on-policy Route Teacher regularization; the frozen evaluator remains unchanged.
+
+## Teacher-assisted V2 result
+
+V2 passed its real CUDA and 50,000-step training audits. All 50,000 on-policy
+tokens were supervised, split across Upper/Lower/Flank modes as
+14,771 / 17,611 / 17,618. The checkpoint contained three independently
+trainable branches and loaded through the public-observation-only policy.
+Nevertheless, the frozen 20-episode smoke remained behaviorally negative:
+
+| Frozen 50k decision input | Result |
+|---|---:|
+| Skill Retention | 75.00% |
+| Route-entropy delta | -0.0631 |
+| 95% interval | `[-0.1893, 0]` |
+| Flank completions | 0 |
+| Protocol inconsistencies / retries | 0 / 0 |
+
+Training-time mode coverage did not become closed-loop route completion, and
+capability retention also failed. The frozen decision rule therefore produced
+`stop_50k`; V2 was not extended to 100k. See the
+[decision record](../../reports/m5/v2/explorer/decision-050000.json) and
+[smoke evidence](../../reports/m5/v2/explorer/smoke-050000/summary.json).

@@ -1,0 +1,18 @@
+{
+  "candidate_checkpoint": "runs/m5/v2/explorer/pilot/candidate-0050000.pt",
+  "candidate_checkpoint_sha256": "a9f0998ae38884e46019542c49ede6fb3f4ffafa2dc51cacd2b4727d86fb5e05",
+  "disposition": "stop_50k",
+  "environment_steps": 50000,
+  "primary_metric": "route_entropy_delta",
+  "primary_point_estimate": -0.06309297535714574,
+  "reasons": [
+    "skill retention gate failed",
+    "primary style point estimate has the wrong sign"
+  ],
+  "schema_version": 1,
+  "smoke_manifest_sha256": "a12a7adab9d7c2fa2b09f776352a60a5460a143a633f9436c27b4b96bdfe05be",
+  "smoke_summary_sha256": "07e91fa80c6664bed55e6c3e7d6f788d4b6e17f9ee72f58a38fcd744697944e5",
+  "style": "explorer",
+  "test_cases_accessed": false,
+  "training_summary_sha256": "7d47cc8d7c4adbbec67f1232f0264b8abb8fc1f72c6ecacc5a70d26ecce4cdba"
+}
