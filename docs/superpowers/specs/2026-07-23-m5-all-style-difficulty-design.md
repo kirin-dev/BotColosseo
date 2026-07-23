@@ -1,6 +1,11 @@
 # M5 All-Style Difficulty Extension
 
-**Status:** Approved through delegated recommendation authority on 2026-07-23.
+**Status:** Superseded by
+[`2026-07-23-m5-hybrid-all-style-difficulty-design.md`](2026-07-23-m5-hybrid-all-style-difficulty-design.md).
+
+This learned-checkpoint design remains historical context. Its 1,800-row
+pairwise-block structure and exact cross-run Strong Base outcome requirement
+must not be used for the approved hybrid product.
 
 ## 1. Gap
 
