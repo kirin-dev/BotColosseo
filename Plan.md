@@ -641,8 +641,12 @@ retention、干预边界、执行动作签名与后续匿名辨识度。
 - 两项正式评测均为 `test_cases_accessed: false`，协议不一致数为 0。
 
 因此可以声称 Defensive/Explorer **hybrid 产品门**通过，但不能声称此前
-learned-policy 风格门通过。三风格 Style×Difficulty 的 1,800 局合并协议已冻结，
-仍需用 hybrid policies 接入并完成后才能声称完整 Difficulty 或完整 M5 通过。
+learned-policy 风格门通过。经真实 artifact 审查，旧 1,800 局设计所依赖的
+跨运行逐局确定性不成立；项目作者批准改为 `4 policies × 3 difficulties ×
+100 cases = 1,200` 个唯一 episode 的产品矩阵。它复用 800 局已冻结证据，只新增
+Defensive/Explorer Easy/Normal 的 400 局，并以 hash、case、seed、side、scenario
+和协议身份替代错误的跨运行 outcome 相等要求。该矩阵完成前不能声称完整
+Difficulty 或完整 M5 通过。
 
 ### M6：公开发布
 
@@ -761,7 +765,7 @@ README 第一屏按以下顺序组织：
 8. ~~完成 M4 Aggressive 风格、200 局配对门禁和公开展示，达到 Resume-ready。~~
 9. 完成 M5 Defensive、Explorer、difficulty controller 与 Style × Difficulty 评测。
    其中 Defensive/Explorer hybrid 产品正式门与首个 difficulty block 已完成，
-   all-style difficulty 尚未完成。
+   1,200 局 hybrid-aware all-style difficulty 已冻结设计并进入实现。
 10. 完成 M6 用户评测、四策略展示、双语文档、checkpoint 与一键复现入口。
     其中四策略真实展示与双语首页已完成。
 

@@ -24,9 +24,14 @@ native checkpoint. The controller changes no health, damage, observation,
 checkpoint weight, or hidden game state.
 
 This is a passing controller calibration for Strong Base and Aggressive, not
-yet the complete M5 Style×Difficulty gate. Defensive and Explorer must first
-pass their own style gates and then pass their native style metrics under all
-three profiles. The frozen all-style protocol contains 1,800 episodes.
+yet the complete M5 Style×Difficulty gate. Defensive and Explorer subsequently
+passed their hybrid product gates. The approved extension is now one
+1,200-episode unique product matrix: reuse these 600 rows, reuse both 100-row
+hybrid Hard cells, and run only the 400 missing hybrid Easy/Normal rows.
+
+The earlier 1,800-row learned-only design is retained as historical context.
+Its exact cross-run Strong Base outcome assumption is contradicted by current
+artifacts and is not the product acceptance route.
 
 Raw ledgers, summaries, manifests, checkpoint hashes, configuration hash, and
 zero-test-access evidence are tracked under

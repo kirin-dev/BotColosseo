@@ -1,0 +1,27 @@
+schema_version: 1
+stage: m5_hybrid_all_style_difficulty
+test_cases_accessed: false
+difficulty:
+  path: configs/difficulty.yaml
+  expected_sha256: b226f7b1d7d12cd979d05b14f145f3be6c56fb1dc669b3070315dbacc331f627
+cases:
+  path: configs/m2/validation.json
+  expected_sha256: 3f5d0c4f6ac26541c6d159f53413f7c1c1cc44702c49159983a84a2ff5270993
+scenario:
+  path: assets/scenarios/crystal_run/manifest.json
+  expected_sha256: bb8ae0b509d9d03ac034b1bd0d426f8af25d6a4186accdfb38795ae92f77dff6
+  wad_sha256: 91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8
+sources:
+  base_aggressive:
+    manifest: reports/m5/difficulty/formal/manifest.json
+    expected_sha256: 19491a4f1746bc763b9e98b6bb2def9f18c6b2bb59f79faf296464f496d326e2
+  defensive:
+    governor_config: configs/m5/hybrid/defensive.yaml
+    governor_config_sha256: fd584f38a90f55a0fc21c314b82c632814a6fd151f9337abf21346c432b9ad6c
+    hard_manifest: reports/m5/hybrid/defensive/formal-a/manifest.json
+    hard_manifest_sha256: f9acfe14be889f652a0d5303a1af8938e6c80bd57b0a2780dc32f680a2ce092e
+  explorer:
+    governor_config: configs/m5/hybrid/explorer_c.yaml
+    governor_config_sha256: 367ef8e7c3e5f9abd6202ddf7287428d7f1b70b9fb5d1d920ac2bb27be3baa1a
+    hard_manifest: reports/m5/hybrid/explorer/formal-c/manifest.json
+    hard_manifest_sha256: c06c4d1764fe273b833449939f17fd910efa8fe1d0594d6916f79645f04bc3dd

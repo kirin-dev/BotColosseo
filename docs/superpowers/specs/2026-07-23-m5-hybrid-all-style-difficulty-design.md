@@ -1,7 +1,7 @@
 # M5 Hybrid-Aware All-Style Difficulty
 
-**Status:** Approved in conversation on 2026-07-23; written specification
-awaiting owner review.
+**Status:** Approved in conversation and reviewed by the project owner on
+2026-07-23.
 
 ## 1. Outcome
 

@@ -215,6 +215,17 @@ def build_hybrid_evaluation_policy(
     *,
     device: torch.device,
 ) -> HybridEvaluationPolicy:
+    return HybridEvaluationPolicy(
+        config.style,
+        build_hybrid_style_policy(config, device=device),
+    )
+
+
+def build_hybrid_style_policy(
+    config: HybridPolicyConfig,
+    *,
+    device: torch.device,
+) -> HybridStylePolicy:
     if config.style == "defensive":
         if not isinstance(config.governor, DefensiveGovernorConfig):
             raise ValueError("Defensive hybrid config has the wrong governor type")
@@ -223,14 +234,13 @@ def build_hybrid_evaluation_policy(
         if not isinstance(config.governor, ExplorerGovernorConfig):
             raise ValueError("Explorer hybrid config has the wrong governor type")
         governor = ExplorerGovernor(config.governor)
-    policy = HybridStylePolicy.load(
+    return HybridStylePolicy.load(
         checkpoint=config.base_checkpoint,
         checkpoint_sha256=config.base_checkpoint_sha256,
         scenario_hash=config.scenario_hash,
         governor=governor,
         device=device,
     )
-    return HybridEvaluationPolicy(config.style, policy)
 
 
 def checkpoint_spec_for_hybrid(

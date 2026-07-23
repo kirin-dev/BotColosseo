@@ -1285,9 +1285,11 @@ The builder verifies each checkpoint through the same public-observation loader
 used by evaluation, preserves exact source bytes and hashes, writes one atomic
 manifest, and refuses overwrite or partial publication.
 
-## M5 Defensive/Explorer difficulty blocks
+## Legacy learned-only Defensive/Explorer difficulty blocks
 
-These blocks are gated behind a passing 200-episode PPO style summary. Each
+These commands are retained for the failed learned-policy route and must not
+be used for the approved hybrid product. They are gated behind a passing
+200-episode PPO style summary. Each
 pipeline runs a 60-episode protocol smoke and then 600 paired validation
 episodes using the style's native frozen estimator.
 
@@ -1305,8 +1307,7 @@ PPO sections above. A small-sample smoke may be statistically inconclusive; it
 proceeds only when all 60 rows are complete, protocol-clean, and
 validation-only. The 600-episode formal block must pass every frozen gate.
 
-After both native blocks pass, generate the only difficulty artifact accepted
-by M6:
+The historical learned-only audit command was:
 
 ```bash
 cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
@@ -1314,9 +1315,9 @@ PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
   scripts/audit_all_style_difficulty.py
 ```
 
-This audit revalidates all three 600-episode hash chains, the upstream style
-gates, shared protocol identity, 1,800 unique rows, and exact Strong Base
-outcomes across the three ledgers. It refuses to overwrite
+This legacy audit revalidates all three 600-episode hash chains, the upstream
+learned-style gates, shared protocol identity, 1,800 pairwise rows, and exact
+Strong Base outcomes across the three ledgers. It refuses to overwrite
 `reports/m5/difficulty/all-style-summary.json`.
 
 Render the four-policy result card directly from that audited payload:
@@ -1328,7 +1329,7 @@ PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
   --output docs/assets/showcase/m5-all-style-difficulty.png
 ```
 
-Only after that audit passes, export the M6 metric payload:
+The corresponding historical learned-only M6 export was:
 
 ```bash
 PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
@@ -1417,3 +1418,80 @@ remains a separate explicit publication action. The current deterministic
 archive is 17,038,178 bytes with SHA-256
 `79d6ded79e3eeb4e1b4513cddf47f4832d92ae3e6bc5dea9b6ac7977f7a1266c`;
 the tracked release record is `reports/m6/hybrid-release.json`.
+
+## M5 hybrid-aware all-style difficulty
+
+The approved product matrix contains 1,200 unique validation episodes. It
+reuses the existing 600-row Strong Base/Aggressive matrix and both 100-row
+hybrid Hard cells, then runs only the 400 missing Defensive/Explorer
+Easy/Normal episodes.
+
+Preflight both extensions:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/evaluate_hybrid_difficulty.py \
+  --style defensive \
+  --output-dir reports/m5/hybrid/defensive/difficulty/formal \
+  --preflight
+
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/evaluate_hybrid_difficulty.py \
+  --style explorer \
+  --output-dir reports/m5/hybrid/explorer/difficulty/formal \
+  --preflight
+```
+
+The complete smoke/formal pipeline is:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+mkdir -p runs/m5
+setsid bash -c '
+  echo $$ > runs/m5/hybrid-difficulty.pid
+  BOTCOLOSSEO_DEVICE=cuda:0 scripts/run_m5_hybrid_difficulty.sh
+  status=$?
+  printf "%s\n" "$status" > runs/m5/hybrid-difficulty.exit
+  exit "$status"
+' >> runs/m5/hybrid-difficulty.log 2>&1 < /dev/null &
+```
+
+Progress and completion checks:
+
+```bash
+ps -p "$(cat runs/m5/hybrid-difficulty.pid)" \
+  -o pid,etime,%cpu,%mem,stat,cmd
+tail -n 80 runs/m5/hybrid-difficulty.log
+find reports/m5/hybrid -path '*/difficulty/*/episodes.jsonl' \
+  -print -exec wc -l {} \;
+test ! -f runs/m5/hybrid-difficulty.exit || \
+  cat runs/m5/hybrid-difficulty.exit
+```
+
+After both 200-row formal extensions finish, create the only hybrid-aware
+all-style artifact accepted by M6:
+
+```bash
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/audit_hybrid_all_style_difficulty.py
+
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/plot_hybrid_all_style_difficulty.py \
+  --summary reports/m5/difficulty/hybrid-all-style-summary.json \
+  --output docs/assets/showcase/m5-hybrid-all-style-difficulty.png
+
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/export_hybrid_m6_metrics.py \
+  --aggressive reports/m4/evaluation/aggressive-alpha-025/summary.json \
+  --defensive reports/m5/hybrid/defensive/formal-a/summary.json \
+  --explorer reports/m5/hybrid/explorer/formal-c/summary.json \
+  --difficulty reports/m5/difficulty/hybrid-all-style-summary.json \
+  --showcase reports/showcase/hybrid-product/manifest.json \
+  --output reports/m6/hybrid-product-metrics.json
+```
+
+The evaluator writes per-decision action provenance and fails if its mirror
+differs from the frozen controller output. The audit requires exactly 100
+cases in every policy/tier cell, all source hashes, monotonic difficulty,
+same-tier hybrid retention, style mechanism coverage, and zero test access.
