@@ -940,3 +940,45 @@ Rerunning the same command resumes from verified episode identities. Do not
 delete a partial `episodes.jsonl`. Completion requires 200 rows plus matching
 `summary.json` and `manifest.json`; exit code zero means the frozen formal gate
 passed, while exit code one is a complete but failed experimental result.
+
+## M5 Defensive production pipeline
+
+This is the frozen Defensive route: 50,000 risk-conditioned train transitions,
+1,000 adapter-distillation updates, the fixed alpha grid `0.25/0.50/0.75`,
+three 20-episode validation smokes, deterministic candidate selection, and a
+200-episode formal validation gate. It uses no test cases. A failed data,
+offline, selection, or formal gate preserves its artifacts and exits nonzero.
+
+Launch it on the second physical GPU:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+mkdir -p runs/m5
+test ! -s runs/m5/defensive.pid || \
+  ! ps -p "$(cat runs/m5/defensive.pid)" >/dev/null 2>&1
+rm -f runs/m5/defensive.exit
+nohup setsid -f bash -c '
+  echo $$ > runs/m5/defensive.pid
+  cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+  CUDA_VISIBLE_DEVICES=1 scripts/run_m5_defensive.sh
+  status=$?
+  printf "%s\n" "$status" > runs/m5/defensive.exit
+  exit "$status"
+' >> runs/m5/defensive.log 2>&1
+while [[ ! -s runs/m5/defensive.pid ]]; do sleep 1; done
+cat runs/m5/defensive.pid
+```
+
+Monitor without modifying artifacts:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+ps -p "$(cat runs/m5/defensive.pid)" -o pid,etime,%cpu,%mem,stat,cmd
+tail -n 60 runs/m5/defensive.log
+find reports/m5/defensive -name episodes.jsonl -print -exec wc -l {} \;
+test ! -f runs/m5/defensive.exit || cat runs/m5/defensive.exit
+```
+
+Do not delete a partial smoke or formal `episodes.jsonl`; those stages resume
+from hash-bound identities. If selection exits one, none of the predefined
+alpha candidates passed every smoke gate, so the formal evaluation is not run.
