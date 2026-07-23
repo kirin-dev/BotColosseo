@@ -79,16 +79,22 @@ def _checkpoint_scenario_hash(payload: dict[str, object]) -> str:
         except TypeError as error:
             raise ValueError("Invalid opponent checkpoint metadata") from error
     if payload.get("kind") == "style_interpolation":
+        style = payload.get("style")
+        source_hash = (
+            "neutral_checkpoint_sha256"
+            if style == "defensive"
+            else "ppo_checkpoint_sha256"
+        )
         required = (
             "base_checkpoint_sha256",
             "distilled_checkpoint_sha256",
             "interpolation_sha256",
-            "ppo_checkpoint_sha256",
+            source_hash,
         )
         hash_values = tuple(payload.get(field) for field in required)
         alpha = payload.get("alpha")
         if (
-            payload.get("style") != "aggressive"
+            style not in ("aggressive", "defensive")
             or any(
                 not isinstance(value, str) or _SHA256_PATTERN.fullmatch(value) is None
                 for value in hash_values
