@@ -606,9 +606,12 @@ Resume-ready。
 门禁：三种风格均满足能力保持，难度基本单调且不破坏风格辨识度。
 
 当前进展：Defensive 已完成风险条件 Teacher、success-filtered data、adapter
-distillation、固定 alpha grid、配对评测和证据审计的工程实现。生产实验仍在运行，
-尚不声称 Defensive 或 M5 通过。Explorer、difficulty controller、四策略展示和
-用户评测仍待完成。
+distillation、固定 alpha grid、配对评测和证据审计的工程实现，但现有候选尚未
+稳定通过 protective-presence gate。Explorer 已完成 score-conditioned 三路线
+Teacher、成功窗口平衡采样、adapter distillation、固定 alpha grid、配对评测、
+确定性选择和 hash-bound 证据审计的工程实现；生产实验结果尚未冻结。因此暂不
+声称 Defensive、Explorer 或 M5 通过。difficulty controller、四策略展示和用户
+评测仍待完成。
 
 ### M6：公开发布
 

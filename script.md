@@ -989,3 +989,49 @@ test ! -f runs/m5/defensive.exit || cat runs/m5/defensive.exit
 Do not delete a partial smoke or formal `episodes.jsonl`; those stages resume
 from hash-bound identities. If selection exits one, none of the predefined
 alpha candidates passed every smoke gate, so the formal evaluation is not run.
+
+## M5 Explorer production pipeline
+
+This route generates 50,000 score-conditioned route demonstrations, performs
+1,000 frozen-base adapter-distillation updates, evaluates the fixed alpha grid
+`0.25/0.50/0.75`, and selects a candidate only when its 20-episode validation
+smoke passes every capability, route-diversity, anti-wandering, and protocol
+gate. The selected candidate then receives a 200-episode formal validation and
+hash-chain audit. No test cases are accessed.
+
+Launch it on the second physical GPU:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+mkdir -p runs/m5
+test ! -s runs/m5/explorer.pid || \
+  ! ps -p "$(cat runs/m5/explorer.pid)" >/dev/null 2>&1
+rm -f runs/m5/explorer.exit
+nohup setsid -f bash -c '
+  echo $$ > runs/m5/explorer.pid
+  cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+  CUDA_VISIBLE_DEVICES=1 scripts/run_m5_explorer.sh
+  status=$?
+  printf "%s\n" "$status" > runs/m5/explorer.exit
+  exit "$status"
+' >> runs/m5/explorer.log 2>&1
+while [[ ! -s runs/m5/explorer.pid ]]; do sleep 1; done
+cat runs/m5/explorer.pid
+```
+
+Monitor without changing artifacts:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+ps -p "$(cat runs/m5/explorer.pid)" -o pid,etime,%cpu,%mem,stat,cmd
+tail -n 60 runs/m5/explorer.log
+find reports/m5/explorer -name episodes.jsonl -print -exec wc -l {} \;
+test ! -f runs/m5/explorer.exit || cat runs/m5/explorer.exit
+```
+
+The data generator prints only its final manifest, so GPU utilization and log
+growth are the progress signals during that first stage. Distillation prints
+metrics every 25 updates; evaluation prints an episode counter. Partial
+evaluation ledgers resume from exact identities. If production data or all
+three smoke candidates fail their frozen gates, artifacts are preserved and the
+pipeline exits nonzero without inventing a waiver.
