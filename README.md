@@ -89,9 +89,12 @@ The official report records zero event-protocol inconsistencies. See the
 [Teacher montage](docs/assets/m1-teacher-montage.mp4), [M1 runbook](docs/milestones/m1.md),
 and [raw evidence](reports/m1/summary.json).
 
-The learned Aggressive checkpoint and its M4 validation gate are complete.
-Defensive, Explorer, difficulty control, and the final M5/M6 product gate remain
-pending.
+The learned Aggressive checkpoint and its M4 validation gate are complete. The
+[Defensive experiment](docs/milestones/m5-defensive.md) completed its
+engineering and paired-validation path but did not produce a statistically
+stable style shift, so it is preserved as a negative result rather than called
+a successful style Bot. Explorer is currently running its frozen production
+pipeline. Difficulty control and the final M5/M6 product gate remain pending.
 
 ## Quick start
 

@@ -1,0 +1,76 @@
+{
+  "checkpoint_sha256": {
+    "defensive": "247ab461eba6a6bcd1de49a489e00b006d07b25e580b4cfcc0437f820b7bec6b",
+    "strong_base": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a"
+  },
+  "complete": true,
+  "environment_retries": 0,
+  "episodes": 20,
+  "expected_episodes": 20,
+  "gates": {
+    "complete": true,
+    "denial_recovery_improved": true,
+    "objective_retention": true,
+    "per_opponent_retention": true,
+    "protective_presence_shift": false,
+    "protocol_clean": true,
+    "skill_retention": true,
+    "unnecessary_guard_controlled": true
+  },
+  "passed": false,
+  "per_opponent_retention": {
+    "aggressive_script": 1.0,
+    "defensive_script": 1.0,
+    "fixed_route": 1.0,
+    "objective_first": 1.0,
+    "random_legal": 1.0
+  },
+  "policies": {
+    "defensive": {
+      "carrier_denials": 0,
+      "carrier_opportunities": 367,
+      "denial_recovery_rate": 0.002717391304347826,
+      "episodes": 10,
+      "low_health_opportunities": 93,
+      "mean_score_difference": 2.1,
+      "objective_rate": 1.0,
+      "performance": 1.0,
+      "protective_presence_rate": 0.49248747913188645,
+      "recoveries": 1,
+      "recovery_opportunities": 1,
+      "risk_decisions": 599,
+      "successful_escapes": 5,
+      "unnecessary_guard_rate": 0.13714285714285715,
+      "win_rate": 1.0
+    },
+    "strong_base": {
+      "carrier_denials": 0,
+      "carrier_opportunities": 631,
+      "denial_recovery_rate": 0.0015822784810126582,
+      "episodes": 10,
+      "low_health_opportunities": 178,
+      "mean_score_difference": 2.1,
+      "objective_rate": 1.0,
+      "performance": 1.0,
+      "protective_presence_rate": 0.35287081339712917,
+      "recoveries": 1,
+      "recovery_opportunities": 1,
+      "risk_decisions": 836,
+      "successful_escapes": 4,
+      "unnecessary_guard_rate": 0.12615255658005028,
+      "win_rate": 1.0
+    }
+  },
+  "protective_presence_delta": 0.13961666573475728,
+  "protective_presence_delta_ci": [
+    -0.012970651018462712,
+    0.21324131336623278
+  ],
+  "protective_presence_estimator": "paired_cluster_bootstrap_pooled_ratio_v1",
+  "protocol_inconsistencies": 0,
+  "schema_version": 1,
+  "skill_retention": 1.0,
+  "split": "validation",
+  "stage": "m5-defensive",
+  "test_cases_accessed": false
+}

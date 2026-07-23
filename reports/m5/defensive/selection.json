@@ -1,0 +1,50 @@
+{
+  "candidates": [
+    {
+      "alpha": 0.25,
+      "checkpoint": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/runs/m5/defensive-interpolation/alpha-025.pt",
+      "checkpoint_sha256": "247ab461eba6a6bcd1de49a489e00b006d07b25e580b4cfcc0437f820b7bec6b",
+      "eligible": false,
+      "identity_valid": true,
+      "protective_presence_delta": 0.13961666573475728,
+      "protective_presence_estimator": "paired_cluster_bootstrap_pooled_ratio_v1",
+      "skill_retention": 1.0,
+      "smoke_manifest_sha256": "3cceb39a51d212bf9498d1c6777c6aa26025bd2f6e4062854f34fd79ad3555d1",
+      "smoke_summary_sha256": "50222f3fee2d06e40e4215ea4609536478dff480bfc8bca15610f7069b8fd505"
+    },
+    {
+      "alpha": 0.5,
+      "checkpoint": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/runs/m5/defensive-interpolation/alpha-050.pt",
+      "checkpoint_sha256": "a2697957e863ec68358c923fb4ec4f28c9cef51b8c1a5abcc89ee640d11bb15d",
+      "eligible": false,
+      "identity_valid": true,
+      "protective_presence_delta": -0.06546957246237484,
+      "protective_presence_estimator": "paired_cluster_bootstrap_pooled_ratio_v1",
+      "skill_retention": 0.975,
+      "smoke_manifest_sha256": "0aceebd2571d2b30cdf2fc7701a87b52035978fcaf9a07bd64dec6d256d2254a",
+      "smoke_summary_sha256": "b01fce1bba79b71e4d896e3222fe61373acdb8a77b607399a1e3f941a3e253f4"
+    },
+    {
+      "alpha": 0.75,
+      "checkpoint": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/runs/m5/defensive-interpolation/alpha-075.pt",
+      "checkpoint_sha256": "3825373f4ec89481faa34ce0c4d3b9b6cb58668daa3ff9cff46cff01d091cfdb",
+      "eligible": false,
+      "identity_valid": true,
+      "protective_presence_delta": 0.013936869200027069,
+      "protective_presence_estimator": "paired_cluster_bootstrap_pooled_ratio_v1",
+      "skill_retention": 0.975,
+      "smoke_manifest_sha256": "fc256d3452cf5ab7226b814cdb8ec8a62c7e14f6bec5e8366c0397b862645026",
+      "smoke_summary_sha256": "447fada4d6865b217079871d18da8045ce439be40ba442e188158c973bb19fcb"
+    }
+  ],
+  "grid": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "passed": false,
+  "schema_version": 1,
+  "selected": null,
+  "stage": "m5-defensive-selection",
+  "test_cases_accessed": false
+}
