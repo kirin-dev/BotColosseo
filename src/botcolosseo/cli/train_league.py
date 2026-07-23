@@ -40,6 +40,10 @@ from botcolosseo.training.defensive_reward import (
     DefensiveRewardConfig,
     DefensiveRewardLedger,
 )
+from botcolosseo.training.explorer_reward import (
+    ExplorerRewardConfig,
+    ExplorerRewardLedger,
+)
 from botcolosseo.training.historical_pool import HistoricalPoolManifest, load_pool
 from botcolosseo.training.league_checkpoint import (
     LeagueCheckpointState,
@@ -136,7 +140,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--allow-integrity-qualified-base", action="store_true"
     )
     parser.add_argument("--preflight", action="store_true")
-    parser.add_argument("--style", choices=("aggressive", "defensive"))
+    parser.add_argument("--style", choices=("aggressive", "defensive", "explorer"))
     parser.add_argument("--style-warm-start", type=Path)
     return parser
 
@@ -188,11 +192,11 @@ def _validate_config(config: dict[str, Any], *, style: str | None = None) -> Non
         reward = style_config["reward"]
         if not isinstance(reward, dict):
             raise ValueError("Style reward config must be a mapping")
-        reward_config = (
-            AggressiveRewardConfig
-            if style == "aggressive"
-            else DefensiveRewardConfig
-        )
+        reward_config = {
+            "aggressive": AggressiveRewardConfig,
+            "defensive": DefensiveRewardConfig,
+            "explorer": ExplorerRewardConfig,
+        }[style]
         reward_config(**reward)
 
 
@@ -264,7 +268,7 @@ def _style_reward_shaper(
     style_config: dict[str, Any],
     *,
     learner_side: str,
-) -> AggressiveRewardLedger | DefensiveRewardLedger:
+) -> AggressiveRewardLedger | DefensiveRewardLedger | ExplorerRewardLedger:
     scale = float(style_config["lambda_style"])
     reward = style_config["reward"]
     if style == "aggressive":
@@ -276,6 +280,12 @@ def _style_reward_shaper(
     if style == "defensive":
         return DefensiveRewardLedger(
             DefensiveRewardConfig(**reward),
+            learner_side=learner_side,
+            scale=scale,
+        )
+    if style == "explorer":
+        return ExplorerRewardLedger(
+            ExplorerRewardConfig(**reward),
             learner_side=learner_side,
             scale=scale,
         )

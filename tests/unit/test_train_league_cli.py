@@ -28,6 +28,7 @@ from botcolosseo.scenarios.league_splits import (
     write_league_manifests,
 )
 from botcolosseo.training.defensive_reward import DefensiveRewardLedger
+from botcolosseo.training.explorer_reward import ExplorerRewardLedger
 from botcolosseo.training.historical_pool import (
     HistoricalPoolManifest,
     PoolEntry,
@@ -217,6 +218,21 @@ def test_defensive_style_config_and_reward_factory_are_supported() -> None:
     )
 
     assert isinstance(reward, DefensiveRewardLedger)
+
+
+def test_explorer_style_config_and_reward_factory_are_supported() -> None:
+    config = yaml.safe_load(
+        Path("configs/m5/explorer_ppo.yaml").read_text(encoding="utf-8")
+    )
+
+    _validate_config(config, style="explorer")
+    reward = _style_reward_shaper(
+        "explorer",
+        config["style"],
+        learner_side="host",
+    )
+
+    assert isinstance(reward, ExplorerRewardLedger)
 
 
 def test_defensive_interpolation_is_a_hash_bound_style_warm_start(

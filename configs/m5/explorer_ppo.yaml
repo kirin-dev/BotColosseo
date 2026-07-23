@@ -1,0 +1,37 @@
+schema_version: 1
+seed: 20260723
+train_cases: configs/m3/train.json
+environment_steps: 200000
+rollout_steps: 256
+candidate_interval_steps: 200000
+max_episode_decisions: 525
+sequence_length: 16
+burn_in: 8
+minibatch_sequences: 16
+update_epochs: 4
+learning_rate: 0.0001
+weight_decay: 0.00001
+gamma: 0.99
+gae_lambda: 0.95
+policy_clip: 0.2
+value_clip: 0.2
+value_coefficient: 0.5
+entropy_coefficient: 0.01
+gradient_clip: 0.5
+max_kl: 0.03
+shaping_decay_steps: 600000
+style:
+  name: explorer
+  bottleneck: 32
+  lambda_style: 0.3
+  beta_kl: 0.10
+  reward:
+    target_region: 0.05
+    target_route_score: 0.25
+    novel_carry_region: 0.01
+    carry_stall: -0.01
+    target_region_cap: 12
+    target_route_score_cap: 5
+    novel_carry_region_cap: 24
+    carry_stall_cap: 30
+    stall_decisions: 12

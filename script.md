@@ -1130,3 +1130,52 @@ test ! -f runs/m5/defensive-ppo.exit || cat runs/m5/defensive-ppo.exit
 
 An exit code of one after an evaluation means the complete experimental result
 failed a frozen style gate; its artifacts must be retained.
+
+## M5 Explorer closed-loop PPO repair
+
+The first Explorer route passed the offline KL gate but never completed a
+flank route in closed loop. This repair keeps the frozen evaluator unchanged,
+warm-starts alpha 0.25, and trains the adapter, copied policy head, and critic
+for 200,000 environment steps. Its capped training-only reward recognizes
+score-conditioned route milestones only while carrying the core; non-carry
+wandering earns no style reward.
+
+The pipeline runs a 2,000-step real CUDA/ViZDoom smoke, requires non-empty
+Explorer reward components, then runs production training, a 20-episode
+all-gate smoke, the unchanged 200-episode formal validation, and a separate
+hash-chain audit.
+
+Launch it when one physical GPU is free:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+mkdir -p runs/m5
+test ! -s runs/m5/explorer-ppo.pid || \
+  ! ps -p "$(cat runs/m5/explorer-ppo.pid)" >/dev/null 2>&1
+rm -f runs/m5/explorer-ppo.exit
+nohup setsid -f bash -c '
+  echo $$ > runs/m5/explorer-ppo.pid
+  cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+  CUDA_VISIBLE_DEVICES=1 scripts/run_m5_explorer_ppo.sh
+  status=$?
+  printf "%s\n" "$status" > runs/m5/explorer-ppo.exit
+  exit "$status"
+' >> runs/m5/explorer-ppo.log 2>&1
+while [[ ! -s runs/m5/explorer-ppo.pid ]]; do sleep 1; done
+cat runs/m5/explorer-ppo.pid
+```
+
+Monitor training and later evaluation:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+ps -p "$(cat runs/m5/explorer-ppo.pid)" -o pid,etime,%cpu,%mem,stat,cmd
+tail -n 60 runs/m5/explorer-ppo.log
+wc -l runs/m5/explorer-ppo-main/metrics.jsonl 2>/dev/null || true
+find reports/m5/explorer/ppo-repair -name episodes.jsonl \
+  -print -exec wc -l {} \;
+test ! -f runs/m5/explorer-ppo.exit || cat runs/m5/explorer-ppo.exit
+```
+
+An exit code of one after evaluation is a preserved frozen-gate failure, not
+permission to change the evaluator.
