@@ -1,0 +1,139 @@
+{
+  "candidate_id": "defensive-hybrid-a",
+  "legacy_diagnostic": {
+    "complete": true,
+    "environment_retries": 0,
+    "episodes": 20,
+    "expected_episodes": 20,
+    "gates": {
+      "complete": true,
+      "denial_recovery_improved": true,
+      "objective_retention": true,
+      "per_opponent_retention": true,
+      "protective_presence_shift": false,
+      "protocol_clean": true,
+      "skill_retention": true,
+      "unnecessary_guard_controlled": true
+    },
+    "passed": false,
+    "per_opponent_retention": {
+      "aggressive_script": 1.0,
+      "defensive_script": 1.0,
+      "fixed_route": 1.0,
+      "objective_first": 0.875,
+      "random_legal": 1.0
+    },
+    "policies": {
+      "defensive": {
+        "carrier_denials": 0,
+        "carrier_opportunities": 574,
+        "denial_recovery_rate": 0.0017391304347826088,
+        "episodes": 10,
+        "low_health_opportunities": 140,
+        "mean_score_difference": 2.0,
+        "objective_rate": 1.0,
+        "performance": 0.975,
+        "protective_presence_rate": 0.36014405762304924,
+        "recoveries": 1,
+        "recovery_opportunities": 1,
+        "risk_decisions": 833,
+        "successful_escapes": 4,
+        "unnecessary_guard_rate": 0.13240917782026768,
+        "win_rate": 0.9
+      },
+      "strong_base": {
+        "carrier_denials": 0,
+        "carrier_opportunities": 617,
+        "denial_recovery_rate": 0.0016181229773462784,
+        "episodes": 10,
+        "low_health_opportunities": 210,
+        "mean_score_difference": 2.2,
+        "objective_rate": 1.0,
+        "performance": 1.0,
+        "protective_presence_rate": 0.3751399776035834,
+        "recoveries": 1,
+        "recovery_opportunities": 1,
+        "risk_decisions": 893,
+        "successful_escapes": 4,
+        "unnecessary_guard_rate": 0.11568627450980393,
+        "win_rate": 1.0
+      }
+    },
+    "protective_presence_delta": -0.014995919980534178,
+    "protective_presence_delta_ci": [
+      -0.04765490675178624,
+      0.024268955186600206
+    ],
+    "protective_presence_estimator": "paired_cluster_bootstrap_pooled_ratio_v1",
+    "protocol_inconsistencies": 0,
+    "skill_retention": 0.975
+  },
+  "product": {
+    "complete": true,
+    "decisions": 2925,
+    "episodes": 20,
+    "expected_episodes": 20,
+    "fallbacks": 2743,
+    "gates": {
+      "complete": true,
+      "exact_base_fallback": true,
+      "intervention_bounded": false,
+      "intervention_nonzero": true,
+      "per_opponent_retention": true,
+      "protocol_clean": true,
+      "required_style_coverage": true,
+      "skill_retention": true,
+      "telemetry_complete": true
+    },
+    "intervention_rate": 0.06222222222222222,
+    "interventions": 182,
+    "legacy_diagnostic_passed": false,
+    "max_consecutive_interventions": 13,
+    "overrides": 0,
+    "passed": false,
+    "per_opponent_retention": {
+      "aggressive_script": 1.0,
+      "defensive_script": 1.0,
+      "fixed_route": 1.0,
+      "objective_first": 0.875,
+      "random_legal": 1.0
+    },
+    "protocol_inconsistencies": 0,
+    "reason_counts": {
+      "base_restored": 24,
+      "base_warmup": 10,
+      "disengage_left": 33,
+      "disengage_right": 29,
+      "exact_base_fallback": 996,
+      "guard_scan_left": 60,
+      "guard_scan_right": 60,
+      "objective_return_priority": 1713
+    },
+    "route_action_signature_distance": null,
+    "route_mode_counts": {},
+    "skill_retention": 0.975,
+    "state_occupancy": {
+      "base": 2647,
+      "disengage": 62,
+      "guard": 120,
+      "recover": 96
+    },
+    "style": "defensive",
+    "trigger_counts": {
+      "carrying": 1713,
+      "cooldown_complete": 24,
+      "initial_observation": 10,
+      "intervention_limit": 24,
+      "low_health": 62,
+      "no_public_trigger": 900,
+      "own_score_rise": 15,
+      "recover_cooldown": 72,
+      "state_continue": 105
+    }
+  },
+  "schema_version": 1,
+  "split": "validation",
+  "stage": "m5-hybrid",
+  "style": "defensive",
+  "test_cases_accessed": false
+}
