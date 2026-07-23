@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import re
+from collections import Counter, defaultdict
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Literal
@@ -73,6 +75,121 @@ class HybridShowcaseConfig:
     evidence_dir: Path
     config_path: Path
     config_sha256: str
+
+
+def select_hybrid_showcase_case(
+    *,
+    aggressive_records: Sequence[Mapping[str, object]],
+    defensive_records: Sequence[Mapping[str, object]],
+    explorer_records: Sequence[Mapping[str, object]],
+    defensive_telemetry: Sequence[Mapping[str, object]],
+    explorer_telemetry: Sequence[Mapping[str, object]],
+) -> dict[str, object]:
+    def key(row: Mapping[str, object]) -> tuple[str, int, str]:
+        opponent = row.get("opponent")
+        pair_index = row.get("pair_index")
+        learner_side = row.get("learner_side")
+        if (
+            not isinstance(opponent, str)
+            or type(pair_index) is not int
+            or learner_side not in ("host", "opponent")
+        ):
+            raise ValueError("Hybrid showcase source row has an invalid case key")
+        return opponent, pair_index, learner_side
+
+    def by_policy(
+        rows: Sequence[Mapping[str, object]], policy: str
+    ) -> dict[tuple[str, int, str], Mapping[str, object]]:
+        selected = [row for row in rows if row.get("policy") == policy]
+        result = {key(row): row for row in selected}
+        if len(result) != len(selected):
+            raise ValueError("Hybrid showcase source has duplicate policy cases")
+        return result
+
+    base = by_policy(aggressive_records, "strong_base")
+    aggressive = by_policy(aggressive_records, "aggressive")
+    defensive = by_policy(defensive_records, "defensive")
+    explorer = by_policy(explorer_records, "explorer")
+    defensive_counts = Counter(
+        key(row) for row in defensive_telemetry if row.get("intervened") is True
+    )
+    explorer_changes = Counter(
+        key(row)
+        for row in explorer_telemetry
+        if row.get("intervened") is True
+        and row.get("final_action") != row.get("base_action")
+    )
+    explorer_modes: dict[tuple[str, int, str], set[str]] = defaultdict(set)
+    for row in explorer_telemetry:
+        mode = row.get("route_mode")
+        if mode in ("upper", "lower", "flank"):
+            explorer_modes[key(row)].add(mode)
+
+    candidates = []
+    for case_key in set(base) & set(aggressive) & set(defensive) & set(explorer):
+        episode_rows = (
+            base[case_key],
+            aggressive[case_key],
+            defensive[case_key],
+            explorer[case_key],
+        )
+        if not all(
+            row.get("terminated") is True
+            and row.get("truncated") is False
+            and row.get("protocol_inconsistent") is False
+            and row.get("objective_completed") is True
+            for row in episode_rows
+        ):
+            continue
+        base_engagement = base[case_key].get("engagement_initiations_per_100_decisions")
+        style_engagement = aggressive[case_key].get(
+            "engagement_initiations_per_100_decisions"
+        )
+        if (
+            isinstance(base_engagement, bool)
+            or not isinstance(base_engagement, (int, float))
+            or isinstance(style_engagement, bool)
+            or not isinstance(style_engagement, (int, float))
+        ):
+            raise ValueError("Hybrid showcase Aggressive engagement signal is invalid")
+        aggressive_shift = float(style_engagement) - float(base_engagement)
+        row = {
+            "case_id": f"{case_key[0]}:{case_key[1]}:{case_key[2]}",
+            "aggressive_shift": aggressive_shift,
+            "defensive_interventions": defensive_counts[case_key],
+            "explorer_action_changes": explorer_changes[case_key],
+            "explorer_mode_count": len(explorer_modes[case_key]),
+        }
+        if (
+            aggressive_shift > 0.0
+            and defensive_counts[case_key] > 0
+            and explorer_changes[case_key] > 0
+            and len(explorer_modes[case_key]) >= 2
+        ):
+            candidates.append(row)
+    if not candidates:
+        raise ValueError("No validation case exposes all three style mechanisms")
+    maxima = {
+        field: max(float(row[field]) for row in candidates)
+        for field in (
+            "aggressive_shift",
+            "defensive_interventions",
+            "explorer_action_changes",
+            "explorer_mode_count",
+        )
+    }
+    for row in candidates:
+        row["contrast_score"] = sum(
+            float(row[field]) / maxima[field] for field in maxima
+        )
+    ranking = sorted(candidates, key=lambda row: (-float(row["contrast_score"]), row["case_id"]))
+    return {
+        "selected_case_id": ranking[0]["case_id"],
+        "selection_rule": "equal-weight normalized mechanism contrast",
+        "eligible_cases": len(ranking),
+        "ranking": ranking,
+        "test_cases_accessed": False,
+    }
 
 
 def load_hybrid_showcase_config(path: Path, *, root: Path) -> HybridShowcaseConfig:

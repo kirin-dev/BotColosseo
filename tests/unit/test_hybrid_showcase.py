@@ -6,7 +6,10 @@ import pytest
 import yaml
 
 from botcolosseo.agents.league_opponents import sha256_file
-from botcolosseo.evaluation.hybrid_showcase import load_hybrid_showcase_config
+from botcolosseo.evaluation.hybrid_showcase import (
+    load_hybrid_showcase_config,
+    select_hybrid_showcase_case,
+)
 
 
 def _write(root: Path, relative: str, content: bytes = b"artifact") -> str:
@@ -127,3 +130,43 @@ def test_hybrid_showcase_config_rejects_test_access_and_hash_drift(
     path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
     with pytest.raises(ValueError, match="hash does not match"):
         load_hybrid_showcase_config(path, root=tmp_path)
+
+
+def test_hybrid_showcase_case_selection_requires_all_mechanisms() -> None:
+    key = {
+        "opponent": "aggressive_script",
+        "pair_index": 400,
+        "learner_side": "host",
+        "terminated": True,
+        "truncated": False,
+        "protocol_inconsistent": False,
+        "objective_completed": True,
+    }
+    aggressive_records = [
+        {**key, "policy": "strong_base", "engagement_initiations_per_100_decisions": 0.0},
+        {**key, "policy": "aggressive", "engagement_initiations_per_100_decisions": 2.0},
+    ]
+    defensive_records = [{**key, "policy": "defensive"}]
+    explorer_records = [{**key, "policy": "explorer"}]
+    defensive_telemetry = [{**key, "intervened": True}]
+    explorer_telemetry = [
+        {
+            **key,
+            "intervened": True,
+            "base_action": 1,
+            "final_action": 3,
+            "route_mode": mode,
+        }
+        for mode in ("upper", "lower")
+    ]
+
+    selection = select_hybrid_showcase_case(
+        aggressive_records=aggressive_records,
+        defensive_records=defensive_records,
+        explorer_records=explorer_records,
+        defensive_telemetry=defensive_telemetry,
+        explorer_telemetry=explorer_telemetry,
+    )
+
+    assert selection["selected_case_id"] == "aggressive_script:400:host"
+    assert selection["eligible_cases"] == 1

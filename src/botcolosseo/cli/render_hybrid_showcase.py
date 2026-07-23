@@ -172,7 +172,7 @@ def render_hybrid_showcase(
     scenario_hash = json.loads(
         (root / "assets/scenarios/crystal_run/manifest.json").read_text(encoding="utf-8")
     )["wad_sha256"]
-    cases = load_showcase_cases(config.cases_manifest, root=root, expected_count=8)
+    cases = load_showcase_cases(config.cases_manifest, root=root, expected_count=1)
     selected = [
         case
         for case in cases
@@ -311,7 +311,7 @@ def render_hybrid_showcase(
             staging / "selection.json",
             {
                 "selected_case_id": config.selected_case_id,
-                "selection_source": "frozen M4 showcase case",
+                "selection_source": "formal validation mechanism contrast",
                 "highlight": list(highlight),
                 "event_score_total": sum(scores),
             },
