@@ -7,6 +7,7 @@ from botcolosseo.agents.duel_teachers import (
     FixedRouteDuelTeacher,
     ObjectiveDuelTeacher,
     RandomDuelTeacher,
+    RouteExplorerTeacher,
 )
 from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.duel_types import DuelPrivilegedState
@@ -91,3 +92,23 @@ def test_fixed_route_and_random_are_deterministic() -> None:
     assert fixed.act(state()) in set(MacroAction)
     assert [first.act(state()) for _ in range(20)] == [second.act(state()) for _ in range(20)]
     assert first.mode is DuelTeacherMode.RANDOM
+
+
+def test_explorer_cycles_public_score_routes_and_mirrors_sides() -> None:
+    host = RouteExplorerTeacher(graph(), side="host")
+    opponent = RouteExplorerTeacher(graph(), side="opponent")
+    host.reset(seed=3)
+    opponent.reset(seed=99)
+
+    assert host.act(state(host_score=1)) == MacroAction.TURN_LEFT
+    assert host.route_name == "direct_upper"
+    assert opponent.act(state(opponent_angle=180.0)) == MacroAction.TURN_RIGHT
+    assert opponent.route_name == "direct_upper"
+
+    host.act(state(host_score=2))
+    assert host.route_name == "direct_lower"
+    host.act(state(host_score=3))
+    assert host.route_name == "flank"
+    host.act(state(host_score=3, host_x=0.0, carrier=1))
+    assert host.route_name == "flank"
+    assert host.mode is DuelTeacherMode.EVADE

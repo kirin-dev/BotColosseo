@@ -209,6 +209,67 @@ class DefensiveDuelTeacher:
         return _steer(state, self.side, self._base)
 
 
+EXPLORER_ROUTE_CYCLE = ("direct_upper", "direct_lower", "flank")
+
+
+class RouteExplorerTeacher:
+    """Training-only Teacher that cycles routes using the public own score."""
+
+    name = "route_explorer_teacher"
+
+    def __init__(self, graph: RegionGraph, *, side: str) -> None:
+        if side not in ("host", "opponent"):
+            raise ValueError(f"Invalid duel side: {side}")
+        self.side = side
+        self._graph = graph
+        self._initial_score: int | None = None
+        self._key: tuple[int, bool] | None = None
+        self._points: tuple[tuple[float, float], ...] = ()
+        self._index = 0
+        self.route_name = EXPLORER_ROUTE_CYCLE[0]
+        self.mode = DuelTeacherMode.OBJECTIVE
+
+    def reset(self, *, seed: int) -> None:
+        del seed
+        self._initial_score = None
+        self._key = None
+        self._points = ()
+        self._index = 0
+        self.route_name = EXPLORER_ROUTE_CYCLE[0]
+        self.mode = DuelTeacherMode.OBJECTIVE
+
+    def act(self, state: DuelPrivilegedState) -> MacroAction:
+        score = state.host_score if self.side == "host" else state.opponent_score
+        if self._initial_score is None:
+            self._initial_score = score
+        if score < self._initial_score:
+            raise ValueError("Explorer own score decreased within an episode")
+        score_progress = score - self._initial_score
+        carrier = 1 if self.side == "host" else 2
+        carrying = state.carrier == carrier
+        key = (score, carrying)
+        if key != self._key:
+            self.route_name = EXPLORER_ROUTE_CYCLE[
+                score_progress % len(EXPLORER_ROUTE_CYCLE)
+            ]
+            points = self._graph.route(self.route_name).waypoints
+            if self.side == "opponent":
+                points = tuple((-x, y) for x, y in points)
+            self._points = (
+                (*reversed(points), _base(self.side)) if carrying else points
+            )
+            self._index = 0
+            self._key = key
+        x, y, _ = _player(state, self.side)
+        while self._index < len(self._points) - 1:
+            target = self._points[self._index]
+            if math.hypot(target[0] - x, target[1] - y) > 48.0:
+                break
+            self._index += 1
+        self.mode = DuelTeacherMode.EVADE if carrying else DuelTeacherMode.OBJECTIVE
+        return _steer(state, self.side, self._points[self._index])
+
+
 class ProtectiveDefensiveTeacher:
     """Training-only Teacher that defends only when the state warrants it."""
 

@@ -1,6 +1,6 @@
 # M5 Explorer Style Design
 
-**Status:** approved direction; written specification awaiting final review  
+**Status:** approved by the project owner
 **Date:** 2026-07-23  
 **Scope:** one Explorer checkpoint, frozen validation evidence, and showcase assets
 
@@ -21,15 +21,16 @@ the learned route style is too weak.
 The route for a delivery is selected from:
 
 ```text
-own_score % 3 == 0 -> direct_upper
-own_score % 3 == 1 -> direct_lower
-own_score % 3 == 2 -> flank
+(own_score - episode_initial_own_score) % 3 == 0 -> direct_upper
+(own_score - episode_initial_own_score) % 3 == 1 -> direct_lower
+(own_score - episode_initial_own_score) % 3 == 2 -> flank
 ```
 
-`own_score` and `has_core` are already legal Actor scalars. The visual frame,
-previous action, and recurrent state provide local navigation context. The
-policy receives no route ID, random seed, coordinate, region, automap, or
-privileged state at inference.
+`own_score` and `has_core` are already legal Actor scalars. The initial own
+score is observed at the recurrent episode boundary and retained in public
+history. The visual frame, previous action, and recurrent state provide local
+navigation context. The policy receives no route ID, random seed, coordinate,
+region, automap, or privileged state at inference.
 
 The Teacher may use privileged geometry to steer through route waypoints.
 Opponent-side geometry is an exact mirror of host-side geometry. A delivery
@@ -65,7 +66,7 @@ fallback after the first route has complete evidence.
 ## 4. Training-only route Teacher
 
 The Teacher holds a side-normalized ordered waypoint list for the route
-selected by `own_score % 3`.
+selected by the public own-score increase from the episode boundary.
 
 - Without the core, it advances from home toward the core through the selected
   route.
