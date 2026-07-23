@@ -1,0 +1,51 @@
+{
+  "candidates": [
+    {
+      "alpha": 0.25,
+      "checkpoint": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/runs/m5/explorer-interpolation/alpha-025.pt",
+      "checkpoint_sha256": "0d505760007e565a168361734c8c6b1bd1e8d0bb72c757f7f0f7435d9022e712",
+      "eligible": false,
+      "identity_valid": true,
+      "route_entropy_delta": -0.12618595071429148,
+      "route_entropy_estimator": "paired_episode_normalized_entropy_v1",
+      "skill_retention": 0.9743589743589743,
+      "smoke_manifest_sha256": "59e9c4985db293af88cb9b7642e6e2f54af47ef0f5ff0ae1eb1b9446ca81dd89",
+      "smoke_summary_sha256": "6188c08d87d29e457f2800de85e66d23a4719fd9efc9193e2f592869bad1722d"
+    },
+    {
+      "alpha": 0.5,
+      "checkpoint": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/runs/m5/explorer-interpolation/alpha-050.pt",
+      "checkpoint_sha256": "ff6d195da1ccf352525887b822aaefc8384e370f7c6d8d1b60f1dbe9e1fb4f07",
+      "eligible": false,
+      "identity_valid": true,
+      "route_entropy_delta": -0.06309297535714574,
+      "route_entropy_estimator": "paired_episode_normalized_entropy_v1",
+      "skill_retention": 0.825,
+      "smoke_manifest_sha256": "fabc97e563b819e6f1e914d277e91bdfd5183e65daabab486c4f9671ad612c18",
+      "smoke_summary_sha256": "695878e5fb67bd04558b5254763d2b38a2730b6ec37aca4e7fcceb086531d6cc"
+    },
+    {
+      "alpha": 0.75,
+      "checkpoint": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/runs/m5/explorer-interpolation/alpha-075.pt",
+      "checkpoint_sha256": "5f5b99471b9eb7ea9a6dcb7d4815e70696ac2c28f1eea7e7a5f42c869bfc2006",
+      "eligible": false,
+      "identity_valid": true,
+      "route_entropy_delta": 0.0,
+      "route_entropy_estimator": "paired_episode_normalized_entropy_v1",
+      "skill_retention": 1.0256410256410258,
+      "smoke_manifest_sha256": "267d0f830ea2d6ce62746842d1f2f06931a774e184c50b40da65b42f4d1e34d0",
+      "smoke_summary_sha256": "985e969a77da02abca7a7646795f10b801e9261dfbae5e1f53a5f34cbb22b230"
+    }
+  ],
+  "grid": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "passed": false,
+  "route_entropy_estimator": "paired_episode_normalized_entropy_v1",
+  "schema_version": 1,
+  "selected": null,
+  "stage": "m5-explorer-selection",
+  "test_cases_accessed": false
+}

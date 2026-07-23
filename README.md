@@ -93,8 +93,11 @@ The learned Aggressive checkpoint and its M4 validation gate are complete. The
 [Defensive experiment](docs/milestones/m5-defensive.md) completed its
 engineering and paired-validation path but did not produce a statistically
 stable style shift, so it is preserved as a negative result rather than called
-a successful style Bot. Explorer is currently running its frozen production
-pipeline. Difficulty control and the final M5/M6 product gate remain pending.
+a successful style Bot. The [Explorer experiment](docs/milestones/m5-explorer.md)
+passed its data and offline-learning gates but produced no closed-loop flank
+completion in the fixed validation smokes, so it is also retained as a
+mechanism-level negative result rather than called complete. Difficulty control
+is in formal validation; the final M5/M6 product gate remains pending.
 
 ## Quick start
 

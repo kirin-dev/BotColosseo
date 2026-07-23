@@ -1,0 +1,38 @@
+{
+  "base_checkpoint": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/runs/m3/league-full/candidate-boundary-0200000.pt",
+  "base_checkpoint_sha256": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a",
+  "checkpoint": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/runs/m5/explorer-distillation/style-pretrained.pt",
+  "checkpoint_sha256": "e32d6f748d0f3af521ee9bda35db54407efcbabedca42d85e79e946d710b86c5",
+  "completed": true,
+  "config": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/configs/m5/explorer_distillation.yaml",
+  "config_hash": "fecac8c10835c62aba2147bdd1fafad0587415b0df0d4446c37d3ca4844ba868",
+  "data_manifest": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/data/generated/m5/explorer/train-manifest.json",
+  "data_manifest_sha256": "f280322b6fe8e0ecbd4b2da3b19cfdbc5cede763236a91c9adba2e94366c3a35",
+  "device": "cuda:0",
+  "final_metrics": {
+    "accuracy": 0.6455695629119873,
+    "base_kl": 0.8551357984542847,
+    "gradient_norm": 1.0304566621780396,
+    "imitation_loss": 0.9110676050186157,
+    "supervised_count": 237,
+    "total_loss": 1.0820947885513306,
+    "update": 1000
+  },
+  "frozen_base": true,
+  "neutral_checkpoint": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/runs/m5/explorer-distillation/neutral.pt",
+  "neutral_checkpoint_sha256": "2064a0b45758ff6af3142a705bd48a1c63e7e001a9d1c97d84625f8867a405a9",
+  "offline_evaluation": {
+    "base_context_action_drift_rate": 0.09688013136288999,
+    "base_context_count": 4263,
+    "base_route_target_agreement": 0.0,
+    "passed": true,
+    "route_count": 3870,
+    "route_target_agreement": 0.3496124031007752,
+    "route_target_agreement_delta": 0.3496124031007752
+  },
+  "passed": true,
+  "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+  "style": "explorer",
+  "test_cases_accessed": false,
+  "updates": 1000
+}

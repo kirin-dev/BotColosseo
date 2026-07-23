@@ -1,0 +1,77 @@
+{
+  "checkpoint_sha256": {
+    "explorer": "0d505760007e565a168361734c8c6b1bd1e8d0bb72c757f7f0f7435d9022e712",
+    "strong_base": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a"
+  },
+  "complete": true,
+  "environment_retries": 0,
+  "episodes": 20,
+  "expected_episodes": 20,
+  "gates": {
+    "complete": true,
+    "efficiency_controlled": true,
+    "flank_improved": false,
+    "objective_retention": true,
+    "per_opponent_retention": true,
+    "protocol_clean": true,
+    "route_coverage": false,
+    "route_entropy_shift": false,
+    "skill_retention": true
+  },
+  "passed": false,
+  "per_opponent_retention": {
+    "aggressive_script": 1.0,
+    "defensive_script": 1.0,
+    "fixed_route": 1.0,
+    "objective_first": 0.8571428571428571,
+    "random_legal": 1.0
+  },
+  "policies": {
+    "explorer": {
+      "decisions_per_score": 128.47826086956522,
+      "episodes": 10,
+      "flank_completion_rate": 0.0,
+      "flank_completions": 0,
+      "learner_scores": 23,
+      "lower_completions": 4,
+      "mean_episode_route_entropy": 0.0,
+      "mean_score_difference": 2.0,
+      "mean_unique_regions": 5.2,
+      "mixed_or_unknown_completions": 10,
+      "objective_rate": 1.0,
+      "performance": 0.95,
+      "route_entropy": 0.5618376711211266,
+      "upper_completions": 9,
+      "win_rate": 0.8
+    },
+    "strong_base": {
+      "decisions_per_score": 121.25,
+      "episodes": 10,
+      "flank_completion_rate": 0.0,
+      "flank_completions": 0,
+      "learner_scores": 24,
+      "lower_completions": 4,
+      "mean_episode_route_entropy": 0.12618595071429148,
+      "mean_score_difference": 2.1,
+      "mean_unique_regions": 5.5,
+      "mixed_or_unknown_completions": 11,
+      "objective_rate": 1.0,
+      "performance": 0.975,
+      "route_entropy": 0.5618376711211266,
+      "upper_completions": 9,
+      "win_rate": 0.9
+    }
+  },
+  "protocol_inconsistencies": 0,
+  "route_entropy_delta": -0.12618595071429148,
+  "route_entropy_delta_ci": [
+    -0.3154648767857287,
+    0.0
+  ],
+  "route_entropy_estimator": "paired_episode_normalized_entropy_v1",
+  "schema_version": 1,
+  "skill_retention": 0.9743589743589743,
+  "split": "validation",
+  "stage": "m5-explorer",
+  "test_cases_accessed": false
+}

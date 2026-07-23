@@ -1,0 +1,73 @@
+{
+  "base_checkpoint_sha256": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a",
+  "bootstrap_samples": 10000,
+  "bootstrap_seed": 20260723,
+  "cases_sha256": "3f5d0c4f6ac26541c6d159f53413f7c1c1cc44702c49159983a84a2ff5270993",
+  "episodes": 20,
+  "episodes_sha256": "edb5e1656b240820a98e2359aa7fa3666dd676f8960a9d8029cc092e64f0ca85",
+  "expected_episodes": 20,
+  "explorer_checkpoint_sha256": "5f5b99471b9eb7ea9a6dcb7d4815e70696ac2c28f1eea7e7a5f42c869bfc2006",
+  "max_attempts": 2,
+  "max_decisions": 525,
+  "pairs_per_opponent": 1,
+  "passed": false,
+  "route_entropy_estimator": "paired_episode_normalized_entropy_v1",
+  "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+  "schema_version": 1,
+  "selected_case_ids": [
+    [
+      "random_legal",
+      250,
+      "host"
+    ],
+    [
+      "random_legal",
+      250,
+      "opponent"
+    ],
+    [
+      "fixed_route",
+      300,
+      "host"
+    ],
+    [
+      "fixed_route",
+      300,
+      "opponent"
+    ],
+    [
+      "objective_first",
+      350,
+      "host"
+    ],
+    [
+      "objective_first",
+      350,
+      "opponent"
+    ],
+    [
+      "aggressive_script",
+      400,
+      "host"
+    ],
+    [
+      "aggressive_script",
+      400,
+      "opponent"
+    ],
+    [
+      "defensive_script",
+      450,
+      "host"
+    ],
+    [
+      "defensive_script",
+      450,
+      "opponent"
+    ]
+  ],
+  "split": "validation",
+  "stage": "m5-explorer",
+  "summary_sha256": "985e969a77da02abca7a7646795f10b801e9261dfbae5e1f53a5f34cbb22b230",
+  "test_cases_accessed": false
+}

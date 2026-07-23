@@ -1,0 +1,107 @@
+{
+  "action_counts": {
+    "FORWARD_TURN_LEFT": 14020,
+    "FORWARD_TURN_RIGHT": 11324,
+    "MOVE_FORWARD": 5202,
+    "TURN_LEFT": 16197,
+    "TURN_RIGHT": 3257
+  },
+  "base_checkpoint_sha256": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a",
+  "case_manifest_sha256": "e7e2f566e84d457303be2c50c59da8d83add757d0c2f791991ee7f478d400dcb",
+  "context_fraction": 0.3333333333333333,
+  "episode_count": 175,
+  "gate": {
+    "complete": true,
+    "context_balance": true,
+    "opponent_coverage": true,
+    "route_balance": true,
+    "route_coverage": true,
+    "route_transitions": true,
+    "side_coverage": true
+  },
+  "initial_score_counts": {
+    "host:0": 41,
+    "host:1": 47,
+    "opponent:0": 87
+  },
+  "label_counts": {
+    "rejected_route_window": 35305,
+    "selected_base_context": 2711,
+    "skipped_route_balance": 6562,
+    "successful_direct_lower": 2135,
+    "successful_direct_upper": 1172,
+    "successful_flank": 2115
+  },
+  "max_route_windows_per_route": 15,
+  "min_route_fraction": 0.2,
+  "min_route_transitions": 1000,
+  "opponent_counts": {
+    "aggressive_script": 10000,
+    "defensive_script": 10000,
+    "fixed_route": 10000,
+    "objective_first": 10000,
+    "random_legal": 10000
+  },
+  "passed": true,
+  "privileged_leak_count": 0,
+  "raw_route_window_counts": {
+    "direct_lower": 23,
+    "direct_upper": 101,
+    "flank": 11
+  },
+  "route_fractions": {
+    "direct_lower": 0.36585365853658536,
+    "direct_upper": 0.36585365853658536,
+    "flank": 0.2682926829268293
+  },
+  "route_window_counts": {
+    "direct_lower": 15,
+    "direct_upper": 15,
+    "flank": 11
+  },
+  "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+  "schema_version": 1,
+  "shards": [
+    {
+      "file": "train-00000.npz",
+      "sha256": "6cb6db801a31b70face73698918d4e0654b78c86c1be5c78587f8f99c271f18f",
+      "trajectory_sha256": "67e1716fb0352c38d39cc3d12e9595c2c1744f12f5e99033c281ad60f0dd528e",
+      "transitions": 10000
+    },
+    {
+      "file": "train-00001.npz",
+      "sha256": "85ade64f8ae85c5287e936a93467f10c591a46d2abd6297e7d35517656125bb3",
+      "trajectory_sha256": "55f2e88bb88c03499de3426d303ebe0d4e4b9918e504a3eae43f43c9651f84a3",
+      "transitions": 10000
+    },
+    {
+      "file": "train-00002.npz",
+      "sha256": "4d68e2a114d3b5ddbbd0f8f1db6ae889c49db3fd851608633215854a7c8cc720",
+      "trajectory_sha256": "a81c5faefdb5b9f0ac031b459fab926a0cd1e89cdc648d74d1cab151d840a560",
+      "transitions": 10000
+    },
+    {
+      "file": "train-00003.npz",
+      "sha256": "16d8410262e70fc6d26ad98e3f93da690158512bd212fdcdf8eca973dd581b17",
+      "trajectory_sha256": "962d2c87ab4c57aefd3c45369f70f242f1852e8aad3603f4495194b96a0a6d17",
+      "transitions": 10000
+    },
+    {
+      "file": "train-00004.npz",
+      "sha256": "c9cd70d40e6cb7811fe4bfc60c6734cc1ddf4714f2ffb203a44828406b445961",
+      "trajectory_sha256": "94cb097eac1161f29a0b2cdc45a52fecb52a2686b9674d9a273337ec5f2912c2",
+      "transitions": 10000
+    }
+  ],
+  "side_counts": {
+    "host": 24560,
+    "opponent": 25440
+  },
+  "split": "train",
+  "style": "explorer",
+  "supervised_base_context_transitions": 2711,
+  "supervised_route_transitions": 5422,
+  "supervised_transitions": 8133,
+  "test_cases_accessed": false,
+  "transitions": 50000
+}
