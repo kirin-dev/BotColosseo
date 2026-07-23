@@ -14,7 +14,10 @@ import yaml
 
 from botcolosseo.agents.league_opponents import OpponentSpec, sha256_file
 from botcolosseo.agents.model import AsymmetricActorCritic
-from botcolosseo.agents.style_model import StyledActorCritic
+from botcolosseo.agents.style_model import (
+    RoutedStyledActorCritic,
+    StyledActorCritic,
+)
 from botcolosseo.cli.train_ppo import (
     _atomic_json,
     _copy_checkpoint,
@@ -58,6 +61,7 @@ from botcolosseo.training.league_schedule import LeagueSchedule
 from botcolosseo.training.ppo import ExcessiveKLError, PPOTrainer
 from botcolosseo.training.style_distillation import load_style_distillation_checkpoint
 from botcolosseo.training.style_ppo import StylePPOTrainer
+from botcolosseo.training.style_supervision import create_style_supervisor
 
 _CONFIG_FIELDS = {
     "schema_version",
@@ -83,7 +87,15 @@ _CONFIG_FIELDS = {
     "max_kl",
     "shaping_decay_steps",
 }
-_STYLE_FIELDS = {"name", "bottleneck", "lambda_style", "beta_kl", "reward"}
+_STYLE_V1_FIELDS = {"name", "bottleneck", "lambda_style", "beta_kl", "reward"}
+_STYLE_V2_FIELDS = _STYLE_V1_FIELDS | {
+    "architecture",
+    "eta_aux",
+    "route_rule",
+    "script_weights",
+    "teacher",
+}
+_V2_ROUTE_RULE = "episode_counter_plus_public_score_v1"
 
 
 def _candidate_checkpoint_step(
@@ -149,13 +161,15 @@ def _validate_config(config: dict[str, Any], *, style: str | None = None) -> Non
     expected = _CONFIG_FIELDS | ({"style"} if style is not None else set())
     if set(config) != expected:
         raise ValueError("M3 league config fields do not match the frozen schema")
-    if config["schema_version"] != 1:
+    schema_version = int(config["schema_version"])
+    if schema_version not in (1, 2):
         raise ValueError("Unsupported M3 league config schema")
     train_cases = Path(str(config["train_cases"]))
     if train_cases.name != "train.json" or "configs/m3" not in train_cases.as_posix():
         raise ValueError("M3 league config must use the frozen train manifest")
-    if int(config["candidate_interval_steps"]) != 200_000:
-        raise ValueError("M3 candidate interval must remain 200000 steps")
+    expected_interval = 200_000 if schema_version == 1 else 50_000
+    if int(config["candidate_interval_steps"]) != expected_interval:
+        raise ValueError("League candidate interval does not match its schema")
     positive = (
         "environment_steps",
         "rollout_steps",
@@ -178,7 +192,13 @@ def _validate_config(config: dict[str, Any], *, style: str | None = None) -> Non
         raise ValueError("M3 league config contains invalid regularization values")
     if style is not None:
         style_config = config["style"]
-        if not isinstance(style_config, dict) or set(style_config) != _STYLE_FIELDS:
+        expected_style_fields = (
+            _STYLE_V1_FIELDS if schema_version == 1 else _STYLE_V2_FIELDS
+        )
+        if (
+            not isinstance(style_config, dict)
+            or set(style_config) != expected_style_fields
+        ):
             raise ValueError("Style config fields do not match the frozen schema")
         if style_config["name"] != style:
             raise ValueError("Requested style does not match style config")
@@ -198,18 +218,43 @@ def _validate_config(config: dict[str, Any], *, style: str | None = None) -> Non
             "explorer": ExplorerRewardConfig,
         }[style]
         reward_config(**reward)
+        if schema_version == 2:
+            expected_architecture = (
+                "single_residual" if style == "defensive" else "three_route_residual"
+            )
+            expected_teacher = (
+                "protective_defensive_teacher"
+                if style == "defensive"
+                else "route_explorer_teacher"
+            )
+            if (
+                style not in ("defensive", "explorer")
+                or style_config["architecture"] != expected_architecture
+                or style_config["teacher"] != expected_teacher
+                or style_config["route_rule"] != (
+                    "none" if style == "defensive" else _V2_ROUTE_RULE
+                )
+                or float(style_config["eta_aux"]) <= 0
+                or int(config["environment_steps"]) != 100_000
+            ):
+                raise ValueError("Invalid M5 V2 style mechanism")
+            weights = style_config["script_weights"]
+            if not isinstance(weights, dict) or set(weights) != set(DUEL_OPPONENTS):
+                raise ValueError("M5 V2 script weights do not cover the frozen scripts")
 
 
 def _load_style_warm_start(
     path: Path,
     *,
-    model: StyledActorCritic,
+    model: StyledActorCritic | RoutedStyledActorCritic,
     expected_base_checkpoint_sha256: str,
     expected_scenario_hash: str,
     expected_style: str,
 ) -> dict[str, object]:
     payload = torch.load(path, map_location="cpu", weights_only=False)
     if payload.get("kind") == "style_distillation":
+        if isinstance(model, RoutedStyledActorCritic):
+            raise ValueError("Routed Explorer requires an interpolation warm start")
         return load_style_distillation_checkpoint(
             path,
             model=model,
@@ -250,7 +295,20 @@ def _load_style_warm_start(
         for name in base_keys
     ):
         raise ValueError("Style interpolation warm start changed the frozen base")
-    model.load_state_dict(state, strict=True)
+    if isinstance(model, RoutedStyledActorCritic):
+        routed_state = dict(before)
+        for name, value in state.items():
+            if name.startswith("adapter."):
+                suffix = name.removeprefix("adapter.")
+                for index in range(model.route_count):
+                    routed_state[f"adapters.{index}.{suffix}"] = value
+            elif name.startswith("policy."):
+                suffix = name.removeprefix("policy.")
+                for index in range(model.route_count):
+                    routed_state[f"policies.{index}.{suffix}"] = value
+        model.load_state_dict(routed_state, strict=True)
+    else:
+        model.load_state_dict(state, strict=True)
     return {
         name: payload[name]
         for name in (
@@ -349,12 +407,21 @@ def _status_json(payload: dict[str, object]) -> str:
 def _load_history(
     path: Path,
 ) -> tuple[
-    Counter[str], Counter[str], Counter[str], Counter[str], int, int, float, int
+    Counter[str],
+    Counter[str],
+    Counter[str],
+    Counter[str],
+    Counter[str],
+    int,
+    int,
+    float,
+    int,
 ]:
     events: Counter[str] = Counter()
     style_rewards: Counter[str] = Counter()
     sources: Counter[str] = Counter()
     opponents: Counter[str] = Counter()
+    supervision: Counter[str] = Counter()
     episodes = 0
     objectives = 0
     reward = 0.0
@@ -365,6 +432,7 @@ def _load_history(
             style_rewards,
             sources,
             opponents,
+            supervision,
             episodes,
             objectives,
             reward,
@@ -375,6 +443,7 @@ def _load_history(
         if record.get("kind") == "rollout":
             events.update(record["event_counts"])
             style_rewards.update(record.get("style_reward_components", {}))
+            supervision.update(record.get("supervision_counts", {}))
         elif record.get("kind") == "episode":
             episodes += 1
             objectives += int(record["objective_completed"])
@@ -388,6 +457,7 @@ def _load_history(
         style_rewards,
         sources,
         opponents,
+        supervision,
         episodes,
         objectives,
         reward,
@@ -510,6 +580,11 @@ def main(argv: list[str] | None = None) -> int:
         win_rates=win_rates,
         payoff_hash=sha256_file(payoff_path),
         master_seed=int(config["seed"]),
+        script_weights=(
+            None
+            if int(config["schema_version"]) == 1
+            else config["style"]["script_weights"]
+        ),
     )
     identity_config_hash = sha256_file(config_path)
     if style_warm_hash is not None:
@@ -546,9 +621,17 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError("Style base checkpoint scenario hash does not match")
         base_model.load_state_dict(payload["model"], strict=True)
         style_config = config["style"]
-        model = StyledActorCritic.from_base(
-            base_model, bottleneck=int(style_config["bottleneck"])
-        )
+        if (
+            int(config["schema_version"]) == 2
+            and args.style == "explorer"
+        ):
+            model = RoutedStyledActorCritic.from_base(
+                base_model, bottleneck=int(style_config["bottleneck"])
+            )
+        else:
+            model = StyledActorCritic.from_base(
+                base_model, bottleneck=int(style_config["bottleneck"])
+            )
         if style_warm_path is not None:
             _load_style_warm_start(
                 style_warm_path,
@@ -564,6 +647,17 @@ def main(argv: list[str] | None = None) -> int:
         "style_warm_start": None if style_warm_path is None else str(style_warm_path),
         "style_warm_start_sha256": style_warm_hash,
         "style_base_capability_passed": None if args.style is None else False,
+        "style_architecture": (
+            None
+            if args.style is None
+            else config["style"].get("architecture", "single_residual_v1")
+        ),
+        "teacher": (
+            None if args.style is None else config["style"].get("teacher")
+        ),
+        "route_rule": (
+            None if args.style is None else config["style"].get("route_rule")
+        ),
         "config_hash": identity.config_hash,
         "payoff_report_hash": identity.payoff_report_hash,
         "pool_manifest_sha256": pool.manifest_sha256,
@@ -608,6 +702,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     if args.style is not None:
         trainer_kwargs["beta_kl"] = float(config["style"]["beta_kl"])
+        trainer_kwargs["eta_aux"] = float(config["style"].get("eta_aux", 0.0))
     trainer = trainer_factory(model, **trainer_kwargs)
     environment_steps = 0
     episode_index = 0
@@ -672,6 +767,7 @@ def main(argv: list[str] | None = None) -> int:
         style_reward_components,
         source_counts,
         opponent_counts,
+        supervision_counts,
         logged_episodes,
         objectives,
         cumulative_reward,
@@ -700,6 +796,16 @@ def main(argv: list[str] | None = None) -> int:
             config["style"],
             learner_side=side,
         ),
+        style_supervisor_factory=(
+            None
+            if int(config["schema_version"]) == 1
+            else lambda side, index: create_style_supervisor(
+                args.style,
+                graph,
+                side=side,
+                episode_index=index,
+            )
+        ),
     )
     run_dir.mkdir(parents=True, exist_ok=True)
     try:
@@ -722,6 +828,10 @@ def main(argv: list[str] | None = None) -> int:
             environment_steps += collection.environment_steps
             event_counts.update(collection.event_counts)
             style_reward_components.update(getattr(collection, "reward_components", {}))
+            collection_supervision = getattr(
+                collection, "supervision_counts", {}
+            )
+            supervision_counts.update(collection_supervision)
             append_jsonl(
                 metrics_path,
                 {
@@ -731,6 +841,7 @@ def main(argv: list[str] | None = None) -> int:
                     "style_reward_components": getattr(
                         collection, "reward_components", {}
                     ),
+                    "supervision_counts": collection_supervision,
                     "episodes_completed": len(collection.episodes),
                 },
             )
@@ -773,6 +884,13 @@ def main(argv: list[str] | None = None) -> int:
                     }
                     if args.style is not None:
                         train_record["style_base_kl"] = trainer.last_style_kl
+                        train_record["auxiliary_loss"] = trainer.last_auxiliary_loss
+                        train_record["teacher_agreement"] = (
+                            trainer.last_teacher_agreement
+                        )
+                        train_record["supervised_tokens"] = (
+                            trainer.last_supervised_tokens
+                        )
                     append_jsonl(metrics_path, train_record)
                 if stop_update:
                     break
@@ -812,6 +930,7 @@ def main(argv: list[str] | None = None) -> int:
                 "style_reward_components": dict(
                     sorted(style_reward_components.items())
                 ),
+                "supervision_counts": dict(sorted(supervision_counts.items())),
                 "kl_early_stop_count": kl_stops,
                 "objective_completion_count": objectives,
                 "opponent_counts": dict(sorted(opponent_counts.items())),

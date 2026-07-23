@@ -33,6 +33,7 @@ class LeagueSchedule:
         win_rates: Mapping[str, float],
         payoff_hash: str,
         master_seed: int = 20260721,
+        script_weights: Mapping[str, float] | None = None,
     ) -> None:
         self._cases = tuple(cases)
         self._scripts = tuple(sorted(scripts, key=lambda spec: spec.opponent_id))
@@ -42,6 +43,7 @@ class LeagueSchedule:
         self._validate_cases()
         if not self._scripts or any(spec.kind != "script" for spec in self._scripts):
             raise ValueError("League schedule requires script opponent specs")
+        self._script_weights = self._validate_script_weights(script_weights)
         scenario_hash = pool.entries[0].scenario_hash
         if any(spec.scenario_hash != scenario_hash for spec in self._scripts):
             raise ValueError("League opponent scenario hashes do not match")
@@ -106,6 +108,32 @@ class LeagueSchedule:
         index = min(int(draw * len(specs)), len(specs) - 1)
         return specs[index]
 
+    def _validate_script_weights(
+        self, weights: Mapping[str, float] | None
+    ) -> tuple[float, ...] | None:
+        if weights is None:
+            return None
+        expected = {spec.opponent_id for spec in self._scripts}
+        if set(weights) != expected or any(
+            isinstance(value, bool) or float(value) <= 0.0
+            for value in weights.values()
+        ):
+            raise ValueError("Script weights must positively cover every script")
+        total = sum(float(weights[spec.opponent_id]) for spec in self._scripts)
+        return tuple(float(weights[spec.opponent_id]) / total for spec in self._scripts)
+
+    def _choose_script(self, draw: float) -> OpponentSpec:
+        if self._script_weights is None:
+            return self._choose_uniform(self._scripts, draw)
+        cumulative = 0.0
+        for spec, probability in zip(
+            self._scripts, self._script_weights, strict=True
+        ):
+            cumulative += probability
+            if draw < cumulative:
+                return spec
+        return self._scripts[-1]
+
     def _choose_pfsp(self, draw: float) -> OpponentSpec:
         cumulative = 0.0
         by_id = {spec.opponent_id: spec for spec in self._history}
@@ -126,8 +154,8 @@ class LeagueSchedule:
         if len(self._history) < 2 or source_draw < 0.40:
             source: Literal["script", "pfsp", "uniform_history"] = "script"
             source_probability = 1.0 if len(self._history) < 2 else 0.40
-            selected = self._choose_uniform(
-                self._scripts, self._uniform(pair_slot, "opponent:script")
+            selected = self._choose_script(
+                self._uniform(pair_slot, "opponent:script")
             )
         elif source_draw < 0.90:
             source = "pfsp"

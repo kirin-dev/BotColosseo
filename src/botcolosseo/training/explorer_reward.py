@@ -23,10 +23,12 @@ class ExplorerRewardConfig:
     target_route_score: float = 0.25
     novel_carry_region: float = 0.01
     carry_stall: float = -0.01
+    distinct_route_completion: float = 0.0
     target_region_cap: int = 12
     target_route_score_cap: int = 5
     novel_carry_region_cap: int = 24
     carry_stall_cap: int = 30
+    distinct_route_completion_cap: int = 0
     stall_decisions: int = 12
 
     def __post_init__(self) -> None:
@@ -35,6 +37,7 @@ class ExplorerRewardConfig:
             self.target_route_score_cap,
             self.novel_carry_region_cap,
             self.carry_stall_cap,
+            self.distinct_route_completion_cap,
         )
         if (
             any(type(value) is not int or value < 0 for value in caps)
@@ -74,6 +77,13 @@ class ExplorerRewardLedger:
         self._target_regions_rewarded: set[str] = set()
         self._last_region: str | None = None
         self._same_region_decisions = 0
+        self._route_mode: int | None = None
+        self._completed_routes: set[str] = set()
+
+    def set_route_mode(self, route_mode: int) -> None:
+        if not 0 <= route_mode < len(EXPLORER_ROUTE_CYCLE):
+            raise ValueError("Invalid Explorer reward route mode")
+        self._route_mode = route_mode
 
     def _score(self, state: DuelPrivilegedState) -> int:
         return (
@@ -90,6 +100,8 @@ class ExplorerRewardLedger:
         )
 
     def _target(self, state: DuelPrivilegedState) -> str:
+        if self._route_mode is not None:
+            return EXPLORER_ROUTE_CYCLE[self._route_mode]
         if self._initial_score is None:
             self._initial_score = self._score(state)
         progress = self._score(state) - self._initial_score
@@ -189,6 +201,14 @@ class ExplorerRewardLedger:
                 self.config.target_route_score,
                 self.config.target_route_score_cap,
             )
+            if target not in self._completed_routes:
+                self._completed_routes.add(target)
+                self._add(
+                    components,
+                    "distinct_route_completion",
+                    self.config.distinct_route_completion,
+                    self.config.distinct_route_completion_cap,
+                )
         if state_after.carrier != learner_id:
             self._clear_carry()
         scaled = {name: value * self.scale for name, value in components.items()}

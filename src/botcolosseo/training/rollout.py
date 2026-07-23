@@ -24,6 +24,9 @@ class RolloutStep:
     log_probs: torch.Tensor
     values: torch.Tensor
     next_values: torch.Tensor
+    teacher_actions: torch.Tensor | None = None
+    teacher_mask: torch.Tensor | None = None
+    route_modes: torch.Tensor | None = None
 
 
 @dataclass(frozen=True)
@@ -40,6 +43,9 @@ class RecurrentRollout:
     advantages: torch.Tensor
     returns: torch.Tensor
     valid: torch.Tensor
+    teacher_actions: torch.Tensor | None = None
+    teacher_mask: torch.Tensor | None = None
+    route_modes: torch.Tensor | None = None
 
     def sequence_minibatches(
         self,
@@ -82,9 +88,18 @@ class RecurrentRollout:
         width = sequence_length + burn_in
         time = self.actions.shape[1]
 
-        def padded(source: torch.Tensor, environment: int, begin: int, end: int):
+        def padded(
+            source: torch.Tensor,
+            environment: int,
+            begin: int,
+            end: int,
+            *,
+            fill: int = 0,
+        ):
             shape = (width, *source.shape[2:])
-            target = torch.zeros(shape, dtype=source.dtype, device=source.device)
+            target = torch.full(
+                shape, fill, dtype=source.dtype, device=source.device
+            )
             target[: end - begin] = source[environment, begin:end]
             return target
 
@@ -103,14 +118,27 @@ class RecurrentRollout:
                 "returns",
             )
         }
+        optional = {
+            name: getattr(self, name)
+            for name in ("teacher_actions", "teacher_mask", "route_modes")
+            if getattr(self, name) is not None
+        }
+        collected.update({name: [] for name in optional})
         initial_hidden: list[torch.Tensor] = []
         loss_masks: list[torch.Tensor] = []
         for environment, loss_start in chunks:
             begin = max(0, loss_start - burn_in)
             end = min(time, loss_start + sequence_length)
             for name in collected:
+                source = getattr(self, name)
                 collected[name].append(
-                    padded(getattr(self, name), environment, begin, end)
+                    padded(
+                        source,
+                        environment,
+                        begin,
+                        end,
+                        fill=-1 if name == "route_modes" else 0,
+                    )
                 )
             initial_hidden.append(self.hidden[environment, begin])
             loss_mask = torch.zeros(width, dtype=torch.bool, device=self.valid.device)
@@ -121,7 +149,7 @@ class RecurrentRollout:
             ]
             loss_masks.append(loss_mask)
         stacked = {name: torch.stack(parts) for name, parts in collected.items()}
-        return PPOBatch(
+        batch = PPOBatch(
             frames=stacked["frames"],
             scalars=stacked["scalars"],
             previous_actions=stacked["previous_actions"],
@@ -135,6 +163,9 @@ class RecurrentRollout:
             returns=stacked["returns"],
             loss_mask=torch.stack(loss_masks),
         )
+        values = dict(batch.__dict__)
+        values.update({name: stacked[name] for name in optional})
+        return PPOBatch(**values)
 
 
 class RolloutBuffer:
@@ -155,7 +186,11 @@ class RolloutBuffer:
         self._steps.append(
             RolloutStep(
                 **{
-                    item.name: getattr(step, item.name).detach().clone()
+                    item.name: (
+                        None
+                        if getattr(step, item.name) is None
+                        else getattr(step, item.name).detach().clone()
+                    )
                     for item in fields(step)
                 }
             )
@@ -177,11 +212,25 @@ class RolloutBuffer:
             "log_probs": (expected,),
             "values": (expected,),
             "next_values": (expected,),
+            "teacher_actions": (expected,),
+            "teacher_mask": (expected,),
+            "route_modes": (expected,),
         }
         for item in fields(step):
             tensor = getattr(step, item.name)
+            if tensor is None:
+                continue
             if tensor.shape != shapes[item.name]:
                 raise ValueError(f"Rollout {item.name} has the wrong shape")
+        supervision = (
+            step.teacher_actions,
+            step.teacher_mask,
+            step.route_modes,
+        )
+        if any(value is None for value in supervision) and not all(
+            value is None for value in supervision
+        ):
+            raise ValueError("Rollout style supervision must be complete or absent")
         if step.terminated.dtype != torch.bool or step.truncated.dtype != torch.bool:
             raise ValueError("Rollout boundaries must be boolean")
         if bool((step.terminated & step.truncated).any()):
@@ -190,7 +239,22 @@ class RolloutBuffer:
             raise ValueError("Rollout masks must contain only zero or one")
         if int(step.actions.min()) < 0 or int(step.actions.max()) >= 13:
             raise ValueError("Rollout action is outside the action space")
-        devices = {getattr(step, item.name).device for item in fields(step)}
+        if step.teacher_actions is not None:
+            if (
+                step.teacher_mask is None
+                or step.route_modes is None
+                or step.teacher_mask.dtype != torch.bool
+            ):
+                raise ValueError("Invalid rollout style supervision")
+            if int(step.teacher_actions.min()) < 0 or int(step.teacher_actions.max()) >= 13:
+                raise ValueError("Teacher action is outside the action space")
+            if int(step.route_modes.min()) < -1 or int(step.route_modes.max()) > 2:
+                raise ValueError("Route mode is outside the supported range")
+        devices = {
+            tensor.device
+            for item in fields(step)
+            if (tensor := getattr(step, item.name)) is not None
+        }
         if len(devices) != 1:
             raise ValueError("Rollout tensors must share a device")
         floating = (
@@ -237,4 +301,13 @@ class RolloutBuffer:
             advantages=gae.advantages,
             returns=gae.returns,
             valid=torch.ones_like(values, dtype=torch.bool),
+            teacher_actions=(
+                None if self._steps[0].teacher_actions is None else stack("teacher_actions")
+            ),
+            teacher_mask=(
+                None if self._steps[0].teacher_mask is None else stack("teacher_mask")
+            ),
+            route_modes=(
+                None if self._steps[0].route_modes is None else stack("route_modes")
+            ),
         )

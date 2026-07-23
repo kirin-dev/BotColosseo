@@ -94,3 +94,119 @@ class StyledPublicActor(nn.Module):
         return ActorOutput(
             self.policy(self.adapter(output.features)), output.features, output.hidden
         )
+
+
+class RoutedStyledActorCritic(nn.Module):
+    """Three public-observation style branches over one frozen recurrent Actor."""
+
+    route_count = 3
+
+    def __init__(self, base: AsymmetricActorCritic, *, bottleneck: int = 32) -> None:
+        super().__init__()
+        self.base = base
+        self.base.actor.requires_grad_(False)
+        self.adapters = nn.ModuleList(
+            ResidualStyleAdapter(base.actor.hidden_size, bottleneck)
+            for _ in range(self.route_count)
+        )
+        self.policies = nn.ModuleList(
+            copy.deepcopy(base.actor.policy) for _ in range(self.route_count)
+        )
+
+    @classmethod
+    def from_base(
+        cls, base: AsymmetricActorCritic, *, bottleneck: int = 32
+    ) -> RoutedStyledActorCritic:
+        return cls(copy.deepcopy(base), bottleneck=bottleneck)
+
+    def forward(
+        self,
+        frames: torch.Tensor,
+        scalars: torch.Tensor,
+        previous_actions: torch.Tensor,
+        masks: torch.Tensor,
+        privileged: torch.Tensor,
+        hidden: torch.Tensor | None = None,
+        *,
+        route_modes: torch.Tensor,
+    ) -> StyleActorCriticOutput:
+        if route_modes.shape != frames.shape[:2] or route_modes.dtype != torch.long:
+            raise ValueError("route_modes must be a long tensor matching batch and time")
+        if int(route_modes.min()) < -1 or int(route_modes.max()) >= self.route_count:
+            raise ValueError("route_modes contains an unsupported Explorer branch")
+        safe_modes = route_modes.clamp_min(0)
+        actor = self.base.actor(frames, scalars, previous_actions, masks, hidden)
+        branch_logits = torch.stack(
+            [
+                policy(adapter(actor.features))
+                for adapter, policy in zip(self.adapters, self.policies, strict=True)
+            ],
+            dim=2,
+        )
+        gather_index = safe_modes[..., None, None].expand(
+            *route_modes.shape, 1, branch_logits.shape[-1]
+        )
+        logits = branch_logits.gather(2, gather_index).squeeze(2)
+        privileged_features = self.base.privileged_encoder(privileged)
+        values = self.base.value(
+            torch.cat((actor.features, privileged_features), dim=-1)
+        ).squeeze(-1)
+        return StyleActorCriticOutput(logits, values, actor.hidden, actor.logits)
+
+    def trainable_parameters(self):
+        return (parameter for parameter in self.parameters() if parameter.requires_grad)
+
+    def public_actor(self) -> RoutedStyledPublicActor:
+        return RoutedStyledPublicActor(
+            self.base.actor,
+            self.adapters,
+            self.policies,
+        )
+
+
+class RoutedStyledPublicActor(nn.Module):
+    def __init__(
+        self, base_actor: nn.Module, adapters: nn.ModuleList, policies: nn.ModuleList
+    ) -> None:
+        super().__init__()
+        if len(adapters) != RoutedStyledActorCritic.route_count or len(policies) != len(
+            adapters
+        ):
+            raise ValueError("Explorer public Actor requires exactly three branches")
+        self.base_actor = base_actor
+        self.adapters = adapters
+        self.policies = policies
+        self.hidden_size = base_actor.hidden_size
+
+    def initial_state(
+        self, batch_size: int, *, device: torch.device | str
+    ) -> torch.Tensor:
+        return self.base_actor.initial_state(batch_size, device=device)
+
+    def forward(
+        self,
+        frames: torch.Tensor,
+        scalars: torch.Tensor,
+        previous_actions: torch.Tensor,
+        masks: torch.Tensor,
+        hidden: torch.Tensor | None = None,
+        *,
+        route_modes: torch.Tensor,
+    ) -> ActorOutput:
+        if route_modes.shape != frames.shape[:2] or route_modes.dtype != torch.long:
+            raise ValueError("route_modes must be a long tensor matching batch and time")
+        output = self.base_actor(
+            frames, scalars, previous_actions, masks, hidden
+        )
+        branch_logits = torch.stack(
+            [
+                policy(adapter(output.features))
+                for adapter, policy in zip(self.adapters, self.policies, strict=True)
+            ],
+            dim=2,
+        )
+        gather_index = route_modes[..., None, None].expand(
+            *route_modes.shape, 1, branch_logits.shape[-1]
+        )
+        logits = branch_logits.gather(2, gather_index).squeeze(2)
+        return ActorOutput(logits, output.features, output.hidden)

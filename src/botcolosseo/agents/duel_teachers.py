@@ -245,13 +245,20 @@ class RouteExplorerTeacher:
         if score < self._initial_score:
             raise ValueError("Explorer own score decreased within an episode")
         score_progress = score - self._initial_score
+        return self.act_for_mode(
+            state, score_progress % len(EXPLORER_ROUTE_CYCLE)
+        )
+
+    def act_for_mode(
+        self, state: DuelPrivilegedState, route_mode: int
+    ) -> MacroAction:
+        if not 0 <= route_mode < len(EXPLORER_ROUTE_CYCLE):
+            raise ValueError("Invalid Explorer route mode")
         carrier = 1 if self.side == "host" else 2
         carrying = state.carrier == carrier
-        key = (score, carrying)
+        key = (route_mode, carrying)
         if key != self._key:
-            self.route_name = EXPLORER_ROUTE_CYCLE[
-                score_progress % len(EXPLORER_ROUTE_CYCLE)
-            ]
+            self.route_name = EXPLORER_ROUTE_CYCLE[route_mode]
             points = self._graph.route(self.route_name).waypoints
             if self.side == "opponent":
                 points = tuple((-x, y) for x, y in points)

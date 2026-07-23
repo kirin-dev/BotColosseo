@@ -113,3 +113,39 @@ def test_rollout_owns_detached_snapshots() -> None:
 
     assert not rollout.log_probs.requires_grad
     assert rollout.returns[0, 0].item() == pytest.approx(1.45)
+
+
+def test_recurrent_sequences_preserve_optional_style_supervision() -> None:
+    buffer = RolloutBuffer(capacity=3, environments=1)
+    for index in range(3):
+        current = step(index, environments=1)
+        current.teacher_actions = torch.tensor([index + 2])
+        current.teacher_mask = torch.tensor([index != 1])
+        current.route_modes = torch.tensor([index])
+        buffer.append(current)
+
+    rollout = buffer.finalize(gamma=0.9, gae_lambda=0.8)
+    batches = list(
+        rollout.sequence_minibatches(
+            sequence_length=2,
+            burn_in=0,
+            minibatch_sequences=1,
+            seed=1,
+            epoch=0,
+            shuffle=False,
+        )
+    )
+
+    assert batches[0].teacher_actions.tolist() == [[2, 3]]
+    assert batches[0].teacher_mask.tolist() == [[True, False]]
+    assert batches[0].route_modes.tolist() == [[0, 1]]
+    assert batches[1].teacher_actions.tolist() == [[4, 0]]
+    assert batches[1].teacher_mask.tolist() == [[True, False]]
+    assert batches[1].route_modes.tolist() == [[2, -1]]
+
+
+def test_rollout_rejects_partial_style_supervision() -> None:
+    invalid = step(0)
+    invalid.teacher_actions = torch.zeros(2, dtype=torch.long)
+    with pytest.raises(ValueError, match="complete or absent"):
+        RolloutBuffer(capacity=1, environments=2).append(invalid)

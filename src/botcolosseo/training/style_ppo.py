@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import torch
 
-from botcolosseo.agents.style_model import StyledActorCritic
+from botcolosseo.agents.style_model import RoutedStyledActorCritic, StyledActorCritic
 from botcolosseo.training.gae import normalize_advantages
 from botcolosseo.training.ppo import PPOBatch, PPOLoss, PPOTrainer, ppo_loss
 
@@ -28,20 +28,49 @@ def categorical_style_kl(
     return divergence
 
 
+def masked_teacher_cross_entropy(
+    logits: torch.Tensor,
+    teacher_actions: torch.Tensor,
+    supervised: torch.Tensor,
+) -> tuple[torch.Tensor, float, int]:
+    if logits.shape[:-1] != teacher_actions.shape or supervised.shape != teacher_actions.shape:
+        raise ValueError("Teacher tensors must match the policy token shape")
+    if teacher_actions.dtype != torch.long or supervised.dtype is not torch.bool:
+        raise ValueError("Teacher actions and mask have invalid dtypes")
+    if not bool(supervised.any()):
+        raise ValueError("Teacher mask must select at least one item")
+    selected_logits = logits[supervised]
+    selected_actions = teacher_actions[supervised]
+    if int(selected_actions.min()) < 0 or int(selected_actions.max()) >= logits.shape[-1]:
+        raise ValueError("Teacher action is outside the policy action space")
+    loss = torch.nn.functional.cross_entropy(selected_logits, selected_actions)
+    agreement = float(
+        (selected_logits.argmax(dim=-1) == selected_actions).float().mean().detach()
+    )
+    if not bool(torch.isfinite(loss)):
+        raise FloatingPointError("Teacher auxiliary loss is not finite")
+    return loss, agreement, int(supervised.sum())
+
+
 class StylePPOTrainer(PPOTrainer):
-    def __init__(self, *args, beta_kl: float, **kwargs) -> None:
-        if beta_kl < 0:
-            raise ValueError("Style KL coefficient must be nonnegative")
+    def __init__(self, *args, beta_kl: float, eta_aux: float = 0.0, **kwargs) -> None:
+        if beta_kl < 0 or eta_aux < 0:
+            raise ValueError("Style loss coefficients must be nonnegative")
         super().__init__(*args, **kwargs)
         self.beta_kl = beta_kl
+        self.eta_aux = eta_aux
         self.last_style_kl = 0.0
+        self.last_auxiliary_loss = 0.0
+        self.last_teacher_agreement = 0.0
+        self.last_supervised_tokens = 0
 
     @classmethod
     def create(
         cls,
-        model: StyledActorCritic,
+        model: StyledActorCritic | RoutedStyledActorCritic,
         *,
         beta_kl: float,
+        eta_aux: float = 0.0,
         learning_rate: float,
         total_updates: int,
         gradient_clip: float,
@@ -65,6 +94,7 @@ class StylePPOTrainer(PPOTrainer):
             optimizer,
             scheduler,
             beta_kl=beta_kl,
+            eta_aux=eta_aux,
             gradient_clip=gradient_clip,
             policy_clip=policy_clip,
             value_clip=value_clip,
@@ -75,6 +105,11 @@ class StylePPOTrainer(PPOTrainer):
 
     def _loss(self, batch: PPOBatch) -> PPOLoss:
         normalized = normalize_advantages(batch.advantages, batch.loss_mask)
+        model_kwargs = {}
+        if isinstance(self.model, RoutedStyledActorCritic):
+            if batch.route_modes is None:
+                raise ValueError("Explorer PPO batch is missing route modes")
+            model_kwargs["route_modes"] = batch.route_modes
         output = self.model(
             batch.frames,
             batch.scalars,
@@ -82,6 +117,7 @@ class StylePPOTrainer(PPOTrainer):
             batch.masks,
             batch.privileged,
             batch.initial_hidden,
+            **model_kwargs,
         )
         loss = ppo_loss(
             logits=output.logits,
@@ -102,4 +138,27 @@ class StylePPOTrainer(PPOTrainer):
             output.logits, output.base_logits, batch.loss_mask
         )
         self.last_style_kl = float(style_kl.detach())
-        return loss._replace(total_loss=loss.total_loss + self.beta_kl * style_kl)
+        auxiliary = output.logits.sum() * 0.0
+        self.last_auxiliary_loss = 0.0
+        self.last_teacher_agreement = 0.0
+        self.last_supervised_tokens = 0
+        if self.eta_aux > 0:
+            if batch.teacher_actions is None or batch.teacher_mask is None:
+                raise ValueError("Auxiliary PPO batch is missing Teacher supervision")
+            supervised = batch.teacher_mask & batch.loss_mask
+            if bool(supervised.any()):
+                auxiliary, agreement, count = masked_teacher_cross_entropy(
+                    output.logits,
+                    batch.teacher_actions,
+                    supervised,
+                )
+                self.last_auxiliary_loss = float(auxiliary.detach())
+                self.last_teacher_agreement = agreement
+                self.last_supervised_tokens = count
+        return loss._replace(
+            total_loss=(
+                loss.total_loss
+                + self.beta_kl * style_kl
+                + self.eta_aux * auxiliary
+            )
+        )

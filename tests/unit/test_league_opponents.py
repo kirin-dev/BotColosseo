@@ -11,18 +11,20 @@ from botcolosseo.agents.league_opponents import (
     sha256_file,
 )
 from botcolosseo.agents.model import AsymmetricActorCritic
-from botcolosseo.agents.style_model import StyledActorCritic
+from botcolosseo.agents.style_model import RoutedStyledActorCritic, StyledActorCritic
 from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.duel_types import DuelActorObservation
 
 
-def _observation(previous_action: int = 0) -> DuelActorObservation:
+def _observation(
+    previous_action: int = 0, *, own_score: int = 0
+) -> DuelActorObservation:
     return DuelActorObservation(
         frame=np.zeros((84, 84), dtype=np.uint8),
         health=100.0,
         armor=0.0,
         ammo=20.0,
-        own_score=0,
+        own_score=own_score,
         opponent_score=0,
         has_core=False,
         previous_action=previous_action,
@@ -211,6 +213,53 @@ def test_checkpoint_policy_loads_style_adapter_checkpoint(tmp_path: Path) -> Non
     policy.reset()
 
     assert isinstance(policy.act(_observation()), MacroAction)
+
+
+def test_routed_checkpoint_uses_episode_counter_and_public_score_only(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "explorer-v2.pt"
+    model = RoutedStyledActorCritic.from_base(
+        AsymmetricActorCritic(), bottleneck=8
+    )
+    with torch.no_grad():
+        for index, policy_head in enumerate(model.policies):
+            policy_head.weight.zero_()
+            policy_head.bias.zero_()
+            policy_head.bias[index + 1] = 10.0
+    torch.save(
+        {
+            "schema_version": 1,
+            "identity": {
+                "base_checkpoint_sha256": "a" * 64,
+                "config_hash": "b" * 64,
+                "train_manifest_hash": "c" * 64,
+                "pool_manifest_hash": "d" * 64,
+                "payoff_report_hash": "e" * 64,
+                "scenario_hash": "scenario",
+            },
+            "state": {
+                "environment_steps": 50_000,
+                "updates": 1,
+                "episodes": 0,
+                "next_pair_slot": 0,
+            },
+            "model": model.state_dict(),
+        },
+        path,
+    )
+    policy = CheckpointOpponentPolicy.load(_spec(path), device=torch.device("cpu"))
+
+    starts = []
+    for _ in range(4):
+        policy.reset()
+        starts.append(int(policy.act(_observation())))
+    policy.reset()
+    first = int(policy.act(_observation(own_score=4)))
+    after_score = int(policy.act(_observation(own_score=5)))
+
+    assert starts == [1, 2, 3, 1]
+    assert (first, after_score) == (2, 3)
 
 
 @pytest.mark.parametrize("style", ("aggressive", "defensive"))

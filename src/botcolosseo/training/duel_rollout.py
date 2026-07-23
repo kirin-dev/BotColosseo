@@ -46,6 +46,7 @@ class DuelRolloutCollection:
     episodes: tuple[DuelEpisodeResult, ...]
     event_counts: dict[str, int]
     reward_components: dict[str, float]
+    supervision_counts: dict[str, int]
 
 
 class DuelOpponentController(Protocol):
@@ -67,6 +68,18 @@ class StyleRewardShaper(Protocol):
         has_core: bool,
         state_before: DuelPrivilegedState,
         state_after: DuelPrivilegedState,
+    ) -> Any: ...
+
+
+class StyleSupervisor(Protocol):
+    def reset(self, *, seed: int, initial_score: int) -> None: ...
+
+    def route_mode(self, observation: DuelActorObservation) -> int: ...
+
+    def label(
+        self,
+        state: DuelPrivilegedState,
+        observation: DuelActorObservation,
     ) -> Any: ...
 
 
@@ -195,6 +208,7 @@ class DuelRolloutCollector:
         action_sampler: Callable[[torch.distributions.Categorical], torch.Tensor]
         | None = None,
         reward_shaper_factory: Callable[[str], StyleRewardShaper] | None = None,
+        style_supervisor_factory: Callable[[str, int], StyleSupervisor] | None = None,
     ) -> None:
         if (
             max_decisions <= 0
@@ -217,7 +231,9 @@ class DuelRolloutCollector:
         self._opponent_factory = opponent_factory or self._make_script_opponent
         self._action_sampler = action_sampler or (lambda distribution: distribution.sample())
         self._reward_shaper_factory = reward_shaper_factory
+        self._style_supervisor_factory = style_supervisor_factory
         self._reward_shaper: StyleRewardShaper | None = None
+        self._style_supervisor: StyleSupervisor | None = None
         self._environment: Any | None = None
         self._opponent_controller: DuelOpponentController | None = None
         self._observations: DuelObservations | None = None
@@ -263,6 +279,15 @@ class DuelRolloutCollector:
         self._episode_decisions = 0
         self._episode_reward = 0.0
         self._initial_score = learner.own_score
+        self._style_supervisor = (
+            None
+            if self._style_supervisor_factory is None
+            else self._style_supervisor_factory(case.learner_side, self.episode_index)
+        )
+        if self._style_supervisor is not None:
+            self._style_supervisor.reset(
+                seed=case.seed, initial_score=self._initial_score
+            )
         self._reward_shaper = (
             None
             if self._reward_shaper_factory is None
@@ -297,6 +322,7 @@ class DuelRolloutCollector:
         episodes: list[DuelEpisodeResult] = []
         events: Counter[str] = Counter()
         reward_components: Counter[str] = Counter()
+        supervision_counts: Counter[str] = Counter()
         try:
             for offset in range(steps):
                 global_step = start_environment_step + offset
@@ -323,7 +349,21 @@ class DuelRolloutCollector:
                     learner_side=case.learner_side,
                     device=self.device,
                 )
-                output = self.model(*inputs, privileged, hidden)
+                supervision = (
+                    None
+                    if self._style_supervisor is None
+                    else self._style_supervisor.label(state_before, observation)
+                )
+                route_mode = -1 if supervision is None else supervision.route_mode
+                if route_mode >= 0:
+                    mode_tensor = torch.tensor(
+                        [[route_mode]], dtype=torch.long, device=self.device
+                    )
+                    output = self.model(
+                        *inputs, privileged, hidden, route_modes=mode_tensor
+                    )
+                else:
+                    output = self.model(*inputs, privileged, hidden)
                 distribution = torch.distributions.Categorical(logits=output.logits)
                 action = self._action_sampler(distribution)
                 log_prob = distribution.log_prob(action)
@@ -350,9 +390,27 @@ class DuelRolloutCollector:
                         learner_side=case.learner_side,
                         device=self.device,
                     )
-                    next_output = self.model(
-                        *next_inputs, next_privileged, output.hidden
+                    next_route_mode = (
+                        -1
+                        if self._style_supervisor is None
+                        else self._style_supervisor.route_mode(next_observation)
                     )
+                    if next_route_mode >= 0:
+                        next_modes = torch.tensor(
+                            [[next_route_mode]],
+                            dtype=torch.long,
+                            device=self.device,
+                        )
+                        next_output = self.model(
+                            *next_inputs,
+                            next_privileged,
+                            output.hidden,
+                            route_modes=next_modes,
+                        )
+                    else:
+                        next_output = self.model(
+                            *next_inputs, next_privileged, output.hidden
+                        )
                     next_value = next_output.values[:, 0]
                 reward = (
                     step.host_reward
@@ -360,6 +418,12 @@ class DuelRolloutCollector:
                     else step.opponent_reward
                 )
                 if self._reward_shaper is not None:
+                    if supervision is not None and supervision.route_mode >= 0:
+                        set_route_mode = getattr(
+                            self._reward_shaper, "set_route_mode", None
+                        )
+                        if set_route_mode is not None:
+                            set_route_mode(supervision.route_mode)
                     shaped = self._reward_shaper.apply(
                         learner_action,
                         step.events,
@@ -369,6 +433,13 @@ class DuelRolloutCollector:
                     )
                     reward += float(shaped.total)
                     reward_components.update(shaped.components)
+                    if supervision is not None and supervision.route_mode >= 0:
+                        reward_components.update(
+                            {
+                                f"mode:{supervision.route_mode}:{name}": value
+                                for name, value in shaped.components.items()
+                            }
+                        )
                 buffer.append(
                     RolloutStep(
                         frames=inputs[0][:, 0].cpu(),
@@ -384,8 +455,31 @@ class DuelRolloutCollector:
                         log_probs=log_prob[:, 0].cpu(),
                         values=output.values[:, 0].cpu(),
                         next_values=next_value.cpu(),
+                        teacher_actions=(
+                            None
+                            if supervision is None
+                            else torch.tensor(
+                                [supervision.teacher_action], dtype=torch.long
+                            )
+                        ),
+                        teacher_mask=(
+                            None
+                            if supervision is None
+                            else torch.tensor([supervision.supervised])
+                        ),
+                        route_modes=(
+                            None
+                            if supervision is None
+                            else torch.tensor([supervision.route_mode], dtype=torch.long)
+                        ),
                     )
                 )
+                if supervision is not None:
+                    supervision_counts["tokens"] += int(supervision.supervised)
+                    if supervision.route_mode >= 0:
+                        supervision_counts[f"mode:{supervision.route_mode}"] += int(
+                            supervision.supervised
+                        )
                 self._hidden = output.hidden.detach()
                 self._episode_start = False
                 self._episode_decisions += 1
@@ -421,6 +515,7 @@ class DuelRolloutCollector:
             episodes=tuple(episodes),
             event_counts=dict(sorted(events.items())),
             reward_components=dict(sorted(reward_components.items())),
+            supervision_counts=dict(sorted(supervision_counts.items())),
         )
 
     def _close_episode(self) -> None:
@@ -430,6 +525,7 @@ class DuelRolloutCollector:
         self._case = None
         self._hidden = None
         self._reward_shaper = None
+        self._style_supervisor = None
         if environment is not None:
             environment.close()
 

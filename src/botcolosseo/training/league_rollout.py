@@ -104,6 +104,7 @@ class LeagueRolloutCollection:
     episodes: tuple[LeagueEpisodeResult, ...]
     event_counts: dict[str, int]
     reward_components: dict[str, float]
+    supervision_counts: dict[str, int]
 
 
 class LeagueRolloutCollector:
@@ -127,6 +128,7 @@ class LeagueRolloutCollector:
             CheckpointOpponentPolicy.load
         ),
         reward_shaper_factory: Callable[[str], Any] | None = None,
+        style_supervisor_factory: Callable[[str, int], Any] | None = None,
     ) -> None:
         self._schedule = LeagueRolloutSchedule(
             schedule, shaping_decay_steps=shaping_decay_steps
@@ -149,6 +151,7 @@ class LeagueRolloutCollector:
             opponent_factory=self._opponent_controller,
             action_sampler=action_sampler,
             reward_shaper_factory=reward_shaper_factory,
+            style_supervisor_factory=style_supervisor_factory,
         )
 
     @property
@@ -202,6 +205,7 @@ class LeagueRolloutCollector:
             episodes=tuple(episodes),
             event_counts=collection.event_counts,
             reward_components=collection.reward_components,
+            supervision_counts=collection.supervision_counts,
         )
 
     def close(self) -> None:

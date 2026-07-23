@@ -30,6 +30,9 @@ class PPOBatch:
     advantages: torch.Tensor
     returns: torch.Tensor
     loss_mask: torch.Tensor
+    teacher_actions: torch.Tensor | None = None
+    teacher_mask: torch.Tensor | None = None
+    route_modes: torch.Tensor | None = None
 
 
 class PPOLoss(NamedTuple):
@@ -247,7 +250,7 @@ class PPOTrainer:
     def _move(self, batch: PPOBatch) -> PPOBatch:
         return PPOBatch(
             **{
-                name: value.to(self.device)
+                name: None if value is None else value.to(self.device)
                 for name, value in batch.__dict__.items()
             }
         )

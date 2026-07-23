@@ -11,7 +11,11 @@ import torch
 from botcolosseo.agents.checkpoint import CheckpointMetadata
 from botcolosseo.agents.duel_teachers import create_duel_teacher
 from botcolosseo.agents.model import AsymmetricActorCritic, RecurrentActor
-from botcolosseo.agents.style_model import StyledActorCritic
+from botcolosseo.agents.style_model import (
+    RoutedStyledActorCritic,
+    RoutedStyledPublicActor,
+    StyledActorCritic,
+)
 from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.duel_types import DuelActorObservation, DuelPrivilegedState
 from botcolosseo.scenarios.regions import RegionGraph
@@ -162,6 +166,9 @@ class CheckpointOpponentPolicy:
         self._device = device
         self._hidden: torch.Tensor | None = None
         self._episode_start = True
+        self._episode_counter = 0
+        self._initial_score: int | None = None
+        self._initial_route_mode = 0
 
     @classmethod
     def load(cls, spec: OpponentSpec, *, device: torch.device) -> CheckpointOpponentPolicy:
@@ -182,7 +189,14 @@ class CheckpointOpponentPolicy:
         if not isinstance(state_dict, dict):
             raise ValueError("Opponent checkpoint is missing model weights")
         try:
-            if any(name.startswith("adapter.") for name in state_dict):
+            if any(name.startswith("adapters.") for name in state_dict):
+                bottleneck = int(state_dict["adapters.0.layers.0.weight"].shape[0])
+                styled = RoutedStyledActorCritic.from_base(
+                    AsymmetricActorCritic(), bottleneck=bottleneck
+                )
+                styled.load_state_dict(state_dict, strict=True)
+                actor = styled.public_actor()
+            elif any(name.startswith("adapter.") for name in state_dict):
                 bottleneck = int(state_dict["adapter.layers.0.weight"].shape[0])
                 styled = StyledActorCritic.from_base(AsymmetricActorCritic(), bottleneck=bottleneck)
                 styled.load_state_dict(state_dict, strict=True)
@@ -198,6 +212,9 @@ class CheckpointOpponentPolicy:
     def reset(self) -> None:
         self._hidden = self._actor.initial_state(1, device=self._device)
         self._episode_start = True
+        self._initial_score = None
+        self._initial_route_mode = self._episode_counter % 3
+        self._episode_counter += 1
 
     def fork(self) -> CheckpointOpponentPolicy:
         return CheckpointOpponentPolicy(self.spec, self._actor, device=self._device)
@@ -209,7 +226,20 @@ class CheckpointOpponentPolicy:
         inputs = actor_observation_tensors(
             observation, episode_start=self._episode_start, device=self._device
         )
-        output = self._actor(*inputs, self._hidden)
+        if isinstance(self._actor, RoutedStyledPublicActor):
+            if self._initial_score is None:
+                self._initial_score = observation.own_score
+            if observation.own_score < self._initial_score:
+                raise ValueError("Explorer own score decreased within an episode")
+            route_mode = (
+                self._initial_route_mode
+                + observation.own_score
+                - self._initial_score
+            ) % 3
+            modes = torch.tensor([[route_mode]], dtype=torch.long, device=self._device)
+            output = self._actor(*inputs, self._hidden, route_modes=modes)
+        else:
+            output = self._actor(*inputs, self._hidden)
         self._hidden = output.hidden
         self._episode_start = False
         return MacroAction(int(output.logits[0, 0].argmax()))
