@@ -66,3 +66,27 @@ weaker entropy gate or a hand-picked video.
 
 The smoke ledgers, summaries, run identities, and manifests are committed with
 this report.
+
+## Closed-loop PPO repair result
+
+The first closed-loop repair warm-started alpha 0.25 and completed 200,000 real
+environment steps with zero KL early stops. Its 20-episode validation smoke was
+complete and protocol-clean:
+
+| Frozen 20-episode smoke | Result |
+|---|---:|
+| Skill Retention | 95.00% |
+| Route-entropy delta | -0.1262 |
+| 95% interval | `[-0.3155, 0]` |
+| Flank completions | 0 |
+| Protocol inconsistencies / retries | 0 / 0 |
+
+The fixed route curriculum always began with Upper and exposed Flank only
+after two scores, while production training averaged about 1.9 learner scores
+per episode. Aggregate route reward therefore did not prove Flank coverage.
+The run failed route entropy, route coverage, and flank improvement.
+
+The failed smoke is retained under
+[`reports/m5/explorer/ppo-repair/smoke/`](../../reports/m5/explorer/ppo-repair/smoke/).
+The owner-approved V2 route adds three fair internal route branches plus
+on-policy Route Teacher regularization; the frozen evaluator remains unchanged.

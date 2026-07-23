@@ -62,3 +62,27 @@ weaken the frozen metric or relabel this checkpoint as passed.
 
 The evaluation ledger and manifests are committed with the report so their
 hashes remain independently checkable.
+
+## Closed-loop PPO repair result
+
+The first closed-loop repair then warm-started alpha 0.25 and completed
+200,000 real environment steps with zero KL early stops. It preserved task
+skill but did not repair the style mechanism:
+
+| Frozen 20-episode smoke | Result |
+|---|---:|
+| Skill Retention | 89.74% |
+| Protective-presence delta | -0.0875 |
+| 95% interval | `[-0.3345, 0.0295]` |
+| Protocol inconsistencies / retries | 0 / 0 |
+
+The run failed protective-presence shift, denial/recovery improvement, and
+per-opponent retention. Its training ledger never recorded a carrier-denial or
+defensive-recovery reward. Scaled unnecessary-guard and concession penalties
+also exceeded all positive defensive rewards combined, making risk avoidance
+the easier learned behavior.
+
+The failed smoke is retained under
+[`reports/m5/defensive/ppo-repair/smoke/`](../../reports/m5/defensive/ppo-repair/smoke/).
+The owner-approved V2 route adds masked on-policy Protective Teacher
+regularization and a bounded 50k/100k budget; it does not change this evaluator.

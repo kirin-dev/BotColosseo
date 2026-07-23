@@ -610,8 +610,11 @@ Resume-ready。
 
 当前进展：Defensive 与 Explorer 的第一条 distillation 路线均完成了训练、配对
 评测和证据审计，但分别未稳定通过 protective-presence 与 closed-loop route
-门禁，负结果已保留。两项不改变 evaluator 的 200k closed-loop PPO repair 已完成
-工程实现并进入生产实验。Easy/Normal/Hard 公平观测 controller 已实现，Strong
+门禁，负结果已保留。两项不改变 evaluator 的首版 200k closed-loop PPO repair
+也已完成，但都在 20 局冻结 smoke 中保持能力而未形成目标风格；完整 ledger 与
+失败门禁已保留。经审核批准的 V2 改为 on-policy Teacher 辅助 PPO，Explorer
+增加不读取 case/seed/特权状态的内部 Upper/Lower/Flank 路线模式，并采用
+50k、最多 100k 的分阶段预算。Easy/Normal/Hard 公平观测 controller 已实现，Strong
 Base/Aggressive 的 600 局正式 calibration 已通过全部六项门禁，零重试且零协议
 错误；三风格 Style×Difficulty 的 1,800 局合并协议已经冻结，需等待
 Defensive/Explorer 各自门禁通过后执行。因此可以声称首个 difficulty block

@@ -107,16 +107,15 @@ The official report records zero event-protocol inconsistencies. See the
 [Teacher montage](docs/assets/m1-teacher-montage.mp4), [M1 runbook](docs/milestones/m1.md),
 and [raw evidence](reports/m1/summary.json).
 
-The learned Aggressive checkpoint and its M4 validation gate are complete. The
-[Defensive experiment](docs/milestones/m5-defensive.md) completed its
-engineering and paired-validation path but did not produce a statistically
-stable style shift, so it is preserved as a negative result rather than called
-a successful style Bot. The [Explorer experiment](docs/milestones/m5-explorer.md)
-passed its data and offline-learning gates but produced no closed-loop flank
-completion in the fixed validation smokes, so it is also retained as a
-mechanism-level negative result rather than called complete. Difficulty control
-passed its 600-episode Strong Base/Aggressive calibration; the final all-style
-M5/M6 product gate remains pending.
+The learned Aggressive checkpoint and its M4 validation gate are complete.
+[Defensive](docs/milestones/m5-defensive.md) and
+[Explorer](docs/milestones/m5-explorer.md) each completed a 200k closed-loop
+PPO repair, retained task skill, and failed the unchanged 20-episode style
+smoke. Their complete negative evidence is preserved. The approved V2 repair
+uses on-policy Teacher regularization and a fair internal Explorer route mode
+with a bounded 50k/100k budget. Difficulty control passed its 600-episode
+Strong Base/Aggressive calibration; the final all-style M5/M6 product gate
+remains pending.
 
 ## Quick start
 
