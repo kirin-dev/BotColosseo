@@ -78,6 +78,24 @@ test access. Hard is the native policy; Normal and Easy add only bounded
 public-observation inference restrictions. See the
 [evidence record](docs/milestones/m5-difficulty.md).
 
+## Synthetic perception-study preflight
+
+![Synthetic style-recognition preflight](docs/assets/showcase/m6-user-study-synthetic.png)
+
+The complete blind-study pipeline was exercised with **synthetic data only**:
+10 simulated respondents × 6 clips produced 60 validated responses. The
+configured plausible-favorable distribution yields 90% Aggressive, 80%
+Defensive, and 85% Explorer recognition, or 85% macro/micro recognition.
+This is useful pipeline and presentation evidence, but it is **not a human
+study and contains no human participants**. The raw synthetic CSV,
+[provenance](reports/m6/user-study/synthetic-provenance.json), and
+[analysis](reports/m6/user-study/summary.synthetic.json) are committed so the
+result cannot be mistaken for collected feedback. A real anonymous study can
+replace the same input file without changing the analyzer. The
+[current-scenario closeout record](reports/m6/project-closeout.json) binds the
+release, media, study-package, synthetic-preflight, documentation, and future
+proposal hashes in one auditable manifest.
+
 ## Current status
 
 Milestone 1 passed its frozen capability gate. Milestone 2 delivered a real
@@ -144,7 +162,10 @@ public-observation governors. Defensive passed its 200-episode product
 evaluation at 95.9% Skill Retention; Explorer Candidate C passed at 100.3%,
 with all three modes exercised and a 0.061 executed-action signature distance.
 Difficulty control now passes the complete 1,200-episode all-style validation
-matrix. The remaining Showcase-ready gate is the anonymous recognition study.
+matrix. The current Crystal Run product release is engineering-complete and
+its perception pipeline has passed the explicitly synthetic preflight above.
+The original human-recognition gate remains unclaimed and can be completed
+later without changing the released policies.
 A hybrid-aware package containing 22.9 MB of policy artifacts, now including
 the difficulty audit,
 M6 metrics, and result card, also passed its standalone hash, loader, evidence,
@@ -152,6 +173,13 @@ and portability audit; model binaries and raw decision ledgers remain outside
 normal Git history. The tracked [release record](reports/m6/hybrid-release.json)
 and [raw-evidence record](reports/m6/hybrid-difficulty-evidence-release.json)
 bind both upload archives to SHA-256.
+
+The current arena also has a known product limitation: its short
+capture-and-return loop does not make combat risk, kill consequences, and loot
+transfer as legible as desired. A separate
+[extraction-style Crystal Run v2 proposal](docs/plans/2026-07-23-crystal-run-extraction-v2.md)
+defines a future `search → fight → loot → extract` loop. None of the current
+results are presented as evidence for that unimplemented scenario.
 
 ## Quick start
 
@@ -168,6 +196,9 @@ python scripts/smoke_crystal_run.py \
   --record videos/m1-smoke.mp4 \
   --require-video
 python scripts/plot_m2_training.py
+
+# Audits the policies, media, synthetic-study boundary, and final release hashes.
+PYTHONPATH=src python scripts/audit_project_closeout.py
 ```
 
 Use `python scripts/evaluate_m1.py --split test --output reports/m1` to reproduce

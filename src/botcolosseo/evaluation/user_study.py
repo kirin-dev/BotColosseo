@@ -200,6 +200,8 @@ def prepare_user_study(
 def analyze_user_study(
     package_dir: Path,
     responses_path: Path,
+    *,
+    synthetic_data: bool = False,
 ) -> dict[str, object]:
     package_dir = package_dir.expanduser().resolve()
     responses_path = responses_path.expanduser().resolve()
@@ -261,6 +263,8 @@ def analyze_user_study(
         "responses_sha256": sha256_file(responses_path),
         "package_manifest_sha256": sha256_file(package_dir / "manifest.json"),
         "small_sample_product_study": respondent_count < 30,
+        "synthetic_data": synthetic_data,
+        "human_participants": not synthetic_data,
         "test_cases_accessed": False,
     }
 
@@ -333,7 +337,8 @@ def render_user_study_chart(
         )
         recognition.set_ylim(0, 1)
         recognition.set_ylabel("Recognition rate")
-        recognition.set_title("Blind style recognition (Wilson 95% CI)")
+        title_prefix = "Synthetic preflight" if summary.get("synthetic_data") else "Blind"
+        recognition.set_title(f"{title_prefix} style recognition (Wilson 95% CI)")
         recognition.grid(axis="y", alpha=0.2)
         for index, rate in enumerate(rates):
             recognition.text(index, min(rate + 0.04, 0.96), f"{rate:.0%}", ha="center")
@@ -355,6 +360,15 @@ def render_user_study_chart(
                     va="center",
                     color="black",
                 )
+        if summary.get("synthetic_data") is True:
+            figure.text(
+                0.5,
+                0.01,
+                "SYNTHETIC PREFLIGHT — NO HUMAN PARTICIPANTS",
+                ha="center",
+                color="#b91c1c",
+                weight="bold",
+            )
         figure.tight_layout()
         figure.savefig(temporary, facecolor=figure.get_facecolor())
         temporary.replace(output)

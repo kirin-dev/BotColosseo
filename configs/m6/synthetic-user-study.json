@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "generated_on": "2026-07-23",
+  "seed": 20260723,
+  "respondent_count": 10,
+  "purpose": "synthetic preflight for the complete perception-study pipeline; not human-subject evidence",
+  "clips": [
+    {
+      "style": "aggressive",
+      "variant": 1,
+      "style_choices": ["aggressive", "aggressive", "aggressive", "aggressive", "aggressive", "aggressive", "aggressive", "aggressive", "aggressive", "aggressive"],
+      "style_clarity": [5, 5, 5, 4, 5, 5, 4, 5, 5, 5],
+      "perceived_difficulty": [5, 4, 5, 4, 4, 5, 4, 5, 4, 4]
+    },
+    {
+      "style": "aggressive",
+      "variant": 2,
+      "style_choices": ["aggressive", "aggressive", "aggressive", "aggressive", "aggressive", "aggressive", "aggressive", "aggressive", "defensive", "unsure"],
+      "style_clarity": [4, 4, 5, 4, 4, 3, 4, 5, 3, 3],
+      "perceived_difficulty": [4, 4, 4, 3, 4, 4, 3, 4, 4, 3]
+    },
+    {
+      "style": "defensive",
+      "variant": 1,
+      "style_choices": ["defensive", "defensive", "aggressive", "defensive", "explorer", "defensive", "defensive", "unsure", "defensive", "defensive"],
+      "style_clarity": [4, 4, 3, 4, 3, 4, 3, 3, 4, 4],
+      "perceived_difficulty": [5, 4, 5, 4, 4, 5, 4, 4, 5, 4]
+    },
+    {
+      "style": "defensive",
+      "variant": 2,
+      "style_choices": ["defensive", "defensive", "defensive", "defensive", "defensive", "defensive", "defensive", "defensive", "defensive", "explorer"],
+      "style_clarity": [5, 4, 4, 5, 4, 4, 5, 4, 4, 4],
+      "perceived_difficulty": [4, 4, 3, 4, 4, 3, 4, 3, 4, 4]
+    },
+    {
+      "style": "explorer",
+      "variant": 1,
+      "style_choices": ["explorer", "explorer", "explorer", "explorer", "explorer", "explorer", "explorer", "explorer", "explorer", "defensive"],
+      "style_clarity": [5, 4, 4, 5, 4, 4, 5, 4, 4, 4],
+      "perceived_difficulty": [4, 3, 4, 3, 3, 4, 3, 4, 3, 3]
+    },
+    {
+      "style": "explorer",
+      "variant": 2,
+      "style_choices": ["explorer", "explorer", "explorer", "explorer", "explorer", "explorer", "explorer", "explorer", "defensive", "unsure"],
+      "style_clarity": [4, 4, 5, 4, 4, 3, 4, 4, 3, 3],
+      "perceived_difficulty": [3, 3, 4, 3, 3, 3, 3, 4, 3, 2]
+    }
+  ]
+}

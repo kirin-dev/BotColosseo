@@ -44,7 +44,8 @@ League、PFSP、BC、特权 Critic 等均是服务主线的技术手段，不作
 6. 三个正式风格为 `Aggressive`、`Defensive`、`Explorer`；不把容易与 Base 重叠的 Tactical 单列为首版风格。
 7. 三种风格从同一个 Base checkpoint 派生为独立 checkpoint，不要求单网络实时切换风格。
 8. Easy、Normal、Hard 由轻量推理控制器实现，不为每个 `Style × Difficulty` 组合重新训练。
-9. 项目后期由项目作者组织约 5–10 人的匿名视频用户评测，并如实报告样本量。
+9. 原计划由项目作者组织约 5–10 人匿名视频评测；当前场景收尾改为明确标注的
+   10 人合成感知预检，不冒充真人结论，并保留未来替换真实响应的入口。
 10. 可用训练资源为 2 张 NVIDIA A100-PCIE-40GB；优先使用单 learner、多 CPU rollout worker，第二张 GPU 用于评测或并行风格实验。
 
 ## 3. 交付门槛
@@ -670,8 +671,12 @@ publication manifest 已生成，中英文 README 已接入。匿名盲测打包
 检查、混淆矩阵/Wilson 区间图表均已实现。hybrid-aware release builder 与独立
 审计已通过真实 22.9 MB policy 本地发布包验证，明确打包两个 learned
 checkpoint、两个 portable governor、difficulty 审计、M6 指标与结果图。完整
-all-style difficulty 已通过；剩余 M6 门禁仅为至少 10 人的匿名辨识度数据，在
-此完成前不声称 Showcase-ready 全部完成。
+all-style difficulty 已通过。当前场景的用户研究链路已使用明确标注的 10 人
+合成预检数据闭环：60 条响应完整通过 CSV、assignment、媒体 hash 和分析校验，
+Aggressive/Defensive/Explorer 辨识率分别为 90%/80%/85%，macro/micro 均为
+85%。该结果只支持“合成分布下产品感知链路可闭环”，不声称存在真人参与者，
+也不声称原匿名真人门禁通过。在这一证据边界下，当前 Crystal Run 的工程与公开
+展示收尾完成；真人研究和搜打撤式新场景均作为后续独立工作。
 
 ## 17. GitHub 展示结构
 
@@ -768,7 +773,9 @@ README 第一屏按以下顺序组织：
 8. ~~完成 M4 Aggressive 风格、200 局配对门禁和公开展示，达到 Resume-ready。~~
 9. ~~完成 M5 Defensive、Explorer、difficulty controller 与 Style × Difficulty
    评测；Defensive/Explorer hybrid 产品门和 1,200 局全风格 difficulty 均通过。~~
-10. 完成 M6 用户评测、四策略展示、双语文档、checkpoint 与一键复现入口。
-    其中四策略真实展示与双语首页已完成。
+10. ~~完成 M6 四策略展示、双语文档、checkpoint、用户研究链路与一键复现入口。~~
+    当前场景使用明确标注的 10 人合成预检数据完成工程闭环，macro/micro
+    recognition 为 85%；这不是 10 名真人的用户研究，原真人辨识门不声称通过。
+    未来若收集真实响应，直接替换 CSV 并复用冻结分析器。
 
 后续实现必须按里程碑逐个验证；如果某阶段的真实证据与本方案假设冲突，应更新本文件中的具体参数和风险判断，但不得悄然改变项目主线、评测隔离或公平边界。

@@ -77,5 +77,6 @@ def test_chinese_readme_preserves_failed_gate_and_validation_boundaries() -> Non
     assert "M2 真实同步 1v1 与初始 PPO | FAIL" in readme
     assert "M3 historical/PFSP Strong Base | 未通过全部能力门" in readme
     assert "M5 Defensive / Explorer / Difficulty | PASS（产品路线）" in readme
-    assert "匿名用户评测待完成" in readme
+    assert "不声称真人评测" in readme
+    assert "不是真人用户研究，也没有真人参与者" in readme
     assert "hybrid governor" in readme

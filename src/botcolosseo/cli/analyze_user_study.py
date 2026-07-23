@@ -16,8 +16,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--responses", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--chart", type=Path)
+    parser.add_argument(
+        "--synthetic",
+        action="store_true",
+        help="mark the analysis and chart as synthetic, with no human participants",
+    )
     args = parser.parse_args(argv)
-    result = analyze_user_study(args.package_dir, args.responses)
+    result = analyze_user_study(
+        args.package_dir,
+        args.responses,
+        synthetic_data=args.synthetic,
+    )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(
         json.dumps(result, indent=2, sort_keys=True) + "\n",

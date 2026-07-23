@@ -1518,3 +1518,43 @@ The verified archive is 2,185,078 bytes with SHA-256
 `fc45e049b3a92ec574cf8a83c0014484f4497b6e4c0d792652c1db28599725f3`;
 its tracked member hashes are in
 `reports/m6/hybrid-difficulty-evidence-release.json`.
+
+## M6 current-scenario closeout
+
+Generate the explicitly synthetic perception preflight and its chart:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/generate_synthetic_user_study.py \
+  --package-dir artifacts/m6-user-study-v2 \
+  --responses reports/m6/user-study/responses.synthetic.csv \
+  --provenance reports/m6/user-study/synthetic-provenance.json
+
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/analyze_user_study.py \
+  --package-dir artifacts/m6-user-study-v2 \
+  --responses reports/m6/user-study/responses.synthetic.csv \
+  --output reports/m6/user-study/summary.synthetic.json \
+  --chart docs/assets/showcase/m6-user-study-synthetic.png \
+  --synthetic
+```
+
+`--synthetic` is mandatory. These data contain no human participants and must
+not be described as collected feedback.
+
+After the tracked README and future-scenario proposal are final, build and
+audit the current-scenario closeout:
+
+```bash
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/finalize_current_scenario.py
+
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/audit_project_closeout.py
+```
+
+The report binds the learned/hybrid policy archive, six curated videos, blind
+study package, synthetic raw responses and provenance, both READMEs, and the
+proposal-only extraction-v2 plan. It fails if any hash drifts or if synthetic
+responses are presented as human evidence.

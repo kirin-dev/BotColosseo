@@ -110,12 +110,32 @@ def test_analysis_reports_recognition_and_hashes(tmp_path: Path) -> None:
     assert result["macro_recognition_rate"] == 1
     assert result["micro_recognition_rate"] == 1
     assert result["small_sample_product_study"] is True
+    assert result["synthetic_data"] is False
+    assert result["human_participants"] is True
     assert all(
         result["per_style"][style]["recognition_rate"] == 1 for style in STYLES
     )
 
     chart = render_user_study_chart(result, tmp_path / "user-study.png")
     assert chart.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+    assert chart.stat().st_size > 10_000
+
+
+def test_analysis_marks_synthetic_preflight(tmp_path: Path) -> None:
+    package = tmp_path / "package"
+    prepare_user_study(_clips(tmp_path), output_dir=package, assignment_count=2)
+    responses = tmp_path / "responses.csv"
+    _responses(package, responses)
+
+    result = analyze_user_study(
+        package,
+        responses,
+        synthetic_data=True,
+    )
+
+    assert result["synthetic_data"] is True
+    assert result["human_participants"] is False
+    chart = render_user_study_chart(result, tmp_path / "synthetic.png")
     assert chart.stat().st_size > 10_000
 
 

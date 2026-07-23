@@ -1,0 +1,78 @@
+{
+  "confusion_matrix": {
+    "aggressive": {
+      "aggressive": 18,
+      "defensive": 1,
+      "explorer": 0,
+      "unsure": 1
+    },
+    "defensive": {
+      "aggressive": 1,
+      "defensive": 16,
+      "explorer": 2,
+      "unsure": 1
+    },
+    "explorer": {
+      "aggressive": 0,
+      "defensive": 2,
+      "explorer": 17,
+      "unsure": 1
+    }
+  },
+  "human_participants": false,
+  "macro_recognition_rate": 0.8500000000000001,
+  "micro_recognition_rate": 0.85,
+  "micro_recognition_wilson_95": [
+    0.7388541093022145,
+    0.9190255941983225
+  ],
+  "package_manifest_sha256": "ac7705567efc4f22817e98b8227303e42fa311b0461dece1dd1822cc3f338600",
+  "per_style": {
+    "aggressive": {
+      "correct": 18,
+      "mean_perceived_difficulty": 4.05,
+      "mean_style_clarity": 4.35,
+      "recognition_rate": 0.9,
+      "recognition_wilson_95": [
+        0.6989663547715128,
+        0.9721335187862318
+      ],
+      "responses": 20
+    },
+    "defensive": {
+      "correct": 16,
+      "mean_perceived_difficulty": 4.05,
+      "mean_style_clarity": 3.95,
+      "recognition_rate": 0.8,
+      "recognition_wilson_95": [
+        0.5839825677481065,
+        0.9193423374202021
+      ],
+      "responses": 20
+    },
+    "explorer": {
+      "correct": 17,
+      "mean_perceived_difficulty": 3.25,
+      "mean_style_clarity": 4.05,
+      "recognition_rate": 0.85,
+      "recognition_wilson_95": [
+        0.639581135259243,
+        0.9476312541037835
+      ],
+      "responses": 20
+    }
+  },
+  "respondents": 10,
+  "responses": 60,
+  "responses_sha256": "e0abcf45dd49976b63ef07311bd3a7f474d259fd05cf04f6eb4697d2cea3bdc8",
+  "schema_version": 1,
+  "small_sample_product_study": true,
+  "stage": "m6-user-study-analysis",
+  "styles": [
+    "aggressive",
+    "defensive",
+    "explorer"
+  ],
+  "synthetic_data": true,
+  "test_cases_accessed": false
+}

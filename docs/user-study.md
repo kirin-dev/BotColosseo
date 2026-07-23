@@ -55,3 +55,27 @@ It also renders a recognition-rate/confusion-matrix card for the README.
 Commit only genuinely anonymous responses. In README wording, call a 5--10
 person run a “small anonymous product-perception study” and show its exact
 sample size.
+
+## Synthetic pipeline preflight
+
+For a non-human end-to-end pipeline check, generate only the explicitly
+labelled synthetic dataset:
+
+```bash
+PYTHONPATH=src python scripts/generate_synthetic_user_study.py \
+  --package-dir artifacts/m6-user-study-v2 \
+  --responses reports/m6/user-study/responses.synthetic.csv \
+  --provenance reports/m6/user-study/synthetic-provenance.json
+
+PYTHONPATH=src python scripts/analyze_user_study.py \
+  --package-dir artifacts/m6-user-study-v2 \
+  --responses reports/m6/user-study/responses.synthetic.csv \
+  --output reports/m6/user-study/summary.synthetic.json \
+  --chart docs/assets/showcase/m6-user-study-synthetic.png \
+  --synthetic
+```
+
+The `--synthetic` flag is mandatory for generated responses. It stamps the
+summary with `human_participants=false` and adds a prominent warning to the
+chart. Synthetic output must never be renamed or described as collected human
+feedback.
