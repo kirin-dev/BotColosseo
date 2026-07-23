@@ -38,8 +38,8 @@
       "source_path": "defensive/candidate-02.mp4",
       "source_sha256": "edee23d9386c8d5133b27fd3aab99339c99bba9451cac8909d158a8c90bbe629",
       "start_frame": 0,
-      "end_frame": 300,
-      "reason": "low-health movement excerpt reaches 5 HP while completing two objective scores"
+      "end_frame": 318,
+      "reason": "complete 3-1 win sustains movement at 5 HP and honestly includes one late death"
     },
     {
       "style": "defensive",

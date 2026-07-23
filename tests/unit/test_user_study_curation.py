@@ -104,6 +104,10 @@ def test_curate_user_study_clips_binds_sources_and_windows(
     assert result["test_cases_accessed"] is False
     assert all(row["duration_seconds"] == 25 for row in result["clips"])
     assert all(row["visible_summary"]["events"] == {"HIT": 1} for row in result["clips"])
+    assert all(
+        row["visible_summary"]["minimum_positive_self_health"] == 76
+        for row in result["clips"]
+    )
 
 
 def test_curate_user_study_clips_rejects_tampered_source(

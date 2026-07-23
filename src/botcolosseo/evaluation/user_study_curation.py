@@ -120,6 +120,13 @@ def _curate_one(
     if not isinstance(steps, list) or len(steps) != len(frames):
         raise ValueError("Candidate observer trace is incomplete")
     selected_steps = steps[start:end]
+    positive_self_health = [
+        int(step["self_health"])
+        for step in selected_steps
+        if int(step["self_health"]) > 0
+    ]
+    if not positive_self_health:
+        raise ValueError("Curated clip has no live learner frames")
     events = Counter(
         event
         for step in selected_steps
@@ -148,6 +155,7 @@ def _curate_one(
             "minimum_self_health": min(
                 int(step["self_health"]) for step in selected_steps
             ),
+            "minimum_positive_self_health": min(positive_self_health),
             "minimum_opponent_health": min(
                 int(step["opponent_health"]) for step in selected_steps
             ),
