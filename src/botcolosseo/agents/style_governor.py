@@ -191,11 +191,6 @@ class DefensiveGovernor:
             self._enter("base", 0)
             return self._decision("carrying", "objective_return_priority")
 
-        if low_health or health_drop >= self.config.health_drop_threshold:
-            self._enter("disengage", self.config.disengage_decisions)
-            trigger = "low_health" if low_health else "health_drop"
-            return self._active_decision(trigger)
-
         if self._state == "recover":
             if self._remaining <= 0:
                 self._enter("base", 0)
@@ -208,20 +203,27 @@ class DefensiveGovernor:
             self._tick()
             return decision
 
+        if self._state in ("guard", "disengage") and self._remaining <= 0:
+            self._enter("recover", self.config.recover_decisions)
+            decision = self._decision(
+                "intervention_limit",
+                "exact_base_fallback",
+                fallback="recover_base_only",
+            )
+            self._tick()
+            return decision
+
+        if low_health or health_drop >= self.config.health_drop_threshold:
+            if self._state != "disengage":
+                self._enter("disengage", self.config.disengage_decisions)
+            trigger = "low_health" if low_health else "health_drop"
+            return self._active_decision(trigger)
+
         if score_rise:
             self._enter("guard", self.config.guard_decisions)
             return self._active_decision("own_score_rise")
 
         if self._state in ("guard", "disengage"):
-            if self._remaining <= 0:
-                self._enter("recover", self.config.recover_decisions)
-                decision = self._decision(
-                    "intervention_limit",
-                    "exact_base_fallback",
-                    fallback="recover_base_only",
-                )
-                self._tick()
-                return decision
             return self._active_decision("state_continue")
 
         return self._decision("no_public_trigger", "exact_base_fallback")
@@ -310,7 +312,6 @@ class ExplorerGovernor:
         self._state: ExplorerState = "base"
         self._remaining = 0
         self._elapsed = 0
-        self._previous_health: float | None = None
         self._previous_score: int | None = None
         self._previous_has_core: bool | None = None
         self._last_action: MacroAction | None = None
@@ -331,7 +332,6 @@ class ExplorerGovernor:
         self._state = "base"
         self._remaining = 0
         self._elapsed = 0
-        self._previous_health = None
         self._previous_score = None
         self._previous_has_core = None
         self._last_action = None
@@ -341,16 +341,13 @@ class ExplorerGovernor:
         self._update_repeat_count(context.previous_action)
         if self._previous_score is None:
             self._previous_score = context.own_score
-            self._previous_health = context.health
             self._previous_has_core = context.has_core
             return self._decision("initial_observation", "base_warmup")
 
         score_rise = context.own_score > self._previous_score
         core_rise = context.has_core and not bool(self._previous_has_core)
         core_drop = not context.has_core and bool(self._previous_has_core)
-        health_drop = context.health < float(self._previous_health)
         self._previous_score = context.own_score
-        self._previous_health = context.health
         self._previous_has_core = context.has_core
 
         if score_rise:
@@ -359,19 +356,19 @@ class ExplorerGovernor:
             self._enter("stall_recovery", self.config.stall_recovery_decisions)
             return self._recovery_decision("own_score_rise")
 
-        if context.health <= self.config.low_health_threshold or health_drop:
+        if self._state == "stall_recovery":
+            if self._remaining <= 0:
+                self._enter("base", 0)
+                return self._decision("cooldown_complete", "base_restored")
+            return self._recovery_decision("recovery_continue")
+
+        if context.health <= self.config.low_health_threshold:
             self._enter("stall_recovery", self.config.stall_recovery_decisions)
             return self._recovery_decision("health_safety")
 
         if core_drop:
             self._enter("stall_recovery", self.config.stall_recovery_decisions)
             return self._recovery_decision("core_drop")
-
-        if self._state == "stall_recovery":
-            if self._remaining <= 0:
-                self._enter("base", 0)
-                return self._decision("cooldown_complete", "base_restored")
-            return self._recovery_decision("recovery_continue")
 
         if core_rise:
             self._enter("route_commit", self.config.route_decisions)

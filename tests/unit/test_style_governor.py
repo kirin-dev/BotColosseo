@@ -121,6 +121,21 @@ def test_defensive_health_drop_disengages_and_carrying_forces_exact_base() -> No
     assert not carrying.intervened
 
 
+def test_defensive_persistent_low_health_cannot_extend_intervention_limit() -> None:
+    governor = _defensive()
+    governor.reset()
+    governor.decide(_context())
+
+    decisions = [
+        governor.decide(_context(health=20.0, decision_index=index))
+        for index in range(1, 5)
+    ]
+
+    assert [row.intervened for row in decisions] == [True, True, False, False]
+    assert decisions[2].state == "recover"
+    assert decisions[3].state == "base"
+
+
 def test_defensive_is_deterministic_for_identical_public_trajectory() -> None:
     trajectory = (
         _context(),
