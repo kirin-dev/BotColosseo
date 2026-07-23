@@ -28,6 +28,7 @@ dist/
 /tensorboard/
 /data/generated/
 /nohup.out
+/reports/m5/hybrid/logs/
 
 # Local IDE and OS files
 .idea/
