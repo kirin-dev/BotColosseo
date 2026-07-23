@@ -1206,3 +1206,29 @@ PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
   --responses reports/m6/user-study/responses.csv \
   --output reports/m6/user-study/summary.json
 ```
+
+## M6 checkpoint release package
+
+After `reports/m6/showcase-metrics.json` exists and all four upstream gates
+pass, build a GitHub-Release-ready package without adding model binaries to
+normal Git history:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+SCENARIO_HASH=$(jq -r .wad_sha256 \
+  assets/scenarios/crystal_run/manifest.json)
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/build_checkpoint_release.py \
+  --metrics reports/m6/showcase-metrics.json \
+  --strong-base runs/m3/league-full/candidate-boundary-0200000.pt \
+  --aggressive runs/m4/aggressive-interpolation/alpha-025.pt \
+  --defensive runs/m5/defensive-ppo-main/candidate-0200000.pt \
+  --explorer runs/m5/explorer-ppo-main/candidate-0200000.pt \
+  --scenario-hash "$SCENARIO_HASH" \
+  --output-dir artifacts/m6-checkpoint-release
+```
+
+The builder verifies each checkpoint through the same public-observation loader
+used by evaluation, preserves exact source bytes and hashes, writes one atomic
+manifest, and refuses overwrite or partial publication. Uploading that
+directory to a GitHub Release remains a separate explicit publication action.
