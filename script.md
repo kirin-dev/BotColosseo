@@ -949,6 +949,13 @@ three 20-episode validation smokes, deterministic candidate selection, and a
 200-episode formal validation gate. It uses no test cases. A failed data,
 offline, selection, or formal gate preserves its artifacts and exits nonzero.
 
+The completed production data manifest recorded 95 of the predefined 100
+denial/recovery windows, while every other data check passed. The project owner
+approved one manifest-specific waiver on 2026-07-23. The source manifest remains
+`passed: false`; `reports/m5/defensive/data-waiver.json` is bound to its exact
+SHA-256 and permits distillation only for that artifact. All offline, smoke,
+formal, and publication thresholds remain unchanged.
+
 Launch it on the second physical GPU:
 
 ```bash

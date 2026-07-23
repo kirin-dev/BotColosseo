@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from botcolosseo.agents.league_opponents import sha256_file
+from botcolosseo.training.defensive_waiver import validate_defensive_data_admission
 
 
 @dataclass
@@ -54,16 +55,31 @@ def audit_defensive_evidence(root: Path) -> dict[str, object]:
     audit = _Audit({}, [])
 
     data_gates = data.get("gate")
-    audit.add(
-        "data_gate",
+    data_gate_passed = (
         data.get("passed") is True
-        and data.get("style") == "defensive"
-        and data.get("split") == "train"
-        and data.get("transitions") == 50_000
         and isinstance(data_gates, dict)
         and bool(data_gates)
-        and all(value is True for value in data_gates.values()),
-        "Production Defensive data gate is incomplete or failed",
+        and all(value is True for value in data_gates.values())
+    )
+    waiver_path = root / "reports/m5/defensive/data-waiver.json"
+    try:
+        admission = validate_defensive_data_admission(
+            data,
+            manifest_path=paths["data"],
+            waiver_path=None if data_gate_passed else waiver_path,
+        )
+        admission_valid = True
+    except (FileNotFoundError, ValueError, json.JSONDecodeError):
+        admission = {
+            "data_gate_passed": data_gate_passed,
+            "data_waiver_applied": False,
+            "data_waiver_sha256": None,
+        }
+        admission_valid = False
+    audit.add(
+        "data_admission",
+        admission_valid,
+        "Production Defensive data has neither a passing gate nor a valid waiver",
     )
     shards = data.get("shards")
     shard_hashes_valid = isinstance(shards, list) and len(shards) == 5
@@ -95,6 +111,12 @@ def audit_defensive_evidence(root: Path) -> dict[str, object]:
         and distillation.get("frozen_base") is True
         and distillation.get("base_checkpoint_sha256") == base_hash
         and distillation.get("data_manifest_sha256") == sha256_file(paths["data"])
+        and distillation.get("data_gate_passed")
+        == admission["data_gate_passed"]
+        and distillation.get("data_waiver_applied")
+        == admission["data_waiver_applied"]
+        and distillation.get("data_waiver_sha256")
+        == admission["data_waiver_sha256"]
         and distillation.get("offline_evaluation", {}).get("passed") is True,
         "Defensive distillation gate or its upstream identity is invalid",
     )
@@ -194,5 +216,8 @@ def audit_defensive_evidence(root: Path) -> dict[str, object]:
         "errors": audit.errors,
         "selected_alpha": selected.get("alpha") if isinstance(selected, dict) else None,
         "selected_checkpoint_sha256": selected_hash,
+        "data_gate_passed": admission["data_gate_passed"],
+        "data_waiver_applied": admission["data_waiver_applied"],
+        "data_waiver_sha256": admission["data_waiver_sha256"],
         "test_cases_accessed": False,
     }

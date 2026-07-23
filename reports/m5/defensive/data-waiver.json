@@ -1,0 +1,16 @@
+{
+  "approved_on": "2026-07-23",
+  "authorized_by": "project_owner",
+  "base_checkpoint_sha256": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a",
+  "data_manifest": "data/generated/m5/defensive/train-manifest.json",
+  "data_manifest_sha256": "6d40022516ed16ace94690dcac10d38044d5abbbef3921baf4e787346c0775b3",
+  "failed_gate": "denial_recovery_windows",
+  "observed_denial_recovery_windows": 95,
+  "required_denial_recovery_windows": 100,
+  "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+  "schema_version": 1,
+  "stage": "m5-defensive-data-waiver",
+  "style": "defensive",
+  "test_cases_accessed": false,
+  "transitions": 50000
+}

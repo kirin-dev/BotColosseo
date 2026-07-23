@@ -11,6 +11,7 @@ INTERPOLATION="$ROOT/runs/m5/defensive-interpolation"
 SMOKE="$ROOT/reports/m5/defensive/smoke"
 SELECTION="$ROOT/reports/m5/defensive/selection.json"
 FORMAL="$ROOT/reports/m5/defensive/formal"
+WAIVER="$ROOT/reports/m5/defensive/data-waiver.json"
 
 export PYTHONPATH="$ROOT/src"
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-1}"
@@ -22,16 +23,21 @@ fi
 
 mkdir -p "$DATA" "$DISTILL" "$INTERPOLATION" "$SMOKE" "$(dirname "$SELECTION")"
 
-"$PYTHON" -u "$ROOT/scripts/generate_defensive_demonstrations.py" \
-  --config "$CONFIG" \
-  --base-checkpoint "$BASE" \
-  --output-dir "$DATA" \
-  --device cuda:0
+if [[ ! -f "$DATA/train-manifest.json" ]]; then
+  "$PYTHON" -u "$ROOT/scripts/generate_defensive_demonstrations.py" \
+    --config "$CONFIG" \
+    --base-checkpoint "$BASE" \
+    --output-dir "$DATA" \
+    --device cuda:0
+else
+  echo "Reusing existing hash-bound Defensive data manifest"
+fi
 
 "$PYTHON" -u "$ROOT/scripts/train_defensive_distillation.py" \
   --config "$CONFIG" \
   --base-checkpoint "$BASE" \
   --run-dir "$DISTILL" \
+  --data-waiver "$WAIVER" \
   --device cuda:0
 
 for alpha in 0.25 0.50 0.75; do
@@ -81,3 +87,5 @@ selected_checkpoint=$("$PYTHON" -c \
   --bootstrap-samples 10000 \
   --bootstrap-seed 20260723 \
   --device cuda:0
+
+"$PYTHON" -u "$ROOT/scripts/audit_defensive.py" --root "$ROOT"

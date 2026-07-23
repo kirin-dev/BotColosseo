@@ -22,6 +22,7 @@ from botcolosseo.training.bc import (
     load_shard_paths,
     seed_everything,
 )
+from botcolosseo.training.defensive_waiver import validate_defensive_data_admission
 from botcolosseo.training.style_distillation import (
     StyleDistillationTrainer,
     evaluate_defensive_distillation,
@@ -59,6 +60,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--run-dir", type=Path, required=True)
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--updates", type=int)
+    parser.add_argument("--data-waiver", type=Path)
     return parser
 
 
@@ -113,18 +115,23 @@ def main(argv: list[str] | None = None) -> int:
     manifest_path = root / str(config["train_manifest"])
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     base_hash = sha256_file(base_path)
-    required_gate = manifest.get("gate")
     if (
-        manifest.get("style") != "defensive"
-        or manifest.get("split") != "train"
-        or manifest.get("passed") is not True
-        or manifest.get("test_cases_accessed") is not False
-        or manifest.get("base_checkpoint_sha256") != base_hash
+        manifest.get("base_checkpoint_sha256") != base_hash
         or int(manifest.get("transitions", -1)) != int(config["transitions"])
-        or not isinstance(required_gate, dict)
-        or not all(required_gate.values())
     ):
         raise ValueError("Defensive distillation manifest is not eligible for training")
+    waiver_path = (
+        None
+        if args.data_waiver is None
+        else args.data_waiver
+        if args.data_waiver.is_absolute()
+        else root / args.data_waiver
+    )
+    admission = validate_defensive_data_admission(
+        manifest,
+        manifest_path=manifest_path,
+        waiver_path=waiver_path,
+    )
     base, scenario_hash = _load_base(base_path, root=root)
     if manifest.get("scenario_hash") != scenario_hash:
         raise ValueError("Defensive demonstrations and M3 base use different scenarios")
@@ -195,6 +202,7 @@ def main(argv: list[str] | None = None) -> int:
         "config_hash": config_hash,
         "data_manifest": str(manifest_path),
         "data_manifest_sha256": manifest_hash,
+        "data_waiver": None if waiver_path is None else str(waiver_path),
         "device": str(device),
         "final_metrics": asdict(last),
         "frozen_base": True,
@@ -206,6 +214,7 @@ def main(argv: list[str] | None = None) -> int:
         "style": "defensive",
         "test_cases_accessed": False,
         "updates": trainer.updates,
+        **admission,
     }
     _atomic_json(summary, run_dir / "summary.json")
     print(json.dumps(summary, indent=2, sort_keys=True), flush=True)
