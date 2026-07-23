@@ -520,10 +520,8 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.style_warm_start is not None and args.style is None:
         raise ValueError("--style-warm-start requires --style")
-    if args.style_warm_start is not None and (
-        args.resume is not None or args.transition_from is not None
-    ):
-        raise ValueError("Style warm start may only initialize a new run")
+    if args.style_warm_start is not None and args.transition_from is not None:
+        raise ValueError("Style warm start cannot cross a league transition")
     root = _project_root()
     config_path = _resolve(root, args.config)
     config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
