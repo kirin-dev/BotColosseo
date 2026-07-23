@@ -3,6 +3,7 @@ from pathlib import Path
 
 PUBLIC_DOCS = (
     Path("README.md"),
+    Path("README_CN.md"),
     Path("docs/milestones/m0.md"),
     Path("docs/milestones/m1.md"),
     Path("docs/milestones/m2.md"),
@@ -56,3 +57,13 @@ def test_readme_publishes_m4_media_with_validation_boundary() -> None:
     assert "reports/showcase/m4/manifest.json" in readme
     assert re.search(r"not an\s+official test result", readme)
     assert "M4 passed" not in readme
+
+
+def test_chinese_readme_preserves_failed_gate_and_validation_boundaries() -> None:
+    readme = Path("README_CN.md").read_text(encoding="utf-8")
+
+    assert "m4-base-vs-aggressive.gif" in readme
+    assert "不是 official test 结果" in readme
+    assert "M2 真实同步 1v1 与初始 PPO | FAIL" in readme
+    assert "M3 historical/PFSP Strong Base | 未通过全部能力门" in readme
+    assert "M5 Defensive / Explorer / Difficulty | 进行中" in readme

@@ -1,5 +1,7 @@
 # Bot Colosseo
 
+[中文说明](README_CN.md) · English
+
 Goal-oriented controllable visual game bots via skill-preserving policy shaping.
 
 Bot Colosseo studies how to train a strong visual game Bot and then shape it
