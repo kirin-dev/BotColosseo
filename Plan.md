@@ -398,7 +398,10 @@ Difficulty 不重新训练策略，也不改变生命值、伤害或信息边界
 - action temperature；
 - pursuit interruption window。
 
-Normal 使用原始策略参数；Easy 增加反应延迟和有界误差；Hard 减少这些限制，但仍遵守最小反应时间、最大转向速度和公平观测边界。
+首版冻结解释为：Hard 使用原始策略参数；Normal 增加 1 个 decision 的反应延迟；
+Easy 增加 2 个 decision 的反应延迟，并每 2 个 decision 才更新一次策略。
+这是因为原始策略已达到零附加延迟和每 decision 更新，无法仅靠这两个公平控制量
+再构造一个更强的 Hard。首版不加入动作噪声和 temperature，避免冲淡风格。
 
 验收要求：
 

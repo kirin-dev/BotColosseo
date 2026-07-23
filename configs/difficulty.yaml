@@ -1,0 +1,11 @@
+schema_version: 1
+profiles:
+  easy:
+    reaction_delay: 2
+    policy_update_interval: 2
+  normal:
+    reaction_delay: 1
+    policy_update_interval: 1
+  hard:
+    reaction_delay: 0
+    policy_update_interval: 1

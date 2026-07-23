@@ -1035,3 +1035,50 @@ metrics every 25 updates; evaluation prints an episode counter. Partial
 evaluation ledgers resume from exact identities. If production data or all
 three smoke candidates fail their frozen gates, artifacts are preserved and the
 pipeline exits nonzero without inventing a waiver.
+
+## M5 difficulty production pipeline
+
+The frozen difficulty controller uses the same Strong Base and passed
+Aggressive checkpoints at every tier. Hard is the native policy, Normal adds a
+one-decision reaction delay, and Easy adds a two-decision delay plus a
+two-decision policy-update interval. No health, damage, observation, or model
+weight changes are permitted.
+
+The pipeline first runs a 60-episode validation smoke. A complete,
+protocol-clean smoke may proceed even if its small-sample monotonic gate is
+inconclusive. Formal evidence uses 600 paired validation episodes and must pass
+all monotonicity, objective-capability, style-direction, integrity, and
+zero-test-access checks.
+
+Launch it on the first physical GPU:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+mkdir -p runs/m5
+test ! -s runs/m5/difficulty.pid || \
+  ! ps -p "$(cat runs/m5/difficulty.pid)" >/dev/null 2>&1
+rm -f runs/m5/difficulty.exit
+nohup setsid -f bash -c '
+  echo $$ > runs/m5/difficulty.pid
+  cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+  CUDA_VISIBLE_DEVICES=0 scripts/run_m5_difficulty.sh
+  status=$?
+  printf "%s\n" "$status" > runs/m5/difficulty.exit
+  exit "$status"
+' >> runs/m5/difficulty.log 2>&1
+while [[ ! -s runs/m5/difficulty.pid ]]; do sleep 1; done
+cat runs/m5/difficulty.pid
+```
+
+Monitor the append-only ledgers:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+ps -p "$(cat runs/m5/difficulty.pid)" -o pid,etime,%cpu,%mem,stat,cmd
+tail -n 60 runs/m5/difficulty.log
+find reports/m5/difficulty -name episodes.jsonl -print -exec wc -l {} \;
+test ! -f runs/m5/difficulty.exit || cat runs/m5/difficulty.exit
+```
+
+The evaluator prints one progress line per episode and resumes only when the
+checkpoint, config, cases, and schedule identities are exact matches.
