@@ -3,6 +3,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from botcolosseo.data.defensive_demonstrations import (
+    DefensiveStepEvidence,
+    label_defensive_windows,
+)
 from botcolosseo.data.demonstrations import (
     DemonstrationBuffer,
     load_demonstration_shard,
@@ -16,6 +20,10 @@ from botcolosseo.envs.duel_types import DuelActorObservation
 
 def _event(side: str) -> DuelEvent:
     return DuelEvent(DuelEventType.VALID_HIT, side, 0, 0, 4)
+
+
+def _typed_event(side: str, event_type: DuelEventType, index: int) -> DuelEvent:
+    return DuelEvent(event_type, side, 0, index, 4 * (index + 1))
 
 
 def _observation() -> DuelActorObservation:
@@ -82,3 +90,63 @@ def test_masked_style_shard_requires_explicit_loader_opt_in(tmp_path: Path) -> N
         load_demonstration_shard(path)
     loaded = load_demonstration_shard(path, require_all_valid=False)
     assert loaded["valid_mask"].tolist() == [True, False]
+
+
+def test_defensive_window_keeps_verified_denial_and_rejects_concession() -> None:
+    denial = DefensiveStepEvidence(
+        risk=True,
+        risk_after=False,
+        opponent_carrier=True,
+        loose_core_in_defensive_half=False,
+        events=(
+            _typed_event("host", DuelEventType.VALID_HIT, 0),
+            _typed_event("opponent", DuelEventType.DROP, 0),
+        ),
+    )
+    conceded = DefensiveStepEvidence(
+        risk=True,
+        risk_after=False,
+        opponent_carrier=True,
+        loose_core_in_defensive_half=False,
+        events=(_typed_event("opponent", DuelEventType.SCORE, 1),),
+    )
+
+    labels = label_defensive_windows((denial, conceded), learner_side="host")
+
+    assert labels.selected == (True, False)
+    assert labels.reasons == ("successful_denial", "rejected_risk_window")
+    assert labels.successful_windows == 1
+    assert labels.denial_recovery_windows == 1
+
+
+def test_defensive_window_keeps_recovery_and_safe_resolution_with_progress() -> None:
+    recovery = DefensiveStepEvidence(
+        risk=True,
+        risk_after=False,
+        opponent_carrier=False,
+        loose_core_in_defensive_half=True,
+        events=(_typed_event("host", DuelEventType.PICKUP, 0),),
+    )
+    resolved = DefensiveStepEvidence(
+        risk=True,
+        risk_after=False,
+        opponent_carrier=False,
+        loose_core_in_defensive_half=False,
+        events=(),
+    )
+    progress = DefensiveStepEvidence(
+        risk=False,
+        risk_after=False,
+        opponent_carrier=False,
+        loose_core_in_defensive_half=False,
+        events=(_typed_event("host", DuelEventType.PICKUP, 2),),
+    )
+
+    labels = label_defensive_windows(
+        (recovery, resolved, progress), learner_side="host"
+    )
+
+    assert labels.selected == (True, True, False)
+    assert labels.reasons[:2] == ("successful_recovery", "resolved_to_objective")
+    assert labels.successful_windows == 2
+    assert labels.denial_recovery_windows == 1
