@@ -115,6 +115,23 @@ def test_hybrid_showcase_config_discloses_policy_kinds_and_binds_hashes(
     assert config.selected_case_id == "aggressive_script:252:host"
 
 
+def test_frozen_product_showcase_config_is_hash_bound() -> None:
+    root = Path(__file__).resolve().parents[2]
+
+    config = load_hybrid_showcase_config(
+        root / "configs/showcase/hybrid-product.yaml",
+        root=root,
+    )
+
+    assert config.selected_case_id == "defensive_script:458:host"
+    assert tuple(row.policy_id for row in config.policies) == (
+        "strong_base",
+        "aggressive",
+        "defensive",
+        "explorer",
+    )
+
+
 def test_hybrid_showcase_config_rejects_test_access_and_hash_drift(
     tmp_path: Path,
 ) -> None:
@@ -143,8 +160,22 @@ def test_hybrid_showcase_case_selection_requires_all_mechanisms() -> None:
         "objective_completed": True,
     }
     aggressive_records = [
-        {**key, "policy": "strong_base", "engagement_initiations_per_100_decisions": 0.0},
-        {**key, "policy": "aggressive", "engagement_initiations_per_100_decisions": 2.0},
+        {
+            **key,
+            "policy": "strong_base",
+            "engagement_initiations_per_100_decisions": 0.0,
+            "attack_decisions": 0,
+            "decisions": 10,
+            "valid_hits": 0,
+        },
+        {
+            **key,
+            "policy": "aggressive",
+            "engagement_initiations_per_100_decisions": 2.0,
+            "attack_decisions": 2,
+            "decisions": 10,
+            "valid_hits": 1,
+        },
     ]
     defensive_records = [{**key, "policy": "defensive"}]
     explorer_records = [{**key, "policy": "explorer"}]

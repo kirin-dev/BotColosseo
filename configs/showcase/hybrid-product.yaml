@@ -1,0 +1,47 @@
+schema_version: 1
+stage: hybrid_product
+publication: true
+split: validation
+test_cases_accessed: false
+cases:
+  manifest: configs/showcase/hybrid-validation.json
+  expected_sha256: f45df9a087a607f16aa7361401e13f5b95fb9526ffa5a36ef6e0b36fc1c3142e
+  selected_case_id: defensive_script:458:host
+policies:
+  - id: strong_base
+    label: Strong Base (learned)
+    kind: checkpoint
+    artifact: runs/m3/league-full/candidate-boundary-0200000.pt
+    expected_sha256: fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a
+  - id: aggressive
+    label: Aggressive (learned style)
+    kind: checkpoint
+    artifact: runs/m4/aggressive-interpolation/alpha-025.pt
+    expected_sha256: 74771ff9ea05feb8658ac62de4fd19763390ce3c396b59c752cbed90b20b9446
+  - id: defensive
+    label: Defensive (hybrid governor)
+    kind: hybrid_config
+    artifact: configs/m5/hybrid/defensive.yaml
+    expected_sha256: fd584f38a90f55a0fc21c314b82c632814a6fd151f9337abf21346c432b9ad6c
+  - id: explorer
+    label: Explorer (hybrid governor)
+    kind: hybrid_config
+    artifact: configs/m5/hybrid/explorer_c.yaml
+    expected_sha256: 367ef8e7c3e5f9abd6202ddf7287428d7f1b70b9fb5d1d920ac2bb27be3baa1a
+evidence:
+  - style: aggressive
+    summary: reports/m4/evaluation/aggressive-alpha-025/summary.json
+    expected_sha256: ba6f309e88da31a0180db9b67044cb425a6f200a4751d15a85e029f1f8cb9cda
+  - style: defensive
+    summary: reports/m5/hybrid/defensive/formal-a/summary.json
+    expected_sha256: e90e39c802a7d97c420ae1e045e33efa7ac1fc3004c0d926d4f66a1d2190e5e7
+  - style: explorer
+    summary: reports/m5/hybrid/explorer/formal-c/summary.json
+    expected_sha256: 9829f10e5818f6fae1c37e68563417ce9815eca7e4f97cf796c55f045f6fd955
+render:
+  fps: 10
+  gif_seconds: 18
+  gif_max_bytes: 10000000
+  max_decisions: 525
+  output_dir: docs/assets/showcase
+  evidence_dir: reports/showcase/hybrid-product

@@ -153,18 +153,47 @@ def select_hybrid_showcase_case(
         ):
             raise ValueError("Hybrid showcase Aggressive engagement signal is invalid")
         aggressive_shift = float(style_engagement) - float(base_engagement)
+        action_values = tuple(
+            row.get(field)
+            for row in (base[case_key], aggressive[case_key])
+            for field in ("attack_decisions", "decisions", "valid_hits")
+        )
+        if any(type(value) is not int or value < 0 for value in action_values):
+            raise ValueError("Hybrid showcase Aggressive action signal is invalid")
+        (
+            base_attacks,
+            base_decisions,
+            base_hits,
+            style_attacks,
+            style_decisions,
+            style_hits,
+        ) = action_values
+        if base_decisions <= 0 or style_decisions <= 0:
+            raise ValueError("Hybrid showcase Aggressive decisions must be positive")
+        attack_rate_shift = 100.0 * (
+            style_attacks / style_decisions - base_attacks / base_decisions
+        )
+        valid_hit_shift = style_hits - base_hits
+        aggressive_contrast = (
+            max(0.0, aggressive_shift)
+            + max(0.0, attack_rate_shift)
+            + max(0, valid_hit_shift)
+        )
         row = {
             "case_id": f"{case_key[0]}:{case_key[1]}:{case_key[2]}",
             "aggressive_shift": aggressive_shift,
+            "aggressive_attack_rate_shift": attack_rate_shift,
+            "aggressive_valid_hit_shift": valid_hit_shift,
+            "aggressive_contrast": aggressive_contrast,
             "defensive_interventions": defensive_counts[case_key],
             "explorer_action_changes": explorer_changes[case_key],
             "explorer_mode_count": len(explorer_modes[case_key]),
         }
         if (
-            aggressive_shift > 0.0
+            aggressive_contrast > 0.0
             and defensive_counts[case_key] > 0
             and explorer_changes[case_key] > 0
-            and len(explorer_modes[case_key]) >= 2
+            and len(explorer_modes[case_key]) >= 1
         ):
             candidates.append(row)
     if not candidates:
@@ -172,16 +201,14 @@ def select_hybrid_showcase_case(
     maxima = {
         field: max(float(row[field]) for row in candidates)
         for field in (
-            "aggressive_shift",
+            "aggressive_contrast",
             "defensive_interventions",
             "explorer_action_changes",
             "explorer_mode_count",
         )
     }
     for row in candidates:
-        row["contrast_score"] = sum(
-            float(row[field]) / maxima[field] for field in maxima
-        )
+        row["contrast_score"] = sum(float(row[field]) / maxima[field] for field in maxima)
     ranking = sorted(candidates, key=lambda row: (-float(row["contrast_score"]), row["case_id"]))
     return {
         "selected_case_id": ranking[0]["case_id"],
