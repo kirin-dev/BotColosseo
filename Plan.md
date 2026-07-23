@@ -612,9 +612,10 @@ Resume-ready。
 评测和证据审计，但分别未稳定通过 protective-presence 与 closed-loop route
 门禁，负结果已保留。两项不改变 evaluator 的 200k closed-loop PPO repair 已完成
 工程实现并进入生产实验。Easy/Normal/Hard 公平观测 controller 已实现，Strong
-Base/Aggressive 的 600 局正式 calibration 正在运行；三风格 Style×Difficulty
-的 1,800 局合并协议已经冻结，需等待 Defensive/Explorer 各自门禁通过后执行。
-因此暂不声称 Defensive、Explorer、Difficulty 或 M5 通过。
+Base/Aggressive 的 600 局正式 calibration 已通过全部六项门禁，零重试且零协议
+错误；三风格 Style×Difficulty 的 1,800 局合并协议已经冻结，需等待
+Defensive/Explorer 各自门禁通过后执行。因此可以声称首个 difficulty block
+通过，但暂不声称 Defensive、Explorer、完整 Difficulty 或 M5 通过。
 
 ### M6：公开发布
 

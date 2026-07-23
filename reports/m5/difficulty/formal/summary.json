@@ -1,0 +1,83 @@
+{
+  "cells": {
+    "aggressive": {
+      "easy": {
+        "engagement_initiations_per_100_decisions": 0.049669696518154276,
+        "episodes": 100,
+        "mean_score_difference": 1.02,
+        "objective_rate": 0.88,
+        "performance": 0.83,
+        "win_rate": 0.72
+      },
+      "hard": {
+        "engagement_initiations_per_100_decisions": 0.09822410812509823,
+        "episodes": 100,
+        "mean_score_difference": 1.78,
+        "objective_rate": 0.99,
+        "performance": 0.955,
+        "win_rate": 0.88
+      },
+      "normal": {
+        "engagement_initiations_per_100_decisions": 0.006905838886778771,
+        "episodes": 100,
+        "mean_score_difference": 1.49,
+        "objective_rate": 0.94,
+        "performance": 0.89,
+        "win_rate": 0.76
+      }
+    },
+    "strong_base": {
+      "easy": {
+        "engagement_initiations_per_100_decisions": 0.0,
+        "episodes": 100,
+        "mean_score_difference": 1.03,
+        "objective_rate": 0.87,
+        "performance": 0.82,
+        "win_rate": 0.71
+      },
+      "hard": {
+        "engagement_initiations_per_100_decisions": 0.0,
+        "episodes": 100,
+        "mean_score_difference": 1.82,
+        "objective_rate": 0.99,
+        "performance": 0.955,
+        "win_rate": 0.89
+      },
+      "normal": {
+        "engagement_initiations_per_100_decisions": 0.0,
+        "episodes": 100,
+        "mean_score_difference": 1.47,
+        "objective_rate": 0.93,
+        "performance": 0.8775,
+        "win_rate": 0.78
+      }
+    }
+  },
+  "checkpoint_sha256": {
+    "aggressive": "74771ff9ea05feb8658ac62de4fd19763390ce3c396b59c752cbed90b20b9446",
+    "strong_base": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a"
+  },
+  "complete": true,
+  "config_sha256": "b226f7b1d7d12cd979d05b14f145f3be6c56fb1dc669b3070315dbacc331f627",
+  "environment_retries": 0,
+  "episodes": 600,
+  "expected_episodes": 600,
+  "gates": {
+    "aggregate_monotonic": true,
+    "complete": true,
+    "objective_capability": true,
+    "per_opponent_monotonic": true,
+    "protocol_clean": true,
+    "style_direction_preserved": true
+  },
+  "monotonic_opponents": {
+    "aggressive": 4,
+    "strong_base": 4
+  },
+  "passed": true,
+  "protocol_inconsistencies": 0,
+  "schema_version": 1,
+  "split": "validation",
+  "stage": "m5-difficulty",
+  "test_cases_accessed": false
+}

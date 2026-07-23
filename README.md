@@ -34,6 +34,22 @@ official test result. See the [full Strong Base episode](docs/assets/showcase/m4
 [metric card](docs/assets/showcase/m4-metrics.png), and
 [hash-bound publication manifest](reports/showcase/m4/manifest.json).
 
+## Fair Easy / Normal / Hard control
+
+![Difficulty performance on 600 paired validation episodes](docs/assets/showcase/m5-difficulty.png)
+
+The same frozen checkpoints become progressively less restricted from Easy to
+Hard. Strong Base performance is `0.820 → 0.878 → 0.955`; Aggressive is
+`0.830 → 0.890 → 0.955`. All six frozen gates passed with zero retries and
+zero protocol inconsistencies. Hard is the native policy; Normal adds one
+decision of reaction delay, while Easy adds two decisions of delay and updates
+the policy every two decisions.
+
+This is the passing Strong Base/Aggressive controller calibration, not the
+complete M5 claim. Defensive and Explorer still need to pass their style gates
+and the frozen all-style difficulty extension. See the
+[evidence record](docs/milestones/m5-difficulty.md).
+
 ## Current status
 
 Milestone 1 passed its frozen capability gate. Milestone 2 delivered a real
@@ -99,7 +115,8 @@ a successful style Bot. The [Explorer experiment](docs/milestones/m5-explorer.md
 passed its data and offline-learning gates but produced no closed-loop flank
 completion in the fixed validation smokes, so it is also retained as a
 mechanism-level negative result rather than called complete. Difficulty control
-is in formal validation; the final M5/M6 product gate remains pending.
+passed its 600-episode Strong Base/Aggressive calibration; the final all-style
+M5/M6 product gate remains pending.
 
 ## Quick start
 
