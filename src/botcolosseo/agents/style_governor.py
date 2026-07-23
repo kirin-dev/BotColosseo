@@ -160,6 +160,7 @@ class DefensiveGovernor:
         self._state: DefensiveState = "base"
         self._remaining = 0
         self._elapsed = 0
+        self._consecutive_interventions = 0
         self._previous_health: float | None = None
         self._previous_score: int | None = None
 
@@ -172,6 +173,7 @@ class DefensiveGovernor:
         self._state = "base"
         self._remaining = 0
         self._elapsed = 0
+        self._consecutive_interventions = 0
         self._previous_health = None
         self._previous_score = None
 
@@ -197,6 +199,20 @@ class DefensiveGovernor:
                 return self._decision("cooldown_complete", "base_restored")
             decision = self._decision(
                 "recover_cooldown",
+                "exact_base_fallback",
+                fallback="recover_base_only",
+            )
+            self._tick()
+            return decision
+
+        if (
+            self._state in ("guard", "disengage")
+            and self._consecutive_interventions
+            >= self.config.max_consecutive_interventions
+        ):
+            self._enter("recover", self.config.recover_decisions)
+            decision = self._decision(
+                "consecutive_intervention_limit",
                 "exact_base_fallback",
                 fallback="recover_base_only",
             )
@@ -238,7 +254,15 @@ class DefensiveGovernor:
         self._elapsed += 1
 
     def _active_decision(self, trigger: str) -> GovernorDecision:
-        remaining = max(0, self._remaining - 1)
+        remaining = min(
+            max(0, self._remaining - 1),
+            max(
+                0,
+                self.config.max_consecutive_interventions
+                - self._consecutive_interventions
+                - 1,
+            ),
+        )
         if self._state == "guard":
             left = self._elapsed % 2 == 0
             magnitude = self.config.guard_bias
@@ -282,6 +306,7 @@ class DefensiveGovernor:
             max_remaining_interventions=remaining,
             fallback_condition="limit_health_or_carrying",
         )
+        self._consecutive_interventions += 1
         self._tick()
         return decision
 
@@ -292,6 +317,7 @@ class DefensiveGovernor:
         *,
         fallback: str = "inactive",
     ) -> GovernorDecision:
+        self._consecutive_interventions = 0
         return GovernorDecision(
             state=self._state,
             trigger=trigger,

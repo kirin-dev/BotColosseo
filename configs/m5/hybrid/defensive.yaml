@@ -1,5 +1,5 @@
 schema_version: 1
-candidate_id: defensive-hybrid-a
+candidate_id: defensive-hybrid-b
 style: defensive
 base_checkpoint: runs/m3/league-full/candidate-boundary-0200000.pt
 base_checkpoint_sha256: fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a

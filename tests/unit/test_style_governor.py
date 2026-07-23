@@ -136,6 +136,24 @@ def test_defensive_persistent_low_health_cannot_extend_intervention_limit() -> N
     assert decisions[3].state == "base"
 
 
+def test_defensive_shared_limit_bounds_guard_to_disengage_transition() -> None:
+    governor = _defensive()
+    governor.reset()
+    governor.decide(_context())
+
+    guard = governor.decide(_context(own_score=1, decision_index=1))
+    disengage = governor.decide(
+        _context(own_score=1, health=70.0, decision_index=2)
+    )
+    fallback = governor.decide(
+        _context(own_score=1, health=70.0, decision_index=3)
+    )
+
+    assert guard.intervened and disengage.intervened
+    assert fallback.trigger == "consecutive_intervention_limit"
+    assert not fallback.intervened
+
+
 def test_defensive_is_deterministic_for_identical_public_trajectory() -> None:
     trajectory = (
         _context(),
