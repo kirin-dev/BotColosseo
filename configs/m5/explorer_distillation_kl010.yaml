@@ -14,5 +14,5 @@ updates: 1000
 learning_rate: 0.0003
 weight_decay: 0.00001
 gradient_clip: 0.5
-beta_kl: 0.20
+beta_kl: 0.10
 bottleneck: 32

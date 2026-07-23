@@ -1,0 +1,38 @@
+{
+  "base_checkpoint": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/runs/m3/league-full/candidate-boundary-0200000.pt",
+  "base_checkpoint_sha256": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a",
+  "checkpoint": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/runs/m5/explorer-distillation-kl010-diagnostic/style-pretrained.pt",
+  "checkpoint_sha256": "2f3c1618eda2d3c82d566e0ccc3a837bcd7d03f6e860909d38710d7966ae9cfe",
+  "completed": true,
+  "config": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/configs/m5/explorer_distillation_kl010.yaml",
+  "config_hash": "9d829eb23916ce0b0705f8df535cc1dadfb455c9b4a6afe2a03bdb4bcdcab9a8",
+  "data_manifest": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/data/generated/m5/explorer/train-manifest.json",
+  "data_manifest_sha256": "f280322b6fe8e0ecbd4b2da3b19cfdbc5cede763236a91c9adba2e94366c3a35",
+  "device": "cuda:0",
+  "final_metrics": {
+    "accuracy": 0.6666666269302368,
+    "base_kl": 1.1944141387939453,
+    "gradient_norm": 1.0496928691864014,
+    "imitation_loss": 0.847143828868866,
+    "supervised_count": 237,
+    "total_loss": 0.9665852189064026,
+    "update": 1000
+  },
+  "frozen_base": true,
+  "neutral_checkpoint": "/home/wencong/BotColosseo/.worktrees/m4-aggressive/runs/m5/explorer-distillation-kl010-diagnostic/neutral.pt",
+  "neutral_checkpoint_sha256": "bc6060610a441445f8b32225e85e83df230ef1bace72b2071e2d0c9724755d6b",
+  "offline_evaluation": {
+    "base_context_action_drift_rate": 0.1330049261083744,
+    "base_context_count": 4263,
+    "base_route_target_agreement": 0.0,
+    "passed": false,
+    "route_count": 3870,
+    "route_target_agreement": 0.4354005167958656,
+    "route_target_agreement_delta": 0.4354005167958656
+  },
+  "passed": false,
+  "scenario_hash": "91569d20cd52844cfa31284fe8df2886b3d8f2860bacfb6070c5d828511a7cb8",
+  "style": "explorer",
+  "test_cases_accessed": false,
+  "updates": 1000
+}
