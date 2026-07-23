@@ -86,6 +86,45 @@ def test_write_gif_is_atomic_and_enforces_size(tmp_path: Path, monkeypatch) -> N
     assert len(appended) == 1
 
 
+def test_write_gif_downscales_deterministically_to_meet_ceiling(
+    tmp_path: Path, monkeypatch
+) -> None:
+    attempted_shapes: list[tuple[int, int]] = []
+
+    class FakeWriter:
+        def __init__(self, path: Path) -> None:
+            self.path = path
+            self.shape = (0, 0)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, traceback) -> None:
+            size = 20 if self.shape == (8, 8) else 6
+            self.path.write_bytes(b"x" * size)
+
+        def append_data(self, frame: np.ndarray) -> None:
+            self.shape = frame.shape[:2]
+            attempted_shapes.append(self.shape)
+
+    monkeypatch.setattr(
+        "botcolosseo.envs.video.imageio.get_writer",
+        lambda path, **kwargs: FakeWriter(Path(path)),
+    )
+    target = tmp_path / "comparison.gif"
+
+    result = write_gif(
+        [np.zeros((8, 8, 3), dtype=np.uint8)],
+        target,
+        fps=10,
+        max_bytes=10,
+    )
+
+    assert result == target
+    assert target.stat().st_size == 6
+    assert attempted_shapes == [(8, 8), (7, 7)]
+
+
 def test_read_video_frames_normalizes_rgba(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
         "botcolosseo.envs.video.imageio.get_reader",

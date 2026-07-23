@@ -164,7 +164,9 @@ def test_development_renderer_stays_non_public_and_aligns_streams(
         frames: object, output: Path, *, fps: int, max_bytes: int
     ) -> Path:
         del fps, max_bytes
-        gif_frames.extend(frames)  # type: ignore[arg-type]
+        captured = tuple(frames)  # type: ignore[arg-type]
+        gif_frames.extend(captured)
+        videos[output] = captured
         output.write_bytes(b"GIF89a")
         return output
 

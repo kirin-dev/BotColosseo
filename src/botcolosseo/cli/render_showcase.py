@@ -221,6 +221,7 @@ def render_showcase(
             fps=config.render.fps,
             max_bytes=config.render.gif_max_bytes,
         )
+        comparison_frames = read_video_frames(comparison)
         staged_paths["comparison_gif"] = comparison
 
         if metric_evidence is not None:
