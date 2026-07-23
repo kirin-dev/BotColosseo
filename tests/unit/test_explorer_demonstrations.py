@@ -1,5 +1,6 @@
 from botcolosseo.data.explorer_demonstrations import (
     ExplorerStepEvidence,
+    admit_balanced_explorer_windows,
     label_explorer_windows,
 )
 from botcolosseo.envs.duel_protocol import DuelEvent, DuelEventType
@@ -70,3 +71,44 @@ def test_explorer_rejects_mixed_or_incomplete_paths() -> None:
     assert not any(incomplete_labels.selected)
     assert mixed_labels.successful_windows == 0
     assert incomplete_labels.successful_windows == 0
+
+
+def test_explorer_window_cap_keeps_complete_windows_and_logs_skips() -> None:
+    labels = label_explorer_windows(
+        (
+            _step("direct_upper", "upper_route"),
+            _step(
+                "direct_upper",
+                "home",
+                _event("host", DuelEventType.SCORE, 1),
+            ),
+            _step("direct_upper", "upper_route"),
+            _step(
+                "direct_upper",
+                "home",
+                _event("host", DuelEventType.SCORE, 3),
+            ),
+        ),
+        learner_side="host",
+    )
+
+    admission = admit_balanced_explorer_windows(
+        labels,
+        retained_route_windows={
+            "direct_upper": 14,
+            "direct_lower": 0,
+            "flank": 0,
+        },
+        max_per_route=15,
+    )
+
+    assert admission.selected == (True, True, False, False)
+    assert admission.reasons[-2:] == (
+        "skipped_route_balance",
+        "skipped_route_balance",
+    )
+    assert dict(admission.accepted_windows) == {
+        "direct_upper": 1,
+        "direct_lower": 0,
+        "flank": 0,
+    }

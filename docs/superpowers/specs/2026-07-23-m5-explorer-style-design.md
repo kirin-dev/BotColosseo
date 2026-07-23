@@ -95,7 +95,10 @@ learner SCORE and whose visited region signature matches the selected route:
 - both `flank_west` and `flank_east` for `flank`.
 
 Failed, mixed, stalled, or unscored paths are logged but receive no Explorer
-positive labels. Strong Base replay supplies 25%–50% of supervised context.
+positive labels. To prevent the easiest route from dominating the
+success-filtered set, retain at most the first 15 verified successful windows
+per route in the frozen case order. Record both raw and retained route counts.
+Strong Base replay supplies 25%–50% of supervised context.
 
 The production data gate requires:
 
