@@ -1,0 +1,15 @@
+{
+  "checkpoint": "runs/m5/v2/explorer/preflight-002000/latest.pt",
+  "checkpoint_sha256": "dfe45d2d83a8236bfa1b2057743d04c7f73a985f7dee7edec40d99a16b42dcea",
+  "environment_steps": 2000,
+  "passed": true,
+  "style": "explorer",
+  "supervision_counts": {
+    "mode:0": 527,
+    "mode:1": 882,
+    "mode:2": 591,
+    "tokens": 2000
+  },
+  "test_cases_accessed": false,
+  "train_updates_audited": 32
+}

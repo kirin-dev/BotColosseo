@@ -1180,6 +1180,53 @@ test ! -f runs/m5/explorer-ppo.exit || cat runs/m5/explorer-ppo.exit
 An exit code of one after evaluation is a preserved frozen-gate failure, not
 permission to change the evaluator.
 
+## M5 V2 Teacher-assisted repair
+
+V1 is preserved as negative mechanism evidence. V2 uses new directories,
+Teacher labels that are never executed, and a hard 100,000-step ceiling.
+Defensive defaults to physical GPU 0 and Explorer to physical GPU 1.
+
+Run the real 2,000-step preflights:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+CUDA_VISIBLE_DEVICES=0 scripts/run_m5_defensive_ppo_v2.sh preflight
+CUDA_VISIBLE_DEVICES=1 scripts/run_m5_explorer_ppo_v2.sh preflight
+```
+
+Each command ends by auditing finite PPO/auxiliary/gradient metrics, nonempty
+supervision, checkpoint identity, public-only loading, and—in Explorer—all
+three route modes and per-mode reward evidence. It refuses to overwrite an
+existing preflight.
+
+After both preflights pass, launch the immutable 50,000-step pilots:
+
+```bash
+CUDA_VISIBLE_DEVICES=0 scripts/run_m5_defensive_ppo_v2.sh pilot
+CUDA_VISIBLE_DEVICES=1 scripts/run_m5_explorer_ppo_v2.sh pilot
+```
+
+Then run the unchanged 20-episode validation smokes:
+
+```bash
+CUDA_VISIBLE_DEVICES=0 scripts/run_m5_defensive_ppo_v2.sh smoke
+CUDA_VISIBLE_DEVICES=1 scripts/run_m5_explorer_ppo_v2.sh smoke
+```
+
+Stop at 50k if the smoke passes, or if retention/protocol/coverage fails or
+the primary style point estimate has the wrong sign. Only when retention
+passes and the primary point estimate has the correct sign but remains
+inconclusive may the corresponding run continue once:
+
+```bash
+CUDA_VISIBLE_DEVICES=0 scripts/run_m5_defensive_ppo_v2.sh continue
+CUDA_VISIBLE_DEVICES=1 scripts/run_m5_explorer_ppo_v2.sh continue
+```
+
+The `continue` stage resumes the hash-bound 50k `latest.pt` and stops at the
+100k hard ceiling. It is not an automatic extension and must not be invoked
+before reading the 50k smoke summary.
+
 ## M6 anonymous user-study package
 
 Run this only after the three public style videos are generated from passing

@@ -1,0 +1,12 @@
+{
+  "checkpoint": "runs/m5/v2/defensive/preflight-002000/latest.pt",
+  "checkpoint_sha256": "3e70711a71201639a91f252a1a8543db90ed835adc2c35768be1d665be87f78b",
+  "environment_steps": 2000,
+  "passed": true,
+  "style": "defensive",
+  "supervision_counts": {
+    "tokens": 793
+  },
+  "test_cases_accessed": false,
+  "train_updates_audited": 32
+}

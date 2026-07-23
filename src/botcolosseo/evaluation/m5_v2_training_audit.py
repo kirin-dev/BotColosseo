@@ -102,8 +102,12 @@ def audit_m5_v2_training(
     policy = CheckpointOpponentPolicy.load(spec, device=torch.device("cpu"))
     if list(inspect.signature(policy.act).parameters) != ["observation"]:
         raise ValueError("Published policy interface is not public-observation-only")
+    try:
+        checkpoint_label = str(checkpoint.relative_to(Path.cwd().resolve()))
+    except ValueError:
+        checkpoint_label = str(checkpoint)
     return {
-        "checkpoint": str(checkpoint),
+        "checkpoint": checkpoint_label,
         "checkpoint_sha256": sha256_file(checkpoint),
         "environment_steps": expected_steps,
         "passed": True,

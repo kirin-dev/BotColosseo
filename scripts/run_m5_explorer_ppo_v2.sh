@@ -35,7 +35,8 @@ case "$STAGE" in
     }
     train --run-dir "$PREFLIGHT" --device cuda:0 --stop-after-steps 2000
     "$PYTHON" "$ROOT/scripts/audit_m5_v2_training.py" \
-      --run-dir "$PREFLIGHT" --style explorer --expected-steps 2000
+      --run-dir "$PREFLIGHT" --style explorer --expected-steps 2000 \
+      --output "$ROOT/reports/m5/v2/explorer/preflight-training-audit.json"
     ;;
   pilot)
     "$PYTHON" "$ROOT/scripts/audit_m5_v2_training.py" \
