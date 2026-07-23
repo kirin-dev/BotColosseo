@@ -73,10 +73,20 @@ def label_defensive_windows(
     for index, step in enumerate(steps):
         if step.risk and start is None:
             start = index
-        if start is None or (step.risk_after and index + 1 < len(steps)):
+        opponent_side = "opponent" if learner_side == "host" else "host"
+        terminal_event = any(
+            (
+                _has_event(step.events, opponent_side, DuelEventType.DROP),
+                _has_event(step.events, opponent_side, DuelEventType.SCORE),
+                _has_event(step.events, learner_side, DuelEventType.PICKUP),
+                _has_event(step.events, learner_side, DuelEventType.DEATH),
+            )
+        )
+        if start is None or (
+            step.risk_after and not terminal_event and index + 1 < len(steps)
+        ):
             continue
         window = steps[start : index + 1]
-        opponent_side = "opponent" if learner_side == "host" else "host"
         denial = any(
             item.opponent_carrier
             and _has_event(item.events, learner_side, DuelEventType.VALID_HIT)

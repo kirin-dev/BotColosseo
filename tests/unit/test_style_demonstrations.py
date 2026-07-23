@@ -150,3 +150,30 @@ def test_defensive_window_keeps_recovery_and_safe_resolution_with_progress() -> 
     assert labels.reasons[:2] == ("successful_recovery", "resolved_to_objective")
     assert labels.successful_windows == 2
     assert labels.denial_recovery_windows == 1
+
+
+def test_defensive_window_splits_drop_from_following_recovery() -> None:
+    denial = DefensiveStepEvidence(
+        risk=True,
+        risk_after=True,
+        opponent_carrier=True,
+        loose_core_in_defensive_half=False,
+        events=(
+            _typed_event("host", DuelEventType.VALID_HIT, 0),
+            _typed_event("opponent", DuelEventType.DROP, 0),
+        ),
+    )
+    recovery = DefensiveStepEvidence(
+        risk=True,
+        risk_after=False,
+        opponent_carrier=False,
+        loose_core_in_defensive_half=True,
+        events=(_typed_event("host", DuelEventType.PICKUP, 1),),
+    )
+
+    labels = label_defensive_windows((denial, recovery), learner_side="host")
+
+    assert labels.selected == (True, True)
+    assert labels.reasons == ("successful_denial", "successful_recovery")
+    assert labels.successful_windows == 2
+    assert labels.denial_recovery_windows == 2
