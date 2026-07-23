@@ -318,6 +318,131 @@ def load_metric_evidence(
     )
 
 
+def build_m4_showcase_metric_payload(
+    evaluation: Mapping[str, object],
+    records: Sequence[Mapping[str, object]],
+    *,
+    case_ids: Sequence[str],
+    expected_hashes: Mapping[str, str],
+) -> dict[str, object]:
+    """Bind a passing M4 evaluation to deterministic showcase contrast probes."""
+    hashes = _load_hash_map(expected_hashes, "Expected M4 checkpoint hashes")
+    if tuple(hashes) != ("strong_base", "aggressive"):
+        raise ValueError("M4 showcase metrics require Strong Base and Aggressive hashes")
+    if (
+        evaluation.get("stage") != "m4"
+        or evaluation.get("split") != "validation"
+        or evaluation.get("passed") is not True
+        or evaluation.get("test_cases_accessed") is not False
+    ):
+        raise ValueError("M4 showcase metrics require a passing formal evaluation")
+    if _load_hash_map(
+        evaluation.get("checkpoint_sha256"), "M4 evaluation checkpoint hashes"
+    ) != hashes:
+        raise ValueError("M4 evaluation checkpoint hashes do not match")
+
+    gates = evaluation.get("gates")
+    if not isinstance(gates, Mapping):
+        raise ValueError("M4 evaluation gates are missing")
+    style_gate_passed = all(
+        gates.get(name) is True
+        for name in (
+            "engagement_shift",
+            "valid_attack_rate",
+            "objective_chase_controlled",
+        )
+    )
+    retention_gate_passed = all(
+        gates.get(name) is True
+        for name in ("skill_retention", "per_opponent_retention")
+    )
+    if not style_gate_passed or not retention_gate_passed:
+        raise ValueError("M4 showcase metrics require passing style and retention gates")
+
+    ordered_case_ids = tuple(case_ids)
+    if (
+        not ordered_case_ids
+        or len(set(ordered_case_ids)) != len(ordered_case_ids)
+        or any(not isinstance(value, str) or not value for value in ordered_case_ids)
+    ):
+        raise ValueError("M4 showcase metrics require unique non-empty case IDs")
+    grouped: dict[str, dict[str, Mapping[str, object]]] = {
+        case_id_value: {} for case_id_value in ordered_case_ids
+    }
+    for record in records:
+        case_id_value, policy_id = _validate_showcase_record(
+            record, ("strong_base", "aggressive")
+        )
+        if case_id_value not in grouped or policy_id in grouped[case_id_value]:
+            raise ValueError("M4 showcase probe records do not match configured cases")
+        grouped[case_id_value][policy_id] = record
+    if any(set(by_policy) != {"strong_base", "aggressive"} for by_policy in grouped.values()):
+        raise ValueError("M4 showcase probe records have incomplete policy coverage")
+
+    case_scores: dict[str, float] = {}
+    decision_scores: dict[str, list[float]] = {}
+    for case_id_value, by_policy in grouped.items():
+        decisions = [by_policy[policy_id].get("decisions") for policy_id in hashes]
+        if any(
+            isinstance(value, bool) or not isinstance(value, int) or value <= 0
+            for value in decisions
+        ):
+            raise ValueError("M4 showcase probe decisions must be positive integers")
+        scores = [0.0] * max(decisions)  # type: ignore[arg-type]
+        for policy_id, sign in (("strong_base", -1.0), ("aggressive", 1.0)):
+            events = by_policy[policy_id].get("events")
+            if not isinstance(events, Sequence) or isinstance(events, (str, bytes)):
+                raise ValueError("M4 showcase probe events must be a sequence")
+            for event in events:
+                if not isinstance(event, Mapping):
+                    raise ValueError("M4 showcase probe event must be an object")
+                if event.get("label") != "VALID_HIT":
+                    continue
+                index = event.get("decision_index")
+                if (
+                    isinstance(index, bool)
+                    or not isinstance(index, int)
+                    or not 0 <= index < len(scores)
+                ):
+                    raise ValueError("M4 showcase probe event index is invalid")
+                scores[index] += sign
+        decision_scores[case_id_value] = scores
+        case_scores[case_id_value] = float(sum(scores))
+
+    policies = evaluation.get("policies")
+    if not isinstance(policies, Mapping) or not isinstance(
+        policies.get("strong_base"), Mapping
+    ):
+        raise ValueError("M4 evaluation policy summary is missing")
+    episodes = evaluation.get("episodes")
+    if isinstance(episodes, bool) or not isinstance(episodes, int) or episodes <= 0:
+        raise ValueError("M4 evaluation episode count is invalid")
+    return {
+        "schema_version": 1,
+        "stage": "m4",
+        "split": "validation",
+        "passed": True,
+        "style_gate_passed": style_gate_passed,
+        "retention_gate_passed": retention_gate_passed,
+        "episodes": episodes,
+        "checkpoint_sha256": hashes,
+        "headline": {
+            "base_win_rate": _finite_number(
+                policies["strong_base"].get("win_rate"), "M4 base win rate"
+            ),
+            "aggressive_style_delta": _finite_number(
+                evaluation.get("engagement_initiation_delta"),
+                "M4 aggressive style delta",
+            ),
+            "skill_retention": _finite_number(
+                evaluation.get("skill_retention"), "M4 skill retention"
+            ),
+        },
+        "case_contrast_scores": case_scores,
+        "decision_contrast_scores": decision_scores,
+    }
+
+
 def select_showcase_case(
     records: Sequence[Mapping[str, object]],
     policy_ids: Sequence[str],

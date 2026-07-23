@@ -8,6 +8,7 @@ import pytest
 import yaml
 
 from botcolosseo.evaluation.showcase import (
+    build_m4_showcase_metric_payload,
     build_showcase_manifest,
     canonical_json,
     case_id,
@@ -56,6 +57,91 @@ def _eligible_record(case_id: str, policy_id: str) -> dict[str, object]:
         "action_tic_inconsistent": False,
         "score_event_inconsistent": False,
     }
+
+
+def _m4_evaluation_payload() -> dict[str, object]:
+    return {
+        "stage": "m4",
+        "split": "validation",
+        "passed": True,
+        "episodes": 200,
+        "test_cases_accessed": False,
+        "checkpoint_sha256": {
+            "strong_base": "1" * 64,
+            "aggressive": "2" * 64,
+        },
+        "gates": {
+            "engagement_shift": True,
+            "valid_attack_rate": True,
+            "objective_chase_controlled": True,
+            "skill_retention": True,
+            "per_opponent_retention": True,
+        },
+        "engagement_initiation_delta": 0.12,
+        "skill_retention": 0.91,
+        "policies": {"strong_base": {"win_rate": 0.72}},
+    }
+
+
+def test_build_m4_showcase_metrics_uses_logged_valid_hits() -> None:
+    case_ids = ("fixed_route:250:host", "aggressive_script:252:host")
+    records = []
+    for case_id_value in case_ids:
+        base = _eligible_record(case_id_value, "strong_base")
+        base.update({"decisions": 4, "events": []})
+        aggressive = _eligible_record(case_id_value, "aggressive")
+        aggressive.update(
+            {
+                "decisions": 4,
+                "events": (
+                    [{"decision_index": 2, "label": "VALID_HIT"}]
+                    if case_id_value.startswith("aggressive_script")
+                    else []
+                ),
+            }
+        )
+        records.extend((base, aggressive))
+
+    payload = build_m4_showcase_metric_payload(
+        _m4_evaluation_payload(),
+        records,
+        case_ids=case_ids,
+        expected_hashes={"strong_base": "1" * 64, "aggressive": "2" * 64},
+    )
+
+    assert payload["headline"] == {
+        "base_win_rate": 0.72,
+        "aggressive_style_delta": 0.12,
+        "skill_retention": 0.91,
+    }
+    assert payload["case_contrast_scores"] == {
+        "fixed_route:250:host": 0.0,
+        "aggressive_script:252:host": 1.0,
+    }
+    assert payload["decision_contrast_scores"]["aggressive_script:252:host"] == [
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+    ]
+
+
+def test_build_m4_showcase_metrics_rejects_failed_formal_gate() -> None:
+    evaluation = _m4_evaluation_payload()
+    evaluation["passed"] = False
+    records = []
+    for policy_id in ("strong_base", "aggressive"):
+        record = _eligible_record("fixed_route:250:host", policy_id)
+        record.update({"decisions": 1, "events": []})
+        records.append(record)
+
+    with pytest.raises(ValueError, match="passing formal evaluation"):
+        build_m4_showcase_metric_payload(
+            evaluation,
+            records,
+            case_ids=("fixed_route:250:host",),
+            expected_hashes={"strong_base": "1" * 64, "aggressive": "2" * 64},
+        )
 
 
 def test_development_config_is_non_public_and_hash_bound() -> None:
