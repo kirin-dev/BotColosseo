@@ -178,14 +178,7 @@ def evaluate_hybrid_all_style_matrix(
         )
     )
     protocol_clean = len(identities) == len(set(identities)) and all(
-        row.get("scenario_hash") == expected_scenario_hash
-        and row.get("terminated") is True
-        and row.get("truncated") is False
-        and row.get("protocol_inconsistent") is False
-        and row.get("action_tic_inconsistent") is False
-        and row.get("score_event_inconsistent") is False
-        and row.get("peer_tic_lag_max") == 0
-        for row in rows
+        _protocol_row(row, expected_scenario_hash) for row in rows
     )
     case_identity = _shared_case_identity(rows)
     available = all(
@@ -501,8 +494,10 @@ def _protocol_row(
 ) -> bool:
     return (
         row.get("scenario_hash") == scenario_hash
-        and row.get("terminated") is True
-        and row.get("truncated") is False
+        and (
+            (row.get("terminated") is True and row.get("truncated") is False)
+            or (row.get("terminated") is False and row.get("truncated") is True)
+        )
         and row.get("protocol_inconsistent") is False
         and row.get("action_tic_inconsistent") is False
         and row.get("score_event_inconsistent") is False

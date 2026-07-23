@@ -40,8 +40,11 @@ def _rows() -> list[dict[str, object]]:
 
 
 def test_hybrid_all_style_matrix_accepts_1200_unique_cells() -> None:
+    rows = _rows()
+    rows[0]["terminated"] = False
+    rows[0]["truncated"] = True
     result = evaluate_hybrid_all_style_matrix(
-        _rows(),
+        rows,
         expected_pairs_per_opponent=10,
         expected_scenario_hash="scenario",
         style_source_gates={

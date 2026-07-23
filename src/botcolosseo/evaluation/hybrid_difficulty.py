@@ -216,8 +216,7 @@ def evaluate_hybrid_difficulty_extension(
         and not row.episode.action_tic_inconsistent
         and not row.episode.score_event_inconsistent
         and row.episode.peer_tic_lag_max == 0
-        and row.episode.terminated
-        and not row.episode.truncated
+        and row.episode.terminated != row.episode.truncated
         for row in records
     )
     tier_payloads = {}

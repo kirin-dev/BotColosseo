@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 from botcolosseo.agents.difficulty import DifficultyProfile
 from botcolosseo.agents.hybrid_difficulty import HybridExecutionTrace
 from botcolosseo.agents.style_governor import GovernorTelemetry
@@ -133,6 +135,14 @@ def test_hybrid_difficulty_extension_accepts_complete_executed_evidence() -> Non
         for opponent in DUEL_OPPONENTS
         for side in ("host", "opponent")
     ]
+    records[0] = NativeStyleDifficultyRecord(
+        records[0].difficulty,
+        replace(
+            records[0].episode,
+            terminated=False,
+            truncated=True,
+        ),
+    )
     governors, executions = _evidence(records)
 
     result = evaluate_hybrid_difficulty_extension(

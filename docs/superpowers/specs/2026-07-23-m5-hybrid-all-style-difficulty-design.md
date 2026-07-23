@@ -133,7 +133,8 @@ must be called exactly `ceil(D / u)` times.
   learner_side)` cells;
 - exactly 100 validation cases in every policy/difficulty cell;
 - all source ledgers and summaries match their frozen SHA-256 values;
-- no duplicate, missing, truncated, or protocol-inconsistent episode;
+- no duplicate, missing, terminal-state-invalid, or protocol-inconsistent
+  episode; a valid time-limit truncation remains an ordinary completed row;
 - scenario, cases, difficulty config, policy artifacts, split, and selected
   case identities match;
 - `test_cases_accessed: false` throughout.
