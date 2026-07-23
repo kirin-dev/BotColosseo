@@ -608,13 +608,13 @@ Resume-ready。
 
 门禁：三种风格均满足能力保持，难度基本单调且不破坏风格辨识度。
 
-当前进展：Defensive 已完成风险条件 Teacher、success-filtered data、adapter
-distillation、固定 alpha grid、配对评测和证据审计的工程实现，但现有候选尚未
-稳定通过 protective-presence gate。Explorer 已完成 score-conditioned 三路线
-Teacher、成功窗口平衡采样、adapter distillation、固定 alpha grid、配对评测、
-确定性选择和 hash-bound 证据审计的工程实现；生产实验结果尚未冻结。因此暂不
-声称 Defensive、Explorer 或 M5 通过。difficulty controller、四策略展示和用户
-评测仍待完成。
+当前进展：Defensive 与 Explorer 的第一条 distillation 路线均完成了训练、配对
+评测和证据审计，但分别未稳定通过 protective-presence 与 closed-loop route
+门禁，负结果已保留。两项不改变 evaluator 的 200k closed-loop PPO repair 已完成
+工程实现并进入生产实验。Easy/Normal/Hard 公平观测 controller 已实现，Strong
+Base/Aggressive 的 600 局正式 calibration 正在运行；三风格 Style×Difficulty
+的 1,800 局合并协议已经冻结，需等待 Defensive/Explorer 各自门禁通过后执行。
+因此暂不声称 Defensive、Explorer、Difficulty 或 M5 通过。
 
 ### M6：公开发布
 
@@ -628,6 +628,12 @@ Teacher、成功窗口平衡采样、adapter distillation、固定 alpha grid、
 - 资产与代码许可说明。
 
 门禁：README 中所有完成声明均有日志、测试、模型或可运行 artifact 支撑。此时达到 Showcase-ready。
+
+当前进展：复用型展示层已支持四策略 2×2 GIF、独立完整 MP4、M6 hash-bound
+指标 schema 与自动配置生成；匿名盲测打包、CSV 完整性检查、混淆矩阵/Wilson
+区间图表、checkpoint release 审计和中英文 README 均已实现。M6 production
+配置、四策略真实媒体、用户响应与 checkpoint release 仍必须等待 M5 全部门禁
+通过，不能用 provisional 候选提前冒充完成。
 
 ## 17. GitHub 展示结构
 
