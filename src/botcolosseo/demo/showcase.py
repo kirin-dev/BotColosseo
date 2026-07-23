@@ -331,7 +331,9 @@ def compose_showcase_comparison(
     *,
     subtitle: str,
 ) -> tuple[NDArray[np.uint8], ...]:
-    if len(streams) < 2 or any(not label or not frames for label, frames in streams):
+    if not 2 <= len(streams) <= 4:
+        raise ValueError("Showcase comparison requires two to four streams")
+    if any(not label or not frames for label, frames in streams):
         raise ValueError("Showcase comparison contains an empty stream")
     shape = np.asarray(streams[0][1][0]).shape
     if shape != (300, 256, 3) or any(
@@ -346,8 +348,23 @@ def compose_showcase_comparison(
             np.array(frames[min(index, len(frames) - 1)], copy=True)
             for _, frames in streams
         ]
-        comparison = np.concatenate(panels, axis=1)
+        if len(panels) == 2:
+            comparison = np.concatenate(panels, axis=1)
+        else:
+            panels.extend(
+                np.zeros(shape, dtype=np.uint8)
+                for _ in range(4 - len(panels))
+            )
+            comparison = np.concatenate(
+                (
+                    np.concatenate(panels[:2], axis=1),
+                    np.concatenate(panels[2:], axis=1),
+                ),
+                axis=0,
+            )
         canvas = np.zeros((332, comparison.shape[1], 3), dtype=np.uint8)
+        if comparison.shape[0] == 600:
+            canvas = np.zeros((632, comparison.shape[1], 3), dtype=np.uint8)
         canvas[32:] = comparison
         cv2.putText(
             canvas,

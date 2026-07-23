@@ -105,6 +105,53 @@ def test_comparison_aligns_unequal_streams() -> None:
     assert np.array_equal(frames[1][-300:, :256], base[0])
 
 
+def test_four_policy_comparison_uses_a_two_by_two_grid() -> None:
+    streams = tuple(
+        (
+            label,
+            [np.full((300, 256, 3), value, dtype=np.uint8)],
+        )
+        for label, value in (
+            ("Strong Base", 10),
+            ("Aggressive", 20),
+            ("Defensive", 30),
+            ("Explorer", 40),
+        )
+    )
+
+    frames = compose_showcase_comparison(
+        streams,
+        subtitle="VALIDATION | seed=7 | vs fixed_route | host",
+    )
+
+    assert frames[0].shape == (632, 512, 3)
+    assert np.all(frames[0][32:332, :256] == 10)
+    assert np.all(frames[0][32:332, 256:] == 20)
+    assert np.all(frames[0][332:, :256] == 30)
+    assert np.all(frames[0][332:, 256:] == 40)
+
+
+def test_three_policy_comparison_has_a_blank_fourth_panel() -> None:
+    frame = np.ones((300, 256, 3), dtype=np.uint8)
+
+    result = compose_showcase_comparison(
+        (("Base", [frame]), ("A", [frame]), ("B", [frame])),
+        subtitle="validation",
+    )
+
+    assert result[0].shape == (632, 512, 3)
+    assert not result[0][332:, 256:].any()
+
+
+def test_comparison_rejects_more_than_four_streams() -> None:
+    frame = np.zeros((300, 256, 3), dtype=np.uint8)
+    with pytest.raises(ValueError, match="two to four"):
+        compose_showcase_comparison(
+            tuple((str(index), [frame]) for index in range(5)),
+            subtitle="validation",
+        )
+
+
 def test_comparison_rejects_empty_stream() -> None:
     valid = [np.zeros((300, 256, 3), dtype=np.uint8)]
     with pytest.raises(ValueError, match="empty"):

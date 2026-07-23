@@ -1179,3 +1179,30 @@ test ! -f runs/m5/explorer-ppo.exit || cat runs/m5/explorer-ppo.exit
 
 An exit code of one after evaluation is a preserved frozen-gate failure, not
 permission to change the evaluator.
+
+## M6 anonymous user-study package
+
+Run this only after the three public style videos are generated from passing
+M5 checkpoints:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/prepare_user_study.py \
+  --aggressive docs/assets/showcase/m6-aggressive.mp4 \
+  --defensive docs/assets/showcase/m6-defensive.mp4 \
+  --explorer docs/assets/showcase/m6-explorer.mp4 \
+  --output-dir artifacts/m6-user-study \
+  --assignments 10
+```
+
+After collecting the six anonymous fields documented in
+`docs/user-study.md`, analyze them with:
+
+```bash
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/analyze_user_study.py \
+  --package-dir artifacts/m6-user-study \
+  --responses reports/m6/user-study/responses.csv \
+  --output reports/m6/user-study/summary.json
+```

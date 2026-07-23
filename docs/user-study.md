@@ -1,0 +1,48 @@
+# Anonymous style-recognition study
+
+This is a small product-perception study, not a population-level behavioral
+experiment. Run it only after the three published style checkpoints and their
+videos pass the frozen M5 gates.
+
+## Prepare the blind package
+
+```bash
+PYTHONPATH=src python scripts/prepare_user_study.py \
+  --aggressive docs/assets/showcase/m6-aggressive.mp4 \
+  --defensive docs/assets/showcase/m6-defensive.mp4 \
+  --explorer docs/assets/showcase/m6-explorer.mp4 \
+  --output-dir artifacts/m6-user-study \
+  --assignments 10
+```
+
+Keep `answer-key.json` and `manifest.json` private until collection closes.
+Give each respondent one row group from `assignments.csv`, the corresponding
+opaque files under `clips/`, and the six response fields from
+`response-template.csv`.
+
+Ask the respondent to:
+
+1. choose `aggressive`, `defensive`, `explorer`, or `unsure` for every clip;
+2. rate style clarity from 1 (unclear) to 5 (very clear);
+3. rate perceived difficulty from 1 (easy) to 5 (hard).
+
+Use a short anonymous identifier such as `r01`. Do not collect names, email
+addresses, IP addresses, free text, or other personal information.
+
+## Analyze anonymous responses
+
+```bash
+PYTHONPATH=src python scripts/analyze_user_study.py \
+  --package-dir artifacts/m6-user-study \
+  --responses reports/m6/user-study/responses.csv \
+  --output reports/m6/user-study/summary.json
+```
+
+The analyzer fails closed on incomplete assignments, duplicate responses,
+unknown choices, invalid ratings, or changed clips. It reports the raw sample
+size, confusion matrix, per-style recognition, macro/micro recognition,
+Wilson 95% intervals, clarity, perceived difficulty, and source hashes.
+
+Commit only genuinely anonymous responses. In README wording, call a 5--10
+person run a “small anonymous product-perception study” and show its exact
+sample size.
