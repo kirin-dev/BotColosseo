@@ -10,17 +10,22 @@ Run it only after all three public videos pass their applicable product gates.
 
 ```bash
 PYTHONPATH=src python scripts/prepare_user_study.py \
-  --aggressive docs/assets/showcase/hybrid-aggressive.mp4 \
-  --defensive docs/assets/showcase/hybrid-defensive.mp4 \
-  --explorer docs/assets/showcase/hybrid-explorer.mp4 \
-  --output-dir artifacts/m6-user-study \
+  --aggressive artifacts/m6-curated-clips-v2/aggressive-1.mp4 \
+               artifacts/m6-curated-clips-v2/aggressive-2.mp4 \
+  --defensive artifacts/m6-curated-clips-v2/defensive-1.mp4 \
+              artifacts/m6-curated-clips-v2/defensive-2.mp4 \
+  --explorer artifacts/m6-curated-clips-v2/explorer-1.mp4 \
+             artifacts/m6-curated-clips-v2/explorer-2.mp4 \
+  --output-dir artifacts/m6-user-study-v2 \
   --assignments 10
 ```
 
 Keep `answer-key.json` and `manifest.json` private until collection closes.
-Give each respondent one row group from `assignments.csv`, the corresponding
-opaque files under `clips/`, and the six response fields from
-`response-template.csv`.
+Give each respondent `participant-instructions.md`, one row group from
+`assignments.csv`, the corresponding six opaque files under `clips/`, and the
+six response fields from `response-template.csv`. On a phone, send the six
+videos in that assignment's numbered order and have the respondent return one
+row per video. Do not send the answer key or style-labeled curated files.
 
 Ask the respondent to:
 
@@ -35,7 +40,7 @@ addresses, IP addresses, free text, or other personal information.
 
 ```bash
 PYTHONPATH=src python scripts/analyze_user_study.py \
-  --package-dir artifacts/m6-user-study \
+  --package-dir artifacts/m6-user-study-v2 \
   --responses reports/m6/user-study/responses.csv \
   --output reports/m6/user-study/summary.json \
   --chart docs/assets/showcase/m6-user-study.png

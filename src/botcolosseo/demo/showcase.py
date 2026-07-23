@@ -13,7 +13,7 @@ from numpy.typing import NDArray
 
 from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.duel_protocol import DuelEventType
-from botcolosseo.envs.duel_types import DuelActorObservation
+from botcolosseo.envs.duel_types import DuelActorObservation, DuelPrivilegedState
 from botcolosseo.envs.synchronous_duel import SynchronousDuelEnv
 from botcolosseo.evaluation.m2 import (
     EvaluationPolicy,
@@ -37,6 +37,16 @@ class ShowcaseEvent:
 
 
 @dataclass(frozen=True)
+class ObserverStudyStep:
+    decision_index: int
+    self_health: float
+    opponent_health: float
+    core_owner: str
+    action: str
+    events: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class RecordedShowcaseEpisode:
     policy_id: str
     case: DuelCase
@@ -54,9 +64,10 @@ class RecordedShowcaseEpisode:
     score_event_inconsistent: bool
     environment_attempts: int
     scenario_hash: str
+    observer_steps: tuple[ObserverStudyStep, ...] = ()
 
     def to_record(self) -> dict[str, object]:
-        return {
+        payload = {
             "policy_id": self.policy_id,
             "case": self.case.to_dict(),
             "case_id": case_id(self.case),
@@ -74,6 +85,12 @@ class RecordedShowcaseEpisode:
             "environment_attempts": self.environment_attempts,
             "scenario_hash": self.scenario_hash,
         }
+        if self.observer_steps:
+            payload["observer_steps"] = [
+                asdict(step) for step in self.observer_steps
+            ]
+            payload["observer_only_telemetry"] = True
+        return payload
 
 
 class CheckpointEvaluationPolicy:
@@ -155,12 +172,16 @@ def record_showcase_episode(
     graph: RegionGraph,
     config_path: Path,
     max_decisions: int,
+    observer_study_hud: bool = False,
+    pre_episode_resets: int = 0,
     environment_factory: EnvironmentFactory | None = None,
 ) -> RecordedShowcaseEpisode:
     if case.split != "validation":
         raise ValueError("Showcase episodes must use frozen validation cases")
     if max_decisions <= 0:
         raise ValueError("max_decisions must be positive")
+    if pre_episode_resets < 0:
+        raise ValueError("pre_episode_resets must be nonnegative")
     environment = (
         environment_factory(case)
         if environment_factory is not None
@@ -176,6 +197,7 @@ def record_showcase_episode(
         opponent = TeacherEvaluationPolicy(case.opponent, graph, side=opponent_side)
         frames: list[NDArray[np.uint8]] = []
         events: list[ShowcaseEvent] = []
+        observer_steps: list[ObserverStudyStep] = []
         action_tic_inconsistent = False
         peer_tic_lag_max = 0
         score_event_counts: Counter[str] = Counter()
@@ -183,6 +205,8 @@ def record_showcase_episode(
         terminated = False
         truncated = False
         observations, reset_info = environment.reset()
+        for reset_index in range(pre_episode_resets):
+            policy.reset(seed=case.seed ^ 0xA5A5A5A5 ^ reset_index)
         policy.reset(seed=case.seed ^ 0xA5A5A5A5)
         opponent.reset(seed=case.seed ^ 0x5A5A5A5A)
         learner_observation = (
@@ -251,13 +275,30 @@ def record_showcase_episode(
                 else observations.opponent
             )
             event_label = ",".join(event.type.name for event in learner_events) or "NONE"
-            frames.append(
-                compose_learner_frame(
-                    learner_observation,
-                    policy_label=policy_label,
-                    event_label=event_label,
+            if observer_study_hud:
+                privileged = environment.teacher_state()
+                observer_step = _observer_study_step(
+                    decision_index=decisions,
+                    privileged=privileged,
+                    learner_side=case.learner_side,
+                    learner_action=learner_action,
+                    step_events=step.events,
                 )
-            )
+                observer_steps.append(observer_step)
+                frames.append(
+                    compose_observer_study_frame(
+                        learner_observation,
+                        observer_step,
+                    )
+                )
+            else:
+                frames.append(
+                    compose_learner_frame(
+                        learner_observation,
+                        policy_label=policy_label,
+                        event_label=event_label,
+                    )
+                )
         learner_observation = (
             observations.host if case.learner_side == "host" else observations.opponent
         )
@@ -291,6 +332,7 @@ def record_showcase_episode(
             score_event_inconsistent=score_event_inconsistent,
             environment_attempts=1,
             scenario_hash=reset_info.scenario_hash,
+            observer_steps=tuple(observer_steps),
         )
     finally:
         environment.close()
@@ -333,6 +375,115 @@ def compose_learner_frame(
         cv2.LINE_AA,
     )
     return canvas
+
+
+def compose_observer_study_frame(
+    observation: DuelActorObservation,
+    step: ObserverStudyStep,
+) -> NDArray[np.uint8]:
+    view = cv2.resize(observation.frame, (420, 420), interpolation=cv2.INTER_NEAREST)
+    view = cv2.cvtColor(view, cv2.COLOR_GRAY2RGB)
+    canvas = np.zeros((520, 420, 3), dtype=np.uint8)
+    canvas[100:] = view
+    cv2.putText(
+        canvas,
+        "FIRST-PERSON BOT | VIEWER TELEMETRY",
+        (8, 20),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.47,
+        (255, 255, 255),
+        1,
+        cv2.LINE_AA,
+    )
+    cv2.putText(
+        canvas,
+        (
+            f"SELF HP {step.self_health:.0f} | OPP HP {step.opponent_health:.0f} "
+            f"| SCORE {observation.own_score}-{observation.opponent_score}"
+        ),
+        (8, 44),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.43,
+        (230, 230, 230),
+        1,
+        cv2.LINE_AA,
+    )
+    cv2.putText(
+        canvas,
+        f"CORE {step.core_owner} | ACTION {step.action}",
+        (8, 68),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.43,
+        (230, 230, 230),
+        1,
+        cv2.LINE_AA,
+    )
+    event_text = ",".join(step.events) if step.events else "NONE"
+    cv2.putText(
+        canvas,
+        f"EVENT {event_text}",
+        (8, 91),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.43,
+        (120, 220, 255) if step.events else (180, 180, 180),
+        1,
+        cv2.LINE_AA,
+    )
+    return canvas
+
+
+def _observer_study_step(
+    *,
+    decision_index: int,
+    privileged: DuelPrivilegedState,
+    learner_side: str,
+    learner_action: MacroAction,
+    step_events: Sequence[object],
+) -> ObserverStudyStep:
+    if learner_side == "host":
+        self_health = privileged.host_health
+        opponent_health = privileged.opponent_health
+        learner_carrier = 1
+    elif learner_side == "opponent":
+        self_health = privileged.opponent_health
+        opponent_health = privileged.host_health
+        learner_carrier = 2
+    else:
+        raise ValueError("Observer study learner side is invalid")
+    if privileged.carrier == 0:
+        core_owner = "FREE"
+    elif privileged.carrier == learner_carrier:
+        core_owner = "SELF"
+    else:
+        core_owner = "OPP"
+    labels = []
+    opponent_side = "opponent" if learner_side == "host" else "host"
+    for event in step_events:
+        event_type = getattr(event, "type", None)
+        side = getattr(event, "side", None)
+        if event_type is DuelEventType.VALID_HIT and side == learner_side:
+            labels.append("HIT")
+        elif event_type is DuelEventType.DEATH:
+            labels.append("OPP_DEATH" if side == opponent_side else "SELF_DEATH")
+        elif event_type is DuelEventType.RESPAWN:
+            labels.append(
+                "OPP_RESPAWN" if side == opponent_side else "SELF_RESPAWN"
+            )
+        elif event_type in (
+            DuelEventType.PICKUP,
+            DuelEventType.DROP,
+            DuelEventType.SCORE,
+        ):
+            prefix = "SELF" if side == learner_side else "OPP"
+            labels.append(f"{prefix}_{event_type.name}")
+    return ObserverStudyStep(
+        decision_index=decision_index,
+        self_health=self_health,
+        opponent_health=opponent_health,
+        core_owner=core_owner,
+        action=learner_action.name,
+        events=tuple(labels),
+    )
 
 
 def compose_showcase_comparison(

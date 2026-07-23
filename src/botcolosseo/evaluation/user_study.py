@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import csv
-import itertools
 import json
 import math
 import random
 import re
 import shutil
 from collections import defaultdict
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -27,10 +26,52 @@ RESPONSE_FIELDS = (
     "perceived_difficulty",
 )
 _ID = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}\Z")
+_PARTICIPANT_INSTRUCTIONS = """# BotColosseo 匿名风格判断
+
+## 你要做什么
+
+观看 6 段匿名视频，判断每段视频中“第一视角 Bot”的行为风格。画面中出现的
+人形角色是对手，不是需要判断的 Bot。每段可选 `aggressive`（进攻型）、
+`defensive`（防守型）、`explorer`（探索型）或 `unsure`（无法判断）。
+
+## 游戏任务
+
+这是 1v1 的 Crystal Run。Bot 需要找到能量核心、拾取核心并送回己方区域得分；
+先得到 3 分的一方获胜。携带核心的角色被消灭时会掉落核心。
+
+## Bot 能做的动作
+
+- 前进、后退、左右平移；
+- 左转、右转，以及边前进边转向；
+- 原地攻击、前进攻击、转向攻击。
+
+攻击只有实际命中才会降低对手血量。需要持续有效命中直至 `OPP HP` 降到 0
+才能消灭对手；伤害会因命中情况变化，因此没有固定的“几枪必杀”。死亡角色
+随后会以满血复活。
+
+## 怎么看画面
+
+- `SELF HP`：第一视角 Bot 的血量；
+- `OPP HP`：对手血量；
+- `CORE SELF / OPP / FREE`：核心由 Bot / 对手携带，或处于自由状态；
+- `SCORE`：Bot-对手比分；
+- `ACTION`：第一视角 Bot 当前执行的动作；
+- `EVENT`：命中、拾取、掉落、死亡、复活或得分等中立事件。
+
+`OPP HP`、核心归属和事件标签仅供观看者理解，未提供给 Bot 的策略网络。
+
+## 每段视频填写
+
+1. `style_choice`：四个风格选项之一；
+2. `style_clarity`：风格清晰度，1（很不清楚）到 5（很清楚）；
+3. `perceived_difficulty`：你认为该对手有多难打，1（很容易）到 5（很难）。
+
+可以多次选择同一风格。请独立判断，不要查看文件名之外的项目资料。
+"""
 
 
 def prepare_user_study(
-    clips: Mapping[str, Path],
+    clips: Mapping[str, Sequence[Path]],
     *,
     output_dir: Path,
     assignment_count: int = 10,
@@ -48,37 +89,53 @@ def prepare_user_study(
     clip_dir.mkdir()
 
     rng = random.Random(seed)
-    opaque_tokens = rng.sample(range(10_000, 100_000), len(STYLES))
+    clip_count = len(STYLES) * 2
+    opaque_tokens = iter(rng.sample(range(10_000, 100_000), clip_count))
     clip_rows: list[dict[str, object]] = []
-    style_to_clip: dict[str, str] = {}
-    for style, token in zip(STYLES, opaque_tokens, strict=True):
-        source = clips[style].expanduser().resolve()
-        if not source.is_file() or source.suffix.lower() != ".mp4":
-            raise ValueError(f"User study clip is not an MP4: {source}")
-        clip_id = f"clip-{token}"
-        target = clip_dir / f"{clip_id}.mp4"
-        shutil.copyfile(source, target)
-        style_to_clip[style] = clip_id
-        clip_rows.append(
-            {
-                "clip_id": clip_id,
-                "true_style": style,
-                "path": target.relative_to(output_dir).as_posix(),
-                "sha256": sha256_file(target),
-                "bytes": target.stat().st_size,
-            }
-        )
+    style_to_clips: dict[str, list[str]] = {}
+    seen_sources: set[Path] = set()
+    for style in STYLES:
+        sources = tuple(clips[style])
+        if len(sources) != 2:
+            raise ValueError(f"User study requires two {style} clips")
+        style_to_clips[style] = []
+        for source_path in sources:
+            source = source_path.expanduser().resolve()
+            if (
+                not source.is_file()
+                or source.suffix.lower() != ".mp4"
+                or source in seen_sources
+            ):
+                raise ValueError(f"User study clip is not a unique MP4: {source}")
+            seen_sources.add(source)
+            clip_id = f"clip-{next(opaque_tokens)}"
+            target = clip_dir / f"{clip_id}.mp4"
+            shutil.copyfile(source, target)
+            style_to_clips[style].append(clip_id)
+            clip_rows.append(
+                {
+                    "clip_id": clip_id,
+                    "true_style": style,
+                    "path": target.relative_to(output_dir).as_posix(),
+                    "sha256": sha256_file(target),
+                    "bytes": target.stat().st_size,
+                }
+            )
 
-    permutations = list(itertools.permutations(STYLES))
-    rng.shuffle(permutations)
+    base_order = [
+        clip_id for style in STYLES for clip_id in style_to_clips[style]
+    ]
+    rng.shuffle(base_order)
     assignments: list[dict[str, object]] = []
     for index in range(assignment_count):
         assignment_id = f"assignment-{index + 1:03d}"
-        order = permutations[index % len(permutations)]
+        block, rotation = divmod(index, clip_count)
+        cycle = base_order if block % 2 == 0 else list(reversed(base_order))
+        order = cycle[rotation:] + cycle[:rotation]
         assignments.append(
             {
                 "assignment_id": assignment_id,
-                "clip_order": [style_to_clip[style] for style in order],
+                "clip_order": order,
             }
         )
 
@@ -103,27 +160,32 @@ def prepare_user_study(
     response_template = output_dir / "response-template.csv"
     with response_template.open("w", encoding="utf-8", newline="") as handle:
         csv.DictWriter(handle, fieldnames=RESPONSE_FIELDS).writeheader()
+    instructions = output_dir / "participant-instructions.md"
+    instructions.write_text(_PARTICIPANT_INSTRUCTIONS, encoding="utf-8")
 
     answer_key = output_dir / "answer-key.json"
     _write_json(
         answer_key,
         {
-            "schema_version": 1,
+            "schema_version": 2,
             "clips": clip_rows,
             "do_not_share_until_collection_closes": True,
         },
     )
     manifest_path = output_dir / "manifest.json"
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "stage": "m6-user-study-package",
         "seed": seed,
         "assignment_count": assignment_count,
         "styles": list(STYLES),
+        "clips_per_style": 2,
+        "clip_count": clip_count,
         "choices": list(STYLE_CHOICES),
         "response_fields": list(RESPONSE_FIELDS),
         "assignments_sha256": sha256_file(public_assignments),
         "response_template_sha256": sha256_file(response_template),
+        "participant_instructions_sha256": sha256_file(instructions),
         "answer_key_sha256": sha256_file(answer_key),
         "clips": [
             {key: value for key, value in row.items() if key != "true_style"}
@@ -144,11 +206,14 @@ def analyze_user_study(
     manifest = _read_json(package_dir / "manifest.json")
     key = _read_json(package_dir / "answer-key.json")
     _validate_package(package_dir, manifest, key)
-    assignments = _load_assignments(package_dir / "assignments.csv")
     clip_to_style = {
         str(row["clip_id"]): str(row["true_style"])
         for row in _require_rows(key.get("clips"), "answer key clips")
     }
+    assignments = _load_assignments(
+        package_dir / "assignments.csv",
+        expected_clip_ids=set(clip_to_style),
+    )
     responses = _load_responses(responses_path, assignments, clip_to_style)
 
     confusion = {
@@ -315,6 +380,8 @@ def _validate_package(
         != sha256_file(package_dir / "assignments.csv")
         or manifest.get("response_template_sha256")
         != sha256_file(package_dir / "response-template.csv")
+        or manifest.get("participant_instructions_sha256")
+        != sha256_file(package_dir / "participant-instructions.md")
     ):
         raise ValueError("User-study package identity is invalid")
     keyed = {
@@ -335,7 +402,11 @@ def _validate_package(
             raise ValueError("User-study clip hash is invalid")
 
 
-def _load_assignments(path: Path) -> dict[str, tuple[str, ...]]:
+def _load_assignments(
+    path: Path,
+    *,
+    expected_clip_ids: set[str],
+) -> dict[str, tuple[str, ...]]:
     grouped: dict[str, list[tuple[int, str]]] = defaultdict(list)
     with path.open(encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
@@ -351,7 +422,10 @@ def _load_assignments(path: Path) -> dict[str, tuple[str, ...]]:
         )
         for assignment_id, rows in grouped.items()
     }
-    if not assignments or any(len(set(order)) != len(STYLES) for order in assignments.values()):
+    if not assignments or any(
+        set(order) != expected_clip_ids or len(order) != len(expected_clip_ids)
+        for order in assignments.values()
+    ):
         raise ValueError("User-study assignments are incomplete")
     return assignments
 

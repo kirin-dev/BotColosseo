@@ -9,9 +9,9 @@ from botcolosseo.evaluation.user_study import prepare_user_study
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Prepare the blind M6 user study")
-    parser.add_argument("--aggressive", type=Path, required=True)
-    parser.add_argument("--defensive", type=Path, required=True)
-    parser.add_argument("--explorer", type=Path, required=True)
+    parser.add_argument("--aggressive", type=Path, nargs=2, required=True)
+    parser.add_argument("--defensive", type=Path, nargs=2, required=True)
+    parser.add_argument("--explorer", type=Path, nargs=2, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--assignments", type=int, default=10)
     parser.add_argument("--seed", type=int, default=20260723)

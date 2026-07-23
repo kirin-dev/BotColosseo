@@ -73,15 +73,18 @@ def _checkpoint_policy(
     )
 
 
-def _load_policies(
+def load_hybrid_showcase_policies(
     config: HybridShowcaseConfig,
     *,
     root: Path,
     scenario_hash: str,
     device: torch.device,
+    policy_ids: set[str] | None = None,
 ) -> dict[str, object]:
     policies: dict[str, object] = {}
     for row in config.policies:
+        if policy_ids is not None and row.policy_id not in policy_ids:
+            continue
         if row.kind == "checkpoint":
             policies[row.policy_id] = _checkpoint_policy(
                 row,
@@ -101,7 +104,7 @@ def _load_policies(
     return policies
 
 
-def _validate_evidence(
+def validate_hybrid_showcase_evidence(
     config: HybridShowcaseConfig,
 ) -> dict[str, dict[str, object]]:
     result = {}
@@ -251,7 +254,7 @@ def render_hybrid_showcase(
 ) -> dict[str, object]:
     root = root.resolve()
     config = load_hybrid_showcase_config(config_path, root=root)
-    evidence_payloads = _validate_evidence(config)
+    evidence_payloads = validate_hybrid_showcase_evidence(config)
     commit, dirty = _git_provenance(root)
     if dirty:
         raise ValueError("Hybrid publication showcase requires no tracked changes")
@@ -271,7 +274,7 @@ def render_hybrid_showcase(
     device = torch.device(device_name)
     if device.type == "cuda" and not torch.cuda.is_available():
         raise RuntimeError("CUDA was requested but is unavailable")
-    policies = _load_policies(
+    policies = load_hybrid_showcase_policies(
         config,
         root=root,
         scenario_hash=scenario_hash,

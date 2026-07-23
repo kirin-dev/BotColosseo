@@ -15,12 +15,13 @@ from botcolosseo.evaluation.user_study import (
 )
 
 
-def _clips(root: Path) -> dict[str, Path]:
+def _clips(root: Path) -> dict[str, tuple[Path, Path]]:
     result = {}
     for index, style in enumerate(STYLES):
-        path = root / f"{style}.mp4"
-        path.write_bytes(b"video" + bytes([index]))
-        result[style] = path
+        paths = (root / f"{style}-1.mp4", root / f"{style}-2.mp4")
+        for variant, path in enumerate(paths):
+            path.write_bytes(b"video" + bytes([index, variant]))
+        result[style] = paths
     return result
 
 
@@ -61,9 +62,16 @@ def test_prepare_user_study_is_deterministic_and_counterbalanced(
     )
 
     assert first["assignment_count"] == 10
+    assert first["clips_per_style"] == 2
+    assert first["clip_count"] == 6
     assert first["styles"] == list(STYLES)
     assert first["test_cases_accessed"] is False
     assert (tmp_path / "first/response-template.csv").is_file()
+    instructions = (tmp_path / "first/participant-instructions.md").read_text(
+        encoding="utf-8"
+    )
+    assert "第一视角 Bot" in instructions
+    assert "OPP HP" in instructions
     assert (
         (tmp_path / "first/assignments.csv").read_text(encoding="utf-8")
         == (tmp_path / "second/assignments.csv").read_text(encoding="utf-8")
@@ -72,6 +80,7 @@ def test_prepare_user_study_is_deterministic_and_counterbalanced(
         (tmp_path / "first/answer-key.json").read_text(encoding="utf-8")
     )
     assert {row["true_style"] for row in first_key["clips"]} == set(STYLES)
+    assert len(first_key["clips"]) == 6
     assert all(
         style not in row["clip_id"]
         for row in first_key["clips"]
@@ -97,7 +106,7 @@ def test_analysis_reports_recognition_and_hashes(tmp_path: Path) -> None:
     result = analyze_user_study(package, responses)
 
     assert result["respondents"] == 2
-    assert result["responses"] == 6
+    assert result["responses"] == 12
     assert result["macro_recognition_rate"] == 1
     assert result["micro_recognition_rate"] == 1
     assert result["small_sample_product_study"] is True

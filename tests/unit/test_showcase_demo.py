@@ -7,9 +7,11 @@ import pytest
 
 from botcolosseo.demo.showcase import (
     CheckpointEvaluationPolicy,
+    ObserverStudyStep,
     RecordedShowcaseEpisode,
     ShowcaseEvent,
     compose_learner_frame,
+    compose_observer_study_frame,
     compose_showcase_comparison,
     record_showcase_episode,
     render_metrics_card,
@@ -90,6 +92,24 @@ def test_learner_frame_has_fixed_rgb_geometry() -> None:
     assert frame.shape == (300, 256, 3)
     assert frame.dtype == np.uint8
     assert frame[48:].mean() > 0
+
+
+def test_observer_study_frame_has_neutral_mobile_hud() -> None:
+    frame = compose_observer_study_frame(
+        observation(),
+        ObserverStudyStep(
+            decision_index=1,
+            self_health=75.0,
+            opponent_health=40.0,
+            core_owner="OPP",
+            action="FORWARD_ATTACK",
+            events=("HIT",),
+        ),
+    )
+
+    assert frame.shape == (520, 420, 3)
+    assert frame.dtype == np.uint8
+    assert frame[100:].mean() > 0
 
 
 def test_comparison_aligns_unequal_streams() -> None:
@@ -320,6 +340,49 @@ def test_record_showcase_episode_captures_learner_events_and_protocol() -> None:
     assert len(episode.frames) == episode.decisions
     assert episode.protocol_inconsistent is False
     assert fake_environment.closed is True
+
+
+def test_record_showcase_episode_captures_observer_only_trace() -> None:
+    case = DuelCase("validation", 1, 7, "fixed_route", "host", 0, "flank")
+    fake_environment = _FakeShowcaseEnvironment(
+        (
+            DuelStep(
+                host=_episode_observation(own_score=1),
+                opponent=_episode_observation(),
+                host_reward=1.0,
+                opponent_reward=-1.0,
+                terminated=True,
+                truncated=False,
+                events=(
+                    DuelEvent(DuelEventType.VALID_HIT, "host", 0, 1, 4),
+                    DuelEvent(DuelEventType.DEATH, "opponent", 0, 1, 4),
+                ),
+                decision_index=1,
+                engine_tic=4,
+                peer_tic_lag=0,
+                pre_action_tics=0,
+                action_tics=4,
+            ),
+        )
+    )
+
+    episode = record_showcase_episode(
+        case,
+        policy_id="aggressive",
+        policy_label="blind",
+        policy=_FixedPolicy(),
+        graph=RegionGraph.from_yaml(
+            Path("assets/scenarios/crystal_run/src/regions.yaml")
+        ),
+        config_path=Path("assets/scenarios/crystal_run/crystal_run.cfg"),
+        max_decisions=1,
+        observer_study_hud=True,
+        environment_factory=lambda unused_case: fake_environment,
+    )
+
+    assert episode.frames[0].shape == (520, 420, 3)
+    assert episode.observer_steps[0].events == ("HIT", "OPP_DEATH")
+    assert episode.to_record()["observer_only_telemetry"] is True
 
 
 @pytest.mark.parametrize(

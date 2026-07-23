@@ -82,10 +82,17 @@ documentation states that limitation rather than claiming it.
 
 Rank eligible objective-complete episodes by:
 
-1. recovery present;
-2. successful escapes;
-3. risk decisions;
-4. stable case ID.
+1. low-health opportunities;
+2. recovery present;
+3. successful escapes;
+4. risk decisions;
+5. stable case ID.
+
+This ordering reflects a replay audit performed during implementation:
+`successful_escapes` records a triggered escape process, but does not guarantee
+that the episode later remains death-free. Final visual review therefore checks
+the replay's actual health and death events rather than treating that formal
+counter as a survival label.
 
 The pair must contain a visually legible recovery episode and an escape-heavy
 episode where possible. Carrier denial is not a selection requirement because

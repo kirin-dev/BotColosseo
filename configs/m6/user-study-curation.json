@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "selection": "curated validation showcase, not a random performance sample",
+  "clips": [
+    {
+      "style": "aggressive",
+      "variant": 1,
+      "source_manifest": "artifacts/m6-user-study-candidates-v3/manifest.json",
+      "source_manifest_sha256": "484e3ab6371733133ba18a7144eb0b688cd4cd9e66bf8629a5ce43078496d8ca",
+      "source_rank": 1,
+      "case_id": "fixed_route:307:host",
+      "source_path": "aggressive/candidate-01.mp4",
+      "source_sha256": "5bfce47cd5c073b156c5df64efe00ff79c33d5c8565c928b8879b878b0a6e05b",
+      "start_frame": 180,
+      "end_frame": 430,
+      "reason": "continuous visible hits followed by opponent death, core drop, and respawn"
+    },
+    {
+      "style": "aggressive",
+      "variant": 2,
+      "source_manifest": "artifacts/m6-user-study-candidates-v3/manifest.json",
+      "source_manifest_sha256": "484e3ab6371733133ba18a7144eb0b688cd4cd9e66bf8629a5ce43078496d8ca",
+      "source_rank": 3,
+      "case_id": "fixed_route:303:host",
+      "source_path": "aggressive/candidate-03.mp4",
+      "source_sha256": "59b34cc5c963a639e16e9eeade2956a542eebee28c93a5016e342aa0e4d74999",
+      "start_frame": 50,
+      "end_frame": 300,
+      "reason": "two visually separated engagements with repeated opponent-health reduction"
+    },
+    {
+      "style": "defensive",
+      "variant": 1,
+      "source_manifest": "artifacts/m6-user-study-defensive-v5/manifest.json",
+      "source_manifest_sha256": "053f123c482b4c36736607f7c8bab4cde07586fd02bfce067ffc02002d50bdcf",
+      "source_rank": 2,
+      "case_id": "defensive_script:455:opponent",
+      "source_path": "defensive/candidate-02.mp4",
+      "source_sha256": "edee23d9386c8d5133b27fd3aab99339c99bba9451cac8909d158a8c90bbe629",
+      "start_frame": 0,
+      "end_frame": 300,
+      "reason": "low-health movement excerpt reaches 5 HP while completing two objective scores"
+    },
+    {
+      "style": "defensive",
+      "variant": 2,
+      "source_manifest": "artifacts/m6-user-study-defensive-v5/manifest.json",
+      "source_manifest_sha256": "053f123c482b4c36736607f7c8bab4cde07586fd02bfce067ffc02002d50bdcf",
+      "source_rank": 4,
+      "case_id": "defensive_script:458:opponent",
+      "source_path": "defensive/candidate-04.mp4",
+      "source_sha256": "2666b602ccab690558431c2fb4fc69d7dfb02bf1d18dffa3a46ef07ba02c6a24",
+      "start_frame": 0,
+      "end_frame": 249,
+      "reason": "complete no-death episode reaches 25 HP and completes three objective scores"
+    },
+    {
+      "style": "explorer",
+      "variant": 1,
+      "source_manifest": "artifacts/m6-user-study-candidates-v3/manifest.json",
+      "source_manifest_sha256": "484e3ab6371733133ba18a7144eb0b688cd4cd9e66bf8629a5ce43078496d8ca",
+      "source_rank": 5,
+      "case_id": "objective_first:359:opponent",
+      "source_path": "explorer/candidate-05.mp4",
+      "source_sha256": "b9f9546054878a454692a095863f9831a0fcca6bf5ec8d33f38f9f03e765348b",
+      "start_frame": 0,
+      "end_frame": 353,
+      "reason": "complete episode with upper, lower, and flank route commitments"
+    },
+    {
+      "style": "explorer",
+      "variant": 2,
+      "source_manifest": "artifacts/m6-user-study-candidates-v3/manifest.json",
+      "source_manifest_sha256": "484e3ab6371733133ba18a7144eb0b688cd4cd9e66bf8629a5ce43078496d8ca",
+      "source_rank": 7,
+      "case_id": "random_legal:256:opponent",
+      "source_path": "explorer/candidate-07.mp4",
+      "source_sha256": "07564c3a2c6c785b6f66a916049578b225c9407d9088486c0dc3c09873564fd5",
+      "start_frame": 0,
+      "end_frame": 295,
+      "reason": "complete no-death episode with three route modes and visibly varied corridors"
+    }
+  ]
+}
