@@ -213,6 +213,34 @@ def test_explorer_modes_have_distinct_mirrored_action_signatures() -> None:
     assert len(set(signatures)) == 3
 
 
+def test_explorer_sparse_overrides_are_bounded_and_mode_specific() -> None:
+    config = ExplorerGovernorConfig(
+        route_decisions=4,
+        route_bias=1.0,
+        flank_bias=1.5,
+        stall_repeat_decisions=8,
+        stall_recovery_decisions=1,
+        low_health_threshold=25.0,
+        max_consecutive_interventions=4,
+        override_interval=2,
+    )
+    expected = (
+        MacroAction.FORWARD_TURN_LEFT,
+        MacroAction.FORWARD_TURN_RIGHT,
+        MacroAction.STRAFE_LEFT,
+    )
+    for episode, expected_action in enumerate(expected):
+        governor = ExplorerGovernor(config)
+        for _ in range(episode + 1):
+            governor.reset()
+        governor.decide(_context())
+        first = governor.decide(_context(has_core=True, decision_index=1))
+        second = governor.decide(_context(has_core=True, decision_index=2))
+
+        assert first.override_action is expected_action
+        assert second.override_action is None
+
+
 def test_explorer_score_drop_health_and_stall_use_exact_base_recovery() -> None:
     for trigger_context, expected_trigger in (
         (_context(has_core=False, decision_index=2), "core_drop"),

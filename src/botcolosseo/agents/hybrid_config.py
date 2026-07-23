@@ -43,6 +43,7 @@ _EXPLORER_FIELDS = {
     "low_health_threshold",
     "max_consecutive_interventions",
 }
+_EXPLORER_V2_FIELDS = _EXPLORER_FIELDS | {"override_interval"}
 
 
 @dataclass(frozen=True)
@@ -62,8 +63,9 @@ def load_hybrid_policy_config(path: Path, *, root: Path) -> HybridPolicyConfig:
     payload = yaml.safe_load(payload_bytes)
     if not isinstance(payload, dict) or set(payload) != _TOP_LEVEL_FIELDS:
         raise ValueError("Hybrid config fields do not match schema")
-    if payload["schema_version"] != 1:
-        raise ValueError("Hybrid config requires schema_version 1")
+    schema_version = payload["schema_version"]
+    if schema_version not in (1, 2):
+        raise ValueError("Hybrid config requires schema_version 1 or 2")
     candidate_id = payload["candidate_id"]
     if (
         not isinstance(candidate_id, str)
@@ -73,6 +75,8 @@ def load_hybrid_policy_config(path: Path, *, root: Path) -> HybridPolicyConfig:
     style = payload["style"]
     if style not in ("defensive", "explorer"):
         raise ValueError("Hybrid style must be defensive or explorer")
+    if style == "defensive" and schema_version != 1:
+        raise ValueError("Defensive hybrid config requires schema_version 1")
     checkpoint = payload["base_checkpoint"]
     checkpoint_sha256 = payload["base_checkpoint_sha256"]
     scenario_hash = payload["scenario_hash"]
@@ -93,7 +97,10 @@ def load_hybrid_policy_config(path: Path, *, root: Path) -> HybridPolicyConfig:
                 raise ValueError("Defensive governor fields do not match schema")
             governor = DefensiveGovernorConfig(**governor_payload)
         else:
-            if set(governor_payload) != _EXPLORER_FIELDS:
+            expected_fields = (
+                _EXPLORER_FIELDS if schema_version == 1 else _EXPLORER_V2_FIELDS
+            )
+            if set(governor_payload) != expected_fields:
                 raise ValueError("Explorer governor fields do not match schema")
             governor = ExplorerGovernorConfig(**governor_payload)
     except TypeError as error:

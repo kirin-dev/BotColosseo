@@ -125,6 +125,7 @@ class ExplorerGovernorConfig:
     stall_recovery_decisions: int
     low_health_threshold: float
     max_consecutive_interventions: int
+    override_interval: int = 0
 
     def __post_init__(self) -> None:
         positive_ints = (
@@ -137,6 +138,12 @@ class ExplorerGovernorConfig:
             raise ValueError("Explorer decision limits must be positive integers")
         if self.route_decisions > self.max_consecutive_interventions:
             raise ValueError("Route commitment exceeds the consecutive intervention limit")
+        if (
+            type(self.override_interval) is not int
+            or self.override_interval < 0
+            or self.override_interval > self.route_decisions
+        ):
+            raise ValueError("Explorer override interval is invalid")
         if not 0.0 < self.low_health_threshold <= 200.0:
             raise ValueError("Explorer low-health threshold is invalid")
         if any(
@@ -460,11 +467,28 @@ class ExplorerGovernor:
             magnitude = self.config.flank_bias
         phase = self._elapsed % len(rhythm)
         bias = _bias(**{name: scale * magnitude for name, scale in rhythm[phase].items()})
+        override = None
+        if (
+            self.config.override_interval > 0
+            and self._elapsed % self.config.override_interval == 0
+        ):
+            if mode == "upper":
+                override = MacroAction.FORWARD_TURN_LEFT
+            elif mode == "lower":
+                override = MacroAction.FORWARD_TURN_RIGHT
+            else:
+                override_index = self._elapsed // self.config.override_interval
+                override = (
+                    MacroAction.STRAFE_LEFT
+                    if override_index % 2 == 0
+                    else MacroAction.STRAFE_RIGHT
+                )
         decision = GovernorDecision(
             state=self._state,
             trigger=trigger,
             reason=f"{mode}_route_phase_{phase}",
             logit_bias=bias,
+            override_action=override,
             max_remaining_interventions=max(0, self._remaining - 1),
             fallback_condition="limit_stall_health_score_or_drop",
             route_mode=mode,

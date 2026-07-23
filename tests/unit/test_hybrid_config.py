@@ -76,3 +76,19 @@ def test_hybrid_config_rejects_style_schema_mismatch(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="Explorer governor fields"):
         load_hybrid_policy_config(path, root=root)
+
+
+def test_explorer_schema_v2_requires_bounded_override_interval(tmp_path: Path) -> None:
+    root = Path(__file__).resolve().parents[2]
+    source = yaml.safe_load(
+        (root / "configs/m5/hybrid/explorer_c.yaml").read_text(encoding="utf-8")
+    )
+    source["schema_version"] = 2
+    source["governor"]["override_interval"] = 4
+    path = tmp_path / "explorer-v2.yaml"
+    path.write_text(yaml.safe_dump(source), encoding="utf-8")
+
+    loaded = load_hybrid_policy_config(path, root=root)
+
+    assert isinstance(loaded.governor, ExplorerGovernorConfig)
+    assert loaded.governor.override_interval == 4
