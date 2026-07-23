@@ -11,6 +11,9 @@ from collections import defaultdict
 from collections.abc import Mapping
 from pathlib import Path
 
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.figure import Figure
+
 from botcolosseo.agents.league_opponents import sha256_file
 
 STYLES = ("aggressive", "defensive", "explorer")
@@ -195,6 +198,107 @@ def analyze_user_study(
         "small_sample_product_study": respondent_count < 30,
         "test_cases_accessed": False,
     }
+
+
+def render_user_study_chart(
+    summary: Mapping[str, object],
+    output: Path,
+) -> Path:
+    if (
+        summary.get("stage") != "m6-user-study-analysis"
+        or summary.get("test_cases_accessed") is not False
+    ):
+        raise ValueError("User-study chart requires audited analysis")
+    per_style = summary.get("per_style")
+    confusion = summary.get("confusion_matrix")
+    if not isinstance(per_style, Mapping) or not isinstance(confusion, Mapping):
+        raise ValueError("User-study chart data are incomplete")
+    rates: list[float] = []
+    intervals: list[tuple[float, float]] = []
+    matrix: list[list[int]] = []
+    for style in STYLES:
+        row = per_style.get(style)
+        counts = confusion.get(style)
+        if not isinstance(row, Mapping) or not isinstance(counts, Mapping):
+            raise ValueError("User-study chart style data are incomplete")
+        rate = row.get("recognition_rate")
+        interval = row.get("recognition_wilson_95")
+        if (
+            isinstance(rate, bool)
+            or not isinstance(rate, (int, float))
+            or not isinstance(interval, list)
+            or len(interval) != 2
+            or any(
+                isinstance(value, bool) or not isinstance(value, (int, float))
+                for value in interval
+            )
+        ):
+            raise ValueError("User-study chart rates are invalid")
+        rates.append(float(rate))
+        intervals.append((float(interval[0]), float(interval[1])))
+        count_row = []
+        for choice in STYLE_CHOICES:
+            value = counts.get(choice)
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                raise ValueError("User-study confusion counts are invalid")
+            count_row.append(value)
+        matrix.append(count_row)
+
+    output = output.expanduser().resolve()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = output.with_name(f".{output.stem}.tmp{output.suffix}")
+    figure = Figure(figsize=(11, 4.2), dpi=150, facecolor="white")
+    FigureCanvasAgg(figure)
+    try:
+        recognition = figure.add_subplot(1, 2, 1)
+        lower = [
+            rate - interval[0]
+            for rate, interval in zip(rates, intervals, strict=True)
+        ]
+        upper = [
+            interval[1] - rate
+            for rate, interval in zip(rates, intervals, strict=True)
+        ]
+        recognition.bar(
+            STYLES,
+            rates,
+            yerr=(lower, upper),
+            capsize=4,
+            color=("#ef4444", "#3b82f6", "#10b981"),
+        )
+        recognition.set_ylim(0, 1)
+        recognition.set_ylabel("Recognition rate")
+        recognition.set_title("Blind style recognition (Wilson 95% CI)")
+        recognition.grid(axis="y", alpha=0.2)
+        for index, rate in enumerate(rates):
+            recognition.text(index, min(rate + 0.04, 0.96), f"{rate:.0%}", ha="center")
+
+        confusion_axis = figure.add_subplot(1, 2, 2)
+        confusion_axis.imshow(matrix, cmap="Blues", aspect="auto")
+        confusion_axis.set_xticks(range(len(STYLE_CHOICES)), STYLE_CHOICES, rotation=25)
+        confusion_axis.set_yticks(range(len(STYLES)), STYLES)
+        confusion_axis.set_xlabel("Selected label")
+        confusion_axis.set_ylabel("True style")
+        confusion_axis.set_title("Confusion matrix (counts)")
+        for row_index, row in enumerate(matrix):
+            for column_index, value in enumerate(row):
+                confusion_axis.text(
+                    column_index,
+                    row_index,
+                    str(value),
+                    ha="center",
+                    va="center",
+                    color="black",
+                )
+        figure.tight_layout()
+        figure.savefig(temporary, facecolor=figure.get_facecolor())
+        temporary.replace(output)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
+    finally:
+        figure.clear()
+    return output
 
 
 def _validate_package(

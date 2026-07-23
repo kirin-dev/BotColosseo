@@ -35,13 +35,15 @@ addresses, IP addresses, free text, or other personal information.
 PYTHONPATH=src python scripts/analyze_user_study.py \
   --package-dir artifacts/m6-user-study \
   --responses reports/m6/user-study/responses.csv \
-  --output reports/m6/user-study/summary.json
+  --output reports/m6/user-study/summary.json \
+  --chart docs/assets/showcase/m6-user-study.png
 ```
 
 The analyzer fails closed on incomplete assignments, duplicate responses,
 unknown choices, invalid ratings, or changed clips. It reports the raw sample
 size, confusion matrix, per-style recognition, macro/micro recognition,
 Wilson 95% intervals, clarity, perceived difficulty, and source hashes.
+It also renders a recognition-rate/confusion-matrix card for the README.
 
 Commit only genuinely anonymous responses. In README wording, call a 5--10
 person run a “small anonymous product-perception study” and show its exact

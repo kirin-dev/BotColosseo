@@ -1204,7 +1204,8 @@ PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
   scripts/analyze_user_study.py \
   --package-dir artifacts/m6-user-study \
   --responses reports/m6/user-study/responses.csv \
-  --output reports/m6/user-study/summary.json
+  --output reports/m6/user-study/summary.json \
+  --chart docs/assets/showcase/m6-user-study.png
 ```
 
 ## M6 checkpoint release package

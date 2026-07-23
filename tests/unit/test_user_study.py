@@ -11,6 +11,7 @@ from botcolosseo.evaluation.user_study import (
     STYLES,
     analyze_user_study,
     prepare_user_study,
+    render_user_study_chart,
 )
 
 
@@ -103,6 +104,10 @@ def test_analysis_reports_recognition_and_hashes(tmp_path: Path) -> None:
     assert all(
         result["per_style"][style]["recognition_rate"] == 1 for style in STYLES
     )
+
+    chart = render_user_study_chart(result, tmp_path / "user-study.png")
+    assert chart.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+    assert chart.stat().st_size > 10_000
 
 
 def test_analysis_rejects_incomplete_respondent(tmp_path: Path) -> None:
