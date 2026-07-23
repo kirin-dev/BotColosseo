@@ -8,13 +8,16 @@ import yaml
 
 from botcolosseo.agents.league_opponents import sha256_file
 from botcolosseo.agents.model import AsymmetricActorCritic
+from botcolosseo.agents.style_model import StyledActorCritic
 from botcolosseo.cli import train_league
 from botcolosseo.cli.train_league import (
     _candidate_checkpoint_step,
     _collection_pending,
     _load_payoff_report,
+    _load_style_warm_start,
     _run_config_hash,
     _status_json,
+    _style_reward_shaper,
     _validate_base_authorization,
     _validate_config,
     build_parser,
@@ -24,6 +27,7 @@ from botcolosseo.scenarios.league_splits import (
     generate_league_splits,
     write_league_manifests,
 )
+from botcolosseo.training.defensive_reward import DefensiveRewardLedger
 from botcolosseo.training.historical_pool import (
     HistoricalPoolManifest,
     PoolEntry,
@@ -198,6 +202,75 @@ def test_config_is_frozen_and_cannot_reference_test_manifests() -> None:
         _validate_config({**_config(), "schema_version": 2})
     with pytest.raises(ValueError, match="candidate interval"):
         _validate_config({**_config(), "candidate_interval_steps": 100_000})
+
+
+def test_defensive_style_config_and_reward_factory_are_supported() -> None:
+    config = yaml.safe_load(
+        Path("configs/m5/defensive_ppo.yaml").read_text(encoding="utf-8")
+    )
+
+    _validate_config(config, style="defensive")
+    reward = _style_reward_shaper(
+        "defensive",
+        config["style"],
+        learner_side="host",
+    )
+
+    assert isinstance(reward, DefensiveRewardLedger)
+
+
+def test_defensive_interpolation_is_a_hash_bound_style_warm_start(
+    tmp_path: Path,
+) -> None:
+    base_hash = "a" * 64
+    scenario_hash = "b" * 64
+    model = StyledActorCritic.from_base(AsymmetricActorCritic(), bottleneck=32)
+    path = tmp_path / "defensive-alpha-025.pt"
+    torch.save(
+        {
+            "schema_version": 1,
+            "kind": "style_interpolation",
+            "style": "defensive",
+            "alpha": 0.25,
+            "base_checkpoint_sha256": base_hash,
+            "scenario_hash": scenario_hash,
+            "distilled_checkpoint_sha256": "c" * 64,
+            "neutral_checkpoint_sha256": "d" * 64,
+            "interpolation_sha256": "e" * 64,
+            "model": model.state_dict(),
+        },
+        path,
+    )
+    path.with_suffix(".json").write_text(
+        json.dumps(
+            {
+                "style": "defensive",
+                "base_checkpoint_sha256": base_hash,
+                "scenario_hash": scenario_hash,
+                "checkpoint_sha256": sha256_file(path),
+                "test_cases_accessed": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    metadata = _load_style_warm_start(
+        path,
+        model=model,
+        expected_base_checkpoint_sha256=base_hash,
+        expected_scenario_hash=scenario_hash,
+        expected_style="defensive",
+    )
+
+    assert metadata["alpha"] == 0.25
+    with pytest.raises(ValueError, match="identity"):
+        _load_style_warm_start(
+            path,
+            model=model,
+            expected_base_checkpoint_sha256=base_hash,
+            expected_scenario_hash=scenario_hash,
+            expected_style="aggressive",
+        )
 
 
 def test_base_authorization_distinguishes_promoted_and_explicit_provisional() -> None:

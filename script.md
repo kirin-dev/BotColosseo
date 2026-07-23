@@ -1082,3 +1082,51 @@ test ! -f runs/m5/difficulty.exit || cat runs/m5/difficulty.exit
 
 The evaluator prints one progress line per episode and resumes only when the
 checkpoint, config, cases, and schedule identities are exact matches.
+
+## M5 Defensive closed-loop PPO repair
+
+The first Defensive distillation route preserved skill but failed to create a
+stable protective-presence shift. This repair keeps the frozen gate unchanged,
+warm-starts the existing alpha-0.25 checkpoint, and trains the adapter, copied
+policy head, and critic for 200,000 environment steps with capped
+risk-conditioned reward plus style-to-base KL.
+
+The pipeline first runs a 2,000-step real CUDA/ViZDoom smoke and requires
+non-empty Defensive reward components. It then runs the 200k production
+training, a 20-episode all-gate smoke, the unchanged 200-episode formal
+validation, and a separate PPO hash-chain audit.
+
+Launch it when one physical GPU is free:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+mkdir -p runs/m5
+test ! -s runs/m5/defensive-ppo.pid || \
+  ! ps -p "$(cat runs/m5/defensive-ppo.pid)" >/dev/null 2>&1
+rm -f runs/m5/defensive-ppo.exit
+nohup setsid -f bash -c '
+  echo $$ > runs/m5/defensive-ppo.pid
+  cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+  CUDA_VISIBLE_DEVICES=1 scripts/run_m5_defensive_ppo.sh
+  status=$?
+  printf "%s\n" "$status" > runs/m5/defensive-ppo.exit
+  exit "$status"
+' >> runs/m5/defensive-ppo.log 2>&1
+while [[ ! -s runs/m5/defensive-ppo.pid ]]; do sleep 1; done
+cat runs/m5/defensive-ppo.pid
+```
+
+Monitor training and later evaluation:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+ps -p "$(cat runs/m5/defensive-ppo.pid)" -o pid,etime,%cpu,%mem,stat,cmd
+tail -n 60 runs/m5/defensive-ppo.log
+wc -l runs/m5/defensive-ppo-main/metrics.jsonl 2>/dev/null || true
+find reports/m5/defensive/ppo-repair -name episodes.jsonl \
+  -print -exec wc -l {} \;
+test ! -f runs/m5/defensive-ppo.exit || cat runs/m5/defensive-ppo.exit
+```
+
+An exit code of one after an evaluation means the complete experimental result
+failed a frozen style gate; its artifacts must be retained.

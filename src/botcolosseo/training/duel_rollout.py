@@ -65,6 +65,8 @@ class StyleRewardShaper(Protocol):
         events: tuple[Any, ...],
         *,
         has_core: bool,
+        state_before: DuelPrivilegedState,
+        state_after: DuelPrivilegedState,
     ) -> Any: ...
 
 
@@ -310,13 +312,14 @@ class DuelRolloutCollector:
                     self.curriculum.shaping_scale(global_step)
                 )
                 observation = self._learner_observation()
+                state_before = environment.teacher_state()
                 inputs = actor_observation_tensors(
                     observation,
                     episode_start=self._episode_start,
                     device=self.device,
                 )
                 privileged = privileged_tensor(
-                    environment.teacher_state(),
+                    state_before,
                     learner_side=case.learner_side,
                     device=self.device,
                 )
@@ -335,6 +338,7 @@ class DuelRolloutCollector:
                 )
                 step = environment.step(host_action, away_action)
                 self._observations = DuelObservations(step.host, step.opponent)
+                state_after = environment.teacher_state()
                 next_value = torch.zeros(1, device=self.device)
                 if not step.terminated:
                     next_observation = self._learner_observation()
@@ -342,7 +346,7 @@ class DuelRolloutCollector:
                         next_observation, episode_start=False, device=self.device
                     )
                     next_privileged = privileged_tensor(
-                        environment.teacher_state(),
+                        state_after,
                         learner_side=case.learner_side,
                         device=self.device,
                     )
@@ -360,6 +364,8 @@ class DuelRolloutCollector:
                         learner_action,
                         step.events,
                         has_core=observation.has_core,
+                        state_before=state_before,
+                        state_after=state_after,
                     )
                     reward += float(shaped.total)
                     reward_components.update(shaped.components)

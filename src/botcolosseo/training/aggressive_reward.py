@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.duel_protocol import DuelEvent, DuelEventType
+from botcolosseo.envs.duel_types import DuelPrivilegedState
 
 _ATTACKS = frozenset(
     {
@@ -85,7 +86,10 @@ class AggressiveRewardLedger:
         events: tuple[DuelEvent, ...],
         *,
         has_core: bool,
+        state_before: DuelPrivilegedState | None = None,
+        state_after: DuelPrivilegedState | None = None,
     ) -> AggressiveReward:
+        del state_before, state_after
         action = MacroAction(action)
         components: dict[str, float] = {}
         valid_hit = any(

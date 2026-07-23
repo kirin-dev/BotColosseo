@@ -36,6 +36,10 @@ from botcolosseo.training.aggressive_reward import (
     AggressiveRewardLedger,
 )
 from botcolosseo.training.bc import append_jsonl, seed_everything
+from botcolosseo.training.defensive_reward import (
+    DefensiveRewardConfig,
+    DefensiveRewardLedger,
+)
 from botcolosseo.training.historical_pool import HistoricalPoolManifest, load_pool
 from botcolosseo.training.league_checkpoint import (
     LeagueCheckpointState,
@@ -132,7 +136,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--allow-integrity-qualified-base", action="store_true"
     )
     parser.add_argument("--preflight", action="store_true")
-    parser.add_argument("--style", choices=("aggressive",))
+    parser.add_argument("--style", choices=("aggressive", "defensive"))
     parser.add_argument("--style-warm-start", type=Path)
     return parser
 
@@ -184,7 +188,98 @@ def _validate_config(config: dict[str, Any], *, style: str | None = None) -> Non
         reward = style_config["reward"]
         if not isinstance(reward, dict):
             raise ValueError("Style reward config must be a mapping")
-        AggressiveRewardConfig(**reward)
+        reward_config = (
+            AggressiveRewardConfig
+            if style == "aggressive"
+            else DefensiveRewardConfig
+        )
+        reward_config(**reward)
+
+
+def _load_style_warm_start(
+    path: Path,
+    *,
+    model: StyledActorCritic,
+    expected_base_checkpoint_sha256: str,
+    expected_scenario_hash: str,
+    expected_style: str,
+) -> dict[str, object]:
+    payload = torch.load(path, map_location="cpu", weights_only=False)
+    if payload.get("kind") == "style_distillation":
+        return load_style_distillation_checkpoint(
+            path,
+            model=model,
+            expected_base_checkpoint_sha256=expected_base_checkpoint_sha256,
+            expected_scenario_hash=expected_scenario_hash,
+            expected_style=expected_style,
+        )
+    expected = {
+        "schema_version": 1,
+        "kind": "style_interpolation",
+        "style": expected_style,
+        "base_checkpoint_sha256": expected_base_checkpoint_sha256,
+        "scenario_hash": expected_scenario_hash,
+    }
+    if any(payload.get(name) != value for name, value in expected.items()):
+        raise ValueError("Style interpolation warm-start identity does not match")
+    if payload.get("test_cases_accessed") is not False:
+        report_path = path.with_suffix(".json")
+        if not report_path.is_file():
+            raise ValueError("Legacy style warm start has no zero-test-access report")
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        report_identity = {
+            "style": expected_style,
+            "base_checkpoint_sha256": expected_base_checkpoint_sha256,
+            "scenario_hash": expected_scenario_hash,
+            "checkpoint_sha256": sha256_file(path),
+            "test_cases_accessed": False,
+        }
+        if any(report.get(name) != value for name, value in report_identity.items()):
+            raise ValueError("Legacy style warm-start report identity does not match")
+    before = model.state_dict()
+    state = payload.get("model")
+    if not isinstance(state, dict):
+        raise ValueError("Style interpolation warm start has no model state")
+    base_keys = tuple(name for name in before if name.startswith("base."))
+    if any(
+        name not in state or not torch.equal(before[name], state[name])
+        for name in base_keys
+    ):
+        raise ValueError("Style interpolation warm start changed the frozen base")
+    model.load_state_dict(state, strict=True)
+    return {
+        name: payload[name]
+        for name in (
+            "alpha",
+            "base_checkpoint_sha256",
+            "distilled_checkpoint_sha256",
+            "interpolation_sha256",
+            "scenario_hash",
+        )
+    }
+
+
+def _style_reward_shaper(
+    style: str,
+    style_config: dict[str, Any],
+    *,
+    learner_side: str,
+) -> AggressiveRewardLedger | DefensiveRewardLedger:
+    scale = float(style_config["lambda_style"])
+    reward = style_config["reward"]
+    if style == "aggressive":
+        return AggressiveRewardLedger(
+            AggressiveRewardConfig(**reward),
+            learner_side=learner_side,
+            scale=scale,
+        )
+    if style == "defensive":
+        return DefensiveRewardLedger(
+            DefensiveRewardConfig(**reward),
+            learner_side=learner_side,
+            scale=scale,
+        )
+    raise ValueError("Unsupported style reward")
 
 
 def _validate_base_authorization(
@@ -445,11 +540,12 @@ def main(argv: list[str] | None = None) -> int:
             base_model, bottleneck=int(style_config["bottleneck"])
         )
         if style_warm_path is not None:
-            load_style_distillation_checkpoint(
+            _load_style_warm_start(
                 style_warm_path,
                 model=model,
                 expected_base_checkpoint_sha256=base_hash,
                 expected_scenario_hash=scenario_hash,
+                expected_style=args.style,
             )
     preflight = {
         "base_checkpoint_sha256": base_hash,
@@ -587,14 +683,12 @@ def main(argv: list[str] | None = None) -> int:
         episode_index=episode_index,
         gamma=float(config["gamma"]),
         gae_lambda=float(config["gae_lambda"]),
-        reward_shaper_factory=(
-            None
-            if args.style is None
-            else lambda side: AggressiveRewardLedger(
-                AggressiveRewardConfig(**config["style"]["reward"]),
-                learner_side=side,
-                scale=float(config["style"]["lambda_style"]),
-            )
+        reward_shaper_factory=None
+        if args.style is None
+        else lambda side: _style_reward_shaper(
+            args.style,
+            config["style"],
+            learner_side=side,
         ),
     )
     run_dir.mkdir(parents=True, exist_ok=True)
