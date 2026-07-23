@@ -1233,3 +1233,23 @@ The builder verifies each checkpoint through the same public-observation loader
 used by evaluation, preserves exact source bytes and hashes, writes one atomic
 manifest, and refuses overwrite or partial publication. Uploading that
 directory to a GitHub Release remains a separate explicit publication action.
+
+## M5 Defensive/Explorer difficulty blocks
+
+These blocks are gated behind a passing 200-episode PPO style summary. Each
+pipeline runs a 60-episode protocol smoke and then 600 paired validation
+episodes using the style's native frozen estimator.
+
+When a GPU is free after the upstream gate passes:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+CUDA_VISIBLE_DEVICES=0 scripts/run_m5_native_style_difficulty.sh defensive
+CUDA_VISIBLE_DEVICES=0 scripts/run_m5_native_style_difficulty.sh explorer
+```
+
+They are intentionally serial in this example. Launch only the style whose
+upstream gate has passed and use the detached PID/log wrapper pattern from the
+PPO sections above. A small-sample smoke may be statistically inconclusive; it
+proceeds only when all 60 rows are complete, protocol-clean, and
+validation-only. The 600-episode formal block must pass every frozen gate.
