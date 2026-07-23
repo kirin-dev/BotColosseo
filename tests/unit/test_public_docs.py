@@ -49,8 +49,10 @@ def test_public_documentation_local_links_resolve() -> None:
     assert broken == []
 
 
-def test_readme_does_not_claim_m4_media_before_publication() -> None:
+def test_readme_publishes_m4_media_with_validation_boundary() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
 
-    assert "m4-base-vs-aggressive.gif" not in readme
+    assert "m4-base-vs-aggressive.gif" in readme
+    assert "reports/showcase/m4/manifest.json" in readme
+    assert re.search(r"not an\s+official test result", readme)
     assert "M4 passed" not in readme

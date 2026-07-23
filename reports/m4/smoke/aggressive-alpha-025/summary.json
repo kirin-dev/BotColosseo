@@ -1,0 +1,68 @@
+{
+  "checkpoint_sha256": {
+    "aggressive": "74771ff9ea05feb8658ac62de4fd19763390ce3c396b59c752cbed90b20b9446",
+    "strong_base": "fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a"
+  },
+  "complete": true,
+  "engagement_initiation_delta": 0.10192837465564739,
+  "engagement_initiation_delta_ci": [
+    0.0,
+    0.24517906336088155
+  ],
+  "environment_retries": 0,
+  "episodes": 20,
+  "expected_episodes": 20,
+  "gates": {
+    "complete": true,
+    "engagement_shift": false,
+    "objective_chase_controlled": true,
+    "per_opponent_retention": true,
+    "protocol_clean": true,
+    "skill_retention": true,
+    "valid_attack_rate": true
+  },
+  "passed": false,
+  "per_opponent_retention": {
+    "aggressive_script": 1.0,
+    "defensive_script": 1.0,
+    "fixed_route": 1.0,
+    "objective_first": 0.75,
+    "random_legal": 1.0
+  },
+  "policies": {
+    "aggressive": {
+      "attack_rate": 0.006045949214026602,
+      "engagement_initiations_per_100_decisions": 0.08061265618702136,
+      "episodes": 10,
+      "forward_hit_rate": 0.0,
+      "invalid_attack_rate": 0.7333333333333333,
+      "mean_score_difference": 1.9,
+      "objective_chase_rate": 0.06666666666666667,
+      "objective_rate": 1.0,
+      "performance": 0.95,
+      "retreat_rate": 0.0,
+      "valid_attack_rate": 0.26666666666666666,
+      "win_rate": 0.8
+    },
+    "strong_base": {
+      "attack_rate": 0.0,
+      "engagement_initiations_per_100_decisions": 0.0,
+      "episodes": 10,
+      "forward_hit_rate": 0.0,
+      "invalid_attack_rate": 0.0,
+      "mean_score_difference": 2.2,
+      "objective_chase_rate": 0.0,
+      "objective_rate": 1.0,
+      "performance": 1.0,
+      "retreat_rate": 0.0,
+      "valid_attack_rate": 0.0,
+      "win_rate": 1.0
+    }
+  },
+  "protocol_inconsistencies": 0,
+  "schema_version": 1,
+  "skill_retention": 0.95,
+  "split": "validation",
+  "stage": "m4",
+  "test_cases_accessed": false
+}

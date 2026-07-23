@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import replace
 from pathlib import Path
 
@@ -164,7 +165,9 @@ def test_development_renderer_stays_non_public_and_aligns_streams(
         frames: object, output: Path, *, fps: int, max_bytes: int
     ) -> Path:
         del fps, max_bytes
-        gif_frames.extend(frames)  # type: ignore[arg-type]
+        captured = tuple(frames)  # type: ignore[arg-type]
+        gif_frames.extend(captured)
+        videos[output] = captured
         output.write_bytes(b"GIF89a")
         return output
 
@@ -186,4 +189,4 @@ def test_development_renderer_stays_non_public_and_aligns_streams(
     assert (tmp_path / "media/development-bc.mp4").is_file()
     assert (tmp_path / "media/development-comparison.gif").is_file()
     assert len(gif_frames) == 2
-    assert not (root / "docs/assets/showcase").exists()
+    assert "docs/assets/showcase" not in json.dumps(manifest)

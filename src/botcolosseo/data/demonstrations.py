@@ -26,10 +26,11 @@ TASK_IDS = {mode.value: index for index, mode in enumerate(DuelTeacherMode)}
 
 
 class DemonstrationBuffer:
-    def __init__(self, *, capacity: int) -> None:
+    def __init__(self, *, capacity: int, allow_masked: bool = False) -> None:
         if capacity <= 0:
             raise ValueError("capacity must be positive")
         self.capacity = capacity
+        self.allow_masked = allow_masked
         self._rows: list[tuple[object, ...]] = []
 
     def __len__(self) -> int:
@@ -44,6 +45,7 @@ class DemonstrationBuffer:
         opponent_id: int,
         task_id: int,
         train_seed: int,
+        valid: bool = True,
     ) -> None:
         if len(self) >= self.capacity:
             raise BufferError("Demonstration buffer capacity exceeded")
@@ -65,7 +67,7 @@ class DemonstrationBuffer:
                 observation.previous_action,
                 teacher_action,
                 episode_start,
-                True,
+                valid,
                 opponent_id,
                 task_id,
                 train_seed,
@@ -93,7 +95,7 @@ class DemonstrationBuffer:
                 DEMONSTRATION_FIELDS, columns, dtypes, strict=True
             )
         }
-        validate_demonstration_shard(arrays)
+        validate_demonstration_shard(arrays, require_all_valid=not self.allow_masked)
         return arrays
 
 
@@ -104,9 +106,12 @@ def _npy_bytes(array: np.ndarray) -> bytes:
 
 
 def write_demonstration_shard(
-    arrays: dict[str, np.ndarray], output_path: Path
+    arrays: dict[str, np.ndarray],
+    output_path: Path,
+    *,
+    require_all_valid: bool = True,
 ) -> Path:
-    validate_demonstration_shard(arrays)
+    validate_demonstration_shard(arrays, require_all_valid=require_all_valid)
     output_path = output_path.expanduser().resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     temporary = output_path.with_name(f".{output_path.name}.tmp")
@@ -126,10 +131,12 @@ def write_demonstration_shard(
     return output_path
 
 
-def load_demonstration_shard(path: Path) -> dict[str, np.ndarray]:
+def load_demonstration_shard(
+    path: Path, *, require_all_valid: bool = True
+) -> dict[str, np.ndarray]:
     with np.load(path, allow_pickle=False) as archive:
         arrays = {name: np.array(archive[name], copy=True) for name in archive.files}
-    validate_demonstration_shard(arrays)
+    validate_demonstration_shard(arrays, require_all_valid=require_all_valid)
     return arrays
 
 
@@ -141,8 +148,10 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def trajectory_sha256(arrays: dict[str, np.ndarray]) -> str:
-    validate_demonstration_shard(arrays)
+def trajectory_sha256(
+    arrays: dict[str, np.ndarray], *, require_all_valid: bool = True
+) -> str:
+    validate_demonstration_shard(arrays, require_all_valid=require_all_valid)
     digest = hashlib.sha256()
     for name in DEMONSTRATION_FIELDS:
         if name == "frame":
@@ -236,9 +245,7 @@ def generate_demonstration_split(
             )
             learner = ObjectiveDuelTeacher(graph, side=case.learner_side)
             opponent_side = "opponent" if case.learner_side == "host" else "host"
-            opponent = create_duel_teacher(
-                opponent_name, graph, side=opponent_side
-            )
+            opponent = create_duel_teacher(opponent_name, graph, side=opponent_side)
             try:
                 observations, info = env.reset()
                 scenario_hash = info.scenario_hash

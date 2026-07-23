@@ -1,0 +1,22 @@
+schema_version: 1
+stage: m4
+publication: true
+split: validation
+cases: configs/showcase/m4-validation.json
+metrics: reports/m4/showcase-metrics.json
+policies:
+  - id: strong_base
+    label: Strong Base
+    checkpoint: runs/m3/league-full/candidate-boundary-0200000.pt
+    expected_sha256: fe45838aa3184a41741755e4ddb2a9582af887f637e6475a25523aa2a358c29a
+  - id: aggressive
+    label: Aggressive
+    checkpoint: runs/m4/aggressive-interpolation/alpha-025.pt
+    expected_sha256: 74771ff9ea05feb8658ac62de4fd19763390ce3c396b59c752cbed90b20b9446
+render:
+  fps: 10
+  gif_seconds: 18
+  gif_max_bytes: 10000000
+  max_decisions: 525
+  output_dir: docs/assets/showcase
+evidence_dir: reports/showcase/m4

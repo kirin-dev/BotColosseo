@@ -784,20 +784,159 @@ env \
   --device cuda:0
 ```
 
-Production remains unavailable until real Strong Base and Aggressive
-checkpoints, their exact SHA-256 values, and passing M4 validation evidence
-exist. At that point the command changes only the configuration argument:
+The real Strong Base and Aggressive hashes and the passing 200-episode M4
+validation evidence are now frozen. Export the publication metrics and logged
+highlight scores from those artifacts and the eight predefined validation
+cases:
 
 ```bash
-env PYTHONPATH="$PWD/src" \
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+env PYTHONPATH=src CUDA_VISIBLE_DEVICES=0 \
   /home/wencong/miniconda3/envs/botcolosseo/bin/python \
-  scripts/render_showcase.py \
+  scripts/export_showcase_metrics.py \
   --config configs/showcase/m4.yaml \
-  --checkpoint-root /path/to/hash-matched/artifacts \
+  --evaluation reports/m4/evaluation/aggressive-alpha-025/summary.json \
+  --checkpoint-root . \
   --device cuda:0
 ```
 
-Do not create `configs/showcase/m4.yaml`, publish files under
-`docs/assets/showcase/`, or add M4 media to README before the production metric
-loader verifies the stage, validation split, gate booleans, policy set, and all
-checkpoint hashes.
+Commit the resulting `reports/m4/showcase-metrics.json` so production Git
+provenance is clean, then publish the media and manifest:
+
+```bash
+env PYTHONPATH=src CUDA_VISIBLE_DEVICES=0 \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/render_showcase.py \
+  --config configs/showcase/m4.yaml \
+  --checkpoint-root . \
+  --device cuda:0
+```
+
+The publication loader rejects dirty provenance, checkpoint drift, failed gate
+booleans, non-validation cases, or any policy/hash mismatch. The tracked M4
+publication is qualitative validation material and is not an official test
+result.
+
+## M4 Aggressive candidate training
+
+The 1,024-step CUDA/ViZDoom smoke completed on 2026-07-22 with a real episode,
+16 optimizer updates, capped reward-component logs, and finite style-to-base
+KL. Run the first 400k production candidate on the second physical GPU:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+mkdir -p runs/m4/aggressive-main
+nohup env \
+  CUDA_VISIBLE_DEVICES=1 \
+  PYTHONPATH="$PWD/src" \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python -u \
+  scripts/train_league.py \
+  --style aggressive \
+  --config configs/m4/aggressive.yaml \
+  --base-checkpoint runs/m3/league-full/candidate-boundary-0200000.pt \
+  --pool /home/wencong/BotColosseo/.worktrees/m3-strong-base/reports/m3/pools/pool-v1.json \
+  --payoffs /home/wencong/BotColosseo/.worktrees/m3-strong-base/reports/m3/pools/payoffs-v1.json \
+  --run-dir runs/m4/aggressive-main \
+  --device cuda:0 \
+  > runs/m4/aggressive-main/train.log 2>&1 &
+echo $! > runs/m4/aggressive-main/train.pid
+```
+
+Monitor without modifying the run:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+tail -f runs/m4/aggressive-main/train.log
+```
+
+Or inspect structured progress:
+
+```bash
+jq '{completed, environment_steps, episode_count, updates,
+     style_reward_components, kl_early_stop_count}' \
+  runs/m4/aggressive-main/summary.json
+```
+
+Expected completion is `environment_steps: 400000` and `completed: true`.
+This completes training only; it does not claim the Aggressive or M4 gate.
+
+## M4 Aggressive alpha 0.25 formal evaluation
+
+The predefined interpolation grid selected alpha 0.25. Its 20-episode smoke
+passed six of seven gates; the only miss was an engagement bootstrap interval
+with lower bound exactly zero. The explicit 2026-07-23 route approval permits
+the fixed candidate to enter the unchanged 200-episode validation evaluation.
+It does not permit more alpha tuning or relax any formal gate.
+
+The preflight uses 10 side-swapped pairs for each of five opponents and two
+policies, for exactly 200 episodes:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+env \
+  PYTHONPATH=src \
+  CUDA_VISIBLE_DEVICES=0 \
+  /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/evaluate_style.py \
+  --base-checkpoint runs/m3/league-full/candidate-boundary-0200000.pt \
+  --aggressive-checkpoint runs/m4/aggressive-interpolation/alpha-025.pt \
+  --output-dir reports/m4/evaluation/aggressive-alpha-025 \
+  --pairs-per-opponent 10 \
+  --max-decisions 525 \
+  --max-attempts 2 \
+  --bootstrap-samples 10000 \
+  --bootstrap-seed 20260722 \
+  --device cuda:0 \
+  --preflight
+```
+
+Run the resumable evaluation in a detached session:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+mkdir -p runs/m4 reports/m4/evaluation
+test ! -s runs/m4/aggressive-alpha-025-evaluation.pid || \
+  ! ps -p "$(cat runs/m4/aggressive-alpha-025-evaluation.pid)" >/dev/null 2>&1
+: > runs/m4/aggressive-alpha-025-evaluation.pid
+rm -f runs/m4/aggressive-alpha-025-evaluation.exit
+nohup setsid -f bash -c '
+  echo $$ > runs/m4/aggressive-alpha-025-evaluation.pid
+  cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+  env \
+    PYTHONPATH=src \
+    CUDA_VISIBLE_DEVICES=0 \
+    /home/wencong/miniconda3/envs/botcolosseo/bin/python -u \
+    scripts/evaluate_style.py \
+    --base-checkpoint runs/m3/league-full/candidate-boundary-0200000.pt \
+    --aggressive-checkpoint runs/m4/aggressive-interpolation/alpha-025.pt \
+    --output-dir reports/m4/evaluation/aggressive-alpha-025 \
+    --pairs-per-opponent 10 \
+    --max-decisions 525 \
+    --max-attempts 2 \
+    --bootstrap-samples 10000 \
+    --bootstrap-seed 20260722 \
+    --device cuda:0
+  status=$?
+  printf "%s\n" "$status" > runs/m4/aggressive-alpha-025-evaluation.exit
+  exit "$status"
+' >> runs/m4/aggressive-alpha-025-evaluation.log 2>&1
+while [[ ! -s runs/m4/aggressive-alpha-025-evaluation.pid ]]; do sleep 1; done
+cat runs/m4/aggressive-alpha-025-evaluation.pid
+```
+
+Monitor without changing the append-only ledger:
+
+```bash
+cd /home/wencong/BotColosseo/.worktrees/m4-aggressive
+ps -p "$(cat runs/m4/aggressive-alpha-025-evaluation.pid)" \
+  -o pid,etime,%cpu,%mem,stat,cmd
+wc -l reports/m4/evaluation/aggressive-alpha-025/episodes.jsonl
+tail -n 40 runs/m4/aggressive-alpha-025-evaluation.log
+test ! -f runs/m4/aggressive-alpha-025-evaluation.exit || \
+  cat runs/m4/aggressive-alpha-025-evaluation.exit
+```
+
+Rerunning the same command resumes from verified episode identities. Do not
+delete a partial `episodes.jsonl`. Completion requires 200 rows plus matching
+`summary.json` and `manifest.json`; exit code zero means the frozen formal gate
+passed, while exit code one is a complete but failed experimental result.

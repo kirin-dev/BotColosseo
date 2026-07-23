@@ -6,6 +6,32 @@ Bot Colosseo studies how to train a strong visual game Bot and then shape it
 into player-recognizable Aggressive, Defensive, and Explorer styles without
 discarding its task skill. The approved technical design is in [Plan.md](Plan.md).
 
+Bot Colosseo 研究如何先训练具备稳定任务能力的视觉游戏 Bot，再在保留能力的
+前提下塑造玩家可感知的 Aggressive、Defensive 与 Explorer 行为风格。
+
+## Strong Base → Aggressive
+
+![Strong Base and Aggressive Bot on the same validation case](docs/assets/showcase/m4-base-vs-aggressive.gif)
+
+| Frozen validation evidence | Result |
+|---|---:|
+| Strong Base win rate | 87.0% |
+| Aggressive win rate | 89.0% |
+| Aggressive engagement shift | +0.100 / 100 decisions |
+| Skill Retention | 100.0% |
+| Paired evaluation | 200 episodes |
+
+The Aggressive Bot is a fixed residual-style checkpoint derived from the same
+fair-observation Strong Base. It passed all seven predefined style, safety, and
+retention gates: the engagement-shift bootstrap interval is `[0.046, 0.171]`,
+valid-attack rate is 26.7%, and objective-chase rate is controlled at 9.0%.
+
+This GIF is a qualitative, automatically selected **validation** case—not an
+official test result. See the [full Strong Base episode](docs/assets/showcase/m4-strong-base.mp4),
+[full Aggressive episode](docs/assets/showcase/m4-aggressive.mp4),
+[metric card](docs/assets/showcase/m4-metrics.png), and
+[hash-bound publication manifest](reports/showcase/m4/manifest.json).
+
 ## Current status
 
 Milestone 1 passed its frozen capability gate. Milestone 2 delivered a real
@@ -40,8 +66,10 @@ performance sample.
 
 The complete paired rows and frozen gate decisions are tracked in
 [`reports/m2/`](reports/m2/). Historical-opponent/PFSP training is now the M3
-route for testing whether robustness can improve beyond this M2 plateau; its
-Strong Base result remains pending.
+route for testing whether robustness can improve beyond this M2 plateau. That
+run completed with clean integrity evidence but did not pass every frozen M3
+capability threshold; its selected 200k checkpoint is therefore described as
+an integrity-qualified capability anchor, not an official M3 pass.
 
 Milestone 1 established the source-built Crystal Run scenario, auditable ACS
 event protocol, fair single-agent interface, five deterministic Teachers,
@@ -61,8 +89,9 @@ The official report records zero event-protocol inconsistencies. See the
 [Teacher montage](docs/assets/m1-teacher-montage.mp4), [M1 runbook](docs/milestones/m1.md),
 and [raw evidence](reports/m1/summary.json).
 
-The M3 Strong Base/PFSP gate, difficulty control, and the learned Aggressive,
-Defensive, and Explorer checkpoints remain pending.
+The learned Aggressive checkpoint and its M4 validation gate are complete.
+Defensive, Explorer, difficulty control, and the final M5/M6 product gate remain
+pending.
 
 ## Quick start
 

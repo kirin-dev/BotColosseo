@@ -11,6 +11,7 @@ from botcolosseo.agents.league_opponents import (
     sha256_file,
 )
 from botcolosseo.agents.model import AsymmetricActorCritic
+from botcolosseo.agents.style_model import StyledActorCritic
 from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.duel_types import DuelActorObservation
 
@@ -178,4 +179,84 @@ def test_checkpoint_policy_loads_auditable_league_checkpoint(tmp_path: Path) -> 
     policy = CheckpointOpponentPolicy.load(_spec(path), device=torch.device("cpu"))
 
     policy.reset()
+    assert isinstance(policy.act(_observation()), MacroAction)
+
+
+def test_checkpoint_policy_loads_style_adapter_checkpoint(tmp_path: Path) -> None:
+    path = tmp_path / "aggressive.pt"
+    model = StyledActorCritic.from_base(AsymmetricActorCritic(), bottleneck=16)
+    torch.save(
+        {
+            "schema_version": 1,
+            "identity": {
+                "base_checkpoint_sha256": "a" * 64,
+                "config_hash": "b" * 64,
+                "train_manifest_hash": "c" * 64,
+                "pool_manifest_hash": "d" * 64,
+                "payoff_report_hash": "e" * 64,
+                "scenario_hash": "scenario",
+            },
+            "state": {
+                "environment_steps": 1,
+                "updates": 1,
+                "episodes": 0,
+                "next_pair_slot": 0,
+            },
+            "model": model.state_dict(),
+        },
+        path,
+    )
+
+    policy = CheckpointOpponentPolicy.load(_spec(path), device=torch.device("cpu"))
+    policy.reset()
+
+    assert isinstance(policy.act(_observation()), MacroAction)
+
+
+def test_checkpoint_policy_loads_style_distillation_checkpoint(tmp_path: Path) -> None:
+    path = tmp_path / "aggressive-distilled.pt"
+    model = StyledActorCritic.from_base(AsymmetricActorCritic(), bottleneck=16)
+    torch.save(
+        {
+            "schema_version": 1,
+            "kind": "style_distillation",
+            "style": "aggressive",
+            "base_checkpoint_sha256": "a" * 64,
+            "scenario_hash": "scenario",
+            "data_manifest_sha256": "b" * 64,
+            "config_hash": "c" * 64,
+            "updates": 10,
+            "model": model.state_dict(),
+        },
+        path,
+    )
+
+    policy = CheckpointOpponentPolicy.load(_spec(path), device=torch.device("cpu"))
+    policy.reset()
+
+    assert isinstance(policy.act(_observation()), MacroAction)
+
+
+def test_checkpoint_policy_loads_style_interpolation_checkpoint(tmp_path: Path) -> None:
+    path = tmp_path / "aggressive-alpha.pt"
+    model = StyledActorCritic.from_base(AsymmetricActorCritic(), bottleneck=16)
+    torch.save(
+        {
+            "schema_version": 1,
+            "kind": "style_interpolation",
+            "style": "aggressive",
+            "alpha": 0.5,
+            "base_checkpoint_sha256": "a" * 64,
+            "scenario_hash": "scenario",
+            "distilled_checkpoint_sha256": "b" * 64,
+            "ppo_checkpoint_sha256": "c" * 64,
+            "interpolation_sha256": "d" * 64,
+            "model": model.state_dict(),
+        },
+        path,
+    )
+
+    policy = CheckpointOpponentPolicy.load(_spec(path), device=torch.device("cpu"))
+    policy.reset()
+
     assert isinstance(policy.act(_observation()), MacroAction)

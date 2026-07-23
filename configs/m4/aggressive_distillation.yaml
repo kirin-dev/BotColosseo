@@ -1,0 +1,16 @@
+schema_version: 1
+seed: 20260723
+train_cases: configs/m2/train.json
+train_manifest: data/generated/m4/aggressive/train-manifest.json
+transitions: 50000
+shard_size: 10000
+case_transition_cap: 525
+non_attack_stride: 4
+chunk_length: 16
+batch_size: 16
+updates: 1000
+learning_rate: 0.0003
+weight_decay: 0.00001
+gradient_clip: 0.5
+beta_kl: 0.05
+bottleneck: 32

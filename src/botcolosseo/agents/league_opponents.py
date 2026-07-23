@@ -11,6 +11,7 @@ import torch
 from botcolosseo.agents.checkpoint import CheckpointMetadata
 from botcolosseo.agents.duel_teachers import create_duel_teacher
 from botcolosseo.agents.model import AsymmetricActorCritic, RecurrentActor
+from botcolosseo.agents.style_model import StyledActorCritic
 from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.duel_types import DuelActorObservation, DuelPrivilegedState
 from botcolosseo.scenarios.regions import RegionGraph
@@ -77,6 +78,51 @@ def _checkpoint_scenario_hash(payload: dict[str, object]) -> str:
             return CheckpointMetadata(**payload["metadata"]).scenario_hash  # type: ignore[arg-type]
         except TypeError as error:
             raise ValueError("Invalid opponent checkpoint metadata") from error
+    if payload.get("kind") == "style_interpolation":
+        required = (
+            "base_checkpoint_sha256",
+            "distilled_checkpoint_sha256",
+            "interpolation_sha256",
+            "ppo_checkpoint_sha256",
+        )
+        hash_values = tuple(payload.get(field) for field in required)
+        alpha = payload.get("alpha")
+        if (
+            payload.get("style") != "aggressive"
+            or any(
+                not isinstance(value, str) or _SHA256_PATTERN.fullmatch(value) is None
+                for value in hash_values
+            )
+            or not isinstance(alpha, (int, float))
+            or not 0.0 < float(alpha) < 1.0
+        ):
+            raise ValueError("Invalid style-interpolation checkpoint metadata")
+        scenario_hash = payload.get("scenario_hash")
+        if not isinstance(scenario_hash, str) or not scenario_hash:
+            raise ValueError("Invalid style-interpolation scenario hash")
+        return scenario_hash
+    if payload.get("kind") == "style_distillation":
+        required = (
+            "base_checkpoint_sha256",
+            "config_hash",
+            "data_manifest_sha256",
+        )
+        hash_values = tuple(payload.get(field) for field in required)
+        updates = payload.get("updates")
+        if (
+            payload.get("style") != "aggressive"
+            or any(
+                not isinstance(value, str) or _SHA256_PATTERN.fullmatch(value) is None
+                for value in hash_values
+            )
+            or type(updates) is not int
+            or updates <= 0
+        ):
+            raise ValueError("Invalid style-distillation checkpoint metadata")
+        scenario_hash = payload.get("scenario_hash")
+        if not isinstance(scenario_hash, str) or not scenario_hash:
+            raise ValueError("Invalid style-distillation scenario hash")
+        return scenario_hash
     identity = payload.get("identity")
     state = payload.get("state")
     if (
@@ -88,8 +134,7 @@ def _checkpoint_scenario_hash(payload: dict[str, object]) -> str:
         raise ValueError("Invalid opponent checkpoint metadata")
     hash_fields = _LEAGUE_IDENTITY_FIELDS - {"scenario_hash"}
     if any(
-        not isinstance(identity[field], str)
-        or _SHA256_PATTERN.fullmatch(identity[field]) is None
+        not isinstance(identity[field], str) or _SHA256_PATTERN.fullmatch(identity[field]) is None
         for field in hash_fields
     ):
         raise ValueError("Invalid opponent league-checkpoint identity")
@@ -104,9 +149,7 @@ def _checkpoint_scenario_hash(payload: dict[str, object]) -> str:
 
 
 class CheckpointOpponentPolicy:
-    def __init__(
-        self, spec: OpponentSpec, actor: RecurrentActor, *, device: torch.device
-    ) -> None:
+    def __init__(self, spec: OpponentSpec, actor: RecurrentActor, *, device: torch.device) -> None:
         self.spec = spec
         self._actor = actor.to(device).eval()
         self._actor.requires_grad_(False)
@@ -115,9 +158,7 @@ class CheckpointOpponentPolicy:
         self._episode_start = True
 
     @classmethod
-    def load(
-        cls, spec: OpponentSpec, *, device: torch.device
-    ) -> CheckpointOpponentPolicy:
+    def load(cls, spec: OpponentSpec, *, device: torch.device) -> CheckpointOpponentPolicy:
         if spec.kind != "checkpoint" or spec.checkpoint is None:
             raise ValueError("CheckpointOpponentPolicy requires a checkpoint spec")
         path = Path(spec.checkpoint).expanduser().resolve()
@@ -131,12 +172,22 @@ class CheckpointOpponentPolicy:
         scenario_hash = _checkpoint_scenario_hash(payload)
         if scenario_hash != spec.scenario_hash:
             raise ValueError("Opponent checkpoint scenario hash does not match")
-        model = AsymmetricActorCritic()
+        state_dict = payload.get("model")
+        if not isinstance(state_dict, dict):
+            raise ValueError("Opponent checkpoint is missing model weights")
         try:
-            model.load_state_dict(payload["model"], strict=True)
+            if any(name.startswith("adapter.") for name in state_dict):
+                bottleneck = int(state_dict["adapter.layers.0.weight"].shape[0])
+                styled = StyledActorCritic.from_base(AsymmetricActorCritic(), bottleneck=bottleneck)
+                styled.load_state_dict(state_dict, strict=True)
+                actor = styled.public_actor()
+            else:
+                model = AsymmetricActorCritic()
+                model.load_state_dict(state_dict, strict=True)
+                actor = model.actor
         except (KeyError, RuntimeError) as error:
             raise ValueError("Opponent checkpoint model dimensions do not match") from error
-        return cls(spec, model.actor, device=device)
+        return cls(spec, actor, device=device)
 
     def reset(self) -> None:
         self._hidden = self._actor.initial_state(1, device=self._device)
