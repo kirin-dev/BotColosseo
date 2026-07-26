@@ -1558,3 +1558,45 @@ The report binds the learned/hybrid policy archive, six curated videos, blind
 study package, synthetic raw responses and provenance, both READMEs, and the
 proposal-only extraction-v2 plan. It fails if any hash drifts or if synthetic
 responses are presented as human evidence.
+
+## Crystal Run Extraction v2 training pipeline
+
+The v2 branch uses a separate protocol, WAD, data schema, recurrent
+fair-observation Actor, and residual style checkpoints. The full pipeline
+generates 60,000 train plus 12,000 validation transitions for Strong,
+Aggressive, Defensive, and Explorer; trains Strong Base on GPU 0; trains the
+three 20,013-parameter residual branches across both GPUs; evaluates the
+frozen four-case validation manifest; and runs a hash-bound artifact audit.
+It never reads `configs/extraction_v2/test.json`.
+
+Launch the resumable pipeline in the background:
+
+```bash
+cd /home/wencong/BotColosseo
+mkdir -p runs/extraction-v2
+setsid bash -c '
+  echo $$ > runs/extraction-v2/pipeline.pid
+  scripts/run_extraction_v2_pipeline.sh
+  status=$?
+  printf "%s\n" "$status" > runs/extraction-v2/pipeline.exit
+  exit "$status"
+' >> runs/extraction-v2/pipeline.nohup.log 2>&1 < /dev/null &
+```
+
+Progress and completion checks:
+
+```bash
+ps -p "$(cat runs/extraction-v2/pipeline.pid)" \
+  -o pid,etime,%cpu,%mem,stat,cmd
+tail -n 80 runs/extraction-v2/pipeline.nohup.log
+find data/generated/extraction-v2 -name '*-manifest.json' -print
+find runs/extraction-v2 -mindepth 2 -name summary.json -print
+nvidia-smi
+test ! -f runs/extraction-v2/pipeline.exit || \
+  cat runs/extraction-v2/pipeline.exit
+```
+
+The runner refuses to overwrite completed artifacts and fails on partial data
+directories. Logs for each generation, training, evaluation, and audit phase
+are under `runs/extraction-v2/pipeline/`. After it exits successfully, the
+compact validation reports and audit are under `reports/extraction-v2/`.

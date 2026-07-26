@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "split": "validation",
+  "cases": [
+    {"split": "validation", "seed": 32001, "learner_side": "host", "opponent_style": "strong"},
+    {"split": "validation", "seed": 32002, "learner_side": "opponent", "opponent_style": "strong"},
+    {"split": "validation", "seed": 32003, "learner_side": "host", "opponent_style": "aggressive"},
+    {"split": "validation", "seed": 32004, "learner_side": "opponent", "opponent_style": "defensive"}
+  ]
+}

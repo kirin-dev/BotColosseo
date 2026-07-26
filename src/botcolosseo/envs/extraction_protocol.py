@@ -8,6 +8,7 @@ import vizdoom as vzd
 from botcolosseo.envs.extraction_rules import EXTRACTION_REQUIRED_TICS, LOOT_VALUES
 
 PROTOCOL_VERSION = 3
+MAX_WORLD_LOOT = 32
 
 
 class ExtractionEventType(str, Enum):
@@ -201,7 +202,7 @@ class ExtractionProtocolSnapshot:
             raise ValueError("Invalid fixed damage")
         if not 0 <= self.world_loot_mask < 2**7:
             raise ValueError("Invalid world loot mask")
-        if not 0 <= self.last_loot_id <= 7:
+        if not 0 <= self.last_loot_id <= MAX_WORLD_LOOT:
             raise ValueError("Invalid loot identity")
         if self.reserved_zero != 0:
             raise ValueError("Extraction reserved_zero must remain zero")

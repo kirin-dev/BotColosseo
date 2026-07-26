@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "split": "test",
+  "cases": [
+    {"split": "test", "seed": 33001, "learner_side": "host", "opponent_style": "strong"},
+    {"split": "test", "seed": 33002, "learner_side": "opponent", "opponent_style": "strong"},
+    {"split": "test", "seed": 33003, "learner_side": "host", "opponent_style": "aggressive"},
+    {"split": "test", "seed": 33004, "learner_side": "opponent", "opponent_style": "aggressive"},
+    {"split": "test", "seed": 33005, "learner_side": "host", "opponent_style": "defensive"},
+    {"split": "test", "seed": 33006, "learner_side": "opponent", "opponent_style": "explorer"}
+  ]
+}

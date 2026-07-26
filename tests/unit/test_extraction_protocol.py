@@ -91,6 +91,14 @@ def test_decoder_allows_multiple_cache_items_between_decisions() -> None:
     assert event.count == 3
 
 
+def test_protocol_accepts_dynamic_replacement_loot_identity() -> None:
+    dynamic = replace(snapshot(), last_loot_id=8)
+
+    dynamic.validate()
+
+    assert dynamic.last_loot_id == 8
+
+
 @pytest.mark.parametrize(
     ("field", "value", "message"),
     (

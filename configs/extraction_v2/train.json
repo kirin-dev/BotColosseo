@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "split": "train",
+  "cases": [
+    {"split": "train", "seed": 31001, "learner_side": "host", "opponent_style": "strong"},
+    {"split": "train", "seed": 31002, "learner_side": "opponent", "opponent_style": "strong"},
+    {"split": "train", "seed": 31003, "learner_side": "host", "opponent_style": "aggressive"},
+    {"split": "train", "seed": 31004, "learner_side": "opponent", "opponent_style": "aggressive"},
+    {"split": "train", "seed": 31005, "learner_side": "host", "opponent_style": "defensive"},
+    {"split": "train", "seed": 31006, "learner_side": "opponent", "opponent_style": "defensive"},
+    {"split": "train", "seed": 31007, "learner_side": "host", "opponent_style": "explorer"},
+    {"split": "train", "seed": 31008, "learner_side": "opponent", "opponent_style": "explorer"},
+    {"split": "train", "seed": 31009, "learner_side": "host", "opponent_style": "strong"},
+    {"split": "train", "seed": 31010, "learner_side": "opponent", "opponent_style": "strong"},
+    {"split": "train", "seed": 31011, "learner_side": "host", "opponent_style": "aggressive"},
+    {"split": "train", "seed": 31012, "learner_side": "opponent", "opponent_style": "defensive"}
+  ]
+}
