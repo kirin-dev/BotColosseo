@@ -149,3 +149,21 @@ def test_rollout_rejects_partial_style_supervision() -> None:
     invalid.teacher_actions = torch.zeros(2, dtype=torch.long)
     with pytest.raises(ValueError, match="complete or absent"):
         RolloutBuffer(capacity=1, environments=2).append(invalid)
+
+
+def test_rollout_supports_extraction_actor_and_critic_dimensions() -> None:
+    buffer = RolloutBuffer(
+        capacity=1,
+        environments=1,
+        scalar_dim=9,
+        privileged_dim=20,
+    )
+    current = step(0, environments=1)
+    current.scalars = torch.zeros(1, 9)
+    current.privileged = torch.zeros(1, 20)
+
+    buffer.append(current)
+    rollout = buffer.finalize(gamma=0.99, gae_lambda=0.95)
+
+    assert rollout.scalars.shape == (1, 1, 9)
+    assert rollout.privileged.shape == (1, 1, 20)

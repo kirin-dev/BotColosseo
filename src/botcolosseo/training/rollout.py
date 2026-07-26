@@ -169,11 +169,25 @@ class RecurrentRollout:
 
 
 class RolloutBuffer:
-    def __init__(self, *, capacity: int, environments: int) -> None:
-        if capacity <= 0 or environments <= 0:
-            raise ValueError("Rollout capacity and environment count must be positive")
+    def __init__(
+        self,
+        *,
+        capacity: int,
+        environments: int,
+        scalar_dim: int = 6,
+        privileged_dim: int = 12,
+        hidden_size: int = 256,
+        action_count: int = 13,
+    ) -> None:
+        dimensions = (capacity, environments, scalar_dim, privileged_dim, hidden_size)
+        if any(value <= 0 for value in dimensions) or action_count <= 0:
+            raise ValueError("Rollout capacity and dimensions must be positive")
         self.capacity = capacity
         self.environments = environments
+        self.scalar_dim = scalar_dim
+        self.privileged_dim = privileged_dim
+        self.hidden_size = hidden_size
+        self.action_count = action_count
         self._steps: list[RolloutStep] = []
 
     def __len__(self) -> int:
@@ -200,11 +214,11 @@ class RolloutBuffer:
         expected = self.environments
         shapes = {
             "frames": (expected, 1, 84, 84),
-            "scalars": (expected, 6),
+            "scalars": (expected, self.scalar_dim),
             "previous_actions": (expected,),
             "masks": (expected,),
-            "privileged": (expected, 12),
-            "hidden": (1, expected, 256),
+            "privileged": (expected, self.privileged_dim),
+            "hidden": (1, expected, self.hidden_size),
             "actions": (expected,),
             "rewards": (expected,),
             "terminated": (expected,),
@@ -237,7 +251,10 @@ class RolloutBuffer:
             raise ValueError("A rollout step cannot terminate and truncate together")
         if not bool(torch.all((step.masks == 0) | (step.masks == 1))):
             raise ValueError("Rollout masks must contain only zero or one")
-        if int(step.actions.min()) < 0 or int(step.actions.max()) >= 13:
+        if (
+            int(step.actions.min()) < 0
+            or int(step.actions.max()) >= self.action_count
+        ):
             raise ValueError("Rollout action is outside the action space")
         if step.teacher_actions is not None:
             if (
@@ -246,7 +263,10 @@ class RolloutBuffer:
                 or step.teacher_mask.dtype != torch.bool
             ):
                 raise ValueError("Invalid rollout style supervision")
-            if int(step.teacher_actions.min()) < 0 or int(step.teacher_actions.max()) >= 13:
+            if (
+                int(step.teacher_actions.min()) < 0
+                or int(step.teacher_actions.max()) >= self.action_count
+            ):
                 raise ValueError("Teacher action is outside the action space")
             if int(step.route_modes.min()) < -1 or int(step.route_modes.max()) > 2:
                 raise ValueError("Route mode is outside the supported range")

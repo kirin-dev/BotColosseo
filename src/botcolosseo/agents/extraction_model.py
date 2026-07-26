@@ -7,13 +7,163 @@ import torch
 from torch import nn
 
 from botcolosseo.agents.checkpoint import CheckpointMetadata
-from botcolosseo.agents.model import ActorOutput, RecurrentActor
-from botcolosseo.agents.style_model import ResidualStyleAdapter
+from botcolosseo.agents.model import ActorCriticOutput, ActorOutput, RecurrentActor
+from botcolosseo.agents.style_model import ResidualStyleAdapter, StyleActorCriticOutput
 from botcolosseo.data.extraction_demonstrations import EXTRACTION_SCALAR_DIM
+
+EXTRACTION_PRIVILEGED_DIM = 20
 
 
 def create_extraction_actor() -> RecurrentActor:
     return RecurrentActor(scalar_dim=EXTRACTION_SCALAR_DIM)
+
+
+class ExtractionActorCritic(nn.Module):
+    """Fair-observation Extraction Actor with a privileged training-only Critic."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.actor = create_extraction_actor()
+        self.privileged_dim = EXTRACTION_PRIVILEGED_DIM
+        self.privileged_encoder = nn.Sequential(
+            nn.Linear(self.privileged_dim, 128),
+            nn.ReLU(),
+        )
+        self.value = nn.Sequential(
+            nn.Linear(self.actor.hidden_size + 128, 256),
+            nn.ReLU(),
+            nn.Linear(256, 1),
+        )
+
+    def forward(
+        self,
+        frames: torch.Tensor,
+        scalars: torch.Tensor,
+        previous_actions: torch.Tensor,
+        masks: torch.Tensor,
+        privileged: torch.Tensor,
+        hidden: torch.Tensor | None = None,
+    ) -> ActorCriticOutput:
+        expected = (*frames.shape[:2], self.privileged_dim)
+        if privileged.shape != expected or privileged.device != frames.device:
+            raise ValueError("Extraction privileged input has the wrong shape or device")
+        actor = self.actor(frames, scalars, previous_actions, masks, hidden)
+        critic = self.privileged_encoder(privileged)
+        values = self.value(torch.cat((actor.features, critic), dim=-1)).squeeze(-1)
+        return ActorCriticOutput(actor.logits, values, actor.hidden)
+
+
+def create_extraction_actor_critic() -> ExtractionActorCritic:
+    return ExtractionActorCritic()
+
+
+class ExtractionResidualStyleActorCritic(nn.Module):
+    """Bounded learned delta logits over one frozen Extraction Strong Base."""
+
+    def __init__(
+        self,
+        base: ExtractionActorCritic,
+        *,
+        bottleneck: int = 32,
+        max_delta: float = 2.0,
+    ) -> None:
+        super().__init__()
+        if bottleneck <= 0 or max_delta <= 0:
+            raise ValueError("Extraction style dimensions must be positive")
+        self.base = copy.deepcopy(base)
+        self.base.actor.requires_grad_(False)
+        hidden = self.base.actor.hidden_size
+        actions = self.base.actor.action_count
+        self.delta_policy = nn.Sequential(
+            nn.Linear(hidden, bottleneck),
+            nn.ReLU(),
+            nn.Linear(bottleneck, actions),
+        )
+        nn.init.zeros_(self.delta_policy[-1].weight)
+        nn.init.zeros_(self.delta_policy[-1].bias)
+        self.max_delta = float(max_delta)
+
+    def forward(
+        self,
+        frames: torch.Tensor,
+        scalars: torch.Tensor,
+        previous_actions: torch.Tensor,
+        masks: torch.Tensor,
+        privileged: torch.Tensor,
+        hidden: torch.Tensor | None = None,
+    ) -> StyleActorCriticOutput:
+        actor = self.base.actor(
+            frames,
+            scalars,
+            previous_actions,
+            masks,
+            hidden,
+        )
+        critic = self.base.privileged_encoder(privileged)
+        values = self.base.value(
+            torch.cat((actor.features, critic), dim=-1)
+        ).squeeze(-1)
+        delta = self.max_delta * torch.tanh(self.delta_policy(actor.features))
+        return StyleActorCriticOutput(
+            actor.logits + delta,
+            values,
+            actor.hidden,
+            actor.logits,
+        )
+
+    def trainable_parameters(self):
+        return (
+            parameter for parameter in self.parameters() if parameter.requires_grad
+        )
+
+    def public_actor(self) -> ExtractionResidualStyleActor:
+        return ExtractionResidualStyleActor(
+            copy.deepcopy(self.base.actor),
+            copy.deepcopy(self.delta_policy),
+            max_delta=self.max_delta,
+        )
+
+
+class ExtractionResidualStyleActor(nn.Module):
+    def __init__(
+        self,
+        base_actor: RecurrentActor,
+        delta_policy: nn.Module,
+        *,
+        max_delta: float,
+    ) -> None:
+        super().__init__()
+        self.base_actor = base_actor
+        self.delta_policy = delta_policy
+        self.max_delta = float(max_delta)
+        self.hidden_size = base_actor.hidden_size
+
+    def initial_state(
+        self, batch_size: int, *, device: torch.device | str
+    ) -> torch.Tensor:
+        return self.base_actor.initial_state(batch_size, device=device)
+
+    def forward(
+        self,
+        frames: torch.Tensor,
+        scalars: torch.Tensor,
+        previous_actions: torch.Tensor,
+        masks: torch.Tensor,
+        hidden: torch.Tensor | None = None,
+    ) -> ActorOutput:
+        base = self.base_actor(
+            frames,
+            scalars,
+            previous_actions,
+            masks,
+            hidden,
+        )
+        delta = self.max_delta * torch.tanh(self.delta_policy(base.features))
+        return ActorOutput(
+            base.logits + delta,
+            base.features,
+            base.hidden,
+        )
 
 
 class ExtractionResidualActor(nn.Module):

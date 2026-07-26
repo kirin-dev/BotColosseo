@@ -7,8 +7,11 @@ import numpy as np
 import torch
 
 from botcolosseo.agents.extraction_model import (
+    EXTRACTION_PRIVILEGED_DIM,
     ExtractionResidualActor,
+    ExtractionResidualStyleActorCritic,
     create_extraction_actor,
+    create_extraction_actor_critic,
 )
 from botcolosseo.agents.extraction_teachers import ExtractionStyle
 from botcolosseo.data.extraction_demonstrations import (
@@ -114,3 +117,42 @@ def test_post_cache_dataset_masks_pre_conversion_actions(tmp_path: Path) -> None
     )
 
     assert dataset[0]["valid"].tolist() == [False, False, True, True]
+
+
+def test_extraction_actor_critic_keeps_privileged_state_out_of_public_actor() -> None:
+    model = create_extraction_actor_critic()
+    frames = torch.zeros(2, 3, 1, 84, 84, dtype=torch.uint8)
+    scalars = torch.zeros(2, 3, 9)
+    previous = torch.zeros(2, 3, dtype=torch.long)
+    masks = torch.ones(2, 3)
+    privileged = torch.zeros(2, 3, EXTRACTION_PRIVILEGED_DIM)
+
+    output = model(frames, scalars, previous, masks, privileged)
+    public = model.actor(frames, scalars, previous, masks)
+
+    assert output.logits.shape == (2, 3, 13)
+    assert output.values.shape == (2, 3)
+    assert torch.equal(output.logits, public.logits)
+
+
+def test_extraction_style_is_zero_initialized_bounded_delta_over_frozen_base() -> None:
+    model = ExtractionResidualStyleActorCritic(
+        create_extraction_actor_critic(),
+        bottleneck=16,
+        max_delta=1.5,
+    )
+    frames = torch.zeros(1, 2, 1, 84, 84, dtype=torch.uint8)
+    scalars = torch.zeros(1, 2, 9)
+    previous = torch.zeros(1, 2, dtype=torch.long)
+    masks = torch.ones(1, 2)
+    privileged = torch.zeros(1, 2, EXTRACTION_PRIVILEGED_DIM)
+
+    output = model(frames, scalars, previous, masks, privileged)
+    public = model.public_actor()(frames, scalars, previous, masks)
+
+    assert torch.equal(output.logits, output.base_logits)
+    assert torch.equal(output.logits, public.logits)
+    assert all(
+        not parameter.requires_grad for parameter in model.base.actor.parameters()
+    )
+    assert any(parameter.requires_grad for parameter in model.delta_policy.parameters())
