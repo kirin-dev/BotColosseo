@@ -1,0 +1,14 @@
+schema_version: 1
+splits:
+  validation:
+    seed_start: 51001
+    pairs_per_opponent: 30
+    layout_id: base
+  heldout:
+    seed_start: 52001
+    pairs_per_opponent: 15
+    layout_id: heldout-a
+  test:
+    seed_start: 53001
+    pairs_per_opponent: 50
+    layout_id: heldout-a

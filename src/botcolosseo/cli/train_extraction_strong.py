@@ -45,6 +45,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--environment-steps", type=int)
     parser.add_argument("--stop-after-steps", type=int)
     parser.add_argument("--rollout-steps", type=int)
+    parser.add_argument("--bc-checkpoint", type=Path)
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--resume", type=Path)
     parser.add_argument("--checkpoint-interval-steps", type=int)
@@ -157,7 +158,9 @@ def main(argv: list[str] | None = None) -> int:
     config_path = args.config if args.config.is_absolute() else root / args.config
     config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
     train_cases_path = root / config["train_cases"]
-    bc_checkpoint = root / config["bc_checkpoint"]
+    bc_checkpoint = args.bc_checkpoint or root / config["bc_checkpoint"]
+    if not bc_checkpoint.is_absolute():
+        bc_checkpoint = root / bc_checkpoint
     output_dir = args.output_dir or root / config["output_dir"]
     if not output_dir.is_absolute():
         output_dir = root / output_dir

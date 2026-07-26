@@ -8,6 +8,8 @@ import torch
 from botcolosseo.agents.checkpoint import CheckpointMetadata
 from botcolosseo.agents.extraction_model import (
     ExtractionActorCritic,
+    ExtractionResidualStyleActor,
+    ExtractionResidualStyleActorCritic,
     create_extraction_actor_critic,
 )
 from botcolosseo.agents.model import RecurrentActor
@@ -91,3 +93,46 @@ def load_extraction_strong_actor_critic(
     model.load_state_dict(payload["model"])
     model.to(device)
     return model, metadata
+
+
+def load_extraction_style_actor(
+    path: Path,
+    *,
+    base_checkpoint: Path,
+    expected_scenario_hash: str,
+    expected_base_sha256: str,
+    bottleneck: int,
+    max_delta: float,
+    expected_sha256: str | None = None,
+    device: torch.device | str = "cpu",
+) -> tuple[ExtractionResidualStyleActor, CheckpointMetadata]:
+    if sha256_file(base_checkpoint) != expected_base_sha256:
+        raise ValueError("Extraction style base checkpoint SHA-256 does not match")
+    base, _ = load_extraction_strong_actor_critic(
+        base_checkpoint,
+        expected_scenario_hash=expected_scenario_hash,
+        expected_sha256=expected_base_sha256,
+        device="cpu",
+    )
+    frozen_actor = {
+        name: value.clone() for name, value in base.actor.state_dict().items()
+    }
+    payload, metadata = _training_payload(
+        path,
+        expected_scenario_hash=expected_scenario_hash,
+        expected_sha256=expected_sha256,
+    )
+    model = ExtractionResidualStyleActorCritic(
+        base,
+        bottleneck=bottleneck,
+        max_delta=max_delta,
+    )
+    model.load_state_dict(payload["model"])
+    if any(
+        not torch.equal(model.base.actor.state_dict()[name], value)
+        for name, value in frozen_actor.items()
+    ):
+        raise ValueError("Extraction style checkpoint changed the frozen Strong Actor")
+    actor = model.public_actor().to(device)
+    actor.eval()
+    return actor, metadata

@@ -56,14 +56,17 @@ class ExtractionCase:
     seed: int
     learner_side: str
     opponent_style: str
+    layout_id: str = "base"
 
     def __post_init__(self) -> None:
-        if self.split not in {"train", "validation", "test"}:
+        if self.split not in {"train", "validation", "heldout", "test"}:
             raise ValueError(f"Invalid extraction split: {self.split}")
         if self.seed < 0:
             raise ValueError("Extraction case seed must be nonnegative")
         if self.learner_side not in {"host", "opponent"}:
             raise ValueError(f"Invalid extraction learner side: {self.learner_side}")
+        if self.layout_id not in {"base", "heldout-a"}:
+            raise ValueError(f"Invalid extraction layout: {self.layout_id}")
         ExtractionStyle(self.opponent_style)
 
 

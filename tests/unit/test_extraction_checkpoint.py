@@ -10,6 +10,7 @@ from botcolosseo.agents.checkpoint import (
     save_training_checkpoint,
 )
 from botcolosseo.agents.extraction_model import (
+    ExtractionResidualStyleActorCritic,
     create_extraction_actor,
     create_extraction_actor_critic,
 )
@@ -17,6 +18,7 @@ from botcolosseo.training.extraction_checkpoint import (
     load_extraction_bc_warm_start,
     load_extraction_strong_actor,
     load_extraction_strong_actor_critic,
+    load_extraction_style_actor,
     sha256_file,
 )
 
@@ -81,4 +83,39 @@ def test_strong_actor_loader_rejects_identity_drift(tmp_path: Path) -> None:
         load_extraction_strong_actor(
             checkpoint,
             expected_scenario_hash="changed",
+        )
+
+
+def test_style_loader_proves_frozen_strong_actor_identity(tmp_path: Path) -> None:
+    base = create_extraction_actor_critic()
+    base_checkpoint = save_checkpoint(tmp_path / "base.pt", base, "scenario")
+    style = ExtractionResidualStyleActorCritic(base)
+    style_checkpoint = save_checkpoint(tmp_path / "style.pt", style, "scenario")
+
+    actor, _ = load_extraction_style_actor(
+        style_checkpoint,
+        base_checkpoint=base_checkpoint,
+        expected_scenario_hash="scenario",
+        expected_base_sha256=sha256_file(base_checkpoint),
+        bottleneck=32,
+        max_delta=2,
+    )
+
+    assert actor.hidden_size == 256
+    changed = ExtractionResidualStyleActorCritic(base)
+    with torch.no_grad():
+        changed.base.actor.policy.bias.add_(1)
+    changed_checkpoint = save_checkpoint(
+        tmp_path / "changed.pt",
+        changed,
+        "scenario",
+    )
+    with pytest.raises(ValueError, match="frozen Strong"):
+        load_extraction_style_actor(
+            changed_checkpoint,
+            base_checkpoint=base_checkpoint,
+            expected_scenario_hash="scenario",
+            expected_base_sha256=sha256_file(base_checkpoint),
+            bottleneck=32,
+            max_delta=2,
         )

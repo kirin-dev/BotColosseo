@@ -42,6 +42,12 @@ class ExtractionEpisodeMetrics:
     unique_route_cells: int
     terminated: bool
     truncated: bool
+    loot_pickups: int = 0
+    won: bool = False
+    opponent_extracted: bool = False
+    opponent_extracted_value: int = 0
+    extracted_value_advantage: int = 0
+    max_peer_tic_lag: int = 0
 
 
 def is_aggressive_showcase_chain(episode: ExtractionEpisodeMetrics) -> bool:
@@ -90,8 +96,14 @@ def evaluate_extraction_episode(
     else:
         model = policy_model
     env = SynchronousExtractionEnv(
-        config_path=root
-        / "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg",
+        config_path=(
+            root
+            / "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg"
+            if case.layout_id == "base"
+            else root
+            / "assets/scenarios/crystal_run_extraction/"
+            "crystal_run_extraction_heldout.cfg"
+        ),
         seed=case.seed,
         max_decisions=max_decisions,
     )
@@ -111,6 +123,8 @@ def evaluate_extraction_episode(
         terminated = False
         truncated = False
         decisions = 0
+        final_winner = 0
+        max_peer_tic_lag = 0
         for _ in range(max_decisions):
             decisions += 1
             observation = (
@@ -144,6 +158,8 @@ def evaluate_extraction_episode(
                 else (opponent_action, learner_action)
             )
             step = env.step(host_action, away_action)
+            final_winner = step.winner
+            max_peer_tic_lag = max(max_peer_tic_lag, step.peer_tic_lag)
             observations = type(observations)(step.host, step.opponent)
             for event in step.events:
                 events[(event.side, event.type)] += event.count
@@ -159,6 +175,8 @@ def evaluate_extraction_episode(
             else observations.opponent
         )
         life = env.protocol_snapshot().public_state(case.learner_side).life_state
+        opponent_public = env.protocol_snapshot().public_state(opponent_side)
+        won = final_winner == (1 if case.learner_side == "host" else 2)
         return ExtractionEpisodeMetrics(
             seed=case.seed,
             learner_side=case.learner_side,
@@ -182,10 +200,22 @@ def evaluate_extraction_episode(
                 side=case.learner_side,
                 event_type=ExtractionEventType.CACHE_LOOTED,
             ),
+            loot_pickups=_learner_event_count(
+                events,
+                side=case.learner_side,
+                event_type=ExtractionEventType.LOOT_PICKUP,
+            ),
             attack_decisions=attack_decisions,
             unique_route_cells=len(route_cells),
             terminated=terminated,
             truncated=truncated,
+            won=won,
+            opponent_extracted=opponent_public.life_state == 3,
+            opponent_extracted_value=opponent_public.banked_value,
+            extracted_value_advantage=(
+                learner.banked_value - opponent_public.banked_value
+            ),
+            max_peer_tic_lag=max_peer_tic_lag,
         )
     finally:
         env.close()
@@ -197,6 +227,21 @@ def summarize_extraction_episodes(
     if not episodes:
         raise ValueError("Extraction evaluation requires episodes")
     count = len(episodes)
+    by_opponent: dict[str, dict[str, float | int]] = {}
+    for opponent in sorted({item.opponent_style for item in episodes}):
+        selected = tuple(
+            item for item in episodes if item.opponent_style == opponent
+        )
+        by_opponent[opponent] = {
+            "episodes": len(selected),
+            "win_rate": sum(item.won for item in selected) / len(selected),
+            "extraction_rate": sum(item.extracted for item in selected)
+            / len(selected),
+            "opponent_extraction_rate": sum(
+                item.opponent_extracted for item in selected
+            )
+            / len(selected),
+        }
     return {
         "attack_decisions_mean": sum(item.attack_decisions for item in episodes)
         / count,
@@ -205,9 +250,25 @@ def summarize_extraction_episodes(
         "episodes": [asdict(item) for item in episodes],
         "extraction_rate": sum(item.extracted for item in episodes) / count,
         "kill_total": sum(item.kills for item in episodes),
+        "loot_pickups_total": sum(item.loot_pickups for item in episodes),
         "mean_extracted_value": sum(item.extracted_value for item in episodes)
         / count,
+        "mean_extracted_value_advantage": sum(
+            item.extracted_value_advantage for item in episodes
+        )
+        / count,
+        "opponent_extraction_rate": sum(
+            item.opponent_extracted for item in episodes
+        )
+        / count,
+        "prevent_opponent_extraction_rate": 1
+        - sum(item.opponent_extracted for item in episodes) / count,
+        "protocol_inconsistencies": sum(
+            item.max_peer_tic_lag > 2 for item in episodes
+        ),
         "route_cells_mean": sum(item.unique_route_cells for item in episodes)
         / count,
         "valid_hits_total": sum(item.valid_hits for item in episodes),
+        "win_rate": sum(item.won for item in episodes) / count,
+        "by_opponent": by_opponent,
     }

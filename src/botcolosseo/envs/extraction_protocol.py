@@ -163,6 +163,8 @@ class ExtractionProtocolSnapshot:
             raise ValueError("Extraction tics and serials must be nonnegative")
         if self.round_state not in range(3):
             raise ValueError(f"Invalid extraction round state: {self.round_state}")
+        if self.loot_template not in (0, 1):
+            raise ValueError("Invalid extraction loot template")
         if self.extraction_open not in (0, 1):
             raise ValueError("Extraction open flag must be binary")
         if self.host_life_state not in range(4) or self.opponent_life_state not in range(

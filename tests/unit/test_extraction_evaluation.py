@@ -26,6 +26,10 @@ def test_extraction_episode_summary_exposes_capability_and_style_metrics() -> No
             unique_route_cells=7,
             terminated=True,
             truncated=False,
+            won=True,
+            opponent_extracted=False,
+            opponent_extracted_value=0,
+            extracted_value_advantage=85,
         ),
         ExtractionEpisodeMetrics(
             seed=2,
@@ -42,6 +46,10 @@ def test_extraction_episode_summary_exposes_capability_and_style_metrics() -> No
             unique_route_cells=3,
             terminated=True,
             truncated=False,
+            won=False,
+            opponent_extracted=True,
+            opponent_extracted_value=25,
+            extracted_value_advantage=-25,
         ),
     )
 
@@ -53,6 +61,9 @@ def test_extraction_episode_summary_exposes_capability_and_style_metrics() -> No
     assert summary["attack_decisions_mean"] == 5
     assert summary["route_cells_mean"] == 5
     assert summary["valid_hits_total"] == 6
+    assert summary["win_rate"] == 0.5
+    assert summary["prevent_opponent_extraction_rate"] == 0.5
+    assert summary["mean_extracted_value_advantage"] == 30
 
 
 def test_extraction_episode_summary_rejects_empty_input() -> None:

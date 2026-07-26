@@ -435,12 +435,24 @@ function void CheckRoundComplete(void)
 
 function void SpawnInitialLoot(void)
 {
-    CreateWorldLoot(0, 10, -520.0, 288.0);
-    CreateWorldLoot(1, 10, -520.0, -288.0);
-    CreateWorldLoot(2, 10, 520.0, 288.0);
-    CreateWorldLoot(3, 10, 520.0, -288.0);
-    CreateWorldLoot(4, 25, -224.0, 0.0);
-    CreateWorldLoot(5, 25, 224.0, 0.0);
+    if (loot_template == 1)
+    {
+        CreateWorldLoot(0, 10, -520.0, 0.0);
+        CreateWorldLoot(1, 10, 520.0, 0.0);
+        CreateWorldLoot(2, 10, 0.0, 224.0);
+        CreateWorldLoot(3, 10, 0.0, -224.0);
+        CreateWorldLoot(4, 25, -520.0, 288.0);
+        CreateWorldLoot(5, 25, 520.0, -288.0);
+    }
+    else
+    {
+        CreateWorldLoot(0, 10, -520.0, 288.0);
+        CreateWorldLoot(1, 10, -520.0, -288.0);
+        CreateWorldLoot(2, 10, 520.0, 288.0);
+        CreateWorldLoot(3, 10, 520.0, -288.0);
+        CreateWorldLoot(4, 25, -224.0, 0.0);
+        CreateWorldLoot(5, 25, 224.0, 0.0);
+    }
     CreateWorldLoot(6, 50, 0.0, 0.0);
     SpawnForced("BotExtractionAmmo", -320.0, 352.0, 0.0, 3001, 0);
     SpawnForced("BotExtractionAmmo", 320.0, -352.0, 0.0, 3002, 0);
@@ -473,7 +485,7 @@ script 1 OPEN
     protocol_version = 0;
     engine_tic = 0;
     round_state = ROUND_INITIALIZING;
-    loot_template = 0;
+    loot_template = GetCVar("bot_extraction_layout");
     extraction_open = 0;
     host_life_state = 0;
     opponent_life_state = 0;
