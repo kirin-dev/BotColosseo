@@ -62,18 +62,22 @@ def evaluate_extraction_episode(
     case: ExtractionCase,
     device: torch.device,
     max_decisions: int = 700,
+    policy_model: torch.nn.Module | None = None,
 ) -> ExtractionEpisodeMetrics:
     scenario_hash = json.loads(
         (
             root / "assets/scenarios/crystal_run_extraction/manifest.json"
         ).read_text(encoding="utf-8")
     )["wad_sha256"]
-    model, _ = load_extraction_policy(
-        checkpoint,
-        style=style,
-        scenario_hash=scenario_hash,
-        device=device,
-    )
+    if policy_model is None:
+        model, _ = load_extraction_policy(
+            checkpoint,
+            style=style,
+            scenario_hash=scenario_hash,
+            device=device,
+        )
+    else:
+        model = policy_model
     env = SynchronousExtractionEnv(
         config_path=root
         / "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg",

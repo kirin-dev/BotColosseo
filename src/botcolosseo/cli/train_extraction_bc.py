@@ -49,6 +49,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--stop-after", type=int)
     parser.add_argument("--max-train-transitions", type=int)
     parser.add_argument("--max-validation-transitions", type=int)
+    parser.add_argument(
+        "--supervision-mode",
+        choices=("all", "post-cache"),
+        default="all",
+    )
     parser.add_argument("--train-manifest", type=Path)
     parser.add_argument("--validation-manifest", type=Path)
     parser.add_argument("--base-checkpoint", type=Path)
@@ -178,11 +183,13 @@ def main(argv: list[str] | None = None) -> int:
         load_extraction_shard_paths(train_manifest),
         chunk_length=int(config["chunk_length"]),
         max_transitions=args.max_train_transitions,
+        supervision_mode=args.supervision_mode,
     )
     validation = ExtractionChunkDataset(
         load_extraction_shard_paths(validation_manifest),
         chunk_length=int(config["chunk_length"]),
         max_transitions=args.max_validation_transitions,
+        supervision_mode=args.supervision_mode,
     )
     stream = DeterministicBatchStream(
         train,
@@ -272,6 +279,7 @@ def main(argv: list[str] | None = None) -> int:
         "residual_style_branch": style is not ExtractionStyle.STRONG,
         "scenario_hash": scenario_hash,
         "style": style.value,
+        "supervision_mode": args.supervision_mode,
         "test_cases_accessed": False,
         "train_manifest_sha256": sha256_file(train_manifest),
         "train_transitions_loaded": train.transition_count,

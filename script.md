@@ -1618,3 +1618,21 @@ setsid bash -c '
   exit "$status"
 ' >> runs/extraction-v2/aggressive-dagger.nohup.log 2>&1 < /dev/null &
 ```
+
+If DAgger confirms that one monolithic residual branch still cannot navigate
+from post-combat states, train the public-observation Extraction Finisher. The
+finisher reuses the Aggressive Teacher dataset but supervises only transitions
+after carried value exceeds the initial 10-value item. The runtime governor
+uses Aggressive until carried value reaches 35, then permanently routes to the
+Finisher; opponent state and coordinates remain unavailable.
+
+```bash
+cd /home/wencong/BotColosseo
+setsid bash -c '
+  echo $$ > runs/extraction-v2/aggressive-finisher.pid
+  scripts/run_extraction_aggressive_finisher.sh
+  status=$?
+  printf "%s\n" "$status" > runs/extraction-v2/aggressive-finisher.exit
+  exit "$status"
+' >> runs/extraction-v2/aggressive-finisher.nohup.log 2>&1 < /dev/null &
+```

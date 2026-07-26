@@ -22,11 +22,14 @@ class ExtractionChunkDataset(Dataset[dict[str, torch.Tensor]]):
         *,
         chunk_length: int,
         max_transitions: int | None = None,
+        supervision_mode: str = "all",
     ) -> None:
         if not shard_paths or chunk_length <= 0:
             raise ValueError("Extraction dataset inputs must be nonempty")
         if max_transitions is not None and max_transitions <= 0:
             raise ValueError("Extraction max transitions must be positive")
+        if supervision_mode not in {"all", "post-cache"}:
+            raise ValueError("Unsupported Extraction supervision mode")
         loaded: dict[str, list[np.ndarray]] = {}
         remaining = max_transitions
         for path in shard_paths:
@@ -47,7 +50,17 @@ class ExtractionChunkDataset(Dataset[dict[str, torch.Tensor]]):
         }
         self.chunk_length = chunk_length
         self.transition_count = len(self._arrays["frame"])
-        self._starts = tuple(range(0, self.transition_count, chunk_length))
+        self._supervised = np.asarray(
+            self._arrays["valid_mask"],
+            dtype=np.bool_,
+        )
+        if supervision_mode == "post-cache":
+            self._supervised &= self._arrays["scalars"][:, 2] > 10 / 150
+        self._starts = tuple(
+            start
+            for start in range(0, self.transition_count, chunk_length)
+            if bool(np.any(self._supervised[start : start + chunk_length]))
+        )
         if not self._starts:
             raise ValueError("Extraction dataset contains no chunks")
 
@@ -71,7 +84,7 @@ class ExtractionChunkDataset(Dataset[dict[str, torch.Tensor]]):
         scalars[:size] = self._arrays["scalars"][start:stop]
         previous_actions[:size] = self._arrays["previous_action"][start:stop]
         actions[:size] = self._arrays["teacher_action"][start:stop]
-        valid[:size] = self._arrays["valid_mask"][start:stop]
+        valid[:size] = self._supervised[start:stop]
         episode_start = self._arrays["episode_start"][start:stop]
         masks[:size] = (~episode_start).astype(np.float32)
         masks[0] = 0.0

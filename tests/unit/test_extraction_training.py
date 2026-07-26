@@ -85,3 +85,32 @@ def test_style_actor_freezes_base_and_trains_small_branch() -> None:
     assert any(parameter.requires_grad for parameter in model.policy.parameters())
     assert sum(parameter.numel() for parameter in model.trainable_parameters()) < 30_000
     assert isinstance(model.initial_state(1, device="cpu"), torch.Tensor)
+
+
+def test_post_cache_dataset_masks_pre_conversion_actions(tmp_path: Path) -> None:
+    buffer = ExtractionDemonstrationBuffer()
+    for index, carried in enumerate((10, 10, 85, 85)):
+        item = observation()
+        item = ExtractionActorObservation(
+            **{
+                **item.__dict__,
+                "carried_value": carried,
+                "free_slots": 2 if carried == 10 else 0,
+                "minimum_slot_value": 10,
+            }
+        )
+        buffer.append(
+            item,
+            teacher_action=1,
+            episode_start=index == 0,
+            style=ExtractionStyle.AGGRESSIVE,
+            train_seed=7,
+        )
+    shard = write_extraction_shard(buffer.arrays(), tmp_path / "train.npz")
+    dataset = ExtractionChunkDataset(
+        (shard,),
+        chunk_length=4,
+        supervision_mode="post-cache",
+    )
+
+    assert dataset[0]["valid"].tolist() == [False, False, True, True]

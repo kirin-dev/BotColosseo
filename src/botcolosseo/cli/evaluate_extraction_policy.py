@@ -6,6 +6,8 @@ from pathlib import Path
 
 import torch
 
+from botcolosseo.agents.extraction_governor import AggressiveCapabilityGovernor
+from botcolosseo.agents.extraction_model import load_extraction_policy
 from botcolosseo.agents.extraction_teachers import ExtractionStyle
 from botcolosseo.data.demonstrations import sha256_file
 from botcolosseo.data.extraction_demonstrations import (
@@ -23,6 +25,11 @@ def build_parser() -> argparse.ArgumentParser:
         description="Evaluate an Extraction v2 policy on frozen paired cases"
     )
     parser.add_argument("--checkpoint", type=Path, required=True)
+    parser.add_argument("--base-checkpoint", type=Path)
+    parser.add_argument("--aggressive-governor", action="store_true")
+    parser.add_argument("--governor-carried", type=int, default=35)
+    parser.add_argument("--governor-health", type=int, default=40)
+    parser.add_argument("--governor-remaining", type=float, default=40.0)
     parser.add_argument(
         "--style",
         choices=tuple(style.value for style in ExtractionStyle),
@@ -79,6 +86,43 @@ def main(argv: list[str] | None = None) -> int:
     device = torch.device(args.device)
     if device.type == "cuda" and not torch.cuda.is_available():
         raise RuntimeError("CUDA was requested but is unavailable")
+    policy_model = None
+    base_checkpoint = None
+    if args.aggressive_governor:
+        if args.style != ExtractionStyle.AGGRESSIVE.value:
+            raise ValueError("Aggressive governor requires --style aggressive")
+        if args.base_checkpoint is None:
+            raise ValueError("Aggressive governor requires --base-checkpoint")
+        base_checkpoint = (
+            args.base_checkpoint
+            if args.base_checkpoint.is_absolute()
+            else root / args.base_checkpoint
+        )
+        scenario_hash = json.loads(
+            (
+                root / "assets/scenarios/crystal_run_extraction/manifest.json"
+            ).read_text(encoding="utf-8")
+        )["wad_sha256"]
+        strong, _ = load_extraction_policy(
+            base_checkpoint,
+            style=ExtractionStyle.STRONG.value,
+            scenario_hash=scenario_hash,
+            device=device,
+        )
+        aggressive, _ = load_extraction_policy(
+            checkpoint,
+            style=args.style,
+            scenario_hash=scenario_hash,
+            device=device,
+        )
+        policy_model = AggressiveCapabilityGovernor(
+            strong_base=strong,
+            aggressive=aggressive,
+            carried_value_threshold=args.governor_carried,
+            health_threshold=args.governor_health,
+            remaining_time_threshold=args.governor_remaining,
+        ).to(device)
+        policy_model.eval()
     episodes = tuple(
         evaluate_extraction_episode(
             root=root,
@@ -86,6 +130,7 @@ def main(argv: list[str] | None = None) -> int:
             style=args.style,
             case=case,
             device=device,
+            policy_model=policy_model,
         )
         for case in cases
     )
@@ -99,11 +144,33 @@ def main(argv: list[str] | None = None) -> int:
         "case_manifest_sha256": sha256_file(cases_path),
         "checkpoint": _display_path(checkpoint, root),
         "checkpoint_sha256": sha256_file(checkpoint),
+        "base_checkpoint": (
+            _display_path(base_checkpoint, root)
+            if base_checkpoint is not None
+            else None
+        ),
+        "base_checkpoint_sha256": (
+            sha256_file(base_checkpoint) if base_checkpoint is not None else None
+        ),
         "metrics": summarize_extraction_episodes(episodes),
         "scenario_hash": scenario_hash,
         "schema_version": 1,
         "split": args.split,
         "style": args.style,
+        "policy_kind": (
+            "public-observation-capability-governor"
+            if args.aggressive_governor
+            else "learned-checkpoint"
+        ),
+        "governor_thresholds": (
+            {
+                "carried_value": args.governor_carried,
+                "health": args.governor_health,
+                "remaining_time": args.governor_remaining,
+            }
+            if args.aggressive_governor
+            else None
+        ),
         "test_cases_accessed": args.split == "test",
     }
     if args.output is not None:
