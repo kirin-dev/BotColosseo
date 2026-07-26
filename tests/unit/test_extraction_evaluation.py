@@ -4,6 +4,7 @@ import pytest
 
 from botcolosseo.evaluation.extraction import (
     ExtractionEpisodeMetrics,
+    is_aggressive_showcase_chain,
     summarize_extraction_episodes,
 )
 
@@ -57,3 +58,30 @@ def test_extraction_episode_summary_exposes_capability_and_style_metrics() -> No
 def test_extraction_episode_summary_rejects_empty_input() -> None:
     with pytest.raises(ValueError, match="requires episodes"):
         summarize_extraction_episodes(())
+
+
+def test_aggressive_showcase_chain_requires_complete_causal_story() -> None:
+    complete = ExtractionEpisodeMetrics(
+        seed=1,
+        learner_side="host",
+        opponent_style="aggressive",
+        decisions=300,
+        extracted_value=50,
+        extracted=True,
+        died=False,
+        valid_hits=5,
+        kills=1,
+        cache_looted=1,
+        attack_decisions=8,
+        unique_route_cells=7,
+        terminated=False,
+        truncated=False,
+    )
+
+    assert is_aggressive_showcase_chain(complete)
+    assert not is_aggressive_showcase_chain(
+        ExtractionEpisodeMetrics(**{**vars(complete), "extracted": False})
+    )
+    assert not is_aggressive_showcase_chain(
+        ExtractionEpisodeMetrics(**{**vars(complete), "cache_looted": 0})
+    )

@@ -1636,3 +1636,31 @@ setsid bash -c '
   exit "$status"
 ' >> runs/extraction-v2/aggressive-finisher.nohup.log 2>&1 < /dev/null &
 ```
+
+After the finisher is trained, search a frozen validation-only seed range for
+one authentic replay that proves the entire Aggressive causal chain: at least
+five valid hits, one kill, one corpse-cache pickup, and a positive-value
+extraction. The evaluator stops at the first valid replay and records every
+case checked; it never reads the test split.
+
+```bash
+cd /home/wencong/BotColosseo
+setsid bash -c '
+  echo $$ > runs/extraction-v2/aggressive-showcase-search.pid
+  scripts/run_extraction_aggressive_showcase_search.sh
+  status=$?
+  printf "%s\n" "$status" \
+    > runs/extraction-v2/aggressive-showcase-search.exit
+  exit "$status"
+' >> runs/extraction-v2/aggressive-showcase-search.nohup.log 2>&1 < /dev/null &
+```
+
+Check progress without interrupting it:
+
+```bash
+ps -p "$(cat runs/extraction-v2/aggressive-showcase-search.pid)" \
+  -o pid,etime,%cpu,%mem,stat,cmd
+tail -n 30 runs/extraction-v2/aggressive-showcase-search.nohup.log
+test ! -f runs/extraction-v2/aggressive-showcase-search.exit || \
+  cat runs/extraction-v2/aggressive-showcase-search.exit
+```

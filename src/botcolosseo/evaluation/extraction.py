@@ -44,6 +44,17 @@ class ExtractionEpisodeMetrics:
     truncated: bool
 
 
+def is_aggressive_showcase_chain(episode: ExtractionEpisodeMetrics) -> bool:
+    """Return whether one replay proves the complete Aggressive product story."""
+    return (
+        episode.valid_hits >= 5
+        and episode.kills >= 1
+        and episode.cache_looted >= 1
+        and episode.extracted
+        and episode.extracted_value > 0
+    )
+
+
 def _learner_event_count(
     events: Counter[tuple[str, ExtractionEventType]],
     *,

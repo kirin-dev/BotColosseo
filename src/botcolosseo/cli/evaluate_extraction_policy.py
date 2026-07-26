@@ -16,6 +16,7 @@ from botcolosseo.data.extraction_demonstrations import (
 )
 from botcolosseo.evaluation.extraction import (
     evaluate_extraction_episode,
+    is_aggressive_showcase_chain,
     summarize_extraction_episodes,
 )
 
@@ -43,6 +44,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--split", choices=("validation", "test"), default="validation")
     parser.add_argument("--allow-test", action="store_true")
     parser.add_argument("--max-cases", type=int)
+    parser.add_argument(
+        "--stop-on-aggressive-chain",
+        action="store_true",
+        help="Stop after a replay proves hit, kill, cache-loot, and extraction.",
+    )
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--output", type=Path)
     return parser
@@ -123,8 +129,12 @@ def main(argv: list[str] | None = None) -> int:
             remaining_time_threshold=args.governor_remaining,
         ).to(device)
         policy_model.eval()
-    episodes = tuple(
-        evaluate_extraction_episode(
+    if args.stop_on_aggressive_chain and args.style != ExtractionStyle.AGGRESSIVE.value:
+        raise ValueError("Aggressive chain search requires --style aggressive")
+    evaluated = []
+    selected = None
+    for case in cases:
+        episode = evaluate_extraction_episode(
             root=root,
             checkpoint=checkpoint,
             style=args.style,
@@ -132,8 +142,11 @@ def main(argv: list[str] | None = None) -> int:
             device=device,
             policy_model=policy_model,
         )
-        for case in cases
-    )
+        evaluated.append(episode)
+        if args.stop_on_aggressive_chain and is_aggressive_showcase_chain(episode):
+            selected = episode
+            break
+    episodes = tuple(evaluated)
     scenario_hash = json.loads(
         (
             root / "assets/scenarios/crystal_run_extraction/manifest.json"
@@ -173,6 +186,16 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "test_cases_accessed": args.split == "test",
     }
+    if args.stop_on_aggressive_chain:
+        result["search"] = {
+            "cases_evaluated": len(episodes),
+            "manifest_cases": len(cases),
+            "selected_episode": (
+                vars(selected) if selected is not None else None
+            ),
+            "stopped_early": selected is not None and len(episodes) < len(cases),
+            "success": selected is not None,
+        }
     if args.output is not None:
         output = args.output if args.output.is_absolute() else root / args.output
         if output.exists():
