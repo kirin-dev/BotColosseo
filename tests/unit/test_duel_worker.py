@@ -105,6 +105,34 @@ def test_host_and_opponent_receive_explicit_network_arguments(tmp_path: Path) ->
     assert "+sv_noautoaim 1" in host_args
 
 
+def test_extraction_settings_select_map_protocol_and_terminal_death(
+    tmp_path: Path,
+) -> None:
+    game = FakeGame()
+    extraction = DuelWorkerSettings(
+        role=WorkerRole.HOST,
+        config_path=settings(tmp_path, WorkerRole.HOST).config_path,
+        seed=7,
+        port=17432,
+        map_name="MAP01",
+        protocol_user_indices=tuple(range(1, 54)),
+        force_respawn=False,
+        time_limit_minutes=1.5,
+        deathmatch=False,
+    )
+    worker = DuelWorker(extraction, game_factory=lambda: game)
+
+    result = worker("init", None)
+
+    assert ("map", "MAP01") in game.calls
+    args = next(value for name, value in game.calls if name == "args")
+    assert "+sv_forcerespawn 0" in args
+    assert "+timelimit 1.5" in args
+    assert "-deathmatch" not in args
+    assert "+teamdamage 1" in args
+    assert len(result["protocol_values"]) == 53
+
+
 def test_step_advances_exactly_one_tic_with_explicit_update_flag(tmp_path: Path) -> None:
     game = FakeGame()
     worker = DuelWorker(settings(tmp_path, WorkerRole.HOST), game_factory=lambda: game)

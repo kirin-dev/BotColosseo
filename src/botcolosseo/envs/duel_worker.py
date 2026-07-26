@@ -25,6 +25,11 @@ class DuelWorkerSettings:
     seed: int
     port: int
     timeout: float = 10.0
+    map_name: str = "MAP07"
+    protocol_user_indices: tuple[int, ...] = (1, *range(21, 45))
+    force_respawn: bool = True
+    time_limit_minutes: float = 1.0
+    deathmatch: bool = True
 
     def __post_init__(self) -> None:
         if not 1024 <= self.port <= 65535:
@@ -33,11 +38,16 @@ class DuelWorkerSettings:
             raise ValueError(f"Invalid duel seed: {self.seed}")
         if self.timeout <= 0:
             raise ValueError("Duel worker timeout must be positive")
-
-
-_DUEL_VARIABLES = (vzd.GameVariable.USER1,) + tuple(
-    getattr(vzd.GameVariable, f"USER{index}") for index in range(21, 45)
-)
+        if not self.map_name.startswith("MAP") or len(self.map_name) != 5:
+            raise ValueError(f"Invalid duel map name: {self.map_name}")
+        if (
+            not self.protocol_user_indices
+            or len(set(self.protocol_user_indices)) != len(self.protocol_user_indices)
+            or any(not 1 <= index <= 60 for index in self.protocol_user_indices)
+        ):
+            raise ValueError("Duel protocol USER indices are invalid")
+        if self.time_limit_minutes <= 0:
+            raise ValueError("Duel time limit must be positive")
 
 
 class DuelWorker:
@@ -50,6 +60,10 @@ class DuelWorker:
         self._settings = settings
         self._game_factory = game_factory
         self._game: Any | None = None
+        self._protocol_variables = tuple(
+            getattr(vzd.GameVariable, f"USER{index}")
+            for index in settings.protocol_user_indices
+        )
 
     def __call__(self, command: str, payload: object) -> object:
         if command == "init":
@@ -80,7 +94,7 @@ class DuelWorker:
         try:
             if not game.load_config(str(config_path)):
                 raise ValueError(f"ViZDoom rejected config: {config_path}")
-            game.set_doom_map("MAP07")
+            game.set_doom_map(self._settings.map_name)
             game.set_seed(self._settings.seed)
             game.set_window_visible(False)
             game.set_sound_enabled(False)
@@ -99,9 +113,14 @@ class DuelWorker:
 
     def _network_args(self) -> str:
         if self._settings.role is WorkerRole.HOST:
+            force_respawn = 1 if self._settings.force_respawn else 0
+            game_mode = "-deathmatch " if self._settings.deathmatch else ""
+            team_damage = "" if self._settings.deathmatch else "+teamdamage 1 "
             return (
-                f"-host 2 -port {self._settings.port} -deathmatch "
-                "+timelimit 1.0 +sv_forcerespawn 1 +sv_noautoaim 1 "
+                f"-host 2 -port {self._settings.port} {game_mode}"
+                f"+timelimit {self._settings.time_limit_minutes} "
+                f"+sv_forcerespawn {force_respawn} +sv_noautoaim 1 "
+                f"{team_damage}"
                 "+sv_respawnprotect 0 +sv_spawnfarthest 1 +viz_respawn_delay 1 "
                 "+name BotHost +colorset 0"
             )
@@ -131,7 +150,8 @@ class DuelWorker:
             "dead": bool(game.is_player_dead()),
             "multiplayer": bool(game.is_multiplayer_game()),
             "protocol_values": tuple(
-                int(game.get_game_variable(variable)) for variable in _DUEL_VARIABLES
+                int(game.get_game_variable(variable))
+                for variable in self._protocol_variables
             ),
             "player_x": float(game.get_game_variable(vzd.GameVariable.POSITION_X)),
             "player_y": float(game.get_game_variable(vzd.GameVariable.POSITION_Y)),

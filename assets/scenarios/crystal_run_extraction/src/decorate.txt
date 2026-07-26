@@ -1,0 +1,123 @@
+actor BotExtractionAmmo : Ammo
+{
+    Inventory.PickupMessage "Picked up 10 extraction rounds."
+    Inventory.Amount 10
+    Inventory.MaxAmount 40
+    Ammo.BackpackAmount 10
+    Ammo.BackpackMaxAmount 40
+    States
+    {
+    Spawn:
+        CLIP A -1
+        Stop
+    }
+}
+
+actor BotExtractionRifle : Weapon
+{
+    Weapon.SelectionOrder 1900
+    Weapon.AmmoType "BotExtractionAmmo"
+    Weapon.AmmoUse 1
+    Weapon.AmmoGive 30
+    States
+    {
+    Ready:
+        PISG A 1 A_WeaponReady
+        Loop
+    Deselect:
+        PISG A 1 A_Lower
+        Loop
+    Select:
+        PISG A 1 A_Raise
+        Loop
+    Fire:
+        PISG A 4
+        PISG B 0 A_FireBullets(0, 0, 1, 20, "BulletPuff", FBF_USEAMMO | FBF_NORANDOM)
+        PISG C 4
+        PISG B 5 A_ReFire
+        Goto Ready
+    Flash:
+        PISF A 7 Bright A_Light1
+        Goto LightDone
+    }
+}
+
+actor BotLoot10Marker
+{
+    Radius 12
+    Height 16
+    +NOBLOCKMAP
+    +NOGRAVITY
+    +NOCLIP
+    +NOTARGET
+    States
+    {
+    Spawn:
+        BON1 ABCD 4 Bright
+        Loop
+    }
+}
+
+actor BotLoot25Marker
+{
+    Radius 12
+    Height 16
+    +NOBLOCKMAP
+    +NOGRAVITY
+    +NOCLIP
+    +NOTARGET
+    States
+    {
+    Spawn:
+        BON2 ABCD 4 Bright
+        Loop
+    }
+}
+
+actor BotLoot50Marker
+{
+    Radius 16
+    Height 16
+    +NOBLOCKMAP
+    +NOGRAVITY
+    +NOCLIP
+    +NOTARGET
+    States
+    {
+    Spawn:
+        MEGA ABCD 4 Bright
+        Loop
+    }
+}
+
+actor BotCorpseCacheMarker
+{
+    Radius 20
+    Height 16
+    +NOBLOCKMAP
+    +NOGRAVITY
+    +NOCLIP
+    +NOTARGET
+    States
+    {
+    Spawn:
+        BPAK A -1
+        Stop
+    }
+}
+
+actor BotExtractionMarker
+{
+    Radius 12
+    Height 56
+    +NOBLOCKMAP
+    +NOGRAVITY
+    +NOCLIP
+    +NOTARGET
+    States
+    {
+    Spawn:
+        TBLU ABCD 4 Bright
+        Loop
+    }
+}

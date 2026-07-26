@@ -14,6 +14,7 @@ from pathlib import Path
 from botcolosseo.scenarios.wad import WadLump, inspect_pwad, write_pwad
 
 MAPS = tuple(f"MAP{index:02d}" for index in range(1, 8))
+EXTRACTION_MAPS = ("MAP01",)
 Runner = Callable[..., subprocess.CompletedProcess[str]]
 
 
@@ -156,6 +157,89 @@ def build_crystal_run(
         wad_sha256=_sha256(wad_data),
         lump_names=tuple(entry.name for entry in entries),
         maps=MAPS,
+    )
+    _write_manifest(manifest, settings.manifest_path)
+    return manifest
+
+
+def build_crystal_run_extraction(
+    settings: BuildSettings,
+    *,
+    runner: Runner = subprocess.run,
+) -> ScenarioManifest:
+    source_dir = settings.source_dir.expanduser().resolve()
+    required = (
+        source_dir / "map.udmf",
+        source_dir / "crystal_run_extraction.acs",
+        source_dir / "decorate.txt",
+        source_dir / "regions.yaml",
+    )
+    missing = [str(path) for path in required if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(f"Missing Crystal Run Extraction sources: {missing}")
+    acc_path = resolve_acc(settings.acc_path)
+    acc_include = resolve_acc_include(settings.acc_include)
+    acc_version = _read_acc_version(acc_path, runner)
+
+    map_data = required[0].read_bytes()
+    script_data = required[1].read_bytes()
+    decorate_data = required[2].read_bytes()
+    lumps: list[WadLump] = [WadLump("DECORATE", decorate_data)]
+    with tempfile.TemporaryDirectory(
+        prefix="botcolosseo-extraction-acs-"
+    ) as temporary:
+        temporary_dir = Path(temporary)
+        wrapper = temporary_dir / "extraction.acs"
+        behavior = temporary_dir / "extraction.o"
+        wrapper.write_text(
+            '#include "crystal_run_extraction.acs"\n',
+            encoding="utf-8",
+        )
+        result = runner(
+            [
+                str(acc_path),
+                "-i",
+                str(acc_include),
+                "-i",
+                str(source_dir),
+                str(wrapper),
+                str(behavior),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            message = result.stderr.strip() or result.stdout.strip() or "unknown ACC error"
+            raise RuntimeError(f"ACC failed for extraction MAP01: {message}")
+        if not behavior.is_file() or behavior.stat().st_size == 0:
+            raise RuntimeError("ACC produced no extraction behavior object")
+        lumps.extend(
+            (
+                WadLump("MAP01", b""),
+                WadLump("TEXTMAP", map_data),
+                WadLump("BEHAVIOR", behavior.read_bytes()),
+                WadLump("SCRIPTS", script_data),
+                WadLump("ENDMAP", b""),
+            )
+        )
+
+    output_wad = write_pwad(lumps, settings.output_wad)
+    wad_data = output_wad.read_bytes()
+    entries = inspect_pwad(wad_data)
+    source_hashes = {
+        path.name: _sha256(path.read_bytes())
+        for path in sorted(required, key=lambda item: item.name)
+    }
+    manifest = ScenarioManifest(
+        schema_version=1,
+        protocol_version=3,
+        built_on=date.today().isoformat(),
+        acc_version=acc_version,
+        source_sha256=source_hashes,
+        wad_sha256=_sha256(wad_data),
+        lump_names=tuple(entry.name for entry in entries),
+        maps=EXTRACTION_MAPS,
     )
     _write_manifest(manifest, settings.manifest_path)
     return manifest
