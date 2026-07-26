@@ -35,6 +35,11 @@ class ExtractionActorCritic(nn.Module):
             nn.Linear(256, 1),
         )
 
+    def initial_state(
+        self, batch_size: int, *, device: torch.device | str
+    ) -> torch.Tensor:
+        return self.actor.initial_state(batch_size, device=device)
+
     def forward(
         self,
         frames: torch.Tensor,
@@ -82,6 +87,11 @@ class ExtractionResidualStyleActorCritic(nn.Module):
         nn.init.zeros_(self.delta_policy[-1].weight)
         nn.init.zeros_(self.delta_policy[-1].bias)
         self.max_delta = float(max_delta)
+
+    def initial_state(
+        self, batch_size: int, *, device: torch.device | str
+    ) -> torch.Tensor:
+        return self.base.actor.initial_state(batch_size, device=device)
 
     def forward(
         self,

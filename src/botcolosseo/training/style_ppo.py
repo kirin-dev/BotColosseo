@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import torch
 
-from botcolosseo.agents.style_model import RoutedStyledActorCritic, StyledActorCritic
+from botcolosseo.agents.style_model import RoutedStyledActorCritic
 from botcolosseo.training.gae import normalize_advantages
 from botcolosseo.training.ppo import PPOBatch, PPOLoss, PPOTrainer, ppo_loss
 
@@ -53,13 +53,22 @@ def masked_teacher_cross_entropy(
 
 
 class StylePPOTrainer(PPOTrainer):
-    def __init__(self, *args, beta_kl: float, eta_aux: float = 0.0, **kwargs) -> None:
-        if beta_kl < 0 or eta_aux < 0:
+    def __init__(
+        self,
+        *args,
+        beta_kl: float,
+        eta_aux: float = 0.0,
+        rho_residual: float = 0.0,
+        **kwargs,
+    ) -> None:
+        if beta_kl < 0 or eta_aux < 0 or rho_residual < 0:
             raise ValueError("Style loss coefficients must be nonnegative")
         super().__init__(*args, **kwargs)
         self.beta_kl = beta_kl
         self.eta_aux = eta_aux
+        self.rho_residual = rho_residual
         self.last_style_kl = 0.0
+        self.last_residual_magnitude = 0.0
         self.last_auxiliary_loss = 0.0
         self.last_teacher_agreement = 0.0
         self.last_supervised_tokens = 0
@@ -67,10 +76,11 @@ class StylePPOTrainer(PPOTrainer):
     @classmethod
     def create(
         cls,
-        model: StyledActorCritic | RoutedStyledActorCritic,
+        model: torch.nn.Module,
         *,
         beta_kl: float,
         eta_aux: float = 0.0,
+        rho_residual: float = 0.0,
         learning_rate: float,
         total_updates: int,
         gradient_clip: float,
@@ -95,6 +105,7 @@ class StylePPOTrainer(PPOTrainer):
             scheduler,
             beta_kl=beta_kl,
             eta_aux=eta_aux,
+            rho_residual=rho_residual,
             gradient_clip=gradient_clip,
             policy_clip=policy_clip,
             value_clip=value_clip,
@@ -138,6 +149,14 @@ class StylePPOTrainer(PPOTrainer):
             output.logits, output.base_logits, batch.loss_mask
         )
         self.last_style_kl = float(style_kl.detach())
+        residual_magnitude = (
+            (output.logits - output.base_logits).square().sum(dim=-1)[
+                batch.loss_mask
+            ].mean()
+        )
+        if not bool(torch.isfinite(residual_magnitude)):
+            raise FloatingPointError("Style residual magnitude is not finite")
+        self.last_residual_magnitude = float(residual_magnitude.detach())
         auxiliary = output.logits.sum() * 0.0
         self.last_auxiliary_loss = 0.0
         self.last_teacher_agreement = 0.0
@@ -159,6 +178,7 @@ class StylePPOTrainer(PPOTrainer):
             total_loss=(
                 loss.total_loss
                 + self.beta_kl * style_kl
+                + self.rho_residual * residual_magnitude
                 + self.eta_aux * auxiliary
             )
         )

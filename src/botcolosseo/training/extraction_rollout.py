@@ -106,6 +106,42 @@ class ScriptExtractionOpponentController:
         return MacroAction(self.teacher.act(privileged_state()))
 
 
+class PolicyExtractionOpponentController:
+    """Checkpoint opponent whose action path accepts public observation only."""
+
+    def __init__(self, actor: torch.nn.Module, *, device: torch.device) -> None:
+        self.actor = actor.to(device).eval()
+        self.device = device
+        self._hidden: torch.Tensor | None = None
+        self._episode_start = True
+
+    def reset(self, *, seed: int) -> None:
+        del seed
+        self._hidden = self.actor.initial_state(1, device=self.device)
+        self._episode_start = True
+
+    @torch.no_grad()
+    def act(
+        self,
+        observation: ExtractionActorObservation,
+        privileged_state: Callable[[], ExtractionPrivilegedState],
+    ) -> MacroAction:
+        del privileged_state
+        if self._hidden is None:
+            raise RuntimeError("Extraction policy opponent must be reset")
+        output = self.actor(
+            *extraction_observation_tensors(
+                observation,
+                episode_start=self._episode_start,
+                device=self.device,
+            ),
+            self._hidden,
+        )
+        self._hidden = output.hidden
+        self._episode_start = False
+        return MacroAction(int(output.logits[0, 0].argmax()))
+
+
 class ExtractionStyleRewardLedger(Protocol):
     def apply(
         self,
@@ -467,6 +503,13 @@ class ExtractionRolloutCollector:
                         if assignment.case.learner_side == "host"
                         else step.winner == 2
                     )
+                    record_result = getattr(self.schedule, "record_result", None)
+                    if record_result is not None:
+                        record_result(
+                            assignment,
+                            won=won,
+                            draw=step.winner == 0,
+                        )
                     episodes.append(
                         ExtractionTrainingEpisode(
                             episode_index=self.episode_index,

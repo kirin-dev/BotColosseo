@@ -133,6 +133,7 @@ def test_extraction_actor_critic_keeps_privileged_state_out_of_public_actor() ->
     assert output.logits.shape == (2, 3, 13)
     assert output.values.shape == (2, 3)
     assert torch.equal(output.logits, public.logits)
+    assert model.initial_state(2, device="cpu").shape == (1, 2, 256)
 
 
 def test_extraction_style_is_zero_initialized_bounded_delta_over_frozen_base() -> None:
@@ -156,3 +157,4 @@ def test_extraction_style_is_zero_initialized_bounded_delta_over_frozen_base() -
         not parameter.requires_grad for parameter in model.base.actor.parameters()
     )
     assert any(parameter.requires_grad for parameter in model.delta_policy.parameters())
+    assert model.initial_state(1, device="cpu").shape == (1, 1, 256)

@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "split": "train",
+  "paired_side_swaps": true,
+  "cases": [
+    {"split": "train", "seed": 41001, "learner_side": "host", "opponent_style": "strong"},
+    {"split": "train", "seed": 41001, "learner_side": "opponent", "opponent_style": "strong"},
+    {"split": "train", "seed": 41002, "learner_side": "host", "opponent_style": "aggressive"},
+    {"split": "train", "seed": 41002, "learner_side": "opponent", "opponent_style": "aggressive"},
+    {"split": "train", "seed": 41003, "learner_side": "host", "opponent_style": "defensive"},
+    {"split": "train", "seed": 41003, "learner_side": "opponent", "opponent_style": "defensive"},
+    {"split": "train", "seed": 41004, "learner_side": "host", "opponent_style": "explorer"},
+    {"split": "train", "seed": 41004, "learner_side": "opponent", "opponent_style": "explorer"},
+    {"split": "train", "seed": 41005, "learner_side": "host", "opponent_style": "strong"},
+    {"split": "train", "seed": 41005, "learner_side": "opponent", "opponent_style": "strong"},
+    {"split": "train", "seed": 41006, "learner_side": "host", "opponent_style": "aggressive"},
+    {"split": "train", "seed": 41006, "learner_side": "opponent", "opponent_style": "aggressive"},
+    {"split": "train", "seed": 41007, "learner_side": "host", "opponent_style": "defensive"},
+    {"split": "train", "seed": 41007, "learner_side": "opponent", "opponent_style": "defensive"},
+    {"split": "train", "seed": 41008, "learner_side": "host", "opponent_style": "explorer"},
+    {"split": "train", "seed": 41008, "learner_side": "opponent", "opponent_style": "explorer"},
+    {"split": "train", "seed": 41009, "learner_side": "host", "opponent_style": "strong"},
+    {"split": "train", "seed": 41009, "learner_side": "opponent", "opponent_style": "strong"},
+    {"split": "train", "seed": 41010, "learner_side": "host", "opponent_style": "aggressive"},
+    {"split": "train", "seed": 41010, "learner_side": "opponent", "opponent_style": "aggressive"},
+    {"split": "train", "seed": 41011, "learner_side": "host", "opponent_style": "defensive"},
+    {"split": "train", "seed": 41011, "learner_side": "opponent", "opponent_style": "defensive"},
+    {"split": "train", "seed": 41012, "learner_side": "host", "opponent_style": "explorer"},
+    {"split": "train", "seed": 41012, "learner_side": "opponent", "opponent_style": "explorer"}
+  ]
+}

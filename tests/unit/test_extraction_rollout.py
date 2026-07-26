@@ -19,6 +19,7 @@ from botcolosseo.envs.extraction_types import (
 from botcolosseo.training.extraction_rollout import (
     ExtractionCaseSchedule,
     ExtractionRolloutCollector,
+    PolicyExtractionOpponentController,
     extraction_privileged_tensor,
 )
 
@@ -222,3 +223,27 @@ def test_extraction_collector_resets_hidden_swaps_sides_and_records_outcome() ->
     ]
     assert all(item.closed for item in created)
     assert opponent.previous_actions == [3, 1, 0, 1, 3]
+
+
+class PublicActor(torch.nn.Module):
+    def initial_state(self, batch_size: int, *, device):
+        return torch.zeros(1, batch_size, 256, device=device)
+
+    def forward(self, frames, scalars, previous_actions, masks, hidden):
+        del scalars, previous_actions, masks
+        logits = torch.zeros(*frames.shape[:2], 13)
+        logits[..., 4] = 1
+        return SimpleNamespace(logits=logits, hidden=hidden + 1)
+
+
+def test_checkpoint_opponent_never_reads_privileged_state() -> None:
+    controller = PolicyExtractionOpponentController(
+        PublicActor(),
+        device=torch.device("cpu"),
+    )
+    controller.reset(seed=9)
+    action = controller.act(
+        observation(),
+        lambda: pytest.fail("privileged state was accessed"),
+    )
+    assert action == 4

@@ -2,6 +2,7 @@ import pytest
 import torch
 
 from botcolosseo.training.style_ppo import (
+    StylePPOTrainer,
     categorical_style_kl,
     masked_teacher_cross_entropy,
 )
@@ -54,4 +55,24 @@ def test_masked_teacher_loss_rejects_empty_mask() -> None:
     with pytest.raises(ValueError):
         categorical_style_kl(
             torch.zeros(1, 2, 2), torch.zeros(1, 2, 2), torch.zeros(1, 2, dtype=torch.bool)
+        )
+
+
+def test_style_trainer_rejects_negative_residual_penalty() -> None:
+    with pytest.raises(ValueError, match="coefficients"):
+        StylePPOTrainer(
+            torch.nn.Linear(1, 1),
+            torch.optim.Adam([torch.nn.Parameter(torch.ones(1))]),
+            torch.optim.lr_scheduler.StepLR(
+                torch.optim.Adam([torch.nn.Parameter(torch.ones(1))]),
+                step_size=1,
+            ),
+            beta_kl=0,
+            rho_residual=-1,
+            gradient_clip=1,
+            policy_clip=0.2,
+            value_clip=0.2,
+            value_coefficient=0.5,
+            entropy_coefficient=0.01,
+            max_kl=0.1,
         )

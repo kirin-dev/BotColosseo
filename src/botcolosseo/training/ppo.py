@@ -12,7 +12,6 @@ from botcolosseo.agents.checkpoint import (
     load_training_checkpoint,
     save_training_checkpoint,
 )
-from botcolosseo.agents.model import AsymmetricActorCritic
 from botcolosseo.training.gae import normalize_advantages
 
 
@@ -184,7 +183,7 @@ def ppo_loss(
 class PPOTrainer:
     def __init__(
         self,
-        model: AsymmetricActorCritic,
+        model: torch.nn.Module,
         optimizer: torch.optim.Optimizer,
         scheduler: torch.optim.lr_scheduler.LRScheduler,
         *,
@@ -211,7 +210,7 @@ class PPOTrainer:
     @classmethod
     def create(
         cls,
-        model: AsymmetricActorCritic,
+        model: torch.nn.Module,
         *,
         learning_rate: float,
         total_updates: int,
