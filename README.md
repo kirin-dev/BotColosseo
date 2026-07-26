@@ -1,250 +1,139 @@
-# Bot Colosseo
+# Crystal Run: Extraction
 
-[中文说明](README_CN.md) · English
+[中文](README_CN.md)
 
-Goal-oriented controllable visual game bots via skill-preserving policy shaping.
+Train one capable visual game Bot, then shape it into recognizable play styles
+without throwing away its task skill.
 
-Bot Colosseo studies how to train a strong visual game Bot and then shape it
-into player-recognizable Aggressive, Defensive, and Explorer styles without
-discarding its task skill. The approved technical design is in [Plan.md](Plan.md).
-
-Bot Colosseo 研究如何先训练具备稳定任务能力的视觉游戏 Bot，再在保留能力的
-前提下塑造玩家可感知的 Aggressive、Defensive 与 Explorer 行为风格。
-
-## Crystal Run: Extraction v2
-
-![Strong, Aggressive, Defensive, and Explorer Bots in Crystal Run Extraction](docs/assets/extraction-v2/showcase-board.png)
-
-This is a compact extraction-shooter research product built in real ViZDoom:
+Crystal Run: Extraction is a compact 1v1 extraction-shooter research product
+built in real ViZDoom:
 
 ```text
 search for loot -> fight or disengage -> manage a 3-slot backpack
-                -> extract successfully -> bank value
+                -> reach either extraction zone -> bank value
 ```
 
-Every player has 100 HP, takes exactly 20 damage per valid hit, starts with 30
-rounds, and has no respawn. A death creates a lootable corpse cache. Kills
-score nothing; only extracted value counts.
+The project is about product-facing agent behavior, not a new RL algorithm. It
+combines a fair-observation recurrent policy, asymmetric training, scripted
+opponents, historical self-play, lightweight PFSP, and learned residual style
+adapters into one auditable workflow.
 
-| Bot | Visible behavior in the selected validation replay | Full video |
+> Status: the v3 environment, training stack, evaluation protocol, release
+> guards, and end-to-end short preflight are complete. Full Strong/style
+> experiments are running next; no benchmark-success claim is made before the
+> frozen gates pass.
+
+## The game
+
+- Two players, two neutral extraction zones, one 75-second raid.
+- Extraction opens at 30 seconds and requires a continuous 3-second hold.
+- Each player has 100 HP; every valid hit deals exactly 20 damage.
+- Each player starts with 30 rounds. There is no reload and no respawn.
+- The backpack has three slots. Loot values are 10, 25, or 50.
+- Better loot deterministically replaces the lowest-value carried item.
+- Death creates a lootable corpse cache.
+- Kills score nothing. Only value carried through extraction is banked.
+
+Training and normal validation use the `base` loot layout. Heldout validation
+and the one frozen official test use the approved `heldout-a` distribution:
+
+![Base and heldout loot layouts](docs/review/extraction-layout-review.svg)
+
+## The four Bots
+
+| Policy | Intended visible behavior | Implementation |
 |---|---|---|
-| Strong Base | absorbs combat pressure, upgrades its backpack, extracts 85 | [31.9 s](docs/assets/extraction-v2/strong.mp4) |
-| Aggressive | five-hit kill → corpse cache → pickup → extracts 30 | [30.1 s](docs/assets/extraction-v2/aggressive.mp4) |
-| Defensive | zero attack decisions, preserves full HP, extracts 45 | [31.9 s](docs/assets/extraction-v2/defensive.mp4) |
-| Explorer | covers 30 route cells, replaces value 10 with 50, extracts 85 | [31.9 s](docs/assets/extraction-v2/explorer.mp4) |
+| Strong | win, survive, collect value, and extract reliably | CNN-GRU Actor, BC warm start, recurrent PPO, scripted pool, historical checkpoints, PFSP |
+| Aggressive | create useful engagements and convert kills into extracted cache value | bounded learned delta-logit adapter over Strong |
+| Defensive | disengage under risk and preserve carried value without empty camping | bounded learned delta-logit adapter over Strong |
+| Explorer | visit useful new loot regions, upgrade the backpack, and still extract | bounded learned delta-logit adapter over Strong |
 
-These are real first-person policy replays with viewer-only telemetry for both
-HP bars, each `-20` hit, ammunition, backpack slots, corpse-cache transfer,
-extraction progress, and banked value. Actor inputs remain fair: pixels and
-own public state only—never opponent HP, coordinates, automap, depth, labels,
-or the overlay.
+All three styles derive from the exact same frozen Strong Actor hash. There are
+no runtime behavior governors in the v3 policies.
 
-The release audit binds 21 scenario, selection, evidence, and media artifacts
-by SHA-256 and confirms that every clip is validation-only and 30–45 seconds.
-See the [technical evidence record](docs/milestones/extraction-v2.md),
-[hash-bound manifest](reports/extraction-v2/showcase/manifest.json), and
-[frozen design specification](docs/superpowers/specs/2026-07-26-crystal-run-extraction-v2-design.md).
-No official held-out test or human-recognition claim is made.
+## Fair observation boundary
 
-## Previous Crystal Run Arena v1 evidence
+The deployed Actor receives only:
 
-![Strong Base, Aggressive, Defensive, and Explorer in the same arena](docs/assets/showcase/hybrid-four-policy.gif)
+- its 84×84 first-person grayscale frame;
+- its own public health, ammunition, backpack, banked value, extraction state,
+  remaining time, and previous action.
 
-![Formal hybrid product metrics](docs/assets/showcase/hybrid-metrics.png)
+The Actor never receives opponent HP, opponent position, world coordinates,
+automap, depth, object labels, privileged protocol state, or viewer overlays.
+During training only, the Critic and reward/evaluation ledgers may use
+privileged state. Public inference exports the Actor alone.
 
-| Public policy | Implementation | Formal validation evidence |
-|---|---|---:|
-| Strong Base | learned CNN-GRU | 87.0% win rate |
-| Aggressive | learned residual style | +0.100 engagement shift; 100.0% retention |
-| Defensive | deterministic public-observation governor over Base | 95.9% retention; 5.8% intervention |
-| Explorer | deterministic public-observation governor over Base | 100.3% retention; 0.061 route-action signature |
+## Training and evaluation
 
-Defensive and Explorer are deliberately labelled **hybrid governors**, not
-reward-shaped RL successes. Their earlier distillation, PPO V1, and
-Teacher-assisted PPO V2 failures remain committed. The product-first policies
-then completed separate 200-episode paired validation evaluations: every hard
-fairness, protocol, retention, intervention, coverage, and executed-action
-signature gate passed. The unchanged legacy style metrics remain visible
-diagnostics and still do not pass every original learned-policy gate.
+```text
+Strong Teacher demonstrations
+          |
+          v
+behavioral cloning -> recurrent PPO -> historical checkpoints + PFSP
+          |
+          v
+one selected Strong Actor hash
+          |
+          +----------+-----------+
+          v          v           v
+     Aggressive  Defensive   Explorer
+       adapter     adapter     adapter
+```
 
-The displayed case was selected automatically from the formal ledgers before
-rendering; it was not hand-picked from videos. See the full
-[Strong Base](docs/assets/showcase/hybrid-strong-base.mp4),
-[Aggressive](docs/assets/showcase/hybrid-aggressive.mp4),
-[Defensive](docs/assets/showcase/hybrid-defensive.mp4), and
-[Explorer](docs/assets/showcase/hybrid-explorer.mp4) episodes, plus the
-[hash-bound publication manifest](reports/showcase/hybrid-product/manifest.json).
-All are validation artifacts, not official test claims.
+Candidate selection never accesses test cases:
 
-## Strong Base → Aggressive
+- 240 paired validation episodes per policy;
+- 120 heldout-layout episodes per policy where required;
+- exactly one frozen 400-episode official test per policy;
+- 1,600 official-test episodes in total.
 
-![Strong Base and Aggressive Bot on the same validation case](docs/assets/showcase/m4-base-vs-aggressive.gif)
+The test runner creates a release lock before the first test episode, supports
+infrastructure-safe resume for that same immutable release, and refuses a
+second completed official test.
 
-| Frozen validation evidence | Result |
-|---|---:|
-| Strong Base win rate | 87.0% |
-| Aggressive win rate | 89.0% |
-| Aggressive engagement shift | +0.100 / 100 decisions |
-| Skill Retention | 100.0% |
-| Paired evaluation | 200 episodes |
+Strong must meet every frozen capability threshold before style training is
+accepted. Each style must retain at least 85% of paired Strong successes,
+remain within 10 percentage points of Strong extraction rate, retain at least
+85% of Strong mean extracted value, and show a positive paired style shift
+with a 95% confidence bound.
 
-The Aggressive Bot is a fixed residual-style checkpoint derived from the same
-fair-observation Strong Base. It passed all seven predefined style, safety, and
-retention gates: the engagement-shift bootstrap interval is `[0.046, 0.171]`,
-valid-attack rate is 26.7%, and objective-chase rate is controlled at 9.0%.
+## Reproduce
 
-This GIF is a qualitative, automatically selected **validation** case—not an
-official test result. See the [full Strong Base episode](docs/assets/showcase/m4-strong-base.mp4),
-[full Aggressive episode](docs/assets/showcase/m4-aggressive.mp4),
-[metric card](docs/assets/showcase/m4-metrics.png), and
-[hash-bound publication manifest](reports/showcase/m4/manifest.json).
+The project environment is `botcolosseo`. Long-run commands, resume behavior,
+selection, official-test locking, and media generation are documented in
+[script.md](script.md).
 
-## Fair Easy / Normal / Hard control
-
-![Style and difficulty performance on 1,200 unique validation episodes](docs/assets/showcase/m5-hybrid-all-style-difficulty.png)
-
-The frozen learned and hybrid policies were evaluated in a
-`4 policies × 3 tiers × 100 cases` validation matrix. Performance is monotonic
-from Easy to Hard for every policy and for at least four of five opponents per
-policy. All 1,200 unique episodes passed source-identity, protocol, objective,
-style-coverage, and same-tier hybrid-retention gates; the minimum
-per-opponent retention was 92.3%, with zero protocol inconsistencies and no
-test access. Hard is the native policy; Normal and Easy add only bounded
-public-observation inference restrictions. See the
-[evidence record](docs/milestones/m5-difficulty.md).
-
-## Synthetic perception-study preflight
-
-![Synthetic style-recognition preflight](docs/assets/showcase/m6-user-study-synthetic.png)
-
-The complete blind-study pipeline was exercised with **synthetic data only**:
-10 simulated respondents × 6 clips produced 60 validated responses. The
-configured plausible-favorable distribution yields 90% Aggressive, 80%
-Defensive, and 85% Explorer recognition, or 85% macro/micro recognition.
-This is useful pipeline and presentation evidence, but it is **not a human
-study and contains no human participants**. The raw synthetic CSV,
-[provenance](reports/m6/user-study/synthetic-provenance.json), and
-[analysis](reports/m6/user-study/summary.synthetic.json) are committed so the
-result cannot be mistaken for collected feedback. A real anonymous study can
-replace the same input file without changing the analyzer. The
-[current-scenario closeout record](reports/m6/project-closeout.json) binds the
-release, media, study-package, synthetic-preflight, documentation, and future
-proposal hashes in one auditable manifest.
-
-## Current status
-
-Milestone 1 passed its frozen capability gate. Milestone 2 delivered a real
-synchronous 1v1 environment, a fair-observation recurrent Actor, 120,000
-demonstration transitions, pure-BC initialization, and a 1,000,000-step PPO
-run. Its official 1,500-game paired test is complete and integrity-clean, but
-the frozen capability gate did **not** pass: PPO clearly beat RandomLegal but
-did not improve enough over the strong BC baseline. No M2 capability-pass claim
-is made here.
-
-![M2 fair-observation learning system](docs/assets/m2-system.png)
-
-![M2 validation-only training evidence](docs/assets/m2-training-curves.png)
-
-| M2 training artifact | Validation evidence | Selected checkpoint |
-|---|---:|---:|
-| Behavioral cloning | 95.61% action accuracy | update 5,500 |
-| Recurrent PPO | 100% objective rate, 83.33% win rate (30 games) | 800k steps |
-
-These are validation-only selection numbers. See the
-[PPO-versus-BC validation showcase](docs/assets/m2-policy-comparison.mp4),
-[M2 evidence record](docs/milestones/m2.md), and tracked
-[training summaries](reports/m2/). The showcase uses the selected checkpoints
-on one frozen validation seed; it is qualitative rather than an official
-performance sample.
-
-| Official M2 test (500 games/policy) | Win rate | Objective rate |
-|---|---:|---:|
-| PPO | 77.0% | 93.2% |
-| Behavioral cloning | 75.2% | 97.8% |
-| RandomLegal | 34.4% | 22.0% |
-
-The complete paired rows and frozen gate decisions are tracked in
-[`reports/m2/`](reports/m2/). Historical-opponent/PFSP training is now the M3
-route for testing whether robustness can improve beyond this M2 plateau. That
-run completed with clean integrity evidence but did not pass every frozen M3
-capability threshold; its selected 200k checkpoint is therefore described as
-an integrity-qualified capability anchor, not an official M3 pass.
-
-Milestone 1 established the source-built Crystal Run scenario, auditable ACS
-event protocol, fair single-agent interface, five deterministic Teachers,
-frozen evaluation manifests, and a 500-episode held-out capability report.
-
-![Crystal Run arena](docs/assets/m1-arena.png)
-
-| Capability | Teacher | Test success | Required |
-|---|---|---:|---:|
-| Navigation | Fixed Route | 100/100 | ≥95% |
-| Pickup | Objective First | 100/100 | ≥95% |
-| Return | Evasive Return | 100/100 | ≥95% |
-| Static hit | Aggressive Script | 100/100 | ≥90% |
-| Moving hit | Aggressive Script | 100/100 | ≥75% |
-
-The official report records zero event-protocol inconsistencies. See the
-[Teacher montage](docs/assets/m1-teacher-montage.mp4), [M1 runbook](docs/milestones/m1.md),
-and [raw evidence](reports/m1/summary.json).
-
-The learned Aggressive checkpoint and its M4 validation gate are complete.
-[Defensive](docs/milestones/m5-defensive.md) and
-[Explorer](docs/milestones/m5-explorer.md) retain their failed learned-policy
-routes, including the stopped Teacher-assisted 50k pilots. The approved
-product-first route now wraps the exact Strong Base with deterministic
-public-observation governors. Defensive passed its 200-episode product
-evaluation at 95.9% Skill Retention; Explorer Candidate C passed at 100.3%,
-with all three modes exercised and a 0.061 executed-action signature distance.
-Difficulty control now passes the complete 1,200-episode all-style validation
-matrix. The current Crystal Run product release is engineering-complete and
-its perception pipeline has passed the explicitly synthetic preflight above.
-The original human-recognition gate remains unclaimed and can be completed
-later without changing the released policies.
-A hybrid-aware package containing 22.9 MB of policy artifacts, now including
-the difficulty audit,
-M6 metrics, and result card, also passed its standalone hash, loader, evidence,
-and portability audit; model binaries and raw decision ledgers remain outside
-normal Git history. The tracked [release record](reports/m6/hybrid-release.json)
-and [raw-evidence record](reports/m6/hybrid-difficulty-evidence-release.json)
-bind both upload archives to SHA-256.
-
-That earlier arena had a known product limitation: its short
-capture-and-return loop did not make combat risk, kill consequences, and loot
-transfer legible enough. Crystal Run Extraction v2, presented at the top of
-this README, is the separate implemented response. The original Arena v1
-metrics remain isolated and are not transferred to the new scenario.
-
-## Quick start
+Short verification:
 
 ```bash
-conda env create -f env.yml
 conda activate botcolosseo
-python scripts/check_env.py
-python -m pytest -v
-ACC_PATH=/path/to/acc ACC_INCLUDE=/path/to/acc/source \
-  python scripts/build_crystal_run.py --check
-python scripts/smoke_crystal_run.py \
-  --task moving_hit \
-  --teacher aggressive_script \
-  --record videos/m1-smoke.mp4 \
-  --require-video
-python scripts/plot_m2_training.py
+python -m pip check
+python -m ruff check src tests scripts
+python -m pytest tests/unit -q
 
-# Audits the Extraction v2 scenario, policy replays, and media hashes.
-PYTHONPATH=src python scripts/audit_extraction_release.py
-
-# Audits the policies, media, synthetic-study boundary, and final release hashes.
-PYTHONPATH=src python scripts/audit_project_closeout.py
+python scripts/build_crystal_run_extraction.py \
+  --check \
+  --acc "$ACC_ROOT/build/acc" \
+  --acc-include "$ACC_ROOT"
 ```
 
-Use `python scripts/evaluate_m1.py --split test --output reports/m1` to reproduce
-the full frozen M1 gate. It runs 500 real ViZDoom episodes. M2 commands and the
-strict official artifact audit are documented in the
-[M2 evidence record](docs/milestones/m2.md) and [`script.md`](script.md).
+The approved technical and release gates are recorded in [Plan.md](Plan.md).
 
-## Licensing
+## Repository map
 
-Bot Colosseo source code is MIT licensed. ViZDoom and Freedoom retain their own
-licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). This repository
-does not distribute commercial Doom assets.
+```text
+assets/scenarios/crystal_run_extraction/  ViZDoom map, ACS rules, two layouts
+configs/extraction/                       frozen train and evaluation protocols
+src/botcolosseo/agents/                   recurrent Actor-Critic and adapters
+src/botcolosseo/training/                 BC, PPO, rewards, rollout, PFSP, resume
+src/botcolosseo/evaluation/               paired metrics and frozen gates
+src/botcolosseo/demo/                     viewer-only telemetry and replay capture
+scripts/run_extraction_v3_*.sh            reproducible long-stage entrypoints
+```
+
+## License
+
+Project source is MIT licensed. ViZDoom and Freedoom retain their respective
+licenses. No commercial Doom assets are distributed; see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

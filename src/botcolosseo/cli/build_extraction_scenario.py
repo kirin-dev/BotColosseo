@@ -17,7 +17,7 @@ def repository_root() -> Path:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Build the Crystal Run Extraction v2 scenario"
+        description="Build the Crystal Run: Extraction scenario"
     )
     parser.add_argument("--acc", type=Path)
     parser.add_argument("--acc-include", type=Path)

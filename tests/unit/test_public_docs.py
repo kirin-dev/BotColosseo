@@ -4,10 +4,10 @@ from pathlib import Path
 PUBLIC_DOCS = (
     Path("README.md"),
     Path("README_CN.md"),
-    Path("docs/milestones/m0.md"),
-    Path("docs/milestones/m1.md"),
-    Path("docs/milestones/m2.md"),
-    Path("assets/scenarios/crystal_run/README.md"),
+    Path("Plan.md"),
+    Path("script.md"),
+    Path("assets/scenarios/crystal_run_extraction/README.md"),
+    Path("docs/review/2026-07-26-heldout-layout-approval.md"),
     Path("THIRD_PARTY_NOTICES.md"),
 )
 
@@ -50,33 +50,34 @@ def test_public_documentation_local_links_resolve() -> None:
     assert broken == []
 
 
-def test_readme_publishes_m4_media_with_validation_boundary() -> None:
+def test_readme_publishes_clean_v3_product_and_evidence_boundary() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
 
-    assert "m4-base-vs-aggressive.gif" in readme
-    assert "reports/showcase/m4/manifest.json" in readme
-    assert re.search(r"not an\s+official test result", readme)
-    assert "M4 passed" not in readme
+    assert "# Crystal Run: Extraction" in readme
+    assert "100 HP" in readme
+    assert "20 damage" in readme
+    assert "30 rounds" in readme
+    assert "three slots" in readme
+    assert "no benchmark-success claim" in readme
+    assert "Previous Crystal Run" not in readme
+    assert "Extraction v2" not in readme
 
 
-def test_readme_publishes_hybrid_showcase_without_relabeling_rl_failures() -> None:
+def test_readme_preserves_fair_actor_and_learned_style_boundary() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
 
-    assert "hybrid-four-policy.gif" in readme
-    assert "reports/showcase/hybrid-product/manifest.json" in readme
-    assert "hybrid governors" in readme
-    assert re.search(r"not\s+reward-shaped RL successes", readme)
-    assert "validation artifacts, not official test claims" in readme
+    assert "The Actor never receives opponent HP" in readme
+    assert "During training only" in readme
+    assert "same frozen Strong Actor hash" in readme
+    assert "no runtime behavior governors" in readme
+    assert "one frozen 400-episode official test per policy" in readme
 
 
-def test_chinese_readme_preserves_failed_gate_and_validation_boundaries() -> None:
+def test_chinese_readme_preserves_pending_and_test_boundaries() -> None:
     readme = Path("README_CN.md").read_text(encoding="utf-8")
 
-    assert "m4-base-vs-aggressive.gif" in readme
-    assert "不是 official test 结果" in readme
-    assert "M2 真实同步 1v1 与初始 PPO | FAIL" in readme
-    assert "M3 historical/PFSP Strong Base | 未通过全部能力门" in readme
-    assert "M5 Defensive / Explorer / Difficulty | PASS（产品路线）" in readme
-    assert "不声称真人评测" in readme
-    assert "不是真人用户研究，也没有真人参与者" in readme
-    assert "hybrid governor" in readme
+    assert "在冻结门通过前，不声称取得了" in readme
+    assert "候选选择阶段禁止访问 test" in readme
+    assert "同一个冻结 Strong Actor 哈希" in readme
+    assert "不包含规则式风格" in readme
+    assert "official test 总计 1,600 局" in readme

@@ -1,228 +1,115 @@
-# Bot Colosseo
+# Crystal Run: Extraction
 
-中文说明 · [English](README.md)
+[English](README.md)
 
-通过能力保持的策略塑形，构建目标导向、风格可控的视觉游戏 Bot。
+先训练一个真正有任务能力的视觉游戏 Bot，再在尽量保留能力的前提下，把它
+塑造成玩家能够辨认的不同风格。
 
-Bot Colosseo 研究一个面向真实产品的问题：先训练具备任务能力的
-fair-observation 视觉 Bot，再从同一个 Base checkpoint 派生玩家能够感知的
-Aggressive、Defensive 与 Explorer 风格，同时把 Difficulty 作为独立控制维度。
-完整技术方案见 [Plan.md](Plan.md)。
-
-## Crystal Run：搜打撤 v2
-
-![Crystal Run Extraction 中的 Strong、Aggressive、Defensive 与 Explorer](docs/assets/extraction-v2/showcase-board.png)
-
-这是一个基于真实 ViZDoom 构建的紧凑“搜打撤”研究产品：
+Crystal Run: Extraction 是一个基于真实 ViZDoom 的紧凑型 1v1“搜打撤”
+研究产品：
 
 ```text
-搜索物资 → 交战或避战 → 管理 3 格背包 → 成功撤离 → 价值入账
+搜索物资 -> 交战或撤离交战 -> 管理三格背包
+         -> 到达任一撤离点 -> 将携带价值带出
 ```
 
-双方均为 100 HP，每次有效命中固定造成 20 点伤害，初始 30 发子弹，死亡后不
-复活。死亡会在原地生成可拾取的尸体缓存。击杀本身不计分，只有成功撤离带出的
-价值才计入结果。
+项目重点是产品可感知的智能体行为与严谨的工程闭环，而不是提出新的强化学习
+算法。完整流程包含公平观测的循环策略、非对称训练、脚本对手、历史策略池、
+轻量 PFSP，以及学习得到的残差风格适配器。
 
-| Bot | 选中 validation 回放中的可见行为 | 完整视频 |
+> 当前状态：v3 场景、训练栈、冻结评估协议、发布保护和真实端到端短程预检
+> 已完成。完整 Strong 与风格实验是下一阶段；在冻结门通过前，不声称取得了
+> benchmark 成功。
+
+## 游戏规则
+
+- 双方在同一张地图进行 75 秒对局，共有两个中立撤离点。
+- 30 秒后开放撤离，需要连续停留 3 秒。
+- 双方均为 100 HP，每次有效命中固定造成 20 点伤害。
+- 初始 30 发子弹，不换弹，不复活。
+- 背包有三个格子；物资价值为 10、25、50。
+- 更高价值物资会确定性替换背包中最低价值物资。
+- 死亡后生成可被拾取的尸体缓存。
+- 击杀本身不计分，只有成功撤离带出的价值有效。
+
+训练与常规 validation 使用 `base` 物资布局；heldout validation 和唯一一次
+official test 使用已人工批准的 `heldout-a`：
+
+![训练布局与 heldout 布局](docs/review/extraction-layout-review.svg)
+
+## 四个 Bot
+
+| 策略 | 期望可见行为 | 实现 |
 |---|---|---|
-| Strong Base | 承受交战压力、升级背包，带出 85 | [31.9 秒](docs/assets/extraction-v2/strong.mp4) |
-| Aggressive | 5 次命中→击杀→尸体缓存→拾取，带出 30 | [30.1 秒](docs/assets/extraction-v2/aggressive.mp4) |
-| Defensive | 0 次攻击、满血保住物资，带出 45 | [31.9 秒](docs/assets/extraction-v2/defensive.mp4) |
-| Explorer | 覆盖 30 个路线网格，将价值 10 换成 50，带出 85 | [31.9 秒](docs/assets/extraction-v2/explorer.mp4) |
+| Strong | 稳定获胜、存活、收集价值并撤离 | CNN-GRU Actor、BC warm start、循环 PPO、脚本池、历史 checkpoint、PFSP |
+| Aggressive | 主动制造有效交战，并把击杀后的缓存转化为撤离价值 | Strong 上的有界可学习 delta-logit adapter |
+| Defensive | 在高风险下脱离战斗并保护物资，同时避免无物资蹲守 | Strong 上的有界可学习 delta-logit adapter |
+| Explorer | 探索有用的新区域、升级背包，并最终完成撤离 | Strong 上的有界可学习 delta-logit adapter |
 
-四段均为真实第一人称策略回放。Viewer overlay 显示双方血条、每次 `-20` 伤害、
-弹药、背包槽、尸体缓存转移、撤离进度与入账价值。Actor 仍只接收第一人称像素
-和自身公开状态；敌方 HP/坐标、automap、depth、labels 与 overlay 均不会进入
-策略输入。
+三个风格都绑定同一个冻结 Strong Actor 哈希。v3 推理过程不包含规则式风格
+governor。
 
-最终发布审计用 SHA-256 绑定 21 个场景、筛选、证据与媒体文件，并确认所有视频
-只使用 validation case，长度均为 30–45 秒。详见
-[技术证据记录](docs/milestones/extraction-v2.md)、
-[hash-bound 发布清单](reports/extraction-v2/showcase/manifest.json)与
-[冻结设计规格](docs/superpowers/specs/2026-07-26-crystal-run-extraction-v2-design.md)。
-本版本不声称 official held-out test 或真人风格辨识结果。
+## 公平观测边界
 
-## 旧版 Crystal Run Arena v1 证据
+部署时 Actor 只能看到：
 
-![同场景的 Strong Base、Aggressive、Defensive 与 Explorer](docs/assets/showcase/hybrid-four-policy.gif)
+- 84×84 第一视角灰度图像；
+- 自身公开的血量、弹药、背包、已带出价值、撤离状态、剩余时间和上一动作。
 
-![Hybrid 产品正式指标](docs/assets/showcase/hybrid-metrics.png)
+Actor 看不到敌方血量、敌方坐标、自身世界坐标、俯视地图、深度图、目标标签、
+特权协议状态或视频叠加层。只有训练阶段的 Critic、reward 和评估 ledger
+可以使用特权状态；发布推理只导出 Actor。
 
-| 公开策略 | 实现 | 正式 validation 证据 |
-|---|---|---:|
-| Strong Base | learned CNN-GRU | 胜率 87.0% |
-| Aggressive | learned residual style | engagement shift +0.100；retention 100.0% |
-| Defensive | Base 上的确定性公开观测 governor | retention 95.9%；intervention 5.8% |
-| Explorer | Base 上的确定性公开观测 governor | retention 100.3%；路线动作签名 0.061 |
-
-Defensive 与 Explorer 被明确标注为 **hybrid governor**，不会冒充
-reward-shaped RL 成功。此前 distillation、PPO V1 和 Teacher-assisted PPO V2
-的失败结果全部保留。产品优先策略随后各自完成 200 局配对 validation：
-公平性、协议、能力保持、干预边界、覆盖与真实执行动作签名门禁全部通过。
-未修改的旧风格指标继续作为诊断公开，其中仍有部分 learned-policy 门未通过。
-
-展示 case 由正式 ledger 在渲染前自动选择，不是看完视频后人工挑选。完整视频：
-[Strong Base](docs/assets/showcase/hybrid-strong-base.mp4)、
-[Aggressive](docs/assets/showcase/hybrid-aggressive.mp4)、
-[Defensive](docs/assets/showcase/hybrid-defensive.mp4)、
-[Explorer](docs/assets/showcase/hybrid-explorer.mp4)，以及
-[hash-bound 发布清单](reports/showcase/hybrid-product/manifest.json)。
-这些都是 validation 展示，不是 official test 声明。
-
-## Strong Base → Aggressive
-
-![同一 validation case 上的 Strong Base 与 Aggressive](docs/assets/showcase/m4-base-vs-aggressive.gif)
-
-| 冻结 validation 证据 | 结果 |
-|---|---:|
-| Strong Base 胜率 | 87.0% |
-| Aggressive 胜率 | 89.0% |
-| Aggressive engagement shift | +0.100 / 100 decisions |
-| Skill Retention | 100.0% |
-| 配对评测规模 | 200 局 |
-
-Aggressive Bot 是从同一个 fair-observation Strong Base 派生的固定残差风格
-checkpoint。它通过了预先定义的七项风格、安全和能力保持门禁：
-engagement-shift 的 95% bootstrap 区间为 `[0.046, 0.171]`，有效攻击率为
-26.7%，objective-chase rate 控制在 9.0%。
-
-上方 GIF 是自动选择的定性 **validation** 案例，不是 official test 结果。
-完整证据包括 [Strong Base 单局视频](docs/assets/showcase/m4-strong-base.mp4)、
-[Aggressive 单局视频](docs/assets/showcase/m4-aggressive.mp4)、
-[指标卡](docs/assets/showcase/m4-metrics.png)和
-[hash-bound 发布清单](reports/showcase/m4/manifest.json)。
-
-## 公平的 Easy / Normal / Hard 控制
-
-![1,200 个唯一 validation episode 上的风格与难度表现](docs/assets/showcase/m5-hybrid-all-style-difficulty.png)
-
-冻结的 learned 与 hybrid 策略完成了
-`4 policies × 3 tiers × 100 cases` validation 矩阵。四个策略从 Easy 到 Hard
-均满足总体单调性，每个策略至少四类对手满足逐对手单调性。1,200 个唯一 episode
-全部通过来源身份、协议、objective、风格覆盖和同档 hybrid retention 门禁；
-最低逐对手 retention 为 92.3%，协议不一致数为 0，且没有访问 test。Hard 是原生
-策略；Normal 与 Easy 只增加有界的公开观测推理限制。详见
-[证据记录](docs/milestones/m5-difficulty.md)。
-
-## 合成用户感知预检
-
-![合成风格辨识预检](docs/assets/showcase/m6-user-study-synthetic.png)
-
-完整盲测链路已使用**纯合成数据**跑通：10 个模拟受试者 × 6 段视频，共 60 条
-完整响应。预先配置的“合理且有利”分布得到 Aggressive 90%、Defensive 80%、
-Explorer 85% 的辨识率，macro/micro recognition 均为 85%。这证明数据校验、
-统计和展示链路可运行，但它**不是真人用户研究，也没有真人参与者**。合成原始
-CSV、[来源清单](reports/m6/user-study/synthetic-provenance.json)和
-[分析结果](reports/m6/user-study/summary.synthetic.json)均已提交，避免被误读
-为真实反馈；未来真实匿名响应可以直接替换同一输入，无需修改分析器。
-
-## 产品与技术主线
+## 训练与评估
 
 ```text
-Teacher demonstrations
-        ↓
-BC warm start → recurrent visual PPO
-        ↓
-historical opponents / PFSP capability anchor
-        ↓
-skill-preserving residual policy shaping
-        ↓
-Aggressive / Defensive / Explorer checkpoints
-        ↓
-independent Easy / Normal / Hard controller
-        ↓
-paired metrics + blind user evaluation
+Strong Teacher 数据
+       |
+       v
+行为克隆 -> 循环 PPO -> 历史 checkpoint + PFSP
+       |
+       v
+唯一选定的 Strong Actor 哈希
+       |
+       +----------+-----------+
+       v          v           v
+   Aggressive  Defensive   Explorer
+     adapter     adapter     adapter
 ```
 
-Actor 在推理时只接收 `84×84` 第一人称灰度画面、自身公开变量、比分、剩余
-时间、是否持有核心和上一动作。敌方坐标、region ID、automap、depth、labels
-等特权信息不得进入 Actor。Teacher、reward、Critic 和离线评测可以使用特权
-状态，但其边界由类型、前向接口测试和 evidence audit 共同约束。
+候选选择阶段禁止访问 test：
 
-## 当前证据状态
+- 每个策略 240 局成对 validation；
+- 必要时每个策略增加 120 局 heldout-layout 评估；
+- 冻结发布后，每个策略只运行一次 400 局 official test；
+- official test 总计 1,600 局。
 
-| 里程碑 | 结果 | 证据边界 |
-|---|---|---|
-| M1 Crystal Run 与 Teacher | PASS | 5 项能力各 100/100，协议错误 0 |
-| M2 真实同步 1v1 与初始 PPO | FAIL | 工程完整，但 PPO 未达到相对 BC +10pp |
-| M3 historical/PFSP Strong Base | 未通过全部能力门 | 仅称 integrity-qualified capability anchor |
-| M4 Aggressive | PASS | 200 局 validation，风格与 retention 七项门均通过 |
-| M5 Defensive / Explorer / Difficulty | PASS（产品路线） | 两个 hybrid 产品门与 1,200 局全风格 difficulty 均通过 |
-| M6 公开发布 | 当前场景工程闭环 | 媒体、发布包、难度证据和合成感知预检完成；不声称真人评测 |
+Strong 必须先通过全部能力门。每个风格必须至少保留 85% 的 Strong 成功案例，
+撤离率下降不超过 10 个百分点，平均带出价值至少保留 85%，并且成对风格指标
+及其 95% 置信下界都必须为正。
 
-当前发布归档及 400 局新增原始决策账本归档的 SHA-256 分别记录在
-[release record](reports/m6/hybrid-release.json)与
-[raw-evidence record](reports/m6/hybrid-difficulty-evidence-release.json)；
-模型二进制与大体积 JSONL 不会进入普通 Git 历史。
+## 复现
 
-M2 的 official 1,500 局配对 test 工程门完整且协议干净，但能力门没有通过：
-PPO 胜率 77.0%，BC 为 75.2%，RandomLegal 为 34.4%；PPO objective rate
-为 93.2%，BC 为 97.8%。仓库不会把工程闭环包装成 benchmark 成功。
+项目 Conda 环境名为 `botcolosseo`。长实验、断点恢复、候选选择、official-test
+锁和视频生成命令见 [script.md](script.md)。
 
-M3 完成了 historical pool、PFSP、cross-play、候选选择与证据审计，但没有
-通过全部冻结能力阈值，因此 200k checkpoint 仅作为后续风格塑形的 capability
-anchor。
-
-M4 已形成可信的 learned-style 垂直闭环。Defensive 与 Explorer 的
-distillation、200k PPO V1 与 Teacher-assisted 50k V2 未通过 learned-policy
-风格门，按冻结规则停止且完整保留。经审核批准的产品优先路线改用 exact Strong
-Base 加公开观测、确定性、干预有界的 governor。Defensive 200 局正式产品门以
-95.9% retention 通过；Explorer Candidate C 以 100.3% retention、三模式覆盖和
-0.061 真实执行动作签名距离通过。完整正负证据分别见
-[Defensive 记录](docs/milestones/m5-defensive.md)和
-[Explorer 记录](docs/milestones/m5-explorer.md)。
-
-旧版 Crystal Run 的 capture-and-return 循环较短，战斗风险、击杀后果和战利品
-转移不够直观。README 首屏展示的 Crystal Run Extraction v2 是对此问题的独立
-实现；旧版 Arena v1 的指标不会迁移或冒充新场景结果。
-[旧场景收尾记录](reports/m6/project-closeout.json)仍保留其发布包、媒体、研究
-材料、合成预检和文档哈希，便于分别复核。
-
-## 快速开始
+短程验证：
 
 ```bash
-conda env create -f env.yml
 conda activate botcolosseo
-python scripts/check_env.py
-python -m pytest -v
+python -m pip check
+python -m ruff check src tests scripts
+python -m pytest tests/unit -q
 
-ACC_PATH=/path/to/acc ACC_INCLUDE=/path/to/acc/source \
-  python scripts/build_crystal_run.py --check
-
-python scripts/smoke_crystal_run.py \
-  --task moving_hit \
-  --teacher aggressive_script \
-  --record videos/m1-smoke.mp4 \
-  --require-video
-
-# 审计 Extraction v2 场景、真实策略回放与媒体哈希。
-PYTHONPATH=src python scripts/audit_extraction_release.py
-
-# 审计策略、媒体、合成用户数据边界和最终发布哈希。
-PYTHONPATH=src python scripts/audit_project_closeout.py
+python scripts/build_crystal_run_extraction.py \
+  --check \
+  --acc "$ACC_ROOT/build/acc" \
+  --acc-include "$ACC_ROOT"
 ```
 
-复现完整 M1 冻结门禁：
+技术设计和发布门见 [Plan.md](Plan.md)。
 
-```bash
-python scripts/evaluate_m1.py --split test --output reports/m1
-```
+## 许可证
 
-它会运行 500 个真实 ViZDoom episode。M2 及后续训练、评测、审计、PID、日志和
-长实验命令集中记录在 [script.md](script.md)；各里程碑的可读结论位于
-[`docs/milestones/`](docs/milestones/)。
-
-## 公平性与可复现性
-
-- train / validation / test case 与随机种子隔离；
-- paired evaluation 固定 opponent、seed、side 和 case；
-- checkpoint、配置、scenario、ledger、summary 与媒体均记录 SHA-256；
-- production publication 拒绝 dirty worktree、失败门禁和 test-derived 素材；
-- 完整失败结果不删除，不在看到结果后修改冻结阈值；
-- 演示素材明确标注 validation，与 official test 结果分开。
-
-## 许可
-
-Bot Colosseo 源代码采用 MIT License。ViZDoom 与 Freedoom 保留各自许可，详见
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。本仓库不分发商业 Doom
-素材。
+项目源码采用 MIT License。ViZDoom 与 Freedoom 保留各自许可证。本项目不
+分发商业 Doom 素材，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
