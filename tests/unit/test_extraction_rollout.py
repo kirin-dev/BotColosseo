@@ -203,6 +203,7 @@ def test_extraction_collector_resets_hidden_swaps_sides_and_records_outcome() ->
         environment_factory=environment_factory,
         opponent_factory=lambda assignment, side: opponent,
         action_sampler=lambda distribution: distribution.logits.argmax(-1),
+        teacher_supervision=True,
     )
     try:
         collection = collector.collect(steps=5, start_environment_step=0)
@@ -215,6 +216,11 @@ def test_extraction_collector_resets_hidden_swaps_sides_and_records_outcome() ->
     assert collection.event_counts == {"learner:extracted": 2}
     assert collection.rollout.scalars.shape == (1, 5, 9)
     assert collection.rollout.privileged.shape == (1, 5, 20)
+    assert collection.rollout.teacher_actions is not None
+    assert collection.rollout.teacher_mask is not None
+    assert collection.rollout.route_modes is not None
+    assert collection.rollout.teacher_mask.tolist() == [[True] * 5]
+    assert collection.rollout.route_modes.tolist() == [[-1] * 5]
     assert collection.rollout.masks.tolist() == [[0.0, 1.0, 0.0, 1.0, 0.0]]
     assert [item.assignment.case.learner_side for item in created] == [
         "host",

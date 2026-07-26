@@ -12,7 +12,10 @@ from pathlib import Path
 import torch
 import yaml
 
-from botcolosseo.agents.extraction_model import create_extraction_actor_critic
+from botcolosseo.agents.extraction_model import (
+    create_extraction_actor_critic,
+    freeze_extraction_actor_backbone,
+)
 from botcolosseo.data.demonstrations import sha256_file
 from botcolosseo.data.extraction_demonstrations import ExtractionCase
 from botcolosseo.training.bc import append_jsonl, seed_everything
@@ -24,6 +27,7 @@ from botcolosseo.training.extraction_pfsp import (
     ExtractionHistoricalOpponent,
     ExtractionPFSPSchedule,
 )
+from botcolosseo.training.extraction_ppo import TeacherAnchoredPPOTrainer
 from botcolosseo.training.extraction_rollout import (
     ExtractionRolloutCollector,
     PolicyExtractionOpponentController,
@@ -32,7 +36,7 @@ from botcolosseo.training.extraction_rollout import (
 from botcolosseo.training.extraction_run_log import (
     reconcile_extraction_metrics,
 )
-from botcolosseo.training.ppo import ExcessiveKLError, PPOTrainer
+from botcolosseo.training.ppo import ExcessiveKLError
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -195,8 +199,13 @@ def main(argv: list[str] | None = None) -> int:
         raise RuntimeError("CUDA was requested but is unavailable")
     seed_everything(int(config["seed"]))
     model = create_extraction_actor_critic().to(device)
-    trainer = PPOTrainer.create(
+    freeze_actor_backbone = bool(config["freeze_actor_backbone"])
+    if freeze_actor_backbone:
+        freeze_extraction_actor_backbone(model)
+    teacher_coefficient = float(config["teacher_auxiliary_coefficient"])
+    trainer = TeacherAnchoredPPOTrainer.create(
         model,
+        teacher_coefficient=teacher_coefficient,
         learning_rate=float(config["learning_rate"]),
         weight_decay=float(config["weight_decay"]),
         total_updates=_planned_updates(
@@ -282,6 +291,7 @@ def main(argv: list[str] | None = None) -> int:
         gamma=float(config["gamma"]),
         gae_lambda=float(config["gae_lambda"]),
         opponent_factory=opponent_factory,
+        teacher_supervision=True,
     )
     events: Counter[str] = history.event_counts
     rewards: Counter[str] = history.reward_components
@@ -338,6 +348,9 @@ def main(argv: list[str] | None = None) -> int:
                             "kind": "train",
                             "environment_steps": environment_steps,
                             "epoch": epoch,
+                            "teacher_loss": trainer.last_teacher_loss,
+                            "teacher_agreement": trainer.last_teacher_agreement,
+                            "supervised_tokens": trainer.last_supervised_tokens,
                             **asdict(metrics),
                         },
                     )
@@ -386,11 +399,14 @@ def main(argv: list[str] | None = None) -> int:
                 "episode_count": collector.episode_index,
                 "event_counts": dict(sorted(events.items())),
                 "fair_actor_observation_only": True,
+                "freeze_actor_backbone": freeze_actor_backbone,
                 "kl_early_stop_count": kl_stops,
                 "pfsp_win_rates": schedule.win_rates,
                 "reward_components": dict(sorted(rewards.items())),
                 "scenario_hash": scenario_hash,
                 "test_cases_accessed": False,
+                "teacher_auxiliary_coefficient": teacher_coefficient,
+                "teacher_supervision": "privileged-strong-training-only",
                 "train_cases_sha256": sha256_file(train_cases_path),
                 "updates": trainer.updates,
             }

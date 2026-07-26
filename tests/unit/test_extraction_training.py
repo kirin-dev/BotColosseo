@@ -12,6 +12,7 @@ from botcolosseo.agents.extraction_model import (
     ExtractionResidualStyleActorCritic,
     create_extraction_actor,
     create_extraction_actor_critic,
+    freeze_extraction_actor_backbone,
 )
 from botcolosseo.agents.extraction_teachers import ExtractionStyle
 from botcolosseo.data.extraction_demonstrations import (
@@ -134,6 +135,50 @@ def test_extraction_actor_critic_keeps_privileged_state_out_of_public_actor() ->
     assert output.values.shape == (2, 3)
     assert torch.equal(output.logits, public.logits)
     assert model.initial_state(2, device="cpu").shape == (1, 2, 256)
+
+
+def test_extraction_value_loss_does_not_rewrite_bc_actor() -> None:
+    model = create_extraction_actor_critic()
+    frames = torch.zeros(1, 2, 1, 84, 84, dtype=torch.uint8)
+    scalars = torch.zeros(1, 2, 9)
+    previous = torch.zeros(1, 2, dtype=torch.long)
+    masks = torch.ones(1, 2)
+    privileged = torch.zeros(1, 2, EXTRACTION_PRIVILEGED_DIM)
+
+    output = model(frames, scalars, previous, masks, privileged)
+    output.values.sum().backward()
+
+    assert all(parameter.grad is None for parameter in model.actor.parameters())
+    assert any(
+        parameter.grad is not None
+        for parameter in model.privileged_encoder.parameters()
+    )
+    assert any(parameter.grad is not None for parameter in model.value.parameters())
+
+
+def test_strong_calibration_freezes_only_actor_backbone() -> None:
+    model = create_extraction_actor_critic()
+
+    freeze_extraction_actor_backbone(model)
+
+    assert all(
+        not parameter.requires_grad
+        for parameter in model.actor.visual_encoder.parameters()
+    )
+    assert all(
+        not parameter.requires_grad
+        for parameter in model.actor.scalar_encoder.parameters()
+    )
+    assert all(
+        not parameter.requires_grad
+        for parameter in model.actor.recurrent.parameters()
+    )
+    assert all(parameter.requires_grad for parameter in model.actor.policy.parameters())
+    assert all(
+        parameter.requires_grad
+        for parameter in model.privileged_encoder.parameters()
+    )
+    assert all(parameter.requires_grad for parameter in model.value.parameters())
 
 
 def test_extraction_style_is_zero_initialized_bounded_delta_over_frozen_base() -> None:

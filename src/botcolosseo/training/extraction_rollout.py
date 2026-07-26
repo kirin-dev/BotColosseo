@@ -254,6 +254,7 @@ class ExtractionRolloutCollector:
         | None = None,
         style_reward_factory: Callable[[str], ExtractionStyleRewardLedger]
         | None = None,
+        teacher_supervision: bool = False,
     ) -> None:
         if (
             max_decisions <= 0
@@ -277,6 +278,7 @@ class ExtractionRolloutCollector:
             lambda distribution: distribution.sample()
         )
         self._style_reward_factory = style_reward_factory
+        self._teacher_supervision = teacher_supervision
         self._environment: Any | None = None
         self._opponent: ExtractionOpponentController | None = None
         self._assignment: ExtractionEpisodeAssignment | None = None
@@ -284,6 +286,7 @@ class ExtractionRolloutCollector:
         self._hidden: torch.Tensor | None = None
         self._task_reward: ExtractionTaskRewardLedger | None = None
         self._style_reward: ExtractionStyleRewardLedger | None = None
+        self._learner_teacher: StyledExtractionTeacher | None = None
         self._episode_start = True
         self._episode_decisions = 0
         self._episode_reward = 0.0
@@ -330,6 +333,16 @@ class ExtractionRolloutCollector:
             self.task_reward_config,
             learner_side=assignment.case.learner_side,
         )
+        self._learner_teacher = (
+            StyledExtractionTeacher(
+                side=assignment.case.learner_side,
+                style="strong",
+            )
+            if self._teacher_supervision
+            else None
+        )
+        if self._learner_teacher is not None:
+            self._learner_teacher.reset()
         self._style_reward = (
             None
             if self._style_reward_factory is None
@@ -406,6 +419,11 @@ class ExtractionRolloutCollector:
                 action = self._action_sampler(distribution)
                 log_prob = distribution.log_prob(action)
                 learner_action = MacroAction(int(action[0, 0]))
+                teacher_action = (
+                    None
+                    if self._learner_teacher is None
+                    else self._learner_teacher.act(state_before)
+                )
                 opponent_action = opponent.act(
                     self._opponent_observation(),
                     environment.privileged_state,
@@ -481,6 +499,21 @@ class ExtractionRolloutCollector:
                         log_probs=log_prob[:, 0].cpu(),
                         values=output.values[:, 0].cpu(),
                         next_values=next_value.cpu(),
+                        teacher_actions=(
+                            None
+                            if teacher_action is None
+                            else torch.tensor([int(teacher_action)], dtype=torch.long)
+                        ),
+                        teacher_mask=(
+                            None
+                            if teacher_action is None
+                            else torch.tensor([True], dtype=torch.bool)
+                        ),
+                        route_modes=(
+                            None
+                            if teacher_action is None
+                            else torch.tensor([-1], dtype=torch.long)
+                        ),
                     )
                 )
                 self._hidden = output.hidden.detach()
@@ -549,6 +582,7 @@ class ExtractionRolloutCollector:
         self._hidden = None
         self._task_reward = None
         self._style_reward = None
+        self._learner_teacher = None
         if environment is not None:
             environment.close()
 

@@ -54,12 +54,20 @@ class ExtractionActorCritic(nn.Module):
             raise ValueError("Extraction privileged input has the wrong shape or device")
         actor = self.actor(frames, scalars, previous_actions, masks, hidden)
         critic = self.privileged_encoder(privileged)
-        values = self.value(torch.cat((actor.features, critic), dim=-1)).squeeze(-1)
+        values = self.value(
+            torch.cat((actor.features.detach(), critic), dim=-1)
+        ).squeeze(-1)
         return ActorCriticOutput(actor.logits, values, actor.hidden)
 
 
 def create_extraction_actor_critic() -> ExtractionActorCritic:
     return ExtractionActorCritic()
+
+
+def freeze_extraction_actor_backbone(model: ExtractionActorCritic) -> None:
+    model.actor.visual_encoder.requires_grad_(False)
+    model.actor.scalar_encoder.requires_grad_(False)
+    model.actor.recurrent.requires_grad_(False)
 
 
 class ExtractionResidualStyleActorCritic(nn.Module):
