@@ -217,6 +217,19 @@ def main(argv: list[str] | None = None) -> int:
 
     best_loss = math.inf
     best_update: int | None = None
+    if args.resume is not None and metrics_path.is_file():
+        for line in metrics_path.read_text(encoding="utf-8").splitlines():
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                break
+            if (
+                record.get("kind") == "validation"
+                and int(record["update"]) <= trainer.updates
+                and float(record["loss"]) < best_loss
+            ):
+                best_loss = float(record["loss"])
+                best_update = int(record["update"])
     validation_interval = int(config["validation_interval"])
     latest_validation = None
     while trainer.updates < stop_after:
@@ -264,6 +277,7 @@ def main(argv: list[str] | None = None) -> int:
         "checkpoint_sha256": sha256_file(checkpoint),
         "config": str(config_path.relative_to(root)),
         "config_hash": config_hash,
+        "completed": trainer.updates == total_updates,
         "device": str(device),
         "fair_observation_only": True,
         "initial_checkpoint": (
@@ -289,6 +303,7 @@ def main(argv: list[str] | None = None) -> int:
             if parameter.requires_grad
         ),
         "updates": trainer.updates,
+        "target_updates": total_updates,
         "validation": asdict(latest_validation),
         "validation_manifest_sha256": sha256_file(validation_manifest),
         "validation_transitions_loaded": validation.transition_count,
@@ -296,3 +311,7 @@ def main(argv: list[str] | None = None) -> int:
     _atomic_json(summary, output_dir / "summary.json")
     print(json.dumps(summary, indent=2, sort_keys=True))
     return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

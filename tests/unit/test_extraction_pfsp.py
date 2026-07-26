@@ -49,6 +49,10 @@ def test_extraction_pfsp_is_deterministic_and_updates_payoffs(tmp_path: Path) ->
     assert assignments == repeated
     assert all(item.opponent_kind == "checkpoint" for item in assignments)
     assert {item.case.learner_side for item in assignments} == {"host", "opponent"}
+    assert all(
+        left.opponent_id == right.opponent_id
+        for left, right in zip(assignments[::2], assignments[1::2], strict=True)
+    )
 
     schedule.record_result(assignments[0], won=True, draw=False)
     schedule.record_result(assignments[1], won=False, draw=False)

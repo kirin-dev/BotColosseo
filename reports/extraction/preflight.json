@@ -1,0 +1,54 @@
+{
+  "aggressive_checkpoint_sha256": "d0e6699f2f1391b7f3578d5d0ea84607b3c333cad9741b3e3ce712ab021cb95b",
+  "artifacts": {
+    "bc_summary": {
+      "path": "runs/extraction/preflight/strong-bc/summary.json",
+      "sha256": "ec3db347eac4549779b94456adc64b9cd75d51a715c24a5b34b575804dec1f7b"
+    },
+    "strong_heldout": {
+      "path": "runs/extraction/preflight/eval/strong-heldout.json",
+      "sha256": "cfd1c47fbe7ab40d8e907d840209b0a498ef8ee7faf32b21640b3f759b4c271f"
+    },
+    "strong_summary": {
+      "path": "runs/extraction/preflight/strong-ppo/summary.json",
+      "sha256": "0c08c86994e69dc2e31fa5d86b3d172efd9a5f834e2b0a9f89d4acd6dd91c285"
+    },
+    "strong_validation": {
+      "path": "runs/extraction/preflight/eval/strong-validation.json",
+      "sha256": "1325d4c3438460e9192239449ab887a5007f6f85bf192bf2b1bf7ba873bfa600"
+    },
+    "style_summary": {
+      "path": "runs/extraction/preflight/aggressive/summary.json",
+      "sha256": "47aed8289d8c99f5fc280ee4bc7bc086af3de4b86d8877f88456f2a7bd6291ac"
+    },
+    "style_validation": {
+      "path": "runs/extraction/preflight/eval/aggressive-validation.json",
+      "sha256": "53e195658c9e6fb7b5d377a4116e978202774704a3361afa1544b84d3660d324"
+    },
+    "train_manifest": {
+      "path": "runs/extraction/preflight/data/strong/train/train-manifest.json",
+      "sha256": "0ca709a66e368734d7882dcbfa7c49b9a2fb4ec9150bdde71a725f662c362f23"
+    },
+    "validation_manifest": {
+      "path": "runs/extraction/preflight/data/strong/validation/validation-manifest.json",
+      "sha256": "7c269ad60db9c3e9e5ac195c89bfff96df12d289dc0cda69b52bcf49478e7fbc"
+    }
+  },
+  "fair_actor_observation_only": true,
+  "frozen_strong_actor_verified": true,
+  "pipeline": [
+    "strong_teacher_demonstrations",
+    "behavioral_cloning",
+    "recurrent_strong_ppo",
+    "aggressive_residual_ppo",
+    "base_validation_inference",
+    "heldout_validation_inference",
+    "style_validation_inference"
+  ],
+  "real_vizdoom_environment": true,
+  "scenario_hash": "a3b446dafd6da797d82af47b9851c51e5aa7f370bff40f9b03fce5e233843754",
+  "schema_version": 1,
+  "status": "PASS",
+  "strong_checkpoint_sha256": "31e0c07f6ac2997d59fa5aaba0fe3904db4c637037514a7aebc6c74433a5c162",
+  "test_cases_accessed": false
+}

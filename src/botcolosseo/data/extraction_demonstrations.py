@@ -380,6 +380,7 @@ def generate_extraction_demonstrations(
     max_decisions: int = 700,
     rollout_controller: ExtractionRolloutController | None = None,
     source_policy_sha256: str | None = None,
+    resume: bool = False,
 ) -> dict[str, Any]:
     if transitions <= 0 or shard_size <= 0 or max_decisions <= 0:
         raise ValueError("Extraction generation sizes must be positive")
@@ -390,7 +391,9 @@ def generate_extraction_demonstrations(
     selected_style = ExtractionStyle(style)
     cases = load_extraction_cases(cases_path, expected_split=split)
     output_dir = output_dir.expanduser().resolve()
-    if output_dir.exists() and any(output_dir.iterdir()):
+    progress_path = output_dir / "progress.json"
+    manifest_path = output_dir / f"{split}-manifest.json"
+    if output_dir.exists() and any(output_dir.iterdir()) and not resume:
         raise FileExistsError(f"Extraction data output is not empty: {output_dir}")
     output_dir.mkdir(parents=True, exist_ok=True)
     scenario_manifest = json.loads(
@@ -399,28 +402,53 @@ def generate_extraction_demonstrations(
             / "assets/scenarios/crystal_run_extraction/manifest.json"
         ).read_text(encoding="utf-8")
     )
+    identity = {
+        "case_manifest": str(cases_path.relative_to(root)),
+        "case_manifest_sha256": sha256_file(cases_path),
+        "generation_kind": (
+            "teacher-rollout"
+            if rollout_controller is None
+            else "dagger-correction"
+        ),
+        "scenario_hash": scenario_manifest["wad_sha256"],
+        "schema_version": 1,
+        "shard_size": shard_size,
+        "source_policy_sha256": source_policy_sha256,
+        "split": split,
+        "style": selected_style.value,
+        "target_transitions": transitions,
+        "test_cases_accessed": False,
+    }
     shards: list[dict[str, object]] = []
-    buffer = ExtractionDemonstrationBuffer()
     event_counts: Counter[str] = Counter()
     episode_count = 0
     case_index = 0
-
-    def flush() -> None:
-        nonlocal buffer
-        if not len(buffer):
-            return
-        filename = f"{split}-{len(shards):05d}.npz"
-        path = write_extraction_shard(buffer.arrays(), output_dir / filename)
-        shards.append(
-            {
-                "file": filename,
-                "sha256": sha256_file(path),
-                "transitions": len(buffer),
-            }
-        )
-        buffer = ExtractionDemonstrationBuffer()
-
     total = 0
+    if resume:
+        if not progress_path.is_file():
+            raise FileNotFoundError("Extraction resume progress is missing")
+        progress = json.loads(progress_path.read_text(encoding="utf-8"))
+        if any(progress.get(name) != value for name, value in identity.items()):
+            raise ValueError("Extraction resume identity does not match")
+        shards = list(progress["shards"])
+        event_counts.update(progress["event_counts"])
+        episode_count = int(progress["episode_count"])
+        case_index = int(progress["case_index"])
+        total = int(progress["transitions"])
+        if total != sum(int(item["transitions"]) for item in shards):
+            raise ValueError("Extraction resume transition count is inconsistent")
+        for item in shards:
+            path = output_dir / str(item["file"])
+            arrays = load_extraction_shard(path)
+            if (
+                sha256_file(path) != item["sha256"]
+                or len(arrays["frame"]) != item["transitions"]
+            ):
+                raise ValueError("Extraction resume shard integrity failed")
+        if total == transitions:
+            if manifest_path.is_file():
+                return json.loads(manifest_path.read_text(encoding="utf-8"))
+
     while total < transitions:
         case = cases[case_index % len(cases)]
         case_index += 1
@@ -431,35 +459,47 @@ def generate_extraction_demonstrations(
             max_decisions=max_decisions,
             rollout_controller=rollout_controller,
         )
-        if len(buffer) and len(buffer) + len(episode) > shard_size:
-            flush()
-        take = min(len(episode), transitions - total)
-        buffer.extend(episode, limit=take)
+        take = min(len(episode), transitions - total, shard_size)
+        shard = ExtractionDemonstrationBuffer()
+        shard.extend(episode, limit=take)
+        filename = f"{split}-{len(shards):05d}.npz"
+        path = write_extraction_shard(shard.arrays(), output_dir / filename)
+        shards.append(
+            {
+                "file": filename,
+                "sha256": sha256_file(path),
+                "transitions": take,
+            }
+        )
         total += take
         episode_count += 1
         event_counts.update(counts)
-        if len(buffer) >= shard_size or total == transitions:
-            flush()
+        _atomic_json(
+            {
+                **identity,
+                "case_index": case_index,
+                "episode_count": episode_count,
+                "event_counts": dict(sorted(event_counts.items())),
+                "shards": shards,
+                "transitions": total,
+            },
+            progress_path,
+        )
 
     manifest = {
-        "case_manifest": str(cases_path.relative_to(root)),
-        "case_manifest_sha256": sha256_file(cases_path),
+        "case_manifest": identity["case_manifest"],
+        "case_manifest_sha256": identity["case_manifest_sha256"],
         "episode_count": episode_count,
         "event_counts": dict(sorted(event_counts.items())),
-        "scenario_hash": scenario_manifest["wad_sha256"],
+        "scenario_hash": identity["scenario_hash"],
         "schema_version": 1,
         "shards": shards,
         "split": split,
         "style": selected_style.value,
         "test_cases_accessed": False,
         "transitions": total,
-        "generation_kind": (
-            "teacher-rollout"
-            if rollout_controller is None
-            else "dagger-correction"
-        ),
+        "generation_kind": identity["generation_kind"],
         "source_policy_sha256": source_policy_sha256,
     }
-    manifest_path = output_dir / f"{split}-manifest.json"
     _atomic_json(manifest, manifest_path)
     return manifest

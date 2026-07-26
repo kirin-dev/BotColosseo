@@ -5,7 +5,7 @@ base_checkpoint: runs/extraction/strong-ppo/selected.pt
 output_root: runs/extraction/styles
 environment_steps: 600000
 rollout_steps: 2048
-checkpoint_interval_steps: 100000
+checkpoint_interval_steps: 200000
 max_episode_decisions: 700
 shaping_decay_steps: 400000
 strong_opponent_probability: 0.35

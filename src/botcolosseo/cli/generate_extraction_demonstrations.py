@@ -14,7 +14,7 @@ from botcolosseo.data.extraction_demonstrations import (
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Generate fair-observation Extraction v2 demonstrations"
+        description="Generate fair-observation Crystal Run: Extraction demonstrations"
     )
     parser.add_argument(
         "--config",
@@ -30,6 +30,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--transitions", type=int)
     parser.add_argument("--shard-size", type=int)
     parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--resume", action="store_true")
     return parser
 
 
@@ -53,6 +54,11 @@ def main(argv: list[str] | None = None) -> int:
         transitions=transitions,
         shard_size=shard_size,
         max_decisions=int(config["max_decisions"]),
+        resume=args.resume,
     )
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

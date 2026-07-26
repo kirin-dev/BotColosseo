@@ -124,12 +124,13 @@ class ExtractionPFSPSchedule:
         if environment_steps < 0 or episode_index < 0:
             raise ValueError("Extraction PFSP indices must be nonnegative")
         case = self.cases[episode_index % len(self.cases)]
+        pair_slot = episode_index // 2
         choose_history = (
             self._history
-            and self._uniform(episode_index, "source") < self.history_probability
+            and self._uniform(pair_slot, "source") < self.history_probability
         )
         if choose_history:
-            opponent, conditional = self._historical_choice(episode_index)
+            opponent, conditional = self._historical_choice(pair_slot)
             return ExtractionEpisodeAssignment(
                 case=case,
                 opponent_id=opponent.opponent_id,

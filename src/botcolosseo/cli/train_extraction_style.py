@@ -40,6 +40,9 @@ from botcolosseo.training.extraction_rollout import (
     PolicyExtractionOpponentController,
     ScriptExtractionOpponentController,
 )
+from botcolosseo.training.extraction_run_log import (
+    reconcile_extraction_metrics,
+)
 from botcolosseo.training.ppo import ExcessiveKLError
 from botcolosseo.training.style_ppo import StylePPOTrainer
 
@@ -229,6 +232,12 @@ def main(argv: list[str] | None = None) -> int:
         )
         environment_steps = metadata.counters["environment_steps"]
         episode_index = metadata.counters["episodes"]
+    history = reconcile_extraction_metrics(
+        metrics_path,
+        committed_environment_steps=environment_steps,
+    )
+    if history.episodes != episode_index:
+        raise ValueError("Style PPO metrics and checkpoint episodes disagree")
     schedule = ExtractionPFSPSchedule(
         _load_cases(cases_path),
         shaping_decay_steps=int(config["shaping_decay_steps"]),
@@ -273,9 +282,9 @@ def main(argv: list[str] | None = None) -> int:
             float(config["style_reward_scale"][args.style]),
         ),
     )
-    events: Counter[str] = Counter()
-    rewards: Counter[str] = Counter()
-    kl_stops = 0
+    events: Counter[str] = history.event_counts
+    rewards: Counter[str] = history.reward_components
+    kl_stops = history.kl_early_stops
     try:
         while environment_steps < stop_after:
             collection = collector.collect(
@@ -325,6 +334,7 @@ def main(argv: list[str] | None = None) -> int:
                         metrics_path,
                         {
                             "kind": "train",
+                            "environment_steps": environment_steps,
                             "epoch": epoch,
                             "style_kl": trainer.last_style_kl,
                             "residual_magnitude": trainer.last_residual_magnitude,
