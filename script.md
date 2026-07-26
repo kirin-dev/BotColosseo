@@ -1664,3 +1664,19 @@ tail -n 30 runs/extraction-v2/aggressive-showcase-search.nohup.log
 test ! -f runs/extraction-v2/aggressive-showcase-search.exit || \
   cat runs/extraction-v2/aggressive-showcase-search.exit
 ```
+
+Once all four validation replays and their evidence JSON files exist, build
+and verify the hash-bound public release:
+
+```bash
+cd /home/wencong/BotColosseo
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/finalize_extraction_release.py
+PYTHONPATH=src /home/wencong/miniconda3/envs/botcolosseo/bin/python \
+  scripts/audit_extraction_release.py
+```
+
+The finalizer refuses to overwrite an existing manifest. The audit rehashes
+all 21 bound scenario, selection, evidence, specification, and media
+artifacts and fails if a replay is not validation-only, leaves the 30–45
+second duration window, or loses its predefined style evidence.

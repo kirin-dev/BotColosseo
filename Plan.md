@@ -676,17 +676,49 @@ all-style difficulty 已通过。当前场景的用户研究链路已使用明�
 Aggressive/Defensive/Explorer 辨识率分别为 90%/80%/85%，macro/micro 均为
 85%。该结果只支持“合成分布下产品感知链路可闭环”，不声称存在真人参与者，
 也不声称原匿名真人门禁通过。在这一证据边界下，当前 Crystal Run 的工程与公开
-展示收尾完成；真人研究和搜打撤式新场景均作为后续独立工作。
+展示收尾完成；当时真人研究和搜打撤式新场景均列为后续独立工作。搜打撤场景
+此后按下述独立 v2 路线完成，真人研究仍未执行。
+
+### Crystal Run Extraction v2：搜打撤产品闭环
+
+上述“后续独立工作”中的搜打撤场景已在独立
+`feat/crystal-run-extraction-v2` 分支完成首版实现。它不迁移或改写 M0–M6
+旧场景证据，而是使用独立的 protocol v3、WAD、观测 schema、数据、checkpoint、
+validation case、媒体和发布清单。
+
+首版规则为：75 秒同步 1v1、两个中立撤离点、100 HP、固定 20 伤害、30 发初始
+总弹药且无换弹、3 格背包、10/25/50 三档物资、确定性低价值替换、死亡不复活并
+生成尸体缓存、仅撤离入账价值决定结果。Actor 仍只读取第一人称像素与自身公开
+状态，双方 HP、伤害和缓存等额外信息只进入 viewer overlay。
+
+实际完成状态：
+
+- X0 mechanics gate 通过，真实 ViZDoom 回放证明
+  `100→80→60→40→20→0`、击杀、尸体缓存、拾取、背包替换、双撤离点与价值入账；
+- Strong、Aggressive、Defensive、Explorer 各生成 60k train + 12k validation
+  transitions，并形成四个 hash-bound checkpoint；
+- 四段公开素材均为 30–32 秒真实 validation replay；
+- Aggressive seed 35005 完整展示 5 次命中→击杀→尸体缓存→拾取→撤离；
+- Defensive 以 0 次攻击、满血带出 45；Explorer 覆盖 30 个路线网格并完成
+  10→50 的真实背包升级；Strong 在承受交战压力后带出 85；
+- 21 个场景、筛选、证据与媒体 artifact 已由
+  `reports/extraction-v2/showcase/manifest.json` 绑定并通过独立审计，未访问
+  test。
+
+这是工程与公开展示闭环，不声称小规模 validation 素材已经构成统计显著的
+held-out benchmark 结论。Aggressive 的原始单体 BC、DAgger 修复和早期 governor
+失败结果均保留；最终公开策略明确标注为只使用合法公开观测的
+Aggressive→Extraction Finisher capability governor。
 
 ## 17. GitHub 展示结构
 
 README 第一屏按以下顺序组织：
 
-1. 三风格同场景对比 GIF；
-2. 一句话问题定义；
-3. Skill–Style–Difficulty–Fairness 四维解耦图；
-4. Base 与三个风格的真实指标表；
-5. 一键 Demo 与评测命令。
+1. 搜打撤 v2 四策略 2×2 真实回放首图；
+2. `搜索→交战/避战→稀缺背包→撤离入账` 一句话主循环；
+3. Strong、Aggressive、Defensive、Explorer 的可见行为与完整视频；
+4. fair-observation 边界与 hash-bound validation 证据；
+5. 旧 Arena v1 的 Skill–Style–Difficulty 研究证据。
 
 后续依次说明：玩法、训练路线、风格塑形、实验、用户评测、公平约束、复现、资产许可和已知限制。图表必须由提交的原始日志和脚本生成，不手工伪造。
 

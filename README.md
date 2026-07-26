@@ -11,7 +11,42 @@ discarding its task skill. The approved technical design is in [Plan.md](Plan.md
 Bot Colosseo 研究如何先训练具备稳定任务能力的视觉游戏 Bot，再在保留能力的
 前提下塑造玩家可感知的 Aggressive、Defensive 与 Explorer 行为风格。
 
-## Four real policies, one validation case
+## Crystal Run: Extraction v2
+
+![Strong, Aggressive, Defensive, and Explorer Bots in Crystal Run Extraction](docs/assets/extraction-v2/showcase-board.png)
+
+This is a compact extraction-shooter research product built in real ViZDoom:
+
+```text
+search for loot -> fight or disengage -> manage a 3-slot backpack
+                -> extract successfully -> bank value
+```
+
+Every player has 100 HP, takes exactly 20 damage per valid hit, starts with 30
+rounds, and has no respawn. A death creates a lootable corpse cache. Kills
+score nothing; only extracted value counts.
+
+| Bot | Visible behavior in the selected validation replay | Full video |
+|---|---|---|
+| Strong Base | absorbs combat pressure, upgrades its backpack, extracts 85 | [31.9 s](docs/assets/extraction-v2/strong.mp4) |
+| Aggressive | five-hit kill → corpse cache → pickup → extracts 30 | [30.1 s](docs/assets/extraction-v2/aggressive.mp4) |
+| Defensive | zero attack decisions, preserves full HP, extracts 45 | [31.9 s](docs/assets/extraction-v2/defensive.mp4) |
+| Explorer | covers 30 route cells, replaces value 10 with 50, extracts 85 | [31.9 s](docs/assets/extraction-v2/explorer.mp4) |
+
+These are real first-person policy replays with viewer-only telemetry for both
+HP bars, each `-20` hit, ammunition, backpack slots, corpse-cache transfer,
+extraction progress, and banked value. Actor inputs remain fair: pixels and
+own public state only—never opponent HP, coordinates, automap, depth, labels,
+or the overlay.
+
+The release audit binds 21 scenario, selection, evidence, and media artifacts
+by SHA-256 and confirms that every clip is validation-only and 30–45 seconds.
+See the [technical evidence record](docs/milestones/extraction-v2.md),
+[hash-bound manifest](reports/extraction-v2/showcase/manifest.json), and
+[frozen design specification](docs/superpowers/specs/2026-07-26-crystal-run-extraction-v2-design.md).
+No official held-out test or human-recognition claim is made.
+
+## Previous Crystal Run Arena v1 evidence
 
 ![Strong Base, Aggressive, Defensive, and Explorer in the same arena](docs/assets/showcase/hybrid-four-policy.gif)
 
@@ -174,12 +209,11 @@ normal Git history. The tracked [release record](reports/m6/hybrid-release.json)
 and [raw-evidence record](reports/m6/hybrid-difficulty-evidence-release.json)
 bind both upload archives to SHA-256.
 
-The current arena also has a known product limitation: its short
-capture-and-return loop does not make combat risk, kill consequences, and loot
-transfer as legible as desired. A separate
-[extraction-style Crystal Run v2 proposal](docs/plans/2026-07-23-crystal-run-extraction-v2.md)
-defines a future `search → fight → loot → extract` loop. None of the current
-results are presented as evidence for that unimplemented scenario.
+That earlier arena had a known product limitation: its short
+capture-and-return loop did not make combat risk, kill consequences, and loot
+transfer legible enough. Crystal Run Extraction v2, presented at the top of
+this README, is the separate implemented response. The original Arena v1
+metrics remain isolated and are not transferred to the new scenario.
 
 ## Quick start
 
@@ -196,6 +230,9 @@ python scripts/smoke_crystal_run.py \
   --record videos/m1-smoke.mp4 \
   --require-video
 python scripts/plot_m2_training.py
+
+# Audits the Extraction v2 scenario, policy replays, and media hashes.
+PYTHONPATH=src python scripts/audit_extraction_release.py
 
 # Audits the policies, media, synthetic-study boundary, and final release hashes.
 PYTHONPATH=src python scripts/audit_project_closeout.py

@@ -1,0 +1,41 @@
+{
+  "base_checkpoint": null,
+  "base_checkpoint_sha256": null,
+  "case": {
+    "learner_side": "host",
+    "opponent_style": "defensive",
+    "seed": 34005,
+    "split": "validation"
+  },
+  "case_manifest": "configs/extraction_v2/showcase-candidates.json",
+  "case_manifest_sha256": "4ce41b204e11d0b7c5c4912d49ee4d0b96d967c30dc71642c9cd9dd14e31268c",
+  "checkpoint_sha256": "488e7ee99f5250909a1081e0ba1c66b9324468aca016460c0f143231ddec6bb8",
+  "decisions": 287,
+  "died": false,
+  "events": {
+    "host:extracted": 1,
+    "host:extraction_started": 1,
+    "host:loot_pickup": 3,
+    "opponent:extracted": 1,
+    "opponent:extraction_started": 1,
+    "opponent:loot_pickup": 3
+  },
+  "extracted": true,
+  "extracted_value": 45,
+  "fps": 9,
+  "frame_count": 287,
+  "frame_stride": 1,
+  "media": "docs/assets/extraction-v2/defensive.mp4",
+  "media_sha256": "34ba20c25b122a4e4e6b5ebec8bbcf72474cf8b793edf2742dd025f256718ae8",
+  "policy_kind": "learned-checkpoint",
+  "scenario_hash": "bc76e895035cc9fa76e86e2f3b22e605254f6a70e7f33b37876228f9c6c2c42e",
+  "schema_version": 1,
+  "showcase_claims": {
+    "aggressive_chain_complete": false,
+    "cache_looted": 0,
+    "kills": 0,
+    "valid_hits": 0
+  },
+  "style": "defensive",
+  "test_cases_accessed": false
+}

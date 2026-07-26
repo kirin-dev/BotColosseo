@@ -9,7 +9,40 @@ fair-observation 视觉 Bot，再从同一个 Base checkpoint 派生玩家能够
 Aggressive、Defensive 与 Explorer 风格，同时把 Difficulty 作为独立控制维度。
 完整技术方案见 [Plan.md](Plan.md)。
 
-## 四个真实策略，同一个 validation case
+## Crystal Run：搜打撤 v2
+
+![Crystal Run Extraction 中的 Strong、Aggressive、Defensive 与 Explorer](docs/assets/extraction-v2/showcase-board.png)
+
+这是一个基于真实 ViZDoom 构建的紧凑“搜打撤”研究产品：
+
+```text
+搜索物资 → 交战或避战 → 管理 3 格背包 → 成功撤离 → 价值入账
+```
+
+双方均为 100 HP，每次有效命中固定造成 20 点伤害，初始 30 发子弹，死亡后不
+复活。死亡会在原地生成可拾取的尸体缓存。击杀本身不计分，只有成功撤离带出的
+价值才计入结果。
+
+| Bot | 选中 validation 回放中的可见行为 | 完整视频 |
+|---|---|---|
+| Strong Base | 承受交战压力、升级背包，带出 85 | [31.9 秒](docs/assets/extraction-v2/strong.mp4) |
+| Aggressive | 5 次命中→击杀→尸体缓存→拾取，带出 30 | [30.1 秒](docs/assets/extraction-v2/aggressive.mp4) |
+| Defensive | 0 次攻击、满血保住物资，带出 45 | [31.9 秒](docs/assets/extraction-v2/defensive.mp4) |
+| Explorer | 覆盖 30 个路线网格，将价值 10 换成 50，带出 85 | [31.9 秒](docs/assets/extraction-v2/explorer.mp4) |
+
+四段均为真实第一人称策略回放。Viewer overlay 显示双方血条、每次 `-20` 伤害、
+弹药、背包槽、尸体缓存转移、撤离进度与入账价值。Actor 仍只接收第一人称像素
+和自身公开状态；敌方 HP/坐标、automap、depth、labels 与 overlay 均不会进入
+策略输入。
+
+最终发布审计用 SHA-256 绑定 21 个场景、筛选、证据与媒体文件，并确认所有视频
+只使用 validation case，长度均为 30–45 秒。详见
+[技术证据记录](docs/milestones/extraction-v2.md)、
+[hash-bound 发布清单](reports/extraction-v2/showcase/manifest.json)与
+[冻结设计规格](docs/superpowers/specs/2026-07-26-crystal-run-extraction-v2-design.md)。
+本版本不声称 official held-out test 或真人风格辨识结果。
+
+## 旧版 Crystal Run Arena v1 证据
 
 ![同场景的 Strong Base、Aggressive、Defensive 与 Explorer](docs/assets/showcase/hybrid-four-policy.gif)
 
@@ -139,12 +172,11 @@ Base 加公开观测、确定性、干预有界的 governor。Defensive 200 局�
 [Defensive 记录](docs/milestones/m5-defensive.md)和
 [Explorer 记录](docs/milestones/m5-explorer.md)。
 
-当前 Crystal Run 的已知产品缺陷是 capture-and-return 循环较短，战斗风险、
-击杀后果和战利品转移不够直观。未来版本已单独规划为
-[搜打撤式 Crystal Run v2](docs/plans/2026-07-23-crystal-run-extraction-v2.md)，
-使用 `搜索 → 交战 → 拾取 → 撤离` 主循环；当前结果不会冒充该未实现新场景的
-证据。[当前场景收尾记录](reports/m6/project-closeout.json)将发布包、媒体、
-研究材料、合成预检、文档和下一版提案的哈希统一绑定，便于复核。
+旧版 Crystal Run 的 capture-and-return 循环较短，战斗风险、击杀后果和战利品
+转移不够直观。README 首屏展示的 Crystal Run Extraction v2 是对此问题的独立
+实现；旧版 Arena v1 的指标不会迁移或冒充新场景结果。
+[旧场景收尾记录](reports/m6/project-closeout.json)仍保留其发布包、媒体、研究
+材料、合成预检和文档哈希，便于分别复核。
 
 ## 快速开始
 
@@ -162,6 +194,9 @@ python scripts/smoke_crystal_run.py \
   --teacher aggressive_script \
   --record videos/m1-smoke.mp4 \
   --require-video
+
+# 审计 Extraction v2 场景、真实策略回放与媒体哈希。
+PYTHONPATH=src python scripts/audit_extraction_release.py
 
 # 审计策略、媒体、合成用户数据边界和最终发布哈希。
 PYTHONPATH=src python scripts/audit_project_closeout.py

@@ -1,0 +1,45 @@
+{
+  "base_checkpoint": "runs/extraction-v2/aggressive-finisher/best.pt",
+  "base_checkpoint_sha256": "6de4dd65a1b55c14963b1e575187ca5d5b2b3b8a46a6d27ef31b7d62c82fce5e",
+  "case": {
+    "learner_side": "host",
+    "opponent_style": "aggressive",
+    "seed": 35005,
+    "split": "validation"
+  },
+  "case_manifest": "configs/extraction_v2/aggressive-showcase-search.json",
+  "case_manifest_sha256": "1cf45bc3735884f73d78dc70f68b8795052a63d329cbc97be5709cc4e608ffaf",
+  "checkpoint_sha256": "4a40fc1d578e54fe02c8934fa0a9a0f6748804b8118d132228e240a31e4f68f2",
+  "decisions": 526,
+  "died": false,
+  "events": {
+    "host:cache_looted": 1,
+    "host:extracted": 1,
+    "host:extraction_interrupted": 1,
+    "host:extraction_started": 2,
+    "host:loot_pickup": 3,
+    "host:valid_hit": 5,
+    "opponent:cache_created": 1,
+    "opponent:death": 1,
+    "opponent:loot_pickup": 1,
+    "opponent:valid_hit": 1
+  },
+  "extracted": true,
+  "extracted_value": 30,
+  "fps": 9,
+  "frame_count": 271,
+  "frame_stride": 2,
+  "media": "docs/assets/extraction-v2/aggressive.mp4",
+  "media_sha256": "fb3c628180f34ee5fda34079ba40f79045cc1aaf19cd188222d70993666cad12",
+  "policy_kind": "public-observation-capability-governor",
+  "scenario_hash": "bc76e895035cc9fa76e86e2f3b22e605254f6a70e7f33b37876228f9c6c2c42e",
+  "schema_version": 1,
+  "showcase_claims": {
+    "aggressive_chain_complete": true,
+    "cache_looted": 1,
+    "kills": 1,
+    "valid_hits": 5
+  },
+  "style": "aggressive",
+  "test_cases_accessed": false
+}

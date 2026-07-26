@@ -1,0 +1,186 @@
+{
+  "acceptance": {
+    "aggressive_five_hit_kill_cache_extract": true,
+    "all_clips_validation_only": true,
+    "all_clips_within_30_to_45_seconds": true,
+    "defensive_zero_attack_meaningful_extraction": true,
+    "explorer_route_and_backpack_upgrade": true,
+    "no_test_case_access": true,
+    "strong_generalist_extraction": true
+  },
+  "artifacts": [
+    {
+      "bytes": 1485,
+      "path": "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg",
+      "sha256": "35765ff9c8c7f5757b24a50596af689acae1932e6b120fed9340a23e0da4a4bb"
+    },
+    {
+      "bytes": 26105,
+      "path": "assets/scenarios/crystal_run_extraction/crystal_run_extraction.wad",
+      "sha256": "bc76e895035cc9fa76e86e2f3b22e605254f6a70e7f33b37876228f9c6c2c42e"
+    },
+    {
+      "bytes": 745,
+      "path": "assets/scenarios/crystal_run_extraction/manifest.json",
+      "sha256": "47fe57e3780f07c35f894968136844ec2def5ea2eb372558b1c91188adcc5ac8"
+    },
+    {
+      "bytes": 6596,
+      "path": "configs/extraction_v2/aggressive-showcase-search.json",
+      "sha256": "1cf45bc3735884f73d78dc70f68b8795052a63d329cbc97be5709cc4e608ffaf"
+    },
+    {
+      "bytes": 942,
+      "path": "configs/extraction_v2/showcase-candidates.json",
+      "sha256": "4ce41b204e11d0b7c5c4912d49ee4d0b96d967c30dc71642c9cd9dd14e31268c"
+    },
+    {
+      "bytes": 1990445,
+      "path": "docs/assets/extraction-v2/aggressive.mp4",
+      "sha256": "fb3c628180f34ee5fda34079ba40f79045cc1aaf19cd188222d70993666cad12"
+    },
+    {
+      "bytes": 744688,
+      "path": "docs/assets/extraction-v2/defensive.mp4",
+      "sha256": "34ba20c25b122a4e4e6b5ebec8bbcf72474cf8b793edf2742dd025f256718ae8"
+    },
+    {
+      "bytes": 1400991,
+      "path": "docs/assets/extraction-v2/explorer.mp4",
+      "sha256": "fe59d8e3003abe7f5da75c1a4f6f67e23e4c58d13ca7e4f1bc79760b6a009bc8"
+    },
+    {
+      "bytes": 496264,
+      "path": "docs/assets/extraction-v2/showcase-board.png",
+      "sha256": "8ea7cb1673126363c42cdb696c985e3baa04e2edcfd8f936ee7ef4b5e4f27896"
+    },
+    {
+      "bytes": 980708,
+      "path": "docs/assets/extraction-v2/strong.mp4",
+      "sha256": "6d9f67e272ac5b108fe2f740c63d8c14c17ab1d49f924db59b6d334563567603"
+    },
+    {
+      "bytes": 11578,
+      "path": "docs/superpowers/specs/2026-07-26-crystal-run-extraction-v2-design.md",
+      "sha256": "3bd2326ea2927aacd76cf681482bab3c0e09c350768ee7a3f8c49781777b30ae"
+    },
+    {
+      "bytes": 3687,
+      "path": "reports/extraction-v2/aggressive-showcase-search.json",
+      "sha256": "421c6d7f32857f7fef90629f1a2833f16c71813a7d93859214191bb6c99236fe"
+    },
+    {
+      "bytes": 4196,
+      "path": "reports/extraction-v2/showcase-candidates-defensive.json",
+      "sha256": "bfb31e0daa696f620203ceb6b715d0891dbf4339f9cde7535d650ae784d00062"
+    },
+    {
+      "bytes": 4195,
+      "path": "reports/extraction-v2/showcase-candidates-explorer.json",
+      "sha256": "7799e530966a9a7e8f05e3bc9b25aa5b09b32561fbb9e045ec6bf95352a0c4ea"
+    },
+    {
+      "bytes": 4205,
+      "path": "reports/extraction-v2/showcase-candidates-strong.json",
+      "sha256": "c0a758c0e7d2e822bdb0418a7d5582c6129df3a8426b708214ef62578cabdf3d"
+    },
+    {
+      "bytes": 1501,
+      "path": "reports/extraction-v2/showcase/aggressive.json",
+      "sha256": "953b476b9155ee739ebd9c22f7eff0f72ba04825ab4f366e8ddddcb1462e6703"
+    },
+    {
+      "bytes": 1255,
+      "path": "reports/extraction-v2/showcase/defensive.json",
+      "sha256": "33fc1955464bf3db0179c71a02b5705c75061762218a25e75d52cc8c84828d76"
+    },
+    {
+      "bytes": 1304,
+      "path": "reports/extraction-v2/showcase/explorer.json",
+      "sha256": "701d20b23bcde96626c1373f0c8c3a9bc532f1d8234628f0311883b2353ec9b0"
+    },
+    {
+      "bytes": 1325,
+      "path": "reports/extraction-v2/showcase/strong.json",
+      "sha256": "75c98cf11110dd77b2eb27fa040531ffa50897a05a2a13055b69aa85b758a7e0"
+    },
+    {
+      "bytes": 2877,
+      "path": "reports/extraction-v2/training-artifact-audit.json",
+      "sha256": "4bdd7ceb6077e7e8bf34c7c23b3c70a30aff17bfa53f44b5ff4f6bfd5f2bb68a"
+    },
+    {
+      "bytes": 1163,
+      "path": "reports/extraction-v2/x0-mechanics.json",
+      "sha256": "63117b597e461e6e980937ff57b9955de458aa769ad2a56280332659978c5fd8"
+    }
+  ],
+  "scenario_hash": "bc76e895035cc9fa76e86e2f3b22e605254f6a70e7f33b37876228f9c6c2c42e",
+  "schema_version": 1,
+  "split": "validation",
+  "stage": "crystal-run-extraction-v2-showcase",
+  "styles": {
+    "aggressive": {
+      "base_checkpoint_sha256": "6de4dd65a1b55c14963b1e575187ca5d5b2b3b8a46a6d27ef31b7d62c82fce5e",
+      "case": {
+        "learner_side": "host",
+        "opponent_style": "aggressive",
+        "seed": 35005,
+        "split": "validation"
+      },
+      "checkpoint_sha256": "4a40fc1d578e54fe02c8934fa0a9a0f6748804b8118d132228e240a31e4f68f2",
+      "duration_seconds": 30.111,
+      "evidence": "reports/extraction-v2/showcase/aggressive.json",
+      "extracted_value": 30,
+      "media": "docs/assets/extraction-v2/aggressive.mp4",
+      "media_sha256": "fb3c628180f34ee5fda34079ba40f79045cc1aaf19cd188222d70993666cad12",
+      "policy_kind": "public-observation-capability-governor"
+    },
+    "defensive": {
+      "case": {
+        "learner_side": "host",
+        "opponent_style": "defensive",
+        "seed": 34005,
+        "split": "validation"
+      },
+      "checkpoint_sha256": "488e7ee99f5250909a1081e0ba1c66b9324468aca016460c0f143231ddec6bb8",
+      "duration_seconds": 31.889,
+      "evidence": "reports/extraction-v2/showcase/defensive.json",
+      "extracted_value": 45,
+      "media": "docs/assets/extraction-v2/defensive.mp4",
+      "media_sha256": "34ba20c25b122a4e4e6b5ebec8bbcf72474cf8b793edf2742dd025f256718ae8",
+      "policy_kind": "learned-checkpoint"
+    },
+    "explorer": {
+      "case": {
+        "learner_side": "host",
+        "opponent_style": "strong",
+        "seed": 34001,
+        "split": "validation"
+      },
+      "checkpoint_sha256": "b59d1263b2509cdeeae3575e07078b186033b47cd5916a3ae3c02cadc126835d",
+      "duration_seconds": 31.889,
+      "evidence": "reports/extraction-v2/showcase/explorer.json",
+      "extracted_value": 85,
+      "media": "docs/assets/extraction-v2/explorer.mp4",
+      "media_sha256": "fe59d8e3003abe7f5da75c1a4f6f67e23e4c58d13ca7e4f1bc79760b6a009bc8",
+      "policy_kind": "learned-checkpoint"
+    },
+    "strong": {
+      "case": {
+        "learner_side": "host",
+        "opponent_style": "strong",
+        "seed": 34001,
+        "split": "validation"
+      },
+      "checkpoint_sha256": "b9d7ee84baab3d6c2b08852f79a979d2e7ed234a713acc45dc24ece7be08231a",
+      "duration_seconds": 31.889,
+      "evidence": "reports/extraction-v2/showcase/strong.json",
+      "extracted_value": 85,
+      "media": "docs/assets/extraction-v2/strong.mp4",
+      "media_sha256": "6d9f67e272ac5b108fe2f740c63d8c14c17ab1d49f924db59b6d334563567603",
+      "policy_kind": "learned-checkpoint"
+    }
+  },
+  "test_cases_accessed": false
+}
