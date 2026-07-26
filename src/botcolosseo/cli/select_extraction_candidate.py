@@ -131,8 +131,8 @@ def main(argv: list[str] | None = None) -> int:
         "scenario_hash": validation["scenario_hash"],
         "test_cases_accessed": False,
     }
-    _atomic_json(result, output_report)
     if not gate.passed:
+        _atomic_json(result, output_report)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 2
     output_checkpoint.parent.mkdir(parents=True, exist_ok=True)

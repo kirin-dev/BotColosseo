@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from collections import Counter
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -37,6 +38,8 @@ class RecordedExtractionShowcase:
     extracted: bool
     died: bool
     events: dict[str, int]
+    attack_decisions: int
+    unique_route_cells: int
     scenario_hash: str
     test_cases_accessed: bool = False
 
@@ -191,7 +194,7 @@ def compose_extraction_showcase_frame(
     )
     cv2.putText(
         canvas,
-        f"AMMO  {observation.ammo:.0f} / 40",
+        f"AMMO  {observation.ammo:.0f} / 30",
         (490, 120),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.40,
@@ -362,6 +365,8 @@ def record_extraction_showcase(
     event_banner = "ENTER RAID  |  SEARCH FOR VALUE"
     banner_ttl = 0
     decisions = 0
+    attack_decisions = 0
+    route_cells: set[tuple[int, int]] = set()
     try:
         observations, reset_info = env.reset()
         opponent.reset()
@@ -382,8 +387,21 @@ def record_extraction_showcase(
                 hidden,
             )
             learner_action = MacroAction(int(output.logits[0, 0].argmax()))
+            if learner_action in {
+                MacroAction.ATTACK,
+                MacroAction.FORWARD_ATTACK,
+                MacroAction.TURN_LEFT_ATTACK,
+                MacroAction.TURN_RIGHT_ATTACK,
+            }:
+                attack_decisions += 1
             hidden = output.hidden
             state = env.privileged_state()
+            x, y = (
+                (state.host_x, state.host_y)
+                if case.learner_side == "host"
+                else (state.opponent_x, state.opponent_y)
+            )
+            route_cells.add((math.floor(x / 160), math.floor(y / 160)))
             opponent_action = opponent.act(state)
             host_action, away_action = (
                 (learner_action, opponent_action)
@@ -436,6 +454,8 @@ def record_extraction_showcase(
             extracted=life == 3,
             died=life == 2,
             events=dict(sorted(event_counts.items())),
+            attack_decisions=attack_decisions,
+            unique_route_cells=len(route_cells),
             scenario_hash=reset_info.scenario_hash,
         )
     finally:
