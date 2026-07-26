@@ -117,6 +117,9 @@ def test_hybrid_showcase_config_discloses_policy_kinds_and_binds_hashes(
 
 def test_frozen_product_showcase_config_is_hash_bound() -> None:
     root = Path(__file__).resolve().parents[2]
+    checkpoint = root / "runs/m3/league-full/candidate-boundary-0200000.pt"
+    if not checkpoint.is_file():
+        pytest.skip("requires the optional M3 checkpoint artifact")
 
     config = load_hybrid_showcase_config(
         root / "configs/showcase/hybrid-product.yaml",

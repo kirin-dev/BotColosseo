@@ -41,17 +41,25 @@ def build_hybrid_release(
     output_dir: Path,
 ) -> dict[str, object]:
     root = root.resolve()
-    config = load_hybrid_showcase_config(config_path, root=root)
+    output_dir = output_dir.resolve()
+    if output_dir.exists():
+        raise FileExistsError("Refusing to overwrite a hybrid release")
+    config_path = config_path.resolve()
     showcase_manifest_path = showcase_manifest_path.resolve()
     showcase = json.loads(showcase_manifest_path.read_text(encoding="utf-8"))
-    expected_artifacts = {
-        row.policy_id: row.expected_sha256 for row in config.policies
-    }
     if (
         showcase.get("stage") != "hybrid_product_showcase"
         or showcase.get("publication") is not True
         or showcase.get("test_cases_accessed") is not False
-        or showcase.get("config_sha256") != config.config_sha256
+        or showcase.get("config_sha256") != sha256_file(config_path)
+    ):
+        raise ValueError("Hybrid release showcase evidence is invalid")
+    config = load_hybrid_showcase_config(config_path, root=root)
+    expected_artifacts = {
+        row.policy_id: row.expected_sha256 for row in config.policies
+    }
+    if (
+        showcase.get("config_sha256") != config.config_sha256
         or showcase.get("policy_artifact_sha256") != expected_artifacts
     ):
         raise ValueError("Hybrid release showcase evidence is invalid")
@@ -73,10 +81,6 @@ def build_hybrid_release(
         or difficulty_plot_path.read_bytes()[:8] != b"\x89PNG\r\n\x1a\n"
     ):
         raise ValueError("Hybrid release difficulty plot is invalid")
-    output_dir = output_dir.resolve()
-    if output_dir.exists():
-        raise FileExistsError("Refusing to overwrite a hybrid release")
-
     hybrid_sources = {}
     for row in config.policies:
         if row.kind == "checkpoint":
