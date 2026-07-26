@@ -52,6 +52,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--train-manifest", type=Path)
     parser.add_argument("--validation-manifest", type=Path)
     parser.add_argument("--base-checkpoint", type=Path)
+    parser.add_argument("--initial-checkpoint", type=Path)
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--resume", type=Path)
     return parser
@@ -119,6 +120,8 @@ def main(argv: list[str] | None = None) -> int:
     metrics_path = output_dir / "metrics.jsonl"
     if metrics_path.exists() and args.resume is None:
         raise FileExistsError(f"Extraction BC output already exists: {metrics_path}")
+    if args.initial_checkpoint is not None and args.resume is not None:
+        raise ValueError("--initial-checkpoint and --resume are mutually exclusive")
 
     base_checkpoint: Path | None = None
     provenance_paths = [config_path, train_manifest, validation_manifest]
@@ -140,6 +143,27 @@ def main(argv: list[str] | None = None) -> int:
         )
         provenance_paths.append(base_checkpoint)
         default_updates = int(config["style_updates"])
+
+    initial_checkpoint: Path | None = None
+    if args.initial_checkpoint is not None:
+        initial_checkpoint = (
+            args.initial_checkpoint
+            if args.initial_checkpoint.is_absolute()
+            else root / args.initial_checkpoint
+        )
+        payload = torch.load(
+            initial_checkpoint,
+            map_location="cpu",
+            weights_only=False,
+        )
+        metadata = CheckpointMetadata(**payload["metadata"])
+        if (
+            payload.get("schema_version") != 1
+            or metadata.scenario_hash != scenario_hash
+        ):
+            raise ValueError("Extraction initial checkpoint identity does not match")
+        model.load_state_dict(payload["model"])
+        provenance_paths.append(initial_checkpoint)
 
     total_updates = args.updates or default_updates
     stop_after = args.stop_after or total_updates
@@ -235,6 +259,16 @@ def main(argv: list[str] | None = None) -> int:
         "config_hash": config_hash,
         "device": str(device),
         "fair_observation_only": True,
+        "initial_checkpoint": (
+            _display_path(initial_checkpoint, root)
+            if initial_checkpoint is not None
+            else None
+        ),
+        "initial_checkpoint_sha256": (
+            sha256_file(initial_checkpoint)
+            if initial_checkpoint is not None
+            else None
+        ),
         "residual_style_branch": style is not ExtractionStyle.STRONG,
         "scenario_hash": scenario_hash,
         "style": style.value,

@@ -1600,3 +1600,21 @@ The runner refuses to overwrite completed artifacts and fails on partial data
 directories. Logs for each generation, training, evaluation, and audit phase
 are under `runs/extraction-v2/pipeline/`. After it exits successfully, the
 compact validation reports and audit are under `reports/extraction-v2/`.
+
+If the initial Aggressive residual branch exhibits closed-loop BC drift, run
+the bounded DAgger correction pipeline. It executes the frozen checkpoint to
+collect 20,000 train and 4,000 validation states, labels those states with the
+privileged Teacher, fine-tunes only the residual branch, and evaluates both
+the frozen validation cases and the showcase-only candidate matrix. Actor
+inputs remain public and the test split remains inaccessible.
+
+```bash
+cd /home/wencong/BotColosseo
+setsid bash -c '
+  echo $$ > runs/extraction-v2/aggressive-dagger.pid
+  scripts/run_extraction_aggressive_dagger.sh
+  status=$?
+  printf "%s\n" "$status" > runs/extraction-v2/aggressive-dagger.exit
+  exit "$status"
+' >> runs/extraction-v2/aggressive-dagger.nohup.log 2>&1 < /dev/null &
+```

@@ -6,7 +6,7 @@ import zipfile
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 import numpy as np
 
@@ -15,6 +15,7 @@ from botcolosseo.agents.extraction_teachers import (
     StyledExtractionTeacher,
 )
 from botcolosseo.data.demonstrations import sha256_file
+from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.extraction_types import ExtractionActorObservation
 from botcolosseo.envs.ipc import WorkerTimeout
 from botcolosseo.envs.synchronous_extraction import SynchronousExtractionEnv
@@ -41,6 +42,12 @@ STYLE_IDS = {
         )
     )
 }
+
+
+class ExtractionRolloutController(Protocol):
+    def reset(self) -> None: ...
+
+    def act(self, observation: ExtractionActorObservation) -> int: ...
 
 
 @dataclass(frozen=True)
@@ -257,6 +264,7 @@ def _collect_episode_once(
     case: ExtractionCase,
     style: ExtractionStyle,
     max_decisions: int,
+    rollout_controller: ExtractionRolloutController | None = None,
 ) -> tuple[ExtractionDemonstrationBuffer, dict[str, int]]:
     env = SynchronousExtractionEnv(
         config_path=root
@@ -276,6 +284,8 @@ def _collect_episode_once(
         observations, _ = env.reset()
         learner.reset()
         opponent.reset()
+        if rollout_controller is not None:
+            rollout_controller.reset()
         for decision in range(max_decisions):
             state = env.privileged_state()
             learner_observation = (
@@ -283,11 +293,16 @@ def _collect_episode_once(
                 if case.learner_side == "host"
                 else observations.opponent
             )
-            learner_action = learner.act(state)
+            teacher_action = learner.act(state)
+            learner_action = (
+                teacher_action
+                if rollout_controller is None
+                else MacroAction(rollout_controller.act(learner_observation))
+            )
             opponent_action = opponent.act(state)
             buffer.append(
                 learner_observation,
-                teacher_action=int(learner_action),
+                teacher_action=int(teacher_action),
                 episode_start=decision == 0,
                 style=style,
                 train_seed=case.seed,
@@ -331,6 +346,7 @@ def _collect_episode(
     style: ExtractionStyle,
     max_decisions: int,
     startup_attempts: int = 3,
+    rollout_controller: ExtractionRolloutController | None = None,
 ) -> tuple[ExtractionDemonstrationBuffer, dict[str, int]]:
     if startup_attempts <= 0:
         raise ValueError("Extraction startup attempts must be positive")
@@ -341,6 +357,7 @@ def _collect_episode(
                 case=case,
                 style=style,
                 max_decisions=max_decisions,
+                rollout_controller=rollout_controller,
             )
         except WorkerTimeout:
             if attempt + 1 == startup_attempts:
@@ -358,9 +375,15 @@ def generate_extraction_demonstrations(
     transitions: int,
     shard_size: int,
     max_decisions: int = 700,
+    rollout_controller: ExtractionRolloutController | None = None,
+    source_policy_sha256: str | None = None,
 ) -> dict[str, Any]:
     if transitions <= 0 or shard_size <= 0 or max_decisions <= 0:
         raise ValueError("Extraction generation sizes must be positive")
+    if (rollout_controller is None) != (source_policy_sha256 is None):
+        raise ValueError(
+            "Correction generation requires both rollout policy and source hash"
+        )
     selected_style = ExtractionStyle(style)
     cases = load_extraction_cases(cases_path, expected_split=split)
     output_dir = output_dir.expanduser().resolve()
@@ -403,6 +426,7 @@ def generate_extraction_demonstrations(
             case=case,
             style=selected_style,
             max_decisions=max_decisions,
+            rollout_controller=rollout_controller,
         )
         if len(buffer) and len(buffer) + len(episode) > shard_size:
             flush()
@@ -426,6 +450,12 @@ def generate_extraction_demonstrations(
         "style": selected_style.value,
         "test_cases_accessed": False,
         "transitions": total,
+        "generation_kind": (
+            "teacher-rollout"
+            if rollout_controller is None
+            else "dagger-correction"
+        ),
+        "source_policy_sha256": source_policy_sha256,
     }
     manifest_path = output_dir / f"{split}-manifest.json"
     _atomic_json(manifest, manifest_path)
