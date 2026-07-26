@@ -8,7 +8,7 @@ import torch
 
 from botcolosseo.data.demonstrations import sha256_file
 from botcolosseo.evaluation.extraction import (
-    evaluate_extraction_episode,
+    evaluate_extraction_episode_with_retries,
     summarize_extraction_episodes,
 )
 from botcolosseo.evaluation.extraction_protocol import (
@@ -125,7 +125,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.max_cases is not None:
         cases = cases[: args.max_cases]
     episodes = tuple(
-        evaluate_extraction_episode(
+        evaluate_extraction_episode_with_retries(
             root=root,
             checkpoint=checkpoint,
             style=args.policy,

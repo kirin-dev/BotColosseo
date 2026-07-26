@@ -49,7 +49,9 @@ class DuelResetInfo:
 
 
 def allocate_loopback_port() -> int:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+    # ViZDoom's multiplayer host binds UDP. Probing TCP can return a port that
+    # is already occupied in the protocol that the engine actually uses.
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
         probe.bind(("127.0.0.1", 0))
         return int(probe.getsockname()[1])
 

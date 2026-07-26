@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import math
 from collections import Counter
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 import torch
@@ -13,6 +13,7 @@ from botcolosseo.agents.extraction_teachers import StyledExtractionTeacher
 from botcolosseo.data.extraction_demonstrations import ExtractionCase
 from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.extraction_protocol import ExtractionEventType
+from botcolosseo.envs.ipc import WorkerTimeout
 from botcolosseo.envs.synchronous_extraction import SynchronousExtractionEnv
 from botcolosseo.training.extraction_bc import extraction_observation_tensors
 
@@ -48,6 +49,7 @@ class ExtractionEpisodeMetrics:
     opponent_extracted_value: int = 0
     extracted_value_advantage: int = 0
     max_peer_tic_lag: int = 0
+    environment_attempts: int = 1
 
 
 def is_aggressive_showcase_chain(episode: ExtractionEpisodeMetrics) -> bool:
@@ -219,6 +221,24 @@ def evaluate_extraction_episode(
         )
     finally:
         env.close()
+
+
+def evaluate_extraction_episode_with_retries(
+    *,
+    startup_attempts: int = 3,
+    **kwargs: object,
+) -> ExtractionEpisodeMetrics:
+    """Retry only transient worker startup timeouts for one fixed case."""
+    if startup_attempts <= 0:
+        raise ValueError("Extraction startup attempts must be positive")
+    for attempt in range(1, startup_attempts + 1):
+        try:
+            episode = evaluate_extraction_episode(**kwargs)
+            return replace(episode, environment_attempts=attempt)
+        except WorkerTimeout:
+            if attempt == startup_attempts:
+                raise
+    raise AssertionError("Extraction evaluation retry loop did not return")
 
 
 def summarize_extraction_episodes(

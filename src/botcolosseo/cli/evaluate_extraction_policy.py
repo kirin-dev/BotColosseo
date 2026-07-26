@@ -15,7 +15,7 @@ from botcolosseo.data.extraction_demonstrations import (
     load_extraction_cases,
 )
 from botcolosseo.evaluation.extraction import (
-    evaluate_extraction_episode,
+    evaluate_extraction_episode_with_retries,
     is_aggressive_showcase_chain,
     summarize_extraction_episodes,
 )
@@ -134,7 +134,7 @@ def main(argv: list[str] | None = None) -> int:
     evaluated = []
     selected = None
     for case in cases:
-        episode = evaluate_extraction_episode(
+        episode = evaluate_extraction_episode_with_retries(
             root=root,
             checkpoint=checkpoint,
             style=args.style,

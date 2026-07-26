@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import pytest
 
+from botcolosseo.envs.ipc import WorkerTimeout
 from botcolosseo.evaluation.extraction import (
     ExtractionEpisodeMetrics,
+    evaluate_extraction_episode_with_retries,
     is_aggressive_showcase_chain,
     summarize_extraction_episodes,
 )
@@ -69,6 +71,62 @@ def test_extraction_episode_summary_exposes_capability_and_style_metrics() -> No
 def test_extraction_episode_summary_rejects_empty_input() -> None:
     with pytest.raises(ValueError, match="requires episodes"):
         summarize_extraction_episodes(())
+
+
+def test_extraction_evaluation_retries_transient_startup_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    expected = ExtractionEpisodeMetrics(
+        seed=1,
+        learner_side="host",
+        opponent_style="strong",
+        decisions=1,
+        extracted_value=0,
+        extracted=False,
+        died=False,
+        valid_hits=0,
+        kills=0,
+        cache_looted=0,
+        attack_decisions=0,
+        unique_route_cells=1,
+        terminated=False,
+        truncated=True,
+    )
+    calls = 0
+
+    def fake_evaluate(**kwargs: object) -> ExtractionEpisodeMetrics:
+        nonlocal calls
+        del kwargs
+        calls += 1
+        if calls < 3:
+            raise WorkerTimeout("port collision")
+        return expected
+
+    monkeypatch.setattr(
+        "botcolosseo.evaluation.extraction.evaluate_extraction_episode",
+        fake_evaluate,
+    )
+
+    result = evaluate_extraction_episode_with_retries(startup_attempts=3)
+
+    assert result.environment_attempts == 3
+    assert calls == 3
+
+
+def test_extraction_evaluation_retry_is_bounded(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail(**kwargs: object) -> ExtractionEpisodeMetrics:
+        del kwargs
+        raise WorkerTimeout("port collision")
+
+    monkeypatch.setattr(
+        "botcolosseo.evaluation.extraction.evaluate_extraction_episode",
+        fail,
+    )
+
+    with pytest.raises(WorkerTimeout):
+        evaluate_extraction_episode_with_retries(startup_attempts=2)
 
 
 def test_aggressive_showcase_chain_requires_complete_causal_story() -> None:

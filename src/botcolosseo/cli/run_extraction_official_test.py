@@ -10,7 +10,7 @@ import torch
 from botcolosseo.data.demonstrations import sha256_file
 from botcolosseo.evaluation.extraction import (
     ExtractionEpisodeMetrics,
-    evaluate_extraction_episode,
+    evaluate_extraction_episode_with_retries,
     summarize_extraction_episodes,
 )
 from botcolosseo.evaluation.extraction_protocol import (
@@ -163,7 +163,7 @@ def main(argv: list[str] | None = None) -> int:
         episodes_path = output_dir / f"{policy}-episodes.jsonl"
         episodes = _load_partial(episodes_path, cases)
         for case in cases[len(episodes) :]:
-            episode = evaluate_extraction_episode(
+            episode = evaluate_extraction_episode_with_retries(
                 root=root,
                 checkpoint=root / manifest["policies"][policy]["checkpoint"],
                 style=policy,
