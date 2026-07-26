@@ -16,6 +16,7 @@ from botcolosseo.agents.extraction_teachers import (
 )
 from botcolosseo.data.demonstrations import sha256_file
 from botcolosseo.envs.extraction_types import ExtractionActorObservation
+from botcolosseo.envs.ipc import WorkerTimeout
 from botcolosseo.envs.synchronous_extraction import SynchronousExtractionEnv
 
 EXTRACTION_SCALAR_DIM = 9
@@ -250,7 +251,7 @@ def _atomic_json(payload: dict[str, Any], path: Path) -> None:
     temporary.replace(path)
 
 
-def _collect_episode(
+def _collect_episode_once(
     *,
     root: Path,
     case: ExtractionCase,
@@ -321,6 +322,30 @@ def _collect_episode(
         return buffer, dict(sorted(event_counts.items()))
     finally:
         env.close()
+
+
+def _collect_episode(
+    *,
+    root: Path,
+    case: ExtractionCase,
+    style: ExtractionStyle,
+    max_decisions: int,
+    startup_attempts: int = 3,
+) -> tuple[ExtractionDemonstrationBuffer, dict[str, int]]:
+    if startup_attempts <= 0:
+        raise ValueError("Extraction startup attempts must be positive")
+    for attempt in range(startup_attempts):
+        try:
+            return _collect_episode_once(
+                root=root,
+                case=case,
+                style=style,
+                max_decisions=max_decisions,
+            )
+        except WorkerTimeout:
+            if attempt + 1 == startup_attempts:
+                raise
+    raise AssertionError("Extraction startup retry loop did not return")
 
 
 def generate_extraction_demonstrations(

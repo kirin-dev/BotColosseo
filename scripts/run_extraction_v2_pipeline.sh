@@ -60,23 +60,25 @@ evaluate_policy() {
 }
 
 echo "[1/5] Generate training data"
-data_pids=()
-for style in strong aggressive defensive explorer; do
-  generate_split "${style}" train &
-  data_pids+=("$!")
-done
-for pid in "${data_pids[@]}"; do
-  wait "${pid}"
+for pair in "strong aggressive" "defensive explorer"; do
+  read -r first second <<<"${pair}"
+  generate_split "${first}" train &
+  first_pid="$!"
+  generate_split "${second}" train &
+  second_pid="$!"
+  wait "${first_pid}"
+  wait "${second_pid}"
 done
 
 echo "[2/5] Generate validation data"
-data_pids=()
-for style in strong aggressive defensive explorer; do
-  generate_split "${style}" validation &
-  data_pids+=("$!")
-done
-for pid in "${data_pids[@]}"; do
-  wait "${pid}"
+for pair in "strong aggressive" "defensive explorer"; do
+  read -r first second <<<"${pair}"
+  generate_split "${first}" validation &
+  first_pid="$!"
+  generate_split "${second}" validation &
+  second_pid="$!"
+  wait "${first_pid}"
+  wait "${second_pid}"
 done
 
 echo "[3/5] Train Strong Base"

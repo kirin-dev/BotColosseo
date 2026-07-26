@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+import botcolosseo.data.extraction_demonstrations as demonstrations
 from botcolosseo.agents.extraction_teachers import ExtractionStyle
 from botcolosseo.data.extraction_demonstrations import (
     ExtractionDemonstrationBuffer,
@@ -15,6 +16,7 @@ from botcolosseo.data.extraction_demonstrations import (
     write_extraction_shard,
 )
 from botcolosseo.envs.extraction_types import ExtractionActorObservation
+from botcolosseo.envs.ipc import WorkerTimeout
 
 
 def observation() -> ExtractionActorObservation:
@@ -83,3 +85,38 @@ def test_generation_case_loader_rejects_test_access(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="cannot access test"):
         load_extraction_cases(path, expected_split="test")
+
+
+def test_extraction_episode_generation_retries_transient_startup_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    expected = ExtractionDemonstrationBuffer()
+    calls = 0
+
+    def fake_collect(**kwargs):
+        nonlocal calls
+        del kwargs
+        calls += 1
+        if calls < 3:
+            raise WorkerTimeout("port collision")
+        return expected, {}
+
+    monkeypatch.setattr(demonstrations, "_collect_episode_once", fake_collect)
+    case = demonstrations.ExtractionCase(
+        split="train",
+        seed=1,
+        learner_side="host",
+        opponent_style="strong",
+    )
+
+    result, events = demonstrations._collect_episode(
+        root=tmp_path,
+        case=case,
+        style=ExtractionStyle.STRONG,
+        max_decisions=10,
+    )
+
+    assert result is expected
+    assert events == {}
+    assert calls == 3
