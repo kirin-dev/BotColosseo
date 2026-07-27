@@ -105,6 +105,10 @@ def test_extraction_generation_resumes_from_verified_episode_shard(
     progress = json.loads((output / "progress.json").read_text(encoding="utf-8"))
     assert progress["transitions"] == 2
     assert len(progress["shards"]) == 1
+    assert progress["max_decisions"] == 700
+    assert progress["teacher_implementation_sha256"] == (
+        demonstrations.extraction_teacher_sha256()
+    )
 
     monkeypatch.setattr(
         demonstrations,
@@ -125,3 +129,52 @@ def test_extraction_generation_resumes_from_verified_episode_shard(
     assert result["transitions"] == 4
     assert len(result["shards"]) == 2
     assert result["test_cases_accessed"] is False
+    assert result["teacher_implementation_sha256"] == (
+        demonstrations.extraction_teacher_sha256()
+    )
+
+
+def test_extraction_generation_rejects_teacher_identity_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project, cases = root(tmp_path)
+    output = tmp_path / "generated"
+    calls = 0
+
+    def interrupted(**kwargs):
+        nonlocal calls
+        del kwargs
+        calls += 1
+        if calls == 2:
+            raise RuntimeError("simulated interruption")
+        return episode(), {}
+
+    monkeypatch.setattr(demonstrations, "_collect_episode", interrupted)
+    with pytest.raises(RuntimeError, match="interruption"):
+        generate_extraction_demonstrations(
+            root=project,
+            split="train",
+            cases_path=cases,
+            output_dir=output,
+            style="strong",
+            transitions=4,
+            shard_size=2,
+        )
+
+    monkeypatch.setattr(
+        demonstrations,
+        "extraction_teacher_sha256",
+        lambda: "0" * 64,
+    )
+    with pytest.raises(ValueError, match="identity does not match"):
+        generate_extraction_demonstrations(
+            root=project,
+            split="train",
+            cases_path=cases,
+            output_dir=output,
+            style="strong",
+            transitions=4,
+            shard_size=2,
+            resume=True,
+        )

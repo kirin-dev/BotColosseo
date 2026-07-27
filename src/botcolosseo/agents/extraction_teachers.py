@@ -230,7 +230,74 @@ class StyledExtractionTeacher:
                 state,
                 self.side,
                 target,
-                attack=distance <= 512.0,
+                attack=True,
             )
 
         return self._waypoints.act(state)
+
+
+class PrivilegedStrongExtractionTeacher:
+    """Training-only expert kept separate from the scripted opponent pool."""
+
+    def __init__(self, *, side: str, combat_budget: int = 48) -> None:
+        if side not in ("host", "opponent"):
+            raise ValueError(f"Unsupported extraction side: {side}")
+        if combat_budget <= 0:
+            raise ValueError("Strong Teacher combat budget must be positive")
+        self.side = side
+        self.style = ExtractionStyle.STRONG
+        self._combat_budget = combat_budget
+        self._combat_decisions = 0
+        self._waypoints = ExtractionWaypointTeacher(
+            side=side,
+            waypoints=_route(side, ExtractionStyle.STRONG),
+            arrival_tolerance=28.0,
+        )
+
+    def reset(self) -> None:
+        self._combat_decisions = 0
+        self._waypoints.reset()
+
+    def act(self, state: ExtractionPrivilegedState) -> MacroAction:
+        if player_health(state, self.side) <= 0:
+            return MacroAction.IDLE
+        own_x, own_y, _ = player_pose(state, self.side)
+        carried = sum(player_slots(state, self.side))
+        extraction = (0.0, 400.0 if self.side == "host" else -400.0)
+        if carried >= 85 or (carried > 0 and state.engine_tic >= 1400):
+            return steer_toward(state, self.side, extraction)
+
+        enemy_alive = opponent_health(state, self.side) > 0
+        if not enemy_alive and state.cache_owner and sum(state.cache_slots) > 0:
+            return steer_toward(
+                state,
+                self.side,
+                (state.cache_x, state.cache_y),
+            )
+
+        target = opponent_position(state, self.side)
+        distance = math.hypot(target[0] - own_x, target[1] - own_y)
+        if (
+            enemy_alive
+            and distance <= 384.0
+            and self._combat_decisions < self._combat_budget
+        ):
+            self._combat_decisions += 1
+            return steer_toward(state, self.side, target, attack=True)
+
+        if self._waypoints.finished:
+            if math.hypot(extraction[0] - own_x, extraction[1] - own_y) <= 28.0:
+                return MacroAction.IDLE
+            return steer_toward(state, self.side, extraction)
+        return self._waypoints.act(state)
+
+
+def privileged_extraction_teacher(
+    *,
+    side: str,
+    style: ExtractionStyle | str,
+) -> StyledExtractionTeacher | PrivilegedStrongExtractionTeacher:
+    selected = ExtractionStyle(style)
+    if selected is ExtractionStyle.STRONG:
+        return PrivilegedStrongExtractionTeacher(side=side)
+    return StyledExtractionTeacher(side=side, style=selected)

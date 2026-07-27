@@ -38,7 +38,16 @@ def episodes(
 
 
 def test_strong_gate_passes_complete_high_capability_evidence() -> None:
-    result = strong_validation_gate(episodes(240), episodes(120))
+    solo = tuple(
+        ExtractionEpisodeMetrics(
+            **{
+                **episode.__dict__,
+                "opponent_style": "idle",
+            }
+        )
+        for episode in episodes(40)
+    )
+    result = strong_validation_gate(episodes(240), episodes(120), solo)
     assert result.passed
 
 

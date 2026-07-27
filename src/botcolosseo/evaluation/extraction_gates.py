@@ -27,15 +27,22 @@ def _rate(items: tuple[ExtractionEpisodeMetrics, ...], attribute: str) -> float:
 def strong_validation_gate(
     validation: tuple[ExtractionEpisodeMetrics, ...],
     heldout: tuple[ExtractionEpisodeMetrics, ...],
+    solo: tuple[ExtractionEpisodeMetrics, ...],
 ) -> GateResult:
-    if len(validation) != 240 or len(heldout) != 120:
+    if len(validation) != 240 or len(heldout) != 120 or len(solo) != 40:
         raise ValueError("Strong gate requires the frozen validation budgets")
     opponents = sorted({item.opponent_style for item in validation})
     if opponents != ["aggressive", "defensive", "explorer", "strong"]:
         raise ValueError("Strong gate opponent coverage is incomplete")
+    if (
+        {item.opponent_style for item in solo} != {"idle"}
+        or {item.learner_side for item in solo} != {"host", "opponent"}
+        or len({(item.seed, item.learner_side) for item in solo}) != len(solo)
+    ):
+        raise ValueError("Strong gate solo evaluation is contaminated")
     win_rate = _rate(validation, "won")
     extraction_rate = _rate(validation, "extracted")
-    prevent_rate = 1 - _rate(validation, "opponent_extracted")
+    solo_extraction_rate = _rate(solo, "extracted")
     heldout_extraction = _rate(heldout, "extracted")
     value_advantage = sum(
         item.extracted_value_advantage for item in validation
@@ -48,10 +55,16 @@ def strong_validation_gate(
         for opponent in opponents
     )
     protocol_errors = sum(
-        item.max_peer_tic_lag > 2 or item.truncated for item in (*validation, *heldout)
+        item.max_peer_tic_lag > 2 or item.truncated
+        for item in (*validation, *heldout, *solo)
     )
     checks = (
-        GateCheck("prevent_opponent_extraction", prevent_rate >= 0.90, prevent_rate, ">=0.90"),
+        GateCheck(
+            "solo_extraction",
+            solo_extraction_rate >= 0.90,
+            solo_extraction_rate,
+            ">=0.90",
+        ),
         GateCheck("script_average_win", win_rate >= 0.70, win_rate, ">=0.70"),
         GateCheck(
             "script_worst_case_win",

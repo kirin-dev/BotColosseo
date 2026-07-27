@@ -38,8 +38,10 @@ This one resumable script runs:
 3. 2,000,000 recurrent PPO environment steps.
 
 Demonstrations commit one hashed episode shard and `progress.json` at a time.
-BC and PPO resume from `latest.pt`. Completed stages are skipped after their
-identity and no-test-access fields are checked.
+Their identity includes the privileged Teacher source hash, so labels from an
+older Teacher cannot be resumed or silently reused. BC and PPO resume from
+`latest.pt`. Completed stages are skipped only after their input hashes,
+checkpoint hashes, calibrated PPO settings, and no-test-access fields pass.
 
 ```bash
 mkdir -p runs/extraction
@@ -65,9 +67,11 @@ case manifests; provenance checks intentionally reject that.
 
 ## Strong candidate selection
 
-This evaluates every historical candidate on the frozen 240-episode validation
-protocol, ranks without test access, evaluates only the winner on 120 heldout
-episodes, and applies the Strong gate:
+This evaluates every historical candidate on the frozen 240-episode scripted
+validation protocol, ranks without test access, then evaluates only the winner
+on 120 heldout episodes and 40 frozen solo/idle-opponent episodes. The Strong
+gate requires at least 90% solo extraction in addition to the scripted and
+heldout capability checks:
 
 ```bash
 BOTCOLOSSEO_GPU=0 bash scripts/run_extraction_v3_select_strong.sh \

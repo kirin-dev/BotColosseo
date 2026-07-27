@@ -16,7 +16,9 @@ def test_v3_evaluation_protocol_freezes_budgets_and_side_swaps() -> None:
 
     assert len(protocol.cases("validation")) == 240
     assert len(protocol.cases("heldout")) == 120
+    assert len(protocol.cases("solo")) == 40
     assert len(protocol.cases("test")) == 400
+    assert {case.opponent_style for case in protocol.cases("solo")} == {"idle"}
     first, second = protocol.cases("validation")[:2]
     assert first.seed == second.seed
     assert (first.learner_side, second.learner_side) == ("host", "opponent")

@@ -6,6 +6,7 @@ from botcolosseo.agents.extraction_teachers import (
     AggressiveExtractionTeacher,
     ExtractionStyle,
     ExtractionWaypointTeacher,
+    PrivilegedStrongExtractionTeacher,
     StyledExtractionTeacher,
 )
 from botcolosseo.envs.actions import MacroAction
@@ -89,3 +90,47 @@ def test_aggressive_profile_converts_death_to_cache_route() -> None:
         cache_y=0,
     )
     assert teacher.act(cache) is MacroAction.TURN_RIGHT
+
+
+def test_strong_profile_counterattacks_and_converts_cache() -> None:
+    teacher = PrivilegedStrongExtractionTeacher(
+        side="host",
+    )
+    encounter = replace(
+        state(),
+        host_x=256,
+        host_health=40,
+    )
+
+    assert teacher.act(encounter) is MacroAction.FORWARD_ATTACK
+
+    cache = replace(
+        encounter,
+        opponent_health=0,
+        cache_owner=2,
+        cache_slots=(50, 25, 10),
+        cache_x=-128,
+    )
+    assert teacher.act(cache) is MacroAction.TURN_RIGHT
+
+
+def test_strong_profile_extracts_high_value_backpack() -> None:
+    teacher = PrivilegedStrongExtractionTeacher(
+        side="host",
+    )
+    carrying = replace(
+        state(),
+        opponent_health=0,
+        host_slots=(50, 25, 10),
+    )
+
+    assert teacher.act(carrying) is MacroAction.FORWARD_TURN_LEFT
+
+
+def test_privileged_strong_teacher_stops_unbounded_pursuit() -> None:
+    teacher = PrivilegedStrongExtractionTeacher(side="host", combat_budget=2)
+    encounter = replace(state(), host_x=256)
+
+    assert teacher.act(encounter) is MacroAction.FORWARD_ATTACK
+    assert teacher.act(encounter) is MacroAction.FORWARD_ATTACK
+    assert teacher.act(encounter) is MacroAction.TURN_LEFT

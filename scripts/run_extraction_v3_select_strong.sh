@@ -48,6 +48,7 @@ PY
 selected_tag="$(basename "${selected_checkpoint%.pt}")"
 validation_report="$EVAL_ROOT/$selected_tag-validation.json"
 heldout_report="$EVAL_ROOT/$selected_tag-heldout.json"
+solo_report="$EVAL_ROOT/$selected_tag-solo.json"
 if [[ ! -f "$heldout_report" ]]; then
   "$PYTHON" -u -m botcolosseo.cli.evaluate_extraction_v3 \
     --checkpoint "$selected_checkpoint" \
@@ -56,6 +57,14 @@ if [[ ! -f "$heldout_report" ]]; then
     --device cuda:0 \
     --output "$heldout_report"
 fi
+if [[ ! -f "$solo_report" ]]; then
+  "$PYTHON" -u -m botcolosseo.cli.evaluate_extraction_v3 \
+    --checkpoint "$selected_checkpoint" \
+    --policy strong \
+    --split solo \
+    --device cuda:0 \
+    --output "$solo_report"
+fi
 
 if [[ ! -f "$PPO_ROOT/selection.json" ]]; then
   "$PYTHON" -u -m botcolosseo.cli.select_extraction_candidate \
@@ -63,6 +72,7 @@ if [[ ! -f "$PPO_ROOT/selection.json" ]]; then
     --checkpoint "$selected_checkpoint" \
     --validation-report "$validation_report" \
     --heldout-report "$heldout_report" \
+    --solo-report "$solo_report" \
     --output-checkpoint "$PPO_ROOT/selected.pt" \
     --output-report "$PPO_ROOT/selection.json"
 fi

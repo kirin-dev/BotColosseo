@@ -12,6 +12,7 @@ from botcolosseo.evaluation.extraction import (
     summarize_extraction_episodes,
 )
 from botcolosseo.evaluation.extraction_protocol import (
+    balanced_extraction_case_subset,
     load_extraction_evaluation_protocol,
 )
 from botcolosseo.training.extraction_checkpoint import (
@@ -36,8 +37,13 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("configs/extraction/evaluation.yaml"),
     )
-    parser.add_argument("--split", choices=("validation", "heldout"), required=True)
+    parser.add_argument(
+        "--split",
+        choices=("validation", "heldout", "solo"),
+        required=True,
+    )
     parser.add_argument("--max-cases", type=int)
+    parser.add_argument("--max-pairs-per-opponent", type=int)
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--output", type=Path, required=True)
     return parser
@@ -73,6 +79,13 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.max_cases is not None and args.max_cases <= 0:
         raise ValueError("--max-cases must be positive")
+    if (
+        args.max_pairs_per_opponent is not None
+        and args.max_pairs_per_opponent <= 0
+    ):
+        raise ValueError("--max-pairs-per-opponent must be positive")
+    if args.max_cases is not None and args.max_pairs_per_opponent is not None:
+        raise ValueError("Extraction evaluation subset options are mutually exclusive")
     root = Path(__file__).resolve().parents[3]
     checkpoint = _resolve(root, args.checkpoint)
     protocol_path = _resolve(root, args.protocol)
@@ -124,6 +137,11 @@ def main(argv: list[str] | None = None) -> int:
     cases = protocol.cases(args.split)
     if args.max_cases is not None:
         cases = cases[: args.max_cases]
+    elif args.max_pairs_per_opponent is not None:
+        cases = balanced_extraction_case_subset(
+            cases,
+            pairs_per_opponent=args.max_pairs_per_opponent,
+        )
     episodes = tuple(
         evaluate_extraction_episode_with_retries(
             root=root,

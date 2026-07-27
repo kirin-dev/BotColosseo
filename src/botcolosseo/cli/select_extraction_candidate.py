@@ -26,6 +26,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--validation-report", type=Path, required=True)
     parser.add_argument("--heldout-report", type=Path)
+    parser.add_argument("--solo-report", type=Path)
     parser.add_argument("--strong-validation-report", type=Path)
     parser.add_argument("--output-checkpoint", type=Path, required=True)
     parser.add_argument("--output-report", type=Path, required=True)
@@ -84,23 +85,43 @@ def main(argv: list[str] | None = None) -> int:
         raise ValueError("Validation report checkpoint hash does not match")
     evidence = [validation_path]
     if args.policy == "strong":
-        if args.heldout_report is None or args.strong_validation_report is not None:
-            raise ValueError("Strong selection requires one heldout report")
+        if (
+            args.heldout_report is None
+            or args.solo_report is None
+            or args.strong_validation_report is not None
+        ):
+            raise ValueError("Strong selection requires heldout and solo reports")
         heldout_path = _resolve(root, args.heldout_report)
+        solo_path = _resolve(root, args.solo_report)
         heldout = _load_report(
             heldout_path,
             policy="strong",
             split="heldout",
         )
+        solo = _load_report(
+            solo_path,
+            policy="strong",
+            split="solo",
+        )
         if (
             heldout["checkpoint_sha256"] != checkpoint_sha256
+            or solo["checkpoint_sha256"] != checkpoint_sha256
             or heldout["protocol_sha256"] != validation["protocol_sha256"]
+            or solo["protocol_sha256"] != validation["protocol_sha256"]
         ):
-            raise ValueError("Strong heldout evidence identity does not match")
-        gate = strong_validation_gate(_episodes(validation), _episodes(heldout))
-        evidence.append(heldout_path)
+            raise ValueError("Strong capability evidence identity does not match")
+        gate = strong_validation_gate(
+            _episodes(validation),
+            _episodes(heldout),
+            _episodes(solo),
+        )
+        evidence.extend((heldout_path, solo_path))
     else:
-        if args.strong_validation_report is None or args.heldout_report is not None:
+        if (
+            args.strong_validation_report is None
+            or args.heldout_report is not None
+            or args.solo_report is not None
+        ):
             raise ValueError("Style selection requires paired Strong validation")
         strong_path = _resolve(root, args.strong_validation_report)
         strong = _load_report(

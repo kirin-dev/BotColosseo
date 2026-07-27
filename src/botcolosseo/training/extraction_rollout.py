@@ -12,7 +12,10 @@ import torch
 from botcolosseo.agents.extraction_model import (
     EXTRACTION_PRIVILEGED_DIM,
 )
-from botcolosseo.agents.extraction_teachers import StyledExtractionTeacher
+from botcolosseo.agents.extraction_teachers import (
+    PrivilegedStrongExtractionTeacher,
+    StyledExtractionTeacher,
+)
 from botcolosseo.data.extraction_demonstrations import ExtractionCase
 from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.extraction_rules import LifeState
@@ -286,7 +289,7 @@ class ExtractionRolloutCollector:
         self._hidden: torch.Tensor | None = None
         self._task_reward: ExtractionTaskRewardLedger | None = None
         self._style_reward: ExtractionStyleRewardLedger | None = None
-        self._learner_teacher: StyledExtractionTeacher | None = None
+        self._learner_teacher: PrivilegedStrongExtractionTeacher | None = None
         self._episode_start = True
         self._episode_decisions = 0
         self._episode_reward = 0.0
@@ -334,9 +337,8 @@ class ExtractionRolloutCollector:
             learner_side=assignment.case.learner_side,
         )
         self._learner_teacher = (
-            StyledExtractionTeacher(
+            PrivilegedStrongExtractionTeacher(
                 side=assignment.case.learner_side,
-                style="strong",
             )
             if self._teacher_supervision
             else None

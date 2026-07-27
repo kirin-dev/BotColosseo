@@ -319,6 +319,7 @@ Side-swapped pairs and opponent types are balanced.
 The intended evaluation sizes are:
 
 - 240 validation episodes per policy;
+- 40 additional idle-opponent validation episodes for Strong capability;
 - 120 held-out-configuration episodes per policy;
 - 400 official-test episodes per policy;
 - 1,600 official-test episodes across Strong and three styles.

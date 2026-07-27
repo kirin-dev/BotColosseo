@@ -20,8 +20,11 @@ def test_strong_candidate_ranking_prioritizes_gate_coverage() -> None:
     high_win_but_incomplete = {
         "metrics": {
             **passing["metrics"],
-            "prevent_opponent_extraction_rate": 0.5,
             "win_rate": 0.9,
+            "by_opponent": {
+                **passing["metrics"]["by_opponent"],
+                "strong": {"win_rate": 0.5},
+            },
         }
     }
 

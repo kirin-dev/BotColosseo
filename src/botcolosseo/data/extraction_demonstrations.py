@@ -10,9 +10,11 @@ from typing import Any, Protocol
 
 import numpy as np
 
+from botcolosseo.agents import extraction_teachers
 from botcolosseo.agents.extraction_teachers import (
     ExtractionStyle,
     StyledExtractionTeacher,
+    privileged_extraction_teacher,
 )
 from botcolosseo.data.demonstrations import sha256_file
 from botcolosseo.envs.actions import MacroAction
@@ -44,6 +46,13 @@ STYLE_IDS = {
 }
 
 
+def extraction_teacher_sha256() -> str:
+    source = Path(extraction_teachers.__file__).resolve()
+    if source.suffix != ".py":
+        raise ValueError("Extraction Teacher must load from Python source")
+    return sha256_file(source)
+
+
 class ExtractionRolloutController(Protocol):
     def reset(self) -> None: ...
 
@@ -59,7 +68,7 @@ class ExtractionCase:
     layout_id: str = "base"
 
     def __post_init__(self) -> None:
-        if self.split not in {"train", "validation", "heldout", "test"}:
+        if self.split not in {"train", "validation", "heldout", "solo", "test"}:
             raise ValueError(f"Invalid extraction split: {self.split}")
         if self.seed < 0:
             raise ValueError("Extraction case seed must be nonnegative")
@@ -67,7 +76,10 @@ class ExtractionCase:
             raise ValueError(f"Invalid extraction learner side: {self.learner_side}")
         if self.layout_id not in {"base", "heldout-a"}:
             raise ValueError(f"Invalid extraction layout: {self.layout_id}")
-        ExtractionStyle(self.opponent_style)
+        if self.opponent_style != "idle":
+            ExtractionStyle(self.opponent_style)
+        elif self.split != "solo":
+            raise ValueError("Idle Extraction opponent is reserved for solo evaluation")
 
 
 def extraction_scalars(observation: ExtractionActorObservation) -> np.ndarray:
@@ -275,7 +287,10 @@ def _collect_episode_once(
         seed=case.seed,
         max_decisions=max_decisions,
     )
-    learner = StyledExtractionTeacher(side=case.learner_side, style=style)
+    learner = privileged_extraction_teacher(
+        side=case.learner_side,
+        style=style,
+    )
     opponent_side = "opponent" if case.learner_side == "host" else "host"
     opponent = StyledExtractionTeacher(
         side=opponent_side,
@@ -410,6 +425,7 @@ def generate_extraction_demonstrations(
             if rollout_controller is None
             else "dagger-correction"
         ),
+        "max_decisions": max_decisions,
         "scenario_hash": scenario_manifest["wad_sha256"],
         "schema_version": 1,
         "shard_size": shard_size,
@@ -417,6 +433,7 @@ def generate_extraction_demonstrations(
         "split": split,
         "style": selected_style.value,
         "target_transitions": transitions,
+        "teacher_implementation_sha256": extraction_teacher_sha256(),
         "test_cases_accessed": False,
     }
     shards: list[dict[str, object]] = []
@@ -499,7 +516,13 @@ def generate_extraction_demonstrations(
         "test_cases_accessed": False,
         "transitions": total,
         "generation_kind": identity["generation_kind"],
+        "max_decisions": identity["max_decisions"],
+        "shard_size": identity["shard_size"],
         "source_policy_sha256": source_policy_sha256,
+        "target_transitions": identity["target_transitions"],
+        "teacher_implementation_sha256": identity[
+            "teacher_implementation_sha256"
+        ],
     }
     _atomic_json(manifest, manifest_path)
     return manifest

@@ -8,6 +8,11 @@ splits:
     seed_start: 52001
     pairs_per_opponent: 15
     layout_id: heldout-a
+  solo:
+    seed_start: 52501
+    pairs_per_opponent: 20
+    layout_id: base
+    opponent_styles: [idle]
   test:
     seed_start: 53001
     pairs_per_opponent: 50

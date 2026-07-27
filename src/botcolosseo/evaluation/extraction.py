@@ -110,9 +110,13 @@ def evaluate_extraction_episode(
         max_decisions=max_decisions,
     )
     opponent_side = "opponent" if case.learner_side == "host" else "host"
-    opponent = StyledExtractionTeacher(
-        side=opponent_side,
-        style=case.opponent_style,
+    opponent = (
+        None
+        if case.opponent_style == "idle"
+        else StyledExtractionTeacher(
+            side=opponent_side,
+            style=case.opponent_style,
+        )
     )
     events: Counter[tuple[str, ExtractionEventType]] = Counter()
     route_cells: set[tuple[int, int]] = set()
@@ -120,7 +124,8 @@ def evaluate_extraction_episode(
     hidden = model.initial_state(1, device=device)
     try:
         observations, _ = env.reset()
-        opponent.reset()
+        if opponent is not None:
+            opponent.reset()
         episode_start = True
         terminated = False
         truncated = False
@@ -153,7 +158,11 @@ def evaluate_extraction_episode(
                 else (state.opponent_x, state.opponent_y)
             )
             route_cells.add((math.floor(x / 160.0), math.floor(y / 160.0)))
-            opponent_action = opponent.act(state)
+            opponent_action = (
+                MacroAction.IDLE
+                if opponent is None
+                else opponent.act(state)
+            )
             host_action, away_action = (
                 (learner_action, opponent_action)
                 if case.learner_side == "host"

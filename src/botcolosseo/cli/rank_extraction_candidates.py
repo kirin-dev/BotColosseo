@@ -55,7 +55,6 @@ def _strong_score(report: dict[str, object]) -> tuple[float, ...]:
         float(item["win_rate"]) for item in metrics["by_opponent"].values()
     )
     values = (
-        float(metrics["prevent_opponent_extraction_rate"]),
         float(metrics["win_rate"]),
         worst,
         float(metrics["extraction_rate"]),
@@ -64,12 +63,11 @@ def _strong_score(report: dict[str, object]) -> tuple[float, ...]:
     )
     passed = sum(
         (
-            values[0] >= 0.90,
-            values[1] >= 0.70,
-            values[2] >= 0.55,
-            values[3] >= 0.75,
-            values[4] > 0,
-            values[5] == 0,
+            values[0] >= 0.70,
+            values[1] >= 0.55,
+            values[2] >= 0.75,
+            values[3] > 0,
+            values[4] == 0,
         )
     )
     return (float(passed), *values)
@@ -104,7 +102,7 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError("Candidate ranking checkpoint hash drifted")
         if args.policy == "strong":
             score = _strong_score(report)
-            eligible = score[0] == 6
+            eligible = score[0] == 5
         else:
             if strong_report["protocol_sha256"] != protocol_sha256:
                 raise ValueError("Paired Strong ranking protocol does not match")

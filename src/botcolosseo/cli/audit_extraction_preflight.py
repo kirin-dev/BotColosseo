@@ -5,6 +5,9 @@ import json
 from pathlib import Path
 
 from botcolosseo.data.demonstrations import sha256_file
+from botcolosseo.data.extraction_demonstrations import (
+    extraction_teacher_sha256,
+)
 from botcolosseo.training.extraction_checkpoint import (
     load_extraction_strong_actor,
     load_extraction_style_actor,
@@ -56,6 +59,7 @@ def main(argv: list[str] | None = None) -> int:
         "style_summary": run_root / "aggressive/summary.json",
         "strong_validation": run_root / "eval/strong-validation.json",
         "strong_heldout": run_root / "eval/strong-heldout.json",
+        "strong_solo": run_root / "eval/strong-solo.json",
         "style_validation": run_root / "eval/aggressive-validation.json",
     }
     payloads = {name: _load(path) for name, path in paths.items()}
@@ -71,6 +75,12 @@ def main(argv: list[str] | None = None) -> int:
         or payloads["bc_summary"]["updates"] != 2
         or payloads["strong_summary"]["environment_steps"] != 32
         or payloads["strong_summary"]["completed"] is not True
+        or payloads["strong_summary"]["teacher_supervision"]
+        != "privileged-strong-training-only"
+        or payloads["train_manifest"]["teacher_implementation_sha256"]
+        != extraction_teacher_sha256()
+        or payloads["validation_manifest"]["teacher_implementation_sha256"]
+        != extraction_teacher_sha256()
         or payloads["style_summary"]["environment_steps"] != 32
         or payloads["style_summary"]["completed"] is not True
         or payloads["style_summary"]["frozen_strong_actor"] is not True
@@ -112,6 +122,7 @@ def main(argv: list[str] | None = None) -> int:
             "aggressive_residual_ppo",
             "base_validation_inference",
             "heldout_validation_inference",
+            "solo_validation_inference",
             "style_validation_inference",
         ],
         "artifacts": {
