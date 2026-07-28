@@ -13,7 +13,3 @@ splits:
     pairs_per_opponent: 20
     layout_id: base
     opponent_styles: [idle]
-  test:
-    seed_start: 53001
-    pairs_per_opponent: 50
-    layout_id: heldout-a

@@ -32,6 +32,7 @@ def test_extraction_episode_summary_exposes_capability_and_style_metrics() -> No
             opponent_extracted=False,
             opponent_extracted_value=0,
             extracted_value_advantage=85,
+            aggressive_chains=1,
         ),
         ExtractionEpisodeMetrics(
             seed=2,
@@ -145,6 +146,7 @@ def test_aggressive_showcase_chain_requires_complete_causal_story() -> None:
         unique_route_cells=7,
         terminated=False,
         truncated=False,
+        aggressive_chains=1,
     )
 
     assert is_aggressive_showcase_chain(complete)
@@ -152,5 +154,5 @@ def test_aggressive_showcase_chain_requires_complete_causal_story() -> None:
         ExtractionEpisodeMetrics(**{**vars(complete), "extracted": False})
     )
     assert not is_aggressive_showcase_chain(
-        ExtractionEpisodeMetrics(**{**vars(complete), "cache_looted": 0})
+        ExtractionEpisodeMetrics(**{**vars(complete), "aggressive_chains": 0})
     )

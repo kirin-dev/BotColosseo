@@ -7,6 +7,9 @@ import subprocess
 from pathlib import Path
 
 from botcolosseo.data.demonstrations import sha256_file
+from botcolosseo.evaluation.extraction_official_test import (
+    load_sealed_extraction_official_test,
+)
 
 POLICIES = ("strong", "aggressive", "defensive", "explorer")
 
@@ -21,6 +24,11 @@ def build_parser() -> argparse.ArgumentParser:
             type=Path,
             required=True,
         )
+    parser.add_argument(
+        "--official-test-manifest",
+        type=Path,
+        required=True,
+    )
     parser.add_argument(
         "--output",
         type=Path,
@@ -56,10 +64,38 @@ def main(argv: list[str] | None = None) -> int:
     for policy in POLICIES:
         selection_path = _resolve(root, getattr(args, f"{policy}_selection"))
         selection = json.loads(selection_path.read_text(encoding="utf-8"))
+        check_names = {
+            str(check.get("name"))
+            for check in selection.get("checks", ())
+            if check.get("passed") is True
+        }
+        required_checks = {
+            "actor_privilege_violations",
+            "protocol_integrity",
+            "test_case_access",
+        }
+        if policy != "strong":
+            required_checks.update(
+                {
+                    "anti_hack_no_timeout_value_loss"
+                    if policy == "defensive"
+                    else (
+                        "anti_hack_complete_combat_chain"
+                        if policy == "aggressive"
+                        else "anti_hack_real_upgrade_conversion"
+                    ),
+                    "heldout_extraction_delta",
+                    "reward_hacking_counterexamples",
+                    "style_ci_lower",
+                    "worst_opponent_retention",
+                }
+            )
         if (
             selection.get("policy") != policy
+            or selection.get("gate_schema_version") != 2
             or selection.get("eligible") is not True
             or selection.get("test_cases_accessed") is not False
+            or not required_checks.issubset(check_names)
         ):
             raise ValueError(f"{policy} selection is not release eligible")
         checkpoint = root / selection["selected_checkpoint"]
@@ -95,13 +131,25 @@ def main(argv: list[str] | None = None) -> int:
     for policy in POLICIES[1:]:
         if policies[policy]["base_checkpoint_sha256"] != strong_checkpoint_sha256:
             raise ValueError(f"{policy} does not share the selected Strong Base")
+    official_test_path = _resolve(root, args.official_test_manifest)
+    official_test = load_sealed_extraction_official_test(official_test_path)
+    protocol_sha256 = protocol_hashes.pop()
+    scenario_hash = scenario_hashes.pop()
+    if (
+        official_test.validation_protocol_sha256 != protocol_sha256
+        or official_test.scenario_hash != scenario_hash
+    ):
+        raise ValueError("Sealed official-test identities do not match the release")
     payload: dict[str, object] = {
         "schema_version": 1,
         "source_git_commit": _git_commit(root),
-        "protocol_sha256": protocol_hashes.pop(),
-        "scenario_hash": scenario_hashes.pop(),
+        "protocol_sha256": protocol_sha256,
+        "scenario_hash": scenario_hash,
+        "official_test_manifest": str(official_test_path.relative_to(root)),
+        "official_test_manifest_sha256": sha256_file(official_test_path),
         "policies": policies,
         "test_cases_accessed": False,
+        "test_cases_executed": False,
     }
     canonical = json.dumps(
         payload,

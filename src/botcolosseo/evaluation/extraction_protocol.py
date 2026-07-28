@@ -87,7 +87,7 @@ def load_extraction_evaluation_protocol(
     if payload.get("schema_version") != 1:
         raise ValueError("Unsupported Extraction evaluation protocol")
     raw_splits = payload.get("splits")
-    if set(raw_splits) != {"validation", "heldout", "solo", "test"}:
+    if set(raw_splits) != {"validation", "heldout", "solo"}:
         raise ValueError("Extraction evaluation splits are incomplete")
     splits = {
         name: ExtractionEvaluationSplit(
@@ -103,11 +103,10 @@ def load_extraction_evaluation_protocol(
         splits["validation"].episode_count != 240
         or splits["heldout"].episode_count != 120
         or splits["solo"].episode_count != 40
-        or splits["test"].episode_count != 400
         or splits["solo"].opponent_styles != ("idle",)
         or any(
             splits[name].opponent_styles != SCRIPT_STYLES
-            for name in ("validation", "heldout", "test")
+            for name in ("validation", "heldout")
         )
     ):
         raise ValueError("Extraction evaluation episode budgets drifted")

@@ -20,6 +20,7 @@ from botcolosseo.training.extraction_rollout import (
     ExtractionCaseSchedule,
     ExtractionRolloutCollector,
     PolicyExtractionOpponentController,
+    RandomLegalExtractionOpponentController,
     extraction_privileged_tensor,
 )
 
@@ -253,3 +254,27 @@ def test_checkpoint_opponent_never_reads_privileged_state() -> None:
         lambda: pytest.fail("privileged state was accessed"),
     )
     assert action == 4
+
+
+def test_random_legal_extraction_opponent_is_seeded_and_public_only() -> None:
+    first = RandomLegalExtractionOpponentController()
+    second = RandomLegalExtractionOpponentController()
+    first.reset(seed=17)
+    second.reset(seed=17)
+
+    first_actions = [
+        first.act(
+            observation(),
+            lambda: pytest.fail("privileged state was accessed"),
+        )
+        for _ in range(8)
+    ]
+    second_actions = [
+        second.act(
+            observation(),
+            lambda: pytest.fail("privileged state was accessed"),
+        )
+        for _ in range(8)
+    ]
+
+    assert first_actions == second_actions

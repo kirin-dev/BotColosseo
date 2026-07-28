@@ -129,7 +129,10 @@ def test_aggressive_reward_requires_valid_conversion_and_penalizes_spam() -> Non
     )
     cache = ledger.apply(
         MacroAction.MOVE_FORWARD,
-        (event(ExtractionEventType.CACHE_LOOTED, value=25),),
+        (
+            event(ExtractionEventType.DEATH, side="opponent"),
+            event(ExtractionEventType.CACHE_LOOTED, value=25),
+        ),
         observation_before=observation(carried=10),
         state_before=state(),
         state_after=state(host_slots=(10, 25, 0)),
@@ -146,6 +149,32 @@ def test_aggressive_reward_requires_valid_conversion_and_penalizes_spam() -> Non
     assert hit.components["valid_hit"] > 0
     assert cache.components["cache_looted"] > 0
     assert extracted.components["cache_to_extraction"] > 0
+
+
+def test_aggressive_reward_does_not_credit_unowned_cache_conversion() -> None:
+    ledger = AggressiveExtractionRewardLedger(
+        AggressiveExtractionRewardConfig(),
+        learner_side="host",
+        scale=1,
+    )
+
+    cache = ledger.apply(
+        MacroAction.MOVE_FORWARD,
+        (event(ExtractionEventType.CACHE_LOOTED, value=25),),
+        observation_before=observation(carried=10),
+        state_before=state(),
+        state_after=state(host_slots=(10, 25, 0)),
+    )
+    extracted = ledger.apply(
+        MacroAction.IDLE,
+        (event(ExtractionEventType.EXTRACTED),),
+        observation_before=observation(carried=35),
+        state_before=state(host_slots=(10, 25, 0)),
+        state_after=state(),
+    )
+
+    assert "cache_looted" not in cache.components
+    assert "cache_to_extraction" not in extracted.components
 
 
 def test_defensive_reward_rejects_empty_camping_and_rewards_value_protection() -> None:

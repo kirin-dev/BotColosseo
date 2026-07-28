@@ -40,6 +40,12 @@ class RecordedExtractionShowcase:
     events: dict[str, int]
     attack_decisions: int
     unique_route_cells: int
+    aggressive_chains: int
+    successful_disengagements: int
+    meaningful_extractions: int
+    meaningful_loot_regions: int
+    backpack_upgrades: int
+    upgrade_to_extraction_conversions: int
     scenario_hash: str
     test_cases_accessed: bool = False
 
@@ -367,6 +373,16 @@ def record_extraction_showcase(
     decisions = 0
     attack_decisions = 0
     route_cells: set[tuple[int, int]] = set()
+    loot_region_cells: set[tuple[int, int]] = set()
+    killed_opponent = False
+    looted_cache_after_kill = False
+    aggressive_chains = 0
+    disengagement_active = False
+    successful_disengagements = 0
+    meaningful_extractions = 0
+    backpack_upgrades = 0
+    upgraded_backpack = False
+    upgrade_to_extraction_conversions = 0
     try:
         observations, reset_info = env.reset()
         opponent.reset()
@@ -396,12 +412,22 @@ def record_extraction_showcase(
                 attack_decisions += 1
             hidden = output.hidden
             state = env.privileged_state()
-            x, y = (
+            x, y, opponent_x, opponent_y = (
                 (state.host_x, state.host_y)
                 if case.learner_side == "host"
                 else (state.opponent_x, state.opponent_y)
+            ) + (
+                (state.opponent_x, state.opponent_y)
+                if case.learner_side == "host"
+                else (state.host_x, state.host_y)
             )
             route_cells.add((math.floor(x / 160), math.floor(y / 160)))
+            opponent_distance = math.dist((x, y), (opponent_x, opponent_y))
+            if (
+                (observation.health <= 40 or observation.ammo <= 5)
+                and opponent_distance <= 384
+            ):
+                disengagement_active = True
             opponent_action = opponent.act(state)
             host_action, away_action = (
                 (learner_action, opponent_action)
@@ -410,8 +436,71 @@ def record_extraction_showcase(
             )
             step = env.step(host_action, away_action)
             observations = type(observations)(step.host, step.opponent)
+            state_after = env.privileged_state()
+            after_x, after_y, after_opponent_x, after_opponent_y = (
+                (
+                    state_after.host_x,
+                    state_after.host_y,
+                    state_after.opponent_x,
+                    state_after.opponent_y,
+                )
+                if case.learner_side == "host"
+                else (
+                    state_after.opponent_x,
+                    state_after.opponent_y,
+                    state_after.host_x,
+                    state_after.host_y,
+                )
+            )
+            if disengagement_active and math.dist(
+                (after_x, after_y),
+                (after_opponent_x, after_opponent_y),
+            ) >= 512:
+                successful_disengagements += 1
+                disengagement_active = False
             for event in step.events:
                 event_counts[f"{event.side}:{event.type.value}"] += event.count
+            learner_events = tuple(
+                event for event in step.events if event.side == case.learner_side
+            )
+            opponent_events = tuple(
+                event for event in step.events if event.side == opponent_side
+            )
+            if any(
+                event.type is ExtractionEventType.DEATH for event in opponent_events
+            ):
+                killed_opponent = True
+            if any(
+                event.type is ExtractionEventType.LOOT_PICKUP
+                for event in learner_events
+            ):
+                loot_region_cells.add(
+                    (math.floor(x / 160), math.floor(y / 160))
+                )
+            if any(
+                event.type is ExtractionEventType.LOOT_DROP
+                for event in learner_events
+            ):
+                backpack_upgrades += 1
+                upgraded_backpack = True
+            if (
+                killed_opponent
+                and any(
+                    event.type is ExtractionEventType.CACHE_LOOTED
+                    for event in learner_events
+                )
+            ):
+                looted_cache_after_kill = True
+            if any(
+                event.type is ExtractionEventType.EXTRACTED
+                for event in learner_events
+            ):
+                if observation.carried_value >= 25:
+                    meaningful_extractions += 1
+                if looted_cache_after_kill:
+                    aggressive_chains += 1
+                if upgraded_backpack:
+                    upgrade_to_extraction_conversions += 1
             label = _event_label(step.events, learner_side=case.learner_side)
             if label:
                 event_banner = label
@@ -456,6 +545,12 @@ def record_extraction_showcase(
             events=dict(sorted(event_counts.items())),
             attack_decisions=attack_decisions,
             unique_route_cells=len(route_cells),
+            aggressive_chains=aggressive_chains,
+            successful_disengagements=successful_disengagements,
+            meaningful_extractions=meaningful_extractions,
+            meaningful_loot_regions=len(loot_region_cells),
+            backpack_upgrades=backpack_upgrades,
+            upgrade_to_extraction_conversions=upgrade_to_extraction_conversions,
             scenario_hash=reset_info.scenario_hash,
         )
     finally:

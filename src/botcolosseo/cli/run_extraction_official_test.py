@@ -13,8 +13,8 @@ from botcolosseo.evaluation.extraction import (
     evaluate_extraction_episode_with_retries,
     summarize_extraction_episodes,
 )
-from botcolosseo.evaluation.extraction_protocol import (
-    load_extraction_evaluation_protocol,
+from botcolosseo.evaluation.extraction_official_test import (
+    load_sealed_extraction_official_test,
 )
 from botcolosseo.training.bc import append_jsonl
 from botcolosseo.training.extraction_checkpoint import (
@@ -33,11 +33,6 @@ def build_parser() -> argparse.ArgumentParser:
         "--release-manifest",
         type=Path,
         default=Path("runs/extraction/release/manifest.json"),
-    )
-    parser.add_argument(
-        "--protocol",
-        type=Path,
-        default=Path("configs/extraction/evaluation.yaml"),
     )
     parser.add_argument(
         "--output-dir",
@@ -122,16 +117,26 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     root = Path(__file__).resolve().parents[3]
     manifest_path = _resolve(root, args.release_manifest)
-    protocol_path = _resolve(root, args.protocol)
     output_dir = _resolve(root, args.output_dir)
     receipt_path = output_dir / "receipt.json"
     if receipt_path.exists():
         raise FileExistsError("Official Extraction test already has a receipt")
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    protocol = load_extraction_evaluation_protocol(protocol_path)
+    official_test_path = root / str(manifest.get("official_test_manifest", ""))
+    official_test_sha256 = manifest.get("official_test_manifest_sha256")
+    if (
+        not official_test_path.is_file()
+        or not isinstance(official_test_sha256, str)
+        or sha256_file(official_test_path) != official_test_sha256
+    ):
+        raise ValueError("Sealed official-test manifest identity does not match")
+    official_test = load_sealed_extraction_official_test(official_test_path)
     if (
         manifest.get("test_cases_accessed") is not False
-        or manifest.get("protocol_sha256") != protocol.sha256
+        or manifest.get("test_cases_executed") is not False
+        or official_test.validation_protocol_sha256
+        != manifest.get("protocol_sha256")
+        or official_test.scenario_hash != manifest.get("scenario_hash")
         or set(manifest.get("policies", {})) != set(POLICIES)
     ):
         raise ValueError("Official-test release identity does not match")
@@ -139,8 +144,10 @@ def main(argv: list[str] | None = None) -> int:
     lock = {
         "release_sha256": manifest["release_sha256"],
         "release_manifest_sha256": sha256_file(manifest_path),
-        "protocol_sha256": protocol.sha256,
+        "official_test_manifest_sha256": official_test_sha256,
+        "protocol_sha256": manifest["protocol_sha256"],
         "test_cases_accessed": True,
+        "test_cases_executed": True,
     }
     if lock_path.exists():
         if json.loads(lock_path.read_text(encoding="utf-8")) != lock:
@@ -150,7 +157,7 @@ def main(argv: list[str] | None = None) -> int:
     device = torch.device(args.device)
     if device.type == "cuda" and not torch.cuda.is_available():
         raise RuntimeError("CUDA was requested but is unavailable")
-    cases = protocol.cases("test")
+    cases = official_test.cases
     policy_summaries: dict[str, object] = {}
     for policy in POLICIES:
         model = _load_policy(
@@ -186,17 +193,20 @@ def main(argv: list[str] | None = None) -> int:
                 "metrics": summary,
                 "split": "test",
                 "test_cases_accessed": True,
+                "test_cases_executed": True,
             },
             output_dir / f"{policy}-summary.json",
         )
     receipt = {
         "schema_version": 1,
         "release_sha256": manifest["release_sha256"],
-        "protocol_sha256": protocol.sha256,
+        "official_test_manifest_sha256": official_test_sha256,
+        "protocol_sha256": manifest["protocol_sha256"],
         "episodes_per_policy": len(cases),
         "total_episodes": len(cases) * len(POLICIES),
         "policy_metrics": policy_summaries,
         "test_cases_accessed": True,
+        "test_cases_executed": True,
         "complete": True,
     }
     _atomic_json(receipt, receipt_path)

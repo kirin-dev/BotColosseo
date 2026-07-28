@@ -155,6 +155,14 @@ def main(argv: list[str] | None = None) -> int:
             "extracted_value": episode.extracted_value,
             "attack_decisions": episode.attack_decisions,
             "unique_route_cells": episode.unique_route_cells,
+            "aggressive_chains": episode.aggressive_chains,
+            "successful_disengagements": episode.successful_disengagements,
+            "meaningful_extractions": episode.meaningful_extractions,
+            "meaningful_loot_regions": episode.meaningful_loot_regions,
+            "backpack_upgrades": episode.backpack_upgrades,
+            "upgrade_to_extraction_conversions": (
+                episode.upgrade_to_extraction_conversions
+            ),
         },
         "test_cases_accessed": False,
     }

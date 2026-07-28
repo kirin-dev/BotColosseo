@@ -31,6 +31,7 @@ from botcolosseo.training.extraction_ppo import TeacherAnchoredPPOTrainer
 from botcolosseo.training.extraction_rollout import (
     ExtractionRolloutCollector,
     PolicyExtractionOpponentController,
+    RandomLegalExtractionOpponentController,
     ScriptExtractionOpponentController,
 )
 from botcolosseo.training.extraction_run_log import (
@@ -260,6 +261,8 @@ def main(argv: list[str] | None = None) -> int:
 
     def opponent_factory(assignment, side):
         if assignment.opponent_kind == "script":
+            if assignment.opponent_id == "random_legal":
+                return RandomLegalExtractionOpponentController()
             from botcolosseo.agents.extraction_teachers import StyledExtractionTeacher
 
             return ScriptExtractionOpponentController(

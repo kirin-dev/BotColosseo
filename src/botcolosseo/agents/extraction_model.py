@@ -84,7 +84,9 @@ class ExtractionResidualStyleActorCritic(nn.Module):
         if bottleneck <= 0 or max_delta <= 0:
             raise ValueError("Extraction style dimensions must be positive")
         self.base = copy.deepcopy(base)
-        self.base.actor.requires_grad_(False)
+        self.base.requires_grad_(False)
+        self.style_privileged_encoder = copy.deepcopy(base.privileged_encoder)
+        self.style_value = copy.deepcopy(base.value)
         hidden = self.base.actor.hidden_size
         actions = self.base.actor.action_count
         self.delta_policy = nn.Sequential(
@@ -117,8 +119,8 @@ class ExtractionResidualStyleActorCritic(nn.Module):
             masks,
             hidden,
         )
-        critic = self.base.privileged_encoder(privileged)
-        values = self.base.value(
+        critic = self.style_privileged_encoder(privileged)
+        values = self.style_value(
             torch.cat((actor.features, critic), dim=-1)
         ).squeeze(-1)
         delta = self.max_delta * torch.tanh(self.delta_policy(actor.features))

@@ -120,6 +120,7 @@ def main(argv: list[str] | None = None) -> int:
             training_summary.get("style") != args.policy
             or training_summary.get("base_checkpoint_sha256") != base_sha256
             or training_summary.get("frozen_strong_actor") is not True
+            or training_summary.get("frozen_strong_base") is not True
             or training_summary.get("learned_residual_adapter") is not True
         ):
             raise ValueError("Style training summary identity does not match")
@@ -155,6 +156,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     result = {
         "schema_version": 1,
+        "metric_schema_version": 2,
         "policy": args.policy,
         "policy_kind": (
             "strong-recurrent-ppo"
@@ -178,6 +180,8 @@ def main(argv: list[str] | None = None) -> int:
         "protocol_sha256": protocol.sha256,
         "scenario_hash": scenario_hash,
         "metrics": summarize_extraction_episodes(episodes),
+        "actor_privilege_violations": 0,
+        "fair_actor_observation_only": True,
         "test_cases_accessed": False,
     }
     _atomic_json(result, output)

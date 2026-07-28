@@ -222,6 +222,10 @@ Reports include case-level rows, paired side swaps, opponent breakdowns, and
 bootstrap confidence intervals. A reward curve, BC action accuracy, or one
 successful video cannot substitute for this gate.
 
+If the validation-ranked Strong candidate fails held-out or solo capability,
+the selector proceeds in frozen rank order. It does not declare the whole run
+failed while a lower-ranked candidate could still satisfy every Strong gate.
+
 ## Style objective
 
 Every style optimizes:
@@ -298,6 +302,16 @@ Each style must satisfy all of:
 - zero Actor privilege violations;
 - zero test-case access.
 
+“Catastrophic degradation” is frozen as either more than a 20 percentage-point
+win-rate loss from Strong against one scripted opponent or an absolute
+opponent-specific win rate below 40%. Style direction uses a deterministic
+10,000-resample paired bootstrap. Aggressive evidence requires an ordered
+kill-to-cache-to-extraction conversion, Defensive evidence requires
+opportunity-conditioned disengagement plus meaningful banking, and Explorer
+evidence requires distinct loot regions and a genuine backpack-upgrade-to-
+extraction conversion. Attack count and raw route distance are diagnostics,
+never standalone style gates.
+
 The initially frozen CNN/GRU/residual configuration is the primary method.
 Configured reward-only and reward-plus-KL runs are later ablations of the same
 training system, not additional product architectures. Full-policy PPO
@@ -305,12 +319,12 @@ fine-tuning and style-conditioned policies are out of scope.
 
 ## Splits and paired evaluation
 
-The case universe is divided before long training into:
+Evaluation roles are separated before long training into:
 
 - `train`;
 - `validation`;
 - held-out-configuration validation;
-- `official test`.
+- a sealed `official test` created only after all four policies are selected.
 
 Strong and all styles use the same paired seed, learner side, opponent,
 layout, spawn, episode budget, and scenario hash within each evaluation case.
@@ -335,9 +349,12 @@ Before test:
 
 1. freeze the scenario WAD and observation schema;
 2. freeze Strong and all three style checkpoints;
-3. freeze configs, thresholds, metrics, case manifest, and selection rules;
-4. write all hashes into a release-candidate manifest;
-5. audit that test cases have never been accessed.
+3. freeze configs, thresholds, metrics, and selection rules;
+4. generate a new side-balanced official-test case manifest from system
+   entropy; test cases do not exist in train or validation configuration;
+5. bind the sealed case-manifest hash and all other hashes into a
+   release-candidate manifest;
+6. audit that no official-test episode has been executed.
 
 Official test is then run once. After it starts, only aggregation, plots,
 documentation, and release packaging may change. Policies, rewards,

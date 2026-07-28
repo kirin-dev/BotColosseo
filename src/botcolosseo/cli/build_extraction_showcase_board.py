@@ -49,12 +49,17 @@ def _caption(policy: str, evidence: dict[str, object]) -> str:
         return f"Banked {claims['extracted_value']} value"
     if policy == "aggressive":
         return (
-            f"{claims['valid_hits']} hits | {claims['kills']} kill | "
-            f"cache {claims['cache_looted']}"
+            f"Kill-cache-extract chain x{claims['aggressive_chains']}"
         )
     if policy == "defensive":
-        return f"Survives and banks {claims['extracted_value']}"
-    return f"Explores and banks {claims['extracted_value']}"
+        return (
+            f"Disengages x{claims['successful_disengagements']} | "
+            f"banks {claims['extracted_value']}"
+        )
+    return (
+        f"Upgrade-extract x{claims['upgrade_to_extraction_conversions']} | "
+        f"banks {claims['extracted_value']}"
+    )
 
 
 def main(argv: list[str] | None = None) -> int:

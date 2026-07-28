@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import random
 from dataclasses import dataclass
 
 from botcolosseo.evaluation.extraction import ExtractionEpisodeMetrics
@@ -81,22 +82,178 @@ def strong_validation_gate(
 
 
 def _style_score(style: str, episode: ExtractionEpisodeMetrics) -> float:
+    def ratio(numerator: int, denominator: int) -> float:
+        return numerator / denominator if denominator > 0 else 0.0
+
     if style == "aggressive":
-        return episode.valid_hits + 2 * episode.cache_looted
+        return (
+            2.0 * episode.aggressive_chains
+            + 0.5
+            * ratio(episode.kill_to_cache_conversions, episode.kills)
+            + 0.25
+            * ratio(
+                episode.favorable_encounter_initiations,
+                episode.encounter_opportunities,
+            )
+            + 0.25 * ratio(episode.valid_hits, episode.attack_decisions)
+        )
     if style == "defensive":
-        return -float(episode.attack_decisions)
+        return (
+            ratio(
+                episode.successful_disengagements,
+                episode.disengagement_opportunities,
+            )
+            + float(episode.meaningful_extractions)
+            - 0.25 * ratio(
+                episode.combat_with_meaningful_value,
+                episode.attack_decisions,
+            )
+            - 0.5 * episode.timeout_with_value
+        )
     if style == "explorer":
-        return episode.unique_route_cells + 0.5 * episode.loot_pickups
+        return (
+            min(episode.meaningful_loot_regions, 7) / 7
+            + episode.upgrade_to_extraction_conversions
+            + 0.25
+            * ratio(episode.urgency_extractions, episode.urgency_opportunities)
+            - 0.5 * episode.timeout_with_value
+        )
     raise ValueError("Unknown Extraction style")
 
 
-def _paired_lower_confidence_bound(values: tuple[float, ...]) -> tuple[float, float]:
+def _paired_bootstrap_interval(
+    values: tuple[float, ...],
+    *,
+    samples: int = 10_000,
+    seed: int = 20260726,
+) -> tuple[float, float, float]:
     if len(values) < 2:
         raise ValueError("Paired style CI requires at least two cases")
+    if samples < 1_000:
+        raise ValueError("Paired style bootstrap requires at least 1,000 samples")
     mean = sum(values) / len(values)
-    variance = sum((value - mean) ** 2 for value in values) / (len(values) - 1)
-    lower = mean - 1.96 * math.sqrt(variance / len(values))
-    return mean, lower
+    generator = random.Random(seed)
+    bootstrapped = sorted(
+        sum(generator.choice(values) for _ in values) / len(values)
+        for _ in range(samples)
+    )
+    lower = bootstrapped[math.floor(0.025 * (samples - 1))]
+    upper = bootstrapped[math.ceil(0.975 * (samples - 1))]
+    return mean, lower, upper
+
+
+def _mean(items: tuple[ExtractionEpisodeMetrics, ...], attribute: str) -> float:
+    return sum(float(getattr(item, attribute)) for item in items) / len(items)
+
+
+def _ratio_total(
+    items: tuple[ExtractionEpisodeMetrics, ...],
+    numerator: str,
+    denominator: str,
+) -> float:
+    denominator_total = sum(int(getattr(item, denominator)) for item in items)
+    if denominator_total == 0:
+        return 0.0
+    return (
+        sum(int(getattr(item, numerator)) for item in items) / denominator_total
+    )
+
+
+def _opponent_retention_margin(
+    strong: tuple[ExtractionEpisodeMetrics, ...],
+    styled: tuple[ExtractionEpisodeMetrics, ...],
+) -> float:
+    opponents = sorted({item.opponent_style for item in strong})
+    return min(
+        _rate(
+            tuple(item for item in styled if item.opponent_style == opponent),
+            "won",
+        )
+        - max(
+            0.40,
+            _rate(
+                tuple(item for item in strong if item.opponent_style == opponent),
+                "won",
+            )
+            - 0.20,
+        )
+        for opponent in opponents
+    )
+
+
+def _reward_hacking_checks(
+    style: str,
+    *,
+    strong: tuple[ExtractionEpisodeMetrics, ...],
+    styled: tuple[ExtractionEpisodeMetrics, ...],
+) -> tuple[GateCheck, ...]:
+    if style == "aggressive":
+        chain_delta = _mean(styled, "aggressive_chains") - _mean(
+            strong, "aggressive_chains"
+        )
+        precision_delta = _ratio_total(
+            styled, "valid_hits", "attack_decisions"
+        ) - _ratio_total(strong, "valid_hits", "attack_decisions")
+        return (
+            GateCheck(
+                "anti_hack_complete_combat_chain",
+                chain_delta > 0,
+                chain_delta,
+                ">0",
+            ),
+            GateCheck(
+                "anti_hack_no_empty_fire_regression",
+                precision_delta >= -0.05,
+                precision_delta,
+                ">=-0.05",
+            ),
+        )
+    if style == "defensive":
+        meaningful_ratio = (
+            _mean(styled, "meaningful_extractions")
+            / _mean(strong, "meaningful_extractions")
+            if _mean(strong, "meaningful_extractions") > 0
+            else 0.0
+        )
+        timeout_delta = _mean(styled, "timeout_with_value") - _mean(
+            strong, "timeout_with_value"
+        )
+        return (
+            GateCheck(
+                "anti_hack_not_inactive",
+                meaningful_ratio >= 0.85,
+                meaningful_ratio,
+                ">=0.85",
+            ),
+            GateCheck(
+                "anti_hack_no_timeout_value_loss",
+                timeout_delta <= 0.02,
+                timeout_delta,
+                "<=0.02",
+            ),
+        )
+    if style == "explorer":
+        conversion_delta = _mean(
+            styled, "upgrade_to_extraction_conversions"
+        ) - _mean(strong, "upgrade_to_extraction_conversions")
+        timeout_delta = _mean(styled, "timeout_with_value") - _mean(
+            strong, "timeout_with_value"
+        )
+        return (
+            GateCheck(
+                "anti_hack_real_upgrade_conversion",
+                conversion_delta > 0,
+                conversion_delta,
+                ">0",
+            ),
+            GateCheck(
+                "anti_hack_no_high_value_wandering",
+                timeout_delta <= 0.02,
+                timeout_delta,
+                "<=0.02",
+            ),
+        )
+    raise ValueError("Unknown Extraction style")
 
 
 def style_validation_gate(
@@ -140,9 +297,15 @@ def style_validation_gate(
         - _style_score(style, strong_by_case[key])
         for key in ordered
     )
-    style_difference, ci_lower = _paired_lower_confidence_bound(differences)
+    style_difference, ci_lower, ci_upper = _paired_bootstrap_interval(differences)
     integrity_errors = sum(
         item.max_peer_tic_lag > 2 or item.truncated for item in styled
+    )
+    opponent_margin = _opponent_retention_margin(strong, styled)
+    hacking_checks = _reward_hacking_checks(
+        style,
+        strong=strong,
+        styled=styled,
     )
     checks = (
         GateCheck("paired_task_retention", retention >= 0.85, retention, ">=0.85"),
@@ -153,8 +316,65 @@ def style_validation_gate(
             ">=-0.10",
         ),
         GateCheck("mean_value_ratio", value_ratio >= 0.85, value_ratio, ">=0.85"),
+        GateCheck(
+            "worst_opponent_retention",
+            opponent_margin >= 0,
+            opponent_margin,
+            ">=0.00",
+        ),
         GateCheck("style_paired_difference", style_difference > 0, style_difference, ">0"),
         GateCheck("style_ci_lower", ci_lower > 0, ci_lower, ">0"),
+        GateCheck("style_ci_upper", ci_upper > 0, ci_upper, ">0"),
+        *hacking_checks,
+        GateCheck(
+            "reward_hacking_counterexamples",
+            all(check.passed for check in hacking_checks),
+            float(sum(not check.passed for check in hacking_checks)),
+            "==0",
+        ),
         GateCheck("protocol_integrity", integrity_errors == 0, float(integrity_errors), "==0"),
+    )
+    return GateResult(all(item.passed for item in checks), checks)
+
+
+def style_heldout_gate(
+    *,
+    strong: tuple[ExtractionEpisodeMetrics, ...],
+    styled: tuple[ExtractionEpisodeMetrics, ...],
+) -> GateResult:
+    if len(strong) != 120 or len(styled) != 120:
+        raise ValueError("Style heldout gate requires frozen 120-episode budgets")
+    strong_by_case = {
+        (item.seed, item.learner_side, item.opponent_style): item for item in strong
+    }
+    styled_by_case = {
+        (item.seed, item.learner_side, item.opponent_style): item for item in styled
+    }
+    if set(strong_by_case) != set(styled_by_case):
+        raise ValueError("Style and Strong heldout cases are not paired")
+    extraction_delta = _rate(styled, "extracted") - _rate(strong, "extracted")
+    opponent_margin = _opponent_retention_margin(strong, styled)
+    integrity_errors = sum(
+        item.max_peer_tic_lag > 2 or item.truncated for item in styled
+    )
+    checks = (
+        GateCheck(
+            "heldout_extraction_delta",
+            extraction_delta >= -0.10,
+            extraction_delta,
+            ">=-0.10",
+        ),
+        GateCheck(
+            "heldout_worst_opponent_retention",
+            opponent_margin >= 0,
+            opponent_margin,
+            ">=0.00",
+        ),
+        GateCheck(
+            "heldout_protocol_integrity",
+            integrity_errors == 0,
+            float(integrity_errors),
+            "==0",
+        ),
     )
     return GateResult(all(item.passed for item in checks), checks)

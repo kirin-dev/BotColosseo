@@ -74,9 +74,17 @@ def main(argv: list[str] | None = None) -> int:
         release.get("release_sha256") != _release_hash(release)
         or release.get("scenario_hash") != current_scenario
         or release.get("test_cases_accessed") is not False
+        or release.get("test_cases_executed") is not False
         or set(release.get("policies", {})) != set(POLICIES)
     ):
         raise ValueError("Release manifest identity does not match")
+    official_test_manifest = root / str(release.get("official_test_manifest", ""))
+    if (
+        not official_test_manifest.is_file()
+        or sha256_file(official_test_manifest)
+        != release.get("official_test_manifest_sha256")
+    ):
+        raise ValueError("Release official-test manifest identity drifted")
     for policy, spec in release["policies"].items():
         checkpoint = root / spec["checkpoint"]
         selection = root / spec["selection_report"]
@@ -90,9 +98,12 @@ def main(argv: list[str] | None = None) -> int:
         receipt.get("complete") is not True
         or receipt.get("release_sha256") != release["release_sha256"]
         or receipt.get("protocol_sha256") != release["protocol_sha256"]
+        or receipt.get("official_test_manifest_sha256")
+        != release["official_test_manifest_sha256"]
         or receipt.get("episodes_per_policy") != 400
         or receipt.get("total_episodes") != 1600
         or receipt.get("test_cases_accessed") is not True
+        or receipt.get("test_cases_executed") is not True
         or set(receipt.get("policy_metrics", {})) != set(POLICIES)
     ):
         raise ValueError("Official-test receipt is incomplete or stale")
@@ -128,14 +139,21 @@ def main(argv: list[str] | None = None) -> int:
         )
         if policy == "aggressive":
             passed = passed and (
-                claims["valid_hits"] >= 5
+                claims["aggressive_chains"] >= 1
                 and claims["kills"] >= 1
                 and claims["cache_looted"] >= 1
             )
         elif policy == "defensive":
-            passed = passed and claims["attack_decisions"] <= 5
+            passed = passed and (
+                claims["successful_disengagements"] >= 1
+                and claims["meaningful_extractions"] >= 1
+            )
         elif policy == "explorer":
-            passed = passed and claims["unique_route_cells"] >= 8
+            passed = passed and (
+                claims["backpack_upgrades"] >= 1
+                and claims["meaningful_loot_regions"] >= 2
+                and claims["upgrade_to_extraction_conversions"] >= 1
+            )
         if not passed:
             raise ValueError(f"{policy} showcase is not representative")
         media_checks[policy] = {
@@ -154,7 +172,7 @@ def main(argv: list[str] | None = None) -> int:
         "showcase_manifest": str(showcase_path.relative_to(root)),
         "showcase_manifest_sha256": sha256_file(showcase_path),
         "media_checks": media_checks,
-        "test_cases_accessed_only_by_official_runner": True,
+        "test_cases_executed_only_by_official_runner": True,
     }
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = output.with_name(f".{output.name}.tmp")

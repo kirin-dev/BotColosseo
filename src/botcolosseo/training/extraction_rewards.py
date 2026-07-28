@@ -159,6 +159,7 @@ class AggressiveExtractionRewardLedger(_BoundedLedger):
         self.learner_side = learner_side
         self.scale = scale
         self._since_hit = config.initiation_cooldown + 1
+        self._killed_opponent = False
         self._looted_cache = False
 
     def apply(
@@ -173,6 +174,12 @@ class AggressiveExtractionRewardLedger(_BoundedLedger):
         del state_before, state_after
         components: dict[str, float] = {}
         learner_events = tuple(event for event in events if event.side == self.learner_side)
+        if any(
+            event.type is ExtractionEventType.DEATH
+            and event.side != self.learner_side
+            for event in events
+        ):
+            self._killed_opponent = True
         valid_hit = any(
             event.type is ExtractionEventType.VALID_HIT for event in learner_events
         )
@@ -194,7 +201,10 @@ class AggressiveExtractionRewardLedger(_BoundedLedger):
         else:
             self._since_hit += 1
         for event in learner_events:
-            if event.type is ExtractionEventType.CACHE_LOOTED:
+            if (
+                event.type is ExtractionEventType.CACHE_LOOTED
+                and self._killed_opponent
+            ):
                 self._looted_cache = True
                 self._add(
                     components,

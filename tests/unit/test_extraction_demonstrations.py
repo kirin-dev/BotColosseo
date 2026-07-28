@@ -9,6 +9,7 @@ import pytest
 import botcolosseo.data.extraction_demonstrations as demonstrations
 from botcolosseo.agents.extraction_teachers import ExtractionStyle
 from botcolosseo.data.extraction_demonstrations import (
+    ExtractionCase,
     ExtractionDemonstrationBuffer,
     extraction_scalars,
     load_extraction_cases,
@@ -85,6 +86,25 @@ def test_generation_case_loader_rejects_test_access(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="cannot access test"):
         load_extraction_cases(path, expected_split="test")
+
+
+def test_random_legal_case_is_training_only() -> None:
+    assert (
+        ExtractionCase(
+            "train",
+            1,
+            "host",
+            "random_legal",
+        ).opponent_style
+        == "random_legal"
+    )
+    with pytest.raises(ValueError, match="reserved for training"):
+        ExtractionCase(
+            "validation",
+            1,
+            "host",
+            "random_legal",
+        )
 
 
 def test_extraction_episode_generation_retries_transient_startup_timeout(

@@ -43,16 +43,11 @@ def _score(policy: str, episode: ExtractionEpisodeMetrics) -> tuple[int, ...]:
             episode.valid_hits,
         )
     if policy == "aggressive":
-        chain = (
-            episode.valid_hits >= 5
-            and episode.kills >= 1
-            and episode.cache_looted >= 1
-            and episode.extracted
-        )
         return (
-            int(chain),
+            int(episode.aggressive_chains > 0),
             int(episode.extracted),
             duration_ok,
+            episode.aggressive_chains,
             episode.kills,
             episode.cache_looted,
             episode.valid_hits,
@@ -60,18 +55,24 @@ def _score(policy: str, episode: ExtractionEpisodeMetrics) -> tuple[int, ...]:
         )
     if policy == "defensive":
         return (
-            int(episode.extracted and not episode.died),
+            int(
+                episode.meaningful_extractions > 0
+                and episode.extracted
+                and not episode.died
+            ),
+            int(episode.successful_disengagements > 0),
             duration_ok,
-            -episode.attack_decisions,
             episode.extracted_value,
-            -episode.valid_hits,
+            episode.successful_disengagements,
+            -episode.combat_with_meaningful_value,
         )
     if policy == "explorer":
         return (
+            int(episode.upgrade_to_extraction_conversions > 0),
             int(episode.extracted),
             duration_ok,
-            episode.unique_route_cells,
-            episode.loot_pickups,
+            episode.backpack_upgrades,
+            episode.meaningful_loot_regions,
             episode.extracted_value,
         )
     raise ValueError("Unknown Extraction showcase policy")

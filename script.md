@@ -26,7 +26,7 @@ python scripts/build_crystal_run_extraction.py \
   --acc-include "$ACC_ROOT"
 ```
 
-Expected engineering baseline: all Ruff checks pass, 593+ unit tests pass, and
+Expected engineering baseline: all Ruff checks pass, all unit tests pass, and
 the tracked WAD matches a clean ACC build.
 
 ## Long stage 1: Strong
@@ -68,8 +68,9 @@ case manifests; provenance checks intentionally reject that.
 ## Strong candidate selection
 
 This evaluates every historical candidate on the frozen 240-episode scripted
-validation protocol, ranks without test access, then evaluates only the winner
-on 120 heldout episodes and 40 frozen solo/idle-opponent episodes. The Strong
+validation protocol, ranks without test access, then evaluates candidates in
+rank order on 120 heldout episodes and 40 frozen solo/idle-opponent episodes
+until one passes the complete gate. The Strong
 gate requires at least 90% solo extraction in addition to the scripted and
 heldout capability checks:
 
@@ -122,7 +123,7 @@ nohup env BOTCOLOSSEO_GPU=1 \
 echo $! > runs/extraction/explorer.pid
 ```
 
-Then select using validation only:
+Then select using paired validation plus heldout evidence:
 
 ```bash
 BOTCOLOSSEO_GPU=0 \
@@ -135,12 +136,20 @@ BOTCOLOSSEO_GPU=1 \
 
 ## Freeze release and run the official test once
 
+The official-test cases do not exist during training or validation. After all
+four policies pass selection, generate the 400-case side-balanced manifest
+from system entropy, then bind its hash into the immutable release:
+
 ```bash
+python scripts/seal_extraction_official_test.py
+
 python -m botcolosseo.cli.freeze_extraction_release \
   --strong-selection runs/extraction/strong-ppo/selection.json \
   --aggressive-selection runs/extraction/styles/aggressive/selection.json \
   --defensive-selection runs/extraction/styles/defensive/selection.json \
-  --explorer-selection runs/extraction/styles/explorer/selection.json
+  --explorer-selection runs/extraction/styles/explorer/selection.json \
+  --official-test-manifest \
+    runs/extraction/release/official-test-manifest.json
 ```
 
 The official runner writes a release lock before the first test episode and
@@ -166,9 +175,9 @@ python scripts/audit_extraction_v3_release.py
 The selector searches the full validation ledgers for representative cases:
 
 - Strong: successful high-value extraction;
-- Aggressive: hit → kill → corpse cache → loot → extraction where available;
-- Defensive: survival and extraction with low attack count;
-- Explorer: broad useful route coverage, pickups, and extraction.
+- Aggressive: ordered hit → kill → corpse cache → loot → extraction;
+- Defensive: a real low-resource disengagement followed by meaningful extraction;
+- Explorer: distinct loot regions, a real backpack upgrade, then extraction.
 
 Generated videos contain viewer-only telemetry. They are not policy inputs and
 are never selected from official-test episodes.
