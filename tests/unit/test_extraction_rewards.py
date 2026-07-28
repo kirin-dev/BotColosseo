@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.extraction_protocol import ExtractionEvent, ExtractionEventType
@@ -106,6 +107,62 @@ def test_task_reward_does_not_turn_kills_into_terminal_value() -> None:
     assert reward.total == 0
 
 
+def test_task_decay_does_not_remove_death_or_unbanked_value_penalties() -> None:
+    ledger = ExtractionTaskRewardLedger(
+        ExtractionTaskRewardConfig(),
+        learner_side="host",
+    )
+
+    reward = ledger.apply(
+        MacroAction.IDLE,
+        (event(ExtractionEventType.DEATH),),
+        observation_before=observation(carried=50),
+        state_before=state(host_slots=(50, 0, 0)),
+        state_after=state(),
+        scale=0,
+    )
+
+    assert reward.components["death"] < 0
+    assert reward.components["death_value_loss"] == pytest.approx(-50 / 150)
+
+
+def test_task_decay_removes_progress_bonus_but_keeps_waste_penalty() -> None:
+    ledger = ExtractionTaskRewardLedger(
+        ExtractionTaskRewardConfig(),
+        learner_side="host",
+    )
+
+    reward = ledger.apply(
+        MacroAction.ATTACK,
+        (event(ExtractionEventType.LOOT_PICKUP, value=50),),
+        observation_before=observation(),
+        state_before=state(),
+        state_after=state(host_slots=(50, 0, 0)),
+        scale=0,
+    )
+
+    assert reward.components["loot_progress"] == 0
+    assert reward.components["invalid_attack"] < 0
+
+
+def test_task_decay_keeps_timeout_value_loss() -> None:
+    ledger = ExtractionTaskRewardLedger(
+        ExtractionTaskRewardConfig(),
+        learner_side="host",
+    )
+
+    reward = ledger.apply(
+        MacroAction.IDLE,
+        (event(ExtractionEventType.TIMEOUT),),
+        observation_before=observation(carried=50),
+        state_before=state(host_slots=(50, 0, 0)),
+        state_after=state(host_slots=(50, 0, 0)),
+        scale=0,
+    )
+
+    assert reward.components["timeout_value_loss"] == pytest.approx(-50 / 150)
+
+
 def test_aggressive_reward_requires_valid_conversion_and_penalizes_spam() -> None:
     ledger = AggressiveExtractionRewardLedger(
         AggressiveExtractionRewardConfig(),
@@ -129,7 +186,10 @@ def test_aggressive_reward_requires_valid_conversion_and_penalizes_spam() -> Non
     )
     cache = ledger.apply(
         MacroAction.MOVE_FORWARD,
-        (event(ExtractionEventType.CACHE_LOOTED, value=25),),
+        (
+            event(ExtractionEventType.DEATH, side="opponent"),
+            event(ExtractionEventType.CACHE_LOOTED, value=25),
+        ),
         observation_before=observation(carried=10),
         state_before=state(),
         state_after=state(host_slots=(10, 25, 0)),
@@ -146,6 +206,32 @@ def test_aggressive_reward_requires_valid_conversion_and_penalizes_spam() -> Non
     assert hit.components["valid_hit"] > 0
     assert cache.components["cache_looted"] > 0
     assert extracted.components["cache_to_extraction"] > 0
+
+
+def test_aggressive_reward_does_not_credit_unowned_cache_conversion() -> None:
+    ledger = AggressiveExtractionRewardLedger(
+        AggressiveExtractionRewardConfig(),
+        learner_side="host",
+        scale=1,
+    )
+
+    cache = ledger.apply(
+        MacroAction.MOVE_FORWARD,
+        (event(ExtractionEventType.CACHE_LOOTED, value=25),),
+        observation_before=observation(carried=10),
+        state_before=state(),
+        state_after=state(host_slots=(10, 25, 0)),
+    )
+    extracted = ledger.apply(
+        MacroAction.IDLE,
+        (event(ExtractionEventType.EXTRACTED),),
+        observation_before=observation(carried=35),
+        state_before=state(host_slots=(10, 25, 0)),
+        state_after=state(),
+    )
+
+    assert "cache_looted" not in cache.components
+    assert "cache_to_extraction" not in extracted.components
 
 
 def test_defensive_reward_rejects_empty_camping_and_rewards_value_protection() -> None:

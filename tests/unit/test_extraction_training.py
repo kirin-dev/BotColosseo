@@ -199,7 +199,12 @@ def test_extraction_style_is_zero_initialized_bounded_delta_over_frozen_base() -
     assert torch.equal(output.logits, output.base_logits)
     assert torch.equal(output.logits, public.logits)
     assert all(
-        not parameter.requires_grad for parameter in model.base.actor.parameters()
+        not parameter.requires_grad for parameter in model.base.parameters()
     )
     assert any(parameter.requires_grad for parameter in model.delta_policy.parameters())
+    assert any(
+        parameter.requires_grad
+        for parameter in model.style_privileged_encoder.parameters()
+    )
+    assert any(parameter.requires_grad for parameter in model.style_value.parameters())
     assert model.initial_state(1, device="cpu").shape == (1, 1, 256)

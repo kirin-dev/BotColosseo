@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import random
 from collections import Counter
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -107,6 +108,26 @@ class ScriptExtractionOpponentController:
     ) -> MacroAction:
         del observation
         return MacroAction(self.teacher.act(privileged_state()))
+
+
+class RandomLegalExtractionOpponentController:
+    """Deterministic public-observation baseline over the legal macro actions."""
+
+    def __init__(self) -> None:
+        self._generator: random.Random | None = None
+
+    def reset(self, *, seed: int) -> None:
+        self._generator = random.Random(seed)
+
+    def act(
+        self,
+        observation: ExtractionActorObservation,
+        privileged_state: Callable[[], ExtractionPrivilegedState],
+    ) -> MacroAction:
+        del observation, privileged_state
+        if self._generator is None:
+            raise RuntimeError("RandomLegal Extraction opponent must be reset")
+        return self._generator.choice(tuple(MacroAction))
 
 
 class PolicyExtractionOpponentController:
@@ -310,6 +331,8 @@ class ExtractionRolloutCollector:
     ) -> ExtractionOpponentController:
         if assignment.opponent_kind != "script":
             raise ValueError("A checkpoint opponent requires an opponent factory")
+        if assignment.opponent_id == "random_legal":
+            return RandomLegalExtractionOpponentController()
         return ScriptExtractionOpponentController(
             StyledExtractionTeacher(side=side, style=assignment.opponent_id)
         )

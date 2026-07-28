@@ -81,22 +81,30 @@ one selected Strong Actor hash
        adapter     adapter     adapter
 ```
 
-Candidate selection never accesses test cases:
+Candidate selection cannot access official-test cases because those cases are
+generated only after all four policies pass selection:
 
 - 240 paired validation episodes per policy;
 - 120 heldout-layout episodes per policy where required;
 - exactly one frozen 400-episode official test per policy;
 - 1,600 official-test episodes in total.
 
-The test runner creates a release lock before the first test episode, supports
-infrastructure-safe resume for that same immutable release, and refuses a
-second completed official test.
+The sealed 400-case manifest is generated from system entropy, hashed into the
+release, and then consumed by the test runner. The runner creates a release
+lock before the first test episode, supports infrastructure-safe resume for
+that same immutable release, and refuses a second completed official test.
 
 Strong must meet every frozen capability threshold before style training is
 accepted. Each style must retain at least 85% of paired Strong successes,
 remain within 10 percentage points of Strong extraction rate, retain at least
-85% of Strong mean extracted value, and show a positive paired style shift
-with a 95% confidence bound.
+85% of Strong mean extracted value, avoid catastrophic per-opponent
+regression, and show a positive paired style shift with a 10,000-resample 95%
+bootstrap interval. Style evidence is causal: kill-cache-extract for
+Aggressive, opportunity-conditioned disengagement and meaningful banking for
+Defensive, and backpack-upgrade-to-extraction for Explorer. Attack count and
+raw route distance are diagnostics, not success criteria. Extraction denial
+is reported as an auxiliary Aggressive pressure metric, never as a task reward
+or a requirement that the opponent must die before either player can extract.
 
 ## Reproduce
 

@@ -197,6 +197,10 @@ extraction. Dense progress shaping is bounded and decays during training.
 Kills have no independent terminal reward. Wasteful combat, death, timeout,
 and unbanked value loss are penalized.
 
+Only positive loot/extraction progress bonuses decay. Death, unbanked-value
+loss, timeout-value loss, and wasteful-combat penalties remain active for the
+entire run; `shaping_decay` must never anneal terminal-risk penalties to zero.
+
 The opponent pool covers RandomLegal, Aggressive, Defensive, Explorer,
 generalist scripts, and historical Strong checkpoints. Side, spawn, and item
 layout coverage are balanced.
@@ -222,6 +226,10 @@ Reports include case-level rows, paired side swaps, opponent breakdowns, and
 bootstrap confidence intervals. A reward curve, BC action accuracy, or one
 successful video cannot substitute for this gate.
 
+If the validation-ranked Strong candidate fails held-out or solo capability,
+the selector proceeds in frozen rank order. It does not declare the whole run
+failed while a lower-ranked candidate could still satisfy every Strong gate.
+
 ## Style objective
 
 Every style optimizes:
@@ -241,6 +249,10 @@ Checkpoint selection uses the validation Pareto frontier between Style
 Fidelity and Skill Retention. It never selects the checkpoint with the
 largest raw style reward alone.
 
+Validation-eligible Pareto candidates are checked against held-out capability
+in frozen rank order. A held-out failure advances to the next eligible
+candidate rather than incorrectly failing the entire style run.
+
 ### Aggressive
 
 Aggressive rewards:
@@ -253,6 +265,10 @@ Aggressive rewards:
 
 It does not reward empty firing, impossible pursuit, attacks without an
 opportunity, kills without loot conversion, or kills without extraction.
+Opponent extraction denial is reported as an auxiliary Aggressive diagnostic:
+it can show pressure on the opponent, but it is not a training reward, a
+Strong capability objective, or a standalone Aggressive gate. Both players
+are allowed to extract; the task outcome remains determined by banked value.
 
 Aggressive is the required first vertical slice. Defensive and Explorer do
 not start until Aggressive passes its complete validation gate.
@@ -298,6 +314,17 @@ Each style must satisfy all of:
 - zero Actor privilege violations;
 - zero test-case access.
 
+“Catastrophic degradation” is frozen as either more than a 20 percentage-point
+win-rate loss from Strong against one scripted opponent or an absolute
+opponent-specific win rate below 40%. Style direction uses a deterministic
+10,000-resample paired bootstrap. Aggressive evidence requires an ordered
+kill-to-cache-to-extraction conversion, Defensive evidence requires
+opportunity-conditioned disengagement plus meaningful banking, and Explorer
+evidence requires distinct loot regions and a genuine backpack-upgrade-to-
+extraction conversion. Attack count and raw route distance are diagnostics,
+never standalone style gates. Opponent extraction denial is likewise an
+Aggressive diagnostic rather than a task objective or standalone gate.
+
 The initially frozen CNN/GRU/residual configuration is the primary method.
 Configured reward-only and reward-plus-KL runs are later ablations of the same
 training system, not additional product architectures. Full-policy PPO
@@ -305,12 +332,12 @@ fine-tuning and style-conditioned policies are out of scope.
 
 ## Splits and paired evaluation
 
-The case universe is divided before long training into:
+Evaluation roles are separated before long training into:
 
 - `train`;
 - `validation`;
 - held-out-configuration validation;
-- `official test`.
+- a sealed `official test` created only after all four policies are selected.
 
 Strong and all styles use the same paired seed, learner side, opponent,
 layout, spawn, episode budget, and scenario hash within each evaluation case.
@@ -335,9 +362,12 @@ Before test:
 
 1. freeze the scenario WAD and observation schema;
 2. freeze Strong and all three style checkpoints;
-3. freeze configs, thresholds, metrics, case manifest, and selection rules;
-4. write all hashes into a release-candidate manifest;
-5. audit that test cases have never been accessed.
+3. freeze configs, thresholds, metrics, and selection rules;
+4. generate a new side-balanced official-test case manifest from system
+   entropy; test cases do not exist in train or validation configuration;
+5. bind the sealed case-manifest hash and all other hashes into a
+   release-candidate manifest;
+6. audit that no official-test episode has been executed.
 
 Official test is then run once. After it starts, only aggregation, plots,
 documentation, and release packaging may change. Policies, rewards,

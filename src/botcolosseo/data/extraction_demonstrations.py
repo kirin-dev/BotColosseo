@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+import random
 import zipfile
 from collections import Counter
 from dataclasses import dataclass
@@ -76,10 +77,18 @@ class ExtractionCase:
             raise ValueError(f"Invalid extraction learner side: {self.learner_side}")
         if self.layout_id not in {"base", "heldout-a"}:
             raise ValueError(f"Invalid extraction layout: {self.layout_id}")
-        if self.opponent_style != "idle":
+        if self.opponent_style == "idle":
+            if self.split != "solo":
+                raise ValueError(
+                    "Idle Extraction opponent is reserved for solo evaluation"
+                )
+        elif self.opponent_style == "random_legal":
+            if self.split != "train":
+                raise ValueError(
+                    "RandomLegal Extraction opponent is reserved for training"
+                )
+        else:
             ExtractionStyle(self.opponent_style)
-        elif self.split != "solo":
-            raise ValueError("Idle Extraction opponent is reserved for solo evaluation")
 
 
 def extraction_scalars(observation: ExtractionActorObservation) -> np.ndarray:
@@ -292,16 +301,22 @@ def _collect_episode_once(
         style=style,
     )
     opponent_side = "opponent" if case.learner_side == "host" else "host"
-    opponent = StyledExtractionTeacher(
-        side=opponent_side,
-        style=ExtractionStyle(case.opponent_style),
+    opponent = (
+        None
+        if case.opponent_style == "random_legal"
+        else StyledExtractionTeacher(
+            side=opponent_side,
+            style=ExtractionStyle(case.opponent_style),
+        )
     )
+    random_opponent = random.Random(case.seed)
     buffer = ExtractionDemonstrationBuffer()
     event_counts: Counter[str] = Counter()
     try:
         observations, _ = env.reset()
         learner.reset()
-        opponent.reset()
+        if opponent is not None:
+            opponent.reset()
         if rollout_controller is not None:
             rollout_controller.reset()
         for decision in range(max_decisions):
@@ -317,7 +332,11 @@ def _collect_episode_once(
                 if rollout_controller is None
                 else MacroAction(rollout_controller.act(learner_observation))
             )
-            opponent_action = opponent.act(state)
+            opponent_action = (
+                random_opponent.choice(tuple(MacroAction))
+                if opponent is None
+                else opponent.act(state)
+            )
             buffer.append(
                 learner_observation,
                 teacher_action=int(teacher_action),

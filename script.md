@@ -6,27 +6,29 @@ All commands run from the repository root on branch
 ```bash
 cd /path/to/BotColosseo
 conda activate botcolosseo
+export BOTCOLOSSEO_PYTHON="$CONDA_PREFIX/bin/python"
 export PYTHONPATH="$PWD/src"
 ```
 
-The scripts use `BOTCOLOSSEO_PYTHON` when set and otherwise use the
-`botcolosseo` environment interpreter. Select the physical GPU with
+The scripts use the explicitly selected `BOTCOLOSSEO_PYTHON`; they never fall
+back to another user's Conda installation or the ambient shell interpreter.
+Select the physical GPU with
 `BOTCOLOSSEO_GPU=0` or `BOTCOLOSSEO_GPU=1`; the process sees it as `cuda:0`.
 
 ## Verify code and scenario
 
 ```bash
-python -m pip check
-python -m ruff check src tests scripts
-python -m pytest tests/unit -q
+"$BOTCOLOSSEO_PYTHON" -m pip check
+"$BOTCOLOSSEO_PYTHON" -m ruff check src tests scripts
+"$BOTCOLOSSEO_PYTHON" -m pytest tests/unit -q
 
-python scripts/build_crystal_run_extraction.py \
+"$BOTCOLOSSEO_PYTHON" scripts/build_crystal_run_extraction.py \
   --check \
   --acc "$ACC_ROOT/build/acc" \
   --acc-include "$ACC_ROOT"
 ```
 
-Expected engineering baseline: all Ruff checks pass, 593+ unit tests pass, and
+Expected engineering baseline: all Ruff checks pass, all unit tests pass, and
 the tracked WAD matches a clean ACC build.
 
 ## Long stage 1: Strong
@@ -68,10 +70,18 @@ case manifests; provenance checks intentionally reject that.
 ## Strong candidate selection
 
 This evaluates every historical candidate on the frozen 240-episode scripted
-validation protocol, ranks without test access, then evaluates only the winner
-on 120 heldout episodes and 40 frozen solo/idle-opponent episodes. The Strong
+validation protocol, ranks without test access, then evaluates candidates in
+rank order on 120 heldout episodes and 40 frozen solo/idle-opponent episodes
+until one passes the complete gate. The Strong
 gate requires at least 90% solo extraction in addition to the scripted and
 heldout capability checks:
+
+When a complete legacy ranking exists from the pre-audit evaluator, it is used
+only to order candidates by unchanged task metrics. The candidate that may be
+selected is always re-evaluated from scratch with metric schema v2 on
+validation, heldout, and solo. This preserves the expensive all-candidate
+ranking without allowing legacy style proxies or protocol claims into release
+evidence.
 
 ```bash
 BOTCOLOSSEO_GPU=0 bash scripts/run_extraction_v3_select_strong.sh \
@@ -122,7 +132,10 @@ nohup env BOTCOLOSSEO_GPU=1 \
 echo $! > runs/extraction/explorer.pid
 ```
 
-Then select using validation only:
+Then select using the validation Style Fidelity/Skill Retention Pareto frontier
+plus paired heldout evidence. If the first validation candidate fails heldout,
+the selector tries the next validation-eligible candidate in frozen rank
+order:
 
 ```bash
 BOTCOLOSSEO_GPU=0 \
@@ -135,12 +148,20 @@ BOTCOLOSSEO_GPU=1 \
 
 ## Freeze release and run the official test once
 
+The official-test cases do not exist during training or validation. After all
+four policies pass selection, generate the 400-case side-balanced manifest
+from system entropy, then bind its hash into the immutable release:
+
 ```bash
+python scripts/seal_extraction_official_test.py
+
 python -m botcolosseo.cli.freeze_extraction_release \
   --strong-selection runs/extraction/strong-ppo/selection.json \
   --aggressive-selection runs/extraction/styles/aggressive/selection.json \
   --defensive-selection runs/extraction/styles/defensive/selection.json \
-  --explorer-selection runs/extraction/styles/explorer/selection.json
+  --explorer-selection runs/extraction/styles/explorer/selection.json \
+  --official-test-manifest \
+    runs/extraction/release/official-test-manifest.json
 ```
 
 The official runner writes a release lock before the first test episode and
@@ -166,9 +187,9 @@ python scripts/audit_extraction_v3_release.py
 The selector searches the full validation ledgers for representative cases:
 
 - Strong: successful high-value extraction;
-- Aggressive: hit → kill → corpse cache → loot → extraction where available;
-- Defensive: survival and extraction with low attack count;
-- Explorer: broad useful route coverage, pickups, and extraction.
+- Aggressive: ordered hit → kill → corpse cache → loot → extraction;
+- Defensive: a real low-resource disengagement followed by meaningful extraction;
+- Explorer: distinct loot regions, a real backpack upgrade, then extraction.
 
 Generated videos contain viewer-only telemetry. They are not policy inputs and
 are never selected from official-test episodes.

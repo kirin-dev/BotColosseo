@@ -33,17 +33,31 @@ def test_showcase_selection_prefers_complete_aggressive_causal_chain() -> None:
         valid_hits=5,
         kills=1,
         cache_looted=1,
+        aggressive_chains=1,
         extracted_value=30,
     )
     assert _score("aggressive", chain) > _score("aggressive", generic)
 
 
 def test_showcase_selection_uses_distinct_visible_style_signatures() -> None:
-    assert _score("defensive", episode(attack_decisions=0)) > _score(
+    assert _score(
         "defensive",
-        episode(attack_decisions=10),
+        episode(
+            successful_disengagements=1,
+            meaningful_extractions=1,
+        ),
+    ) > _score(
+        "defensive",
+        episode(attack_decisions=0),
     )
-    assert _score("explorer", episode(unique_route_cells=12)) > _score(
+    assert _score(
         "explorer",
-        episode(unique_route_cells=4),
+        episode(
+            meaningful_loot_regions=3,
+            backpack_upgrades=1,
+            upgrade_to_extraction_conversions=1,
+        ),
+    ) > _score(
+        "explorer",
+        episode(unique_route_cells=20),
     )

@@ -38,6 +38,7 @@ from botcolosseo.training.extraction_rewards import (
 from botcolosseo.training.extraction_rollout import (
     ExtractionRolloutCollector,
     PolicyExtractionOpponentController,
+    RandomLegalExtractionOpponentController,
     ScriptExtractionOpponentController,
 )
 from botcolosseo.training.extraction_run_log import (
@@ -261,6 +262,8 @@ def main(argv: list[str] | None = None) -> int:
 
     def opponent_factory(assignment, side):
         if assignment.opponent_kind == "script":
+            if assignment.opponent_id == "random_legal":
+                return RandomLegalExtractionOpponentController()
             return ScriptExtractionOpponentController(
                 StyledExtractionTeacher(side=side, style=assignment.opponent_id)
             )
@@ -378,6 +381,7 @@ def main(argv: list[str] | None = None) -> int:
                 "event_counts": dict(sorted(events.items())),
                 "fair_actor_observation_only": True,
                 "frozen_strong_actor": True,
+                "frozen_strong_base": True,
                 "kl_early_stop_count": kl_stops,
                 "learned_residual_adapter": True,
                 "reward_components": dict(sorted(rewards.items())),

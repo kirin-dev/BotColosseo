@@ -32,9 +32,12 @@ def _load(path: Path, policy: str) -> dict[str, object]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if (
         payload.get("policy") != policy
+        or payload.get("metric_schema_version") != 2
         or payload.get("split") != "validation"
         or payload.get("complete") is not True
         or payload.get("test_cases_accessed") is not False
+        or payload.get("actor_privilege_violations") != 0
+        or payload.get("fair_actor_observation_only") is not True
     ):
         raise ValueError("Candidate ranking report identity does not match")
     if len(payload["metrics"]["episodes"]) != 240:
@@ -135,13 +138,44 @@ def main(argv: list[str] | None = None) -> int:
                 "score": list(score),
             }
         )
-    selected = max(candidates, key=lambda item: tuple(item["score"]))
+    if args.policy == "strong":
+        frontier = candidates
+        selected = max(candidates, key=lambda item: tuple(item["score"]))
+    else:
+        eligible = [item for item in candidates if item["eligible"]]
+        pool = eligible or candidates
+
+        def objectives(item: dict[str, object]) -> tuple[float, float]:
+            score = item["score"]
+            return float(score[1]), float(score[2])
+
+        frontier = [
+            candidate
+            for candidate in pool
+            if not any(
+                other is not candidate
+                and objectives(other)[0] >= objectives(candidate)[0]
+                and objectives(other)[1] >= objectives(candidate)[1]
+                and objectives(other) != objectives(candidate)
+                for other in pool
+            )
+        ]
+        selected = max(frontier, key=lambda item: objectives(item))
     payload = {
         "schema_version": 1,
         "policy": args.policy,
         "selection_split": "validation",
         "protocol_sha256": protocol_sha256,
         "candidates": candidates,
+        "pareto_frontier": [
+            {
+                "checkpoint": item["checkpoint"],
+                "checkpoint_sha256": item["checkpoint_sha256"],
+                "eligible": item["eligible"],
+                "score": item["score"],
+            }
+            for item in frontier
+        ],
         "selected": selected,
         "test_cases_accessed": False,
     }

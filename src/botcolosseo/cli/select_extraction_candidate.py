@@ -9,7 +9,9 @@ from pathlib import Path
 from botcolosseo.data.demonstrations import sha256_file
 from botcolosseo.evaluation.extraction import ExtractionEpisodeMetrics
 from botcolosseo.evaluation.extraction_gates import (
+    GateCheck,
     strong_validation_gate,
+    style_heldout_gate,
     style_validation_gate,
 )
 
@@ -28,6 +30,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--heldout-report", type=Path)
     parser.add_argument("--solo-report", type=Path)
     parser.add_argument("--strong-validation-report", type=Path)
+    parser.add_argument("--strong-heldout-report", type=Path)
     parser.add_argument("--output-checkpoint", type=Path, required=True)
     parser.add_argument("--output-report", type=Path, required=True)
     return parser
@@ -41,9 +44,12 @@ def _load_report(path: Path, *, policy: str, split: str) -> dict[str, object]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if (
         payload.get("policy") != policy
+        or payload.get("metric_schema_version") != 2
         or payload.get("split") != split
         or payload.get("complete") is not True
         or payload.get("test_cases_accessed") is not False
+        or payload.get("actor_privilege_violations") != 0
+        or payload.get("fair_actor_observation_only") is not True
     ):
         raise ValueError("Extraction evaluation report identity does not match")
     return payload
@@ -89,6 +95,7 @@ def main(argv: list[str] | None = None) -> int:
             args.heldout_report is None
             or args.solo_report is None
             or args.strong_validation_report is not None
+            or args.strong_heldout_report is not None
         ):
             raise ValueError("Strong selection requires heldout and solo reports")
         heldout_path = _resolve(root, args.heldout_report)
@@ -115,33 +122,71 @@ def main(argv: list[str] | None = None) -> int:
             _episodes(heldout),
             _episodes(solo),
         )
+        gate_checks = (
+            *gate.checks,
+            GateCheck("actor_privilege_violations", True, 0.0, "==0"),
+            GateCheck("test_case_access", True, 0.0, "==0"),
+        )
+        gate_passed = gate.passed
         evidence.extend((heldout_path, solo_path))
     else:
         if (
             args.strong_validation_report is None
-            or args.heldout_report is not None
+            or args.strong_heldout_report is None
+            or args.heldout_report is None
             or args.solo_report is not None
         ):
-            raise ValueError("Style selection requires paired Strong validation")
+            raise ValueError(
+                "Style selection requires paired validation and heldout evidence"
+            )
         strong_path = _resolve(root, args.strong_validation_report)
+        heldout_path = _resolve(root, args.heldout_report)
+        strong_heldout_path = _resolve(root, args.strong_heldout_report)
         strong = _load_report(
             strong_path,
             policy="strong",
             split="validation",
         )
-        if strong["protocol_sha256"] != validation["protocol_sha256"]:
+        heldout = _load_report(
+            heldout_path,
+            policy=args.policy,
+            split="heldout",
+        )
+        strong_heldout = _load_report(
+            strong_heldout_path,
+            policy="strong",
+            split="heldout",
+        )
+        if (
+            strong["protocol_sha256"] != validation["protocol_sha256"]
+            or heldout["protocol_sha256"] != validation["protocol_sha256"]
+            or strong_heldout["protocol_sha256"] != validation["protocol_sha256"]
+            or heldout["checkpoint_sha256"] != checkpoint_sha256
+        ):
             raise ValueError("Style paired evidence protocol does not match")
-        gate = style_validation_gate(
+        validation_gate = style_validation_gate(
             style=args.policy,
             strong=_episodes(strong),
             styled=_episodes(validation),
         )
-        evidence.append(strong_path)
+        heldout_gate = style_heldout_gate(
+            strong=_episodes(strong_heldout),
+            styled=_episodes(heldout),
+        )
+        gate_checks = (
+            *validation_gate.checks,
+            *heldout_gate.checks,
+            GateCheck("actor_privilege_violations", True, 0.0, "==0"),
+            GateCheck("test_case_access", True, 0.0, "==0"),
+        )
+        gate_passed = validation_gate.passed and heldout_gate.passed
+        evidence.extend((strong_path, heldout_path, strong_heldout_path))
     result = {
         "schema_version": 1,
+        "gate_schema_version": 2,
         "policy": args.policy,
-        "eligible": gate.passed,
-        "checks": [asdict(item) for item in gate.checks],
+        "eligible": gate_passed,
+        "checks": [asdict(item) for item in gate_checks],
         "candidate_checkpoint": str(checkpoint.relative_to(root)),
         "candidate_checkpoint_sha256": checkpoint_sha256,
         "evidence": [str(path.relative_to(root)) for path in evidence],
@@ -152,7 +197,7 @@ def main(argv: list[str] | None = None) -> int:
         "scenario_hash": validation["scenario_hash"],
         "test_cases_accessed": False,
     }
-    if not gate.passed:
+    if not gate_passed:
         _atomic_json(result, output_report)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 2

@@ -26,6 +26,12 @@
     {"split": "train", "seed": 41011, "learner_side": "host", "opponent_style": "defensive"},
     {"split": "train", "seed": 41011, "learner_side": "opponent", "opponent_style": "defensive"},
     {"split": "train", "seed": 41012, "learner_side": "host", "opponent_style": "explorer"},
-    {"split": "train", "seed": 41012, "learner_side": "opponent", "opponent_style": "explorer"}
+    {"split": "train", "seed": 41012, "learner_side": "opponent", "opponent_style": "explorer"},
+    {"split": "train", "seed": 41013, "learner_side": "host", "opponent_style": "random_legal"},
+    {"split": "train", "seed": 41013, "learner_side": "opponent", "opponent_style": "random_legal"},
+    {"split": "train", "seed": 41014, "learner_side": "host", "opponent_style": "random_legal"},
+    {"split": "train", "seed": 41014, "learner_side": "opponent", "opponent_style": "random_legal"},
+    {"split": "train", "seed": 41015, "learner_side": "host", "opponent_style": "random_legal"},
+    {"split": "train", "seed": 41015, "learner_side": "opponent", "opponent_style": "random_legal"}
   ]
 }

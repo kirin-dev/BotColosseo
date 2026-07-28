@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PYTHON="${BOTCOLOSSEO_PYTHON:-$(command -v python)}"
+PYTHON="${BOTCOLOSSEO_PYTHON:-/home/wencong/miniconda3/envs/botcolosseo/bin/python}"
 GPU="${BOTCOLOSSEO_GPU:-0}"
 export PYTHONPATH="$ROOT/src"
 export CUDA_VISIBLE_DEVICES="$GPU"
@@ -13,18 +13,29 @@ REPORTS="reports/extraction/showcase"
 BASE="runs/extraction/strong-ppo/selected.pt"
 mkdir -p "$MEDIA" "$REPORTS"
 
-report_from_ranking() {
-  "$PYTHON" - "$1" <<'PY'
+report_from_selection() {
+  "$PYTHON" - "$1" "$2" <<'PY'
 import json
 import sys
-print(json.load(open(sys.argv[1], encoding="utf-8"))["selected"]["report"])
+
+selection = json.load(open(sys.argv[1], encoding="utf-8"))
+matches = []
+for path in selection["evidence"]:
+    if not path.endswith("-validation.json"):
+        continue
+    report = json.load(open(path, encoding="utf-8"))
+    if report.get("policy") == sys.argv[2]:
+        matches.append(path)
+if len(matches) != 1:
+    raise SystemExit("Selection has no unique policy validation report")
+print(matches[0])
 PY
 }
 
-strong_report="$(report_from_ranking runs/extraction/strong-ppo/evaluation/ranking.json)"
-aggressive_report="$(report_from_ranking runs/extraction/styles/aggressive/evaluation/ranking.json)"
-defensive_report="$(report_from_ranking runs/extraction/styles/defensive/evaluation/ranking.json)"
-explorer_report="$(report_from_ranking runs/extraction/styles/explorer/evaluation/ranking.json)"
+strong_report="$(report_from_selection runs/extraction/strong-ppo/selection.json strong)"
+aggressive_report="$(report_from_selection runs/extraction/styles/aggressive/selection.json aggressive)"
+defensive_report="$(report_from_selection runs/extraction/styles/defensive/selection.json defensive)"
+explorer_report="$(report_from_selection runs/extraction/styles/explorer/selection.json explorer)"
 selection="$REPORTS/selection.json"
 if [[ ! -f "$selection" ]]; then
   "$PYTHON" -u -m botcolosseo.cli.select_extraction_showcases \
