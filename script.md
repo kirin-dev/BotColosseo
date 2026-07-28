@@ -6,23 +6,23 @@ All commands run from the repository root on branch
 ```bash
 cd /path/to/BotColosseo
 conda activate botcolosseo
+export BOTCOLOSSEO_PYTHON="$CONDA_PREFIX/bin/python"
 export PYTHONPATH="$PWD/src"
 ```
 
-The scripts use `BOTCOLOSSEO_PYTHON` when set and otherwise use
-`/home/wencong/miniconda3/envs/botcolosseo/bin/python`; they never fall back
-to another user's Conda installation or the ambient shell interpreter. Select
-the physical GPU with
+The scripts use the explicitly selected `BOTCOLOSSEO_PYTHON`; they never fall
+back to another user's Conda installation or the ambient shell interpreter.
+Select the physical GPU with
 `BOTCOLOSSEO_GPU=0` or `BOTCOLOSSEO_GPU=1`; the process sees it as `cuda:0`.
 
 ## Verify code and scenario
 
 ```bash
-python -m pip check
-python -m ruff check src tests scripts
-python -m pytest tests/unit -q
+"$BOTCOLOSSEO_PYTHON" -m pip check
+"$BOTCOLOSSEO_PYTHON" -m ruff check src tests scripts
+"$BOTCOLOSSEO_PYTHON" -m pytest tests/unit -q
 
-python scripts/build_crystal_run_extraction.py \
+"$BOTCOLOSSEO_PYTHON" scripts/build_crystal_run_extraction.py \
   --check \
   --acc "$ACC_ROOT/build/acc" \
   --acc-include "$ACC_ROOT"
