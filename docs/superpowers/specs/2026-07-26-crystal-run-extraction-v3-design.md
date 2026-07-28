@@ -249,6 +249,10 @@ Checkpoint selection uses the validation Pareto frontier between Style
 Fidelity and Skill Retention. It never selects the checkpoint with the
 largest raw style reward alone.
 
+Validation-eligible Pareto candidates are checked against held-out capability
+in frozen rank order. A held-out failure advances to the next eligible
+candidate rather than incorrectly failing the entire style run.
+
 ### Aggressive
 
 Aggressive rewards:

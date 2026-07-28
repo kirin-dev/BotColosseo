@@ -97,31 +97,51 @@ if [[ ! -f "$ranking" ]]; then
     --output "$ranking"
 fi
 
-selected_checkpoint="$("$PYTHON" - "$ranking" <<'PY'
+if [[ -f "$OUTPUT/selection.json" ]]; then
+  if "$PYTHON" - "$OUTPUT/selection.json" "$STYLE" <<'PY'
 import json
 import sys
-print(json.load(open(sys.argv[1], encoding="utf-8"))["selected"]["checkpoint"])
+
+selection = json.load(open(sys.argv[1], encoding="utf-8"))
+raise SystemExit(not (
+    selection.get("gate_schema_version") == 2
+    and selection.get("policy") == sys.argv[2]
+    and selection.get("eligible") is True
+    and selection.get("test_cases_accessed") is False
+))
 PY
-)"
-selected_report="$("$PYTHON" - "$ranking" <<'PY'
-import json
-import sys
-print(json.load(open(sys.argv[1], encoding="utf-8"))["selected"]["report"])
-PY
-)"
-selected_tag="$(basename "${selected_checkpoint%.pt}")"
-heldout_report="$EVAL_ROOT/$selected_tag-heldout.json"
-if [[ ! -f "$heldout_report" ]]; then
-  "$PYTHON" -u -m botcolosseo.cli.evaluate_extraction_v3 \
-    --checkpoint "$selected_checkpoint" \
-    --base-checkpoint "$BASE" \
-    --policy "$STYLE" \
-    --split heldout \
-    --device cuda:0 \
-    --output "$heldout_report"
+  then
+    echo "SKIP complete objective-aligned $STYLE selection"
+    exit 0
+  fi
+  archive="$OUTPUT/archive/pre-objective-alignment"
+  mkdir -p "$archive"
+  for artifact in selection.json selected.pt; do
+    if [[ -e "$OUTPUT/$artifact" ]]; then
+      if [[ -e "$archive/$artifact" ]]; then
+        echo "Refusing to overwrite archived legacy $STYLE $artifact" >&2
+        exit 1
+      fi
+      mv "$OUTPUT/$artifact" "$archive/$artifact"
+    fi
+  done
 fi
-if [[ ! -f "$OUTPUT/selection.json" ]]; then
-  "$PYTHON" -u -m botcolosseo.cli.select_extraction_candidate \
+
+selected=false
+while IFS=$'\t' read -r selected_checkpoint selected_report; do
+  selected_tag="$(basename "${selected_checkpoint%.pt}")"
+  heldout_report="$EVAL_ROOT/$selected_tag-heldout.json"
+  full_gate_report="$EVAL_ROOT/$selected_tag-full-gate.json"
+  if [[ ! -f "$heldout_report" ]]; then
+    "$PYTHON" -u -m botcolosseo.cli.evaluate_extraction_v3 \
+      --checkpoint "$selected_checkpoint" \
+      --base-checkpoint "$BASE" \
+      --policy "$STYLE" \
+      --split heldout \
+      --device cuda:0 \
+      --output "$heldout_report"
+  fi
+  if "$PYTHON" -u -m botcolosseo.cli.select_extraction_candidate \
     --policy "$STYLE" \
     --checkpoint "$selected_checkpoint" \
     --validation-report "$selected_report" \
@@ -129,7 +149,29 @@ if [[ ! -f "$OUTPUT/selection.json" ]]; then
     --heldout-report "$heldout_report" \
     --strong-heldout-report "$strong_heldout" \
     --output-checkpoint "$OUTPUT/selected.pt" \
-    --output-report "$OUTPUT/selection.json"
+    --output-report "$full_gate_report"
+  then
+    mv "$full_gate_report" "$OUTPUT/selection.json"
+    selected=true
+    break
+  fi
+done < <("$PYTHON" - "$ranking" <<'PY'
+import json
+import sys
+
+ranking = json.load(open(sys.argv[1], encoding="utf-8"))
+for candidate in sorted(
+    ranking["candidates"],
+    key=lambda item: tuple(item["score"]),
+    reverse=True,
+):
+    if candidate["eligible"]:
+        print(candidate["checkpoint"], candidate["report"], sep="\t")
+PY
+)
+if [[ "$selected" != true ]]; then
+  echo "No $STYLE candidate passed validation and heldout gates" >&2
+  exit 2
 fi
 
 echo "Crystal Run: Extraction $STYLE selection complete"

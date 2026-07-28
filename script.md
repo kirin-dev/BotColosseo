@@ -132,7 +132,10 @@ nohup env BOTCOLOSSEO_GPU=1 \
 echo $! > runs/extraction/explorer.pid
 ```
 
-Then select using paired validation plus heldout evidence:
+Then select using the validation Style Fidelity/Skill Retention Pareto frontier
+plus paired heldout evidence. If the first validation candidate fails heldout,
+the selector tries the next validation-eligible candidate in frozen rank
+order:
 
 ```bash
 BOTCOLOSSEO_GPU=0 \
