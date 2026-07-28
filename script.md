@@ -100,13 +100,21 @@ do not relax thresholds.
 
 ## Long stage 2: learned styles
 
-Aggressive is first:
+Aggressive is first. Run styles in resumable 200k-step stages and evaluate the
+newest candidate before deciding whether to extend to 400k or 600k:
 
 ```bash
-nohup env BOTCOLOSSEO_GPU=0 \
+nohup env BOTCOLOSSEO_GPU=0 BOTCOLOSSEO_STOP_AFTER_STEPS=200000 \
   bash scripts/run_extraction_v3_style.sh aggressive \
   > runs/extraction/aggressive.log 2>&1 &
 echo $! > runs/extraction/aggressive.pid
+```
+
+To continue the same run without changing its config hash:
+
+```bash
+BOTCOLOSSEO_GPU=0 BOTCOLOSSEO_STOP_AFTER_STEPS=400000 \
+  bash scripts/run_extraction_v3_style.sh aggressive
 ```
 
 After training:

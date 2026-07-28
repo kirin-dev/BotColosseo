@@ -10,6 +10,12 @@ STYLE="$1"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PYTHON="${BOTCOLOSSEO_PYTHON:-/home/wencong/miniconda3/envs/botcolosseo/bin/python}"
 GPU="${BOTCOLOSSEO_GPU:-0}"
+STOP_AFTER_STEPS="${BOTCOLOSSEO_STOP_AFTER_STEPS:-600000}"
+if [[ ! "$STOP_AFTER_STEPS" =~ ^[1-9][0-9]*$ ]] || \
+  (( STOP_AFTER_STEPS > 600000 )); then
+  echo "BOTCOLOSSEO_STOP_AFTER_STEPS must be an integer in [1, 600000]" >&2
+  exit 2
+fi
 export PYTHONPATH="$ROOT/src"
 export CUDA_VISIBLE_DEVICES="$GPU"
 cd "$ROOT"
@@ -70,6 +76,7 @@ else
     --base-checkpoint "$BASE" \
     --device cuda:0 \
     --output-dir "$OUTPUT" \
+    --stop-after-steps "$STOP_AFTER_STEPS" \
     "${resume[@]}"
 fi
 
