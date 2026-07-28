@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import random
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -15,12 +15,23 @@ class CheckpointMetadata:
     config_hash: str
     scenario_hash: str
     counters: dict[str, int]
+    lineage: dict[str, str | int] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if not self.config_hash or not self.scenario_hash:
             raise ValueError("Checkpoint provenance hashes must be nonempty")
         if any(value < 0 for value in self.counters.values()):
             raise ValueError("Checkpoint counters must be nonnegative")
+        if any(
+            not isinstance(key, str)
+            or not key
+            or isinstance(value, bool)
+            or (isinstance(value, str) and not value)
+            or (isinstance(value, int) and value < 0)
+            or not isinstance(value, (str, int))
+            for key, value in self.lineage.items()
+        ):
+            raise ValueError("Checkpoint lineage is invalid")
 
 
 def _rng_state() -> dict[str, Any]:
@@ -94,4 +105,21 @@ def load_training_checkpoint(
     scheduler.load_state_dict(payload["scheduler"])
     if restore_rng:
         _restore_rng_state(payload["rng"])
+    return metadata
+
+
+def load_model_weights_checkpoint(
+    path: Path,
+    *,
+    model: torch.nn.Module,
+    expected_scenario_hash: str,
+) -> CheckpointMetadata:
+    """Load model weights without restoring optimizer, counters, or RNG."""
+    payload = torch.load(path, map_location="cpu", weights_only=False)
+    if payload.get("schema_version") != 1:
+        raise ValueError("Unsupported checkpoint schema version")
+    metadata = CheckpointMetadata(**payload["metadata"])
+    if metadata.scenario_hash != expected_scenario_hash:
+        raise ValueError("Checkpoint scenario hash does not match")
+    model.load_state_dict(payload["model"])
     return metadata

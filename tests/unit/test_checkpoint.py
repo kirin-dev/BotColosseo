@@ -6,6 +6,7 @@ import torch
 
 from botcolosseo.agents.checkpoint import (
     CheckpointMetadata,
+    load_model_weights_checkpoint,
     load_training_checkpoint,
     save_training_checkpoint,
 )
@@ -90,6 +91,41 @@ def test_checkpoint_rejects_provenance_mismatch(tmp_path: Path) -> None:
             expected_config_hash="wrong",
             expected_scenario_hash="scenario",
         )
+
+
+def test_weights_only_load_preserves_fresh_optimizer_and_returns_lineage(
+    tmp_path: Path,
+) -> None:
+    source, optimizer, scheduler = components()
+    update(source, optimizer, scheduler)
+    metadata = CheckpointMetadata(
+        "parent-config",
+        "scenario",
+        {"environment_steps": 600_000, "updates": 12},
+        {"generation": "baseline"},
+    )
+    path = save_training_checkpoint(
+        tmp_path / "parent.pt",
+        model=source,
+        optimizer=optimizer,
+        scheduler=scheduler,
+        metadata=metadata,
+    )
+    target, fresh_optimizer, _ = components()
+    fresh_optimizer_state = fresh_optimizer.state_dict()
+
+    loaded = load_model_weights_checkpoint(
+        path,
+        model=target,
+        expected_scenario_hash="scenario",
+    )
+
+    assert loaded == metadata
+    assert fresh_optimizer.state_dict() == fresh_optimizer_state
+    assert all(
+        torch.equal(value, source.state_dict()[name])
+        for name, value in target.state_dict().items()
+    )
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA is unavailable")

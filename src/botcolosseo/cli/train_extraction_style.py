@@ -12,6 +12,7 @@ from pathlib import Path
 import torch
 import yaml
 
+from botcolosseo.agents.checkpoint import load_model_weights_checkpoint
 from botcolosseo.agents.extraction_model import (
     ExtractionResidualStyleActorCritic,
 )
@@ -68,7 +69,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--rollout-steps", type=int)
     parser.add_argument("--base-checkpoint", type=Path)
     parser.add_argument("--output-dir", type=Path)
-    parser.add_argument("--resume", type=Path)
+    initialization = parser.add_mutually_exclusive_group()
+    initialization.add_argument("--resume", type=Path)
+    initialization.add_argument("--initialize-from", type=Path)
     return parser
 
 
@@ -152,6 +155,59 @@ def _style_reward_factory(style: str, scale: float):
     raise ValueError("Unsupported Extraction style")
 
 
+def _initialize_style_weights(
+    *,
+    checkpoint: Path,
+    model: torch.nn.Module,
+    style: str,
+    base_checkpoint_sha256: str,
+    scenario_hash: str,
+    root: Path,
+) -> dict[str, str | int]:
+    summary_path = checkpoint.parent / "summary.json"
+    if not summary_path.is_file():
+        raise FileNotFoundError(
+            f"Style initialization summary is missing: {summary_path}"
+        )
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    checkpoint_sha256 = sha256_file(checkpoint)
+    if (
+        summary.get("style") != style
+        or summary.get("scenario_hash") != scenario_hash
+        or summary.get("base_checkpoint_sha256") != base_checkpoint_sha256
+        or summary.get("checkpoint_sha256") != checkpoint_sha256
+        or summary.get("completed") is not True
+        or summary.get("test_cases_accessed") is not False
+    ):
+        raise ValueError("Style initialization summary provenance does not match")
+    metadata = load_model_weights_checkpoint(
+        checkpoint,
+        model=model,
+        expected_scenario_hash=scenario_hash,
+    )
+    if (
+        summary.get("config_hash") != metadata.config_hash
+        or summary.get("environment_steps")
+        != metadata.counters.get("environment_steps")
+        or summary.get("updates") != metadata.counters.get("updates")
+    ):
+        raise ValueError("Style initialization checkpoint provenance does not match")
+    try:
+        checkpoint_name = str(checkpoint.relative_to(root))
+        summary_name = str(summary_path.relative_to(root))
+    except ValueError as error:
+        raise ValueError("Style initialization artifacts must be inside the project") from error
+    return {
+        "initialization_mode": "weights_only",
+        "parent_checkpoint": checkpoint_name,
+        "parent_checkpoint_sha256": checkpoint_sha256,
+        "parent_config_hash": metadata.config_hash,
+        "parent_environment_steps": metadata.counters["environment_steps"],
+        "parent_summary": summary_name,
+        "parent_updates": metadata.counters["updates"],
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     root = Path(__file__).resolve().parents[3]
@@ -223,6 +279,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     environment_steps = 0
     episode_index = 0
+    lineage: dict[str, str | int] = {}
     if args.resume is not None:
         resume = args.resume if args.resume.is_absolute() else root / args.resume
         metadata = trainer.load(
@@ -233,6 +290,21 @@ def main(argv: list[str] | None = None) -> int:
         )
         environment_steps = metadata.counters["environment_steps"]
         episode_index = metadata.counters["episodes"]
+        lineage = metadata.lineage
+    elif args.initialize_from is not None:
+        initialize_from = (
+            args.initialize_from
+            if args.initialize_from.is_absolute()
+            else root / args.initialize_from
+        )
+        lineage = _initialize_style_weights(
+            checkpoint=initialize_from,
+            model=model,
+            style=args.style,
+            base_checkpoint_sha256=base_sha256,
+            scenario_hash=scenario_hash,
+            root=root,
+        )
     history = reconcile_extraction_metrics(
         metrics_path,
         committed_environment_steps=environment_steps,
@@ -355,6 +427,7 @@ def main(argv: list[str] | None = None) -> int:
                     "environment_steps": environment_steps,
                     "episodes": collector.episode_index,
                 },
+                lineage=lineage,
             )
             interval = int(config["checkpoint_interval_steps"])
             if (
@@ -384,6 +457,7 @@ def main(argv: list[str] | None = None) -> int:
                 "frozen_strong_base": True,
                 "kl_early_stop_count": kl_stops,
                 "learned_residual_adapter": True,
+                "lineage": lineage,
                 "reward_components": dict(sorted(rewards.items())),
                 "scenario_hash": scenario_hash,
                 "style": args.style,

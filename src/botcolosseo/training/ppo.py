@@ -331,6 +331,7 @@ class PPOTrainer:
         config_hash: str,
         scenario_hash: str,
         counters: dict[str, int] | None = None,
+        lineage: dict[str, str | int] | None = None,
     ) -> Path:
         metadata_counters = dict(counters or {})
         if "updates" in metadata_counters:
@@ -345,6 +346,7 @@ class PPOTrainer:
                 config_hash=config_hash,
                 scenario_hash=scenario_hash,
                 counters=metadata_counters,
+                lineage=dict(lineage or {}),
             ),
         )
 

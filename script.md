@@ -125,6 +125,34 @@ BOTCOLOSSEO_GPU=0 \
   > runs/extraction/aggressive-selection.log 2>&1
 ```
 
+If the 600k candidate passes every Aggressive check except the paired style
+CI lower bound, run the approved weights-only calibration. It preserves the
+600k lineage, resets optimizer state, uses a 1.5x bounded Aggressive ledger,
+and writes to an isolated directory:
+
+```bash
+nohup env BOTCOLOSSEO_GPU=0 BOTCOLOSSEO_STOP_AFTER_STEPS=100000 \
+  bash scripts/run_extraction_v3_aggressive_calibration.sh \
+  > runs/extraction/aggressive-calibration.log 2>&1 &
+echo $! > runs/extraction/aggressive-calibration.pid
+```
+
+Evaluate the calibrated candidates against the unchanged validation and
+heldout gates, then promote only a fully eligible selection:
+
+```bash
+BOTCOLOSSEO_GPU=0 \
+  BOTCOLOSSEO_STYLE_OUTPUT=runs/extraction/styles/aggressive-calibration-v2 \
+  bash scripts/run_extraction_v3_select_style.sh aggressive \
+  > runs/extraction/aggressive-calibration-selection.log 2>&1
+
+bash scripts/promote_extraction_v3_aggressive_calibration.sh
+```
+
+If 100k fails validation, resume once with
+`BOTCOLOSSEO_STOP_AFTER_STEPS=200000`. Failure at 200k ends this calibration;
+do not increase reward scale or relax the gate.
+
 After the Aggressive engineering path is valid, Defensive and Explorer may use
 the two A100s concurrently:
 

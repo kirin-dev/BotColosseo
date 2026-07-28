@@ -14,7 +14,7 @@ export PYTHONPATH="$ROOT/src"
 export CUDA_VISIBLE_DEVICES="$GPU"
 cd "$ROOT"
 
-OUTPUT="runs/extraction/styles/$STYLE"
+OUTPUT="${BOTCOLOSSEO_STYLE_OUTPUT:-runs/extraction/styles/$STYLE}"
 EVAL_ROOT="$OUTPUT/evaluation-v2"
 BASE="runs/extraction/strong-ppo/selected.pt"
 STRONG_SELECTION="runs/extraction/strong-ppo/selection.json"
