@@ -30,6 +30,7 @@ import sys
 selection = json.load(open(sys.argv[1], encoding="utf-8"))
 raise SystemExit(not (
     selection.get("policy") == "aggressive"
+    and selection.get("gate_schema_version") == 2
     and selection.get("eligible") is True
     and selection.get("test_cases_accessed") is False
     and selection.get("selected_checkpoint_sha256")
