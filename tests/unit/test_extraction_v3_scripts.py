@@ -19,3 +19,13 @@ def test_style_runner_exposes_resumable_stage_budget() -> None:
     assert 'BOTCOLOSSEO_STOP_AFTER_STEPS:-600000' in source
     assert '--stop-after-steps "$STOP_AFTER_STEPS"' in source
     assert "STOP_AFTER_STEPS > 600000" in source
+
+
+def test_style_selector_rebuilds_ranking_after_new_stage_candidates() -> None:
+    source = Path(
+        "scripts/run_extraction_v3_select_style.sh"
+    ).read_text(encoding="utf-8")
+
+    assert 'ranking_tmp="$EVAL_ROOT/.ranking.json.tmp"' in source
+    assert '--output "$ranking_tmp"' in source
+    assert 'mv "$ranking_tmp" "$ranking"' in source

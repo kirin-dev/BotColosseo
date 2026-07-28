@@ -90,13 +90,17 @@ for checkpoint in "$OUTPUT"/candidate-*.pt; do
 done
 
 ranking="$EVAL_ROOT/ranking.json"
-if [[ ! -f "$ranking" ]]; then
-  "$PYTHON" -u -m botcolosseo.cli.rank_extraction_candidates \
-    --policy "$STYLE" \
-    "${reports[@]}" \
-    --strong-validation-report "$strong_validation" \
-    --output "$ranking"
+ranking_tmp="$EVAL_ROOT/.ranking.json.tmp"
+if [[ -e "$ranking_tmp" ]]; then
+  echo "Refusing to overwrite stale temporary ranking: $ranking_tmp" >&2
+  exit 1
 fi
+"$PYTHON" -u -m botcolosseo.cli.rank_extraction_candidates \
+  --policy "$STYLE" \
+  "${reports[@]}" \
+  --strong-validation-report "$strong_validation" \
+  --output "$ranking_tmp"
+mv "$ranking_tmp" "$ranking"
 
 if [[ -f "$OUTPUT/selection.json" ]]; then
   if "$PYTHON" - "$OUTPUT/selection.json" "$STYLE" <<'PY'
