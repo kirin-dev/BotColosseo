@@ -197,6 +197,10 @@ extraction. Dense progress shaping is bounded and decays during training.
 Kills have no independent terminal reward. Wasteful combat, death, timeout,
 and unbanked value loss are penalized.
 
+Only positive loot/extraction progress bonuses decay. Death, unbanked-value
+loss, timeout-value loss, and wasteful-combat penalties remain active for the
+entire run; `shaping_decay` must never anneal terminal-risk penalties to zero.
+
 The opponent pool covers RandomLegal, Aggressive, Defensive, Explorer,
 generalist scripts, and historical Strong checkpoints. Side, spawn, and item
 layout coverage are balanced.

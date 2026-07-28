@@ -55,6 +55,7 @@ class ExtractionTaskRewardConfig:
     extraction_started: float = 0.02
     invalid_attack: float = -0.002
     death: float = -0.25
+    death_value_scale: float = -1 / 150
     timeout_value_scale: float = -1 / 150
     loot_cap: int = 8
     extraction_started_cap: int = 2
@@ -81,7 +82,7 @@ class ExtractionTaskRewardLedger(_BoundedLedger):
         state_after: ExtractionPrivilegedState,
         scale: float,
     ) -> ExtractionReward:
-        del observation_before, state_before
+        del state_before
         if not 0 <= scale <= 1:
             raise ValueError("Extraction task shaping scale must be in [0, 1]")
         components: dict[str, float] = {}
@@ -109,6 +110,10 @@ class ExtractionTaskRewardLedger(_BoundedLedger):
                 )
             elif event.type is ExtractionEventType.DEATH:
                 components["death"] = self.config.death
+                components["death_value_loss"] = (
+                    observation_before.carried_value
+                    * self.config.death_value_scale
+                )
         if MacroAction(action) in ATTACK_ACTIONS and not valid_hit:
             self._add(
                 components,
@@ -125,7 +130,12 @@ class ExtractionTaskRewardLedger(_BoundedLedger):
             components["timeout_value_loss"] = (
                 sum(slots) * self.config.timeout_value_scale
             )
-        return self._result(components, scale)
+        dense_components = {"loot_progress", "extraction_started"}
+        scaled = {
+            name: value * scale if name in dense_components else value
+            for name, value in components.items()
+        }
+        return ExtractionReward(sum(scaled.values()), scaled)
 
 
 @dataclass(frozen=True)
