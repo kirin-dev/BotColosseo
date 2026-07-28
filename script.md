@@ -9,8 +9,10 @@ conda activate botcolosseo
 export PYTHONPATH="$PWD/src"
 ```
 
-The scripts use `BOTCOLOSSEO_PYTHON` when set and otherwise use the
-`botcolosseo` environment interpreter. Select the physical GPU with
+The scripts use `BOTCOLOSSEO_PYTHON` when set and otherwise use
+`/home/wencong/miniconda3/envs/botcolosseo/bin/python`; they never fall back
+to another user's Conda installation or the ambient shell interpreter. Select
+the physical GPU with
 `BOTCOLOSSEO_GPU=0` or `BOTCOLOSSEO_GPU=1`; the process sees it as `cuda:0`.
 
 ## Verify code and scenario
@@ -73,6 +75,13 @@ rank order on 120 heldout episodes and 40 frozen solo/idle-opponent episodes
 until one passes the complete gate. The Strong
 gate requires at least 90% solo extraction in addition to the scripted and
 heldout capability checks:
+
+When a complete legacy ranking exists from the pre-audit evaluator, it is used
+only to order candidates by unchanged task metrics. The candidate that may be
+selected is always re-evaluated from scratch with metric schema v2 on
+validation, heldout, and solo. This preserves the expensive all-candidate
+ranking without allowing legacy style proxies or protocol claims into release
+evidence.
 
 ```bash
 BOTCOLOSSEO_GPU=0 bash scripts/run_extraction_v3_select_strong.sh \
