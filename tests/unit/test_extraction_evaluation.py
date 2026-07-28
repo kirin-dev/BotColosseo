@@ -66,6 +66,7 @@ def test_extraction_episode_summary_exposes_capability_and_style_metrics() -> No
     assert summary["valid_hits_total"] == 6
     assert summary["win_rate"] == 0.5
     assert summary["prevent_opponent_extraction_rate"] == 0.5
+    assert summary["style_metrics"]["extraction_denial_rate"] == 0.5
     assert summary["mean_extracted_value_advantage"] == 30
 
 

@@ -461,6 +461,8 @@ def summarize_extraction_episodes(
         "style_metrics": {
             "aggressive_chain_rate": sum(item.aggressive_chains for item in episodes)
             / count,
+            "extraction_denial_rate": 1
+            - sum(item.opponent_extracted for item in episodes) / count,
             "backpack_upgrade_rate": sum(item.backpack_upgrades for item in episodes)
             / count,
             "cache_to_extraction_conversion_rate": sum(

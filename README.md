@@ -102,7 +102,9 @@ regression, and show a positive paired style shift with a 10,000-resample 95%
 bootstrap interval. Style evidence is causal: kill-cache-extract for
 Aggressive, opportunity-conditioned disengagement and meaningful banking for
 Defensive, and backpack-upgrade-to-extraction for Explorer. Attack count and
-raw route distance are diagnostics, not success criteria.
+raw route distance are diagnostics, not success criteria. Extraction denial
+is reported as an auxiliary Aggressive pressure metric, never as a task reward
+or a requirement that the opponent must die before either player can extract.
 
 ## Reproduce
 

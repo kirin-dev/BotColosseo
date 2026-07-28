@@ -265,6 +265,10 @@ Aggressive rewards:
 
 It does not reward empty firing, impossible pursuit, attacks without an
 opportunity, kills without loot conversion, or kills without extraction.
+Opponent extraction denial is reported as an auxiliary Aggressive diagnostic:
+it can show pressure on the opponent, but it is not a training reward, a
+Strong capability objective, or a standalone Aggressive gate. Both players
+are allowed to extract; the task outcome remains determined by banked value.
 
 Aggressive is the required first vertical slice. Defensive and Explorer do
 not start until Aggressive passes its complete validation gate.
@@ -318,7 +322,8 @@ kill-to-cache-to-extraction conversion, Defensive evidence requires
 opportunity-conditioned disengagement plus meaningful banking, and Explorer
 evidence requires distinct loot regions and a genuine backpack-upgrade-to-
 extraction conversion. Attack count and raw route distance are diagnostics,
-never standalone style gates.
+never standalone style gates. Opponent extraction denial is likewise an
+Aggressive diagnostic rather than a task objective or standalone gate.
 
 The initially frozen CNN/GRU/residual configuration is the primary method.
 Configured reward-only and reward-plus-KL runs are later ablations of the same
