@@ -121,6 +121,58 @@ def _style_score(style: str, episode: ExtractionEpisodeMetrics) -> float:
     raise ValueError("Unknown Extraction style")
 
 
+def aggressive_showcase_direction_counts(
+    strong: tuple[ExtractionEpisodeMetrics, ...],
+    styled: tuple[ExtractionEpisodeMetrics, ...],
+) -> dict[str, int]:
+    """Count paired directional changes used only by Showcase admission."""
+    if len(strong) != 240 or len(styled) != 240:
+        raise ValueError("Aggressive Showcase requires paired 240-episode budgets")
+    strong_by_case = {
+        (item.seed, item.learner_side, item.opponent_style): item for item in strong
+    }
+    styled_by_case = {
+        (item.seed, item.learner_side, item.opponent_style): item for item in styled
+    }
+    if (
+        len(strong_by_case) != len(strong)
+        or len(styled_by_case) != len(styled)
+        or set(strong_by_case) != set(styled_by_case)
+    ):
+        raise ValueError("Aggressive Showcase evidence is not uniquely paired")
+
+    positive_pairs = 0
+    negative_pairs = 0
+    unchanged_pairs = 0
+    new_complete_chains = 0
+    lost_complete_chains = 0
+    for key in sorted(strong_by_case):
+        strong_episode = strong_by_case[key]
+        styled_episode = styled_by_case[key]
+        difference = _style_score("aggressive", styled_episode) - _style_score(
+            "aggressive", strong_episode
+        )
+        if difference > 0:
+            positive_pairs += 1
+        elif difference < 0:
+            negative_pairs += 1
+        else:
+            unchanged_pairs += 1
+        if styled_episode.aggressive_chains > 0:
+            if strong_episode.aggressive_chains == 0:
+                new_complete_chains += 1
+        elif strong_episode.aggressive_chains > 0:
+            lost_complete_chains += 1
+
+    return {
+        "positive_pairs": positive_pairs,
+        "negative_pairs": negative_pairs,
+        "unchanged_pairs": unchanged_pairs,
+        "new_complete_chains": new_complete_chains,
+        "lost_complete_chains": lost_complete_chains,
+    }
+
+
 def _paired_bootstrap_interval(
     values: tuple[float, ...],
     *,

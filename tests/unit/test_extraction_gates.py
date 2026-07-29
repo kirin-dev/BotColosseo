@@ -4,6 +4,7 @@ from dataclasses import replace
 
 from botcolosseo.evaluation.extraction import ExtractionEpisodeMetrics
 from botcolosseo.evaluation.extraction_gates import (
+    aggressive_showcase_direction_counts,
     strong_validation_gate,
     style_heldout_gate,
     style_validation_gate,
@@ -98,6 +99,42 @@ def test_aggressive_style_gate_requires_paired_positive_ci() -> None:
     )
     assert result.passed
     assert all(check.passed for check in result.checks)
+
+
+def test_aggressive_showcase_counts_paired_direction_and_chains() -> None:
+    strong = episodes(240)
+    styled = list(strong)
+    styled[0] = replace(
+        styled[0],
+        valid_hits=3,
+        kills=1,
+        kill_to_cache_conversions=1,
+        cache_to_extraction_conversions=1,
+        aggressive_chains=1,
+    )
+    styled[1] = replace(styled[1], valid_hits=1)
+
+    counts = aggressive_showcase_direction_counts(strong, tuple(styled))
+
+    assert counts == {
+        "positive_pairs": 1,
+        "negative_pairs": 1,
+        "unchanged_pairs": 238,
+        "new_complete_chains": 1,
+        "lost_complete_chains": 0,
+    }
+
+
+def test_aggressive_showcase_rejects_duplicate_pair_identity() -> None:
+    styled = list(episodes(240, style="aggressive"))
+    styled[-1] = styled[0]
+
+    try:
+        aggressive_showcase_direction_counts(episodes(240), tuple(styled))
+    except ValueError as error:
+        assert "uniquely paired" in str(error)
+    else:
+        raise AssertionError("duplicate paired evidence was accepted")
 
 
 def test_style_gate_rejects_aggressive_hits_without_conversion() -> None:

@@ -21,22 +21,8 @@ STRONG_SELECTION="runs/extraction/strong-ppo/selection.json"
 mkdir -p "$EVAL_ROOT"
 
 if [[ "$STYLE" != "aggressive" ]]; then
-  AGGRESSIVE_SELECTION="runs/extraction/styles/aggressive/selection.json"
-  if [[ ! -f "$AGGRESSIVE_SELECTION" ]] || \
-    ! "$PYTHON" - "$AGGRESSIVE_SELECTION" <<'PY'
-import json
-import sys
-
-selection = json.load(open(sys.argv[1], encoding="utf-8"))
-raise SystemExit(not (
-    selection.get("policy") == "aggressive"
-    and selection.get("gate_schema_version") == 2
-    and selection.get("eligible") is True
-    and selection.get("test_cases_accessed") is False
-))
-PY
-  then
-    echo "Defensive/Explorer require a passing Aggressive vertical slice" >&2
+  if ! "$PYTHON" -m botcolosseo.cli.check_extraction_aggressive_prerequisite; then
+    echo "Defensive/Explorer require an admitted Aggressive vertical slice" >&2
     exit 1
   fi
 fi

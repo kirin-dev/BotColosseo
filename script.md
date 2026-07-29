@@ -153,16 +153,34 @@ If 100k fails validation, resume once with
 `BOTCOLOSSEO_STOP_AFTER_STEPS=200000`. Failure at 200k ends this calibration;
 do not increase reward scale or relax the gate.
 
-After the Aggressive engineering path is valid, Defensive and Explorer may use
-the two A100s concurrently:
+If calibration ends without a research-eligible selection, generate the
+approved product-only directional admission for the original 600k candidate.
+This evaluates its paired heldout capability if needed, copies the exact
+candidate to `showcase.pt`, and records that `style_ci_lower` remains the sole
+research-gate failure:
 
 ```bash
-nohup env BOTCOLOSSEO_GPU=0 \
+BOTCOLOSSEO_GPU=0 \
+  bash scripts/run_extraction_v3_admit_aggressive_showcase.sh \
+  > runs/extraction/aggressive-showcase-admission.log 2>&1
+```
+
+The admission can unblock style development and validation-only media. It
+cannot be used by research selection, release freezing, or official-test
+commands.
+
+After Aggressive has either a strict selection or this directional admission,
+Defensive and Explorer may use the two A100s concurrently. Start with a 200k
+stage and resume to 400k/600k only if the frozen validation evidence warrants
+it:
+
+```bash
+nohup env BOTCOLOSSEO_GPU=0 BOTCOLOSSEO_STOP_AFTER_STEPS=200000 \
   bash scripts/run_extraction_v3_style.sh defensive \
   > runs/extraction/defensive.log 2>&1 &
 echo $! > runs/extraction/defensive.pid
 
-nohup env BOTCOLOSSEO_GPU=1 \
+nohup env BOTCOLOSSEO_GPU=1 BOTCOLOSSEO_STOP_AFTER_STEPS=200000 \
   bash scripts/run_extraction_v3_style.sh explorer \
   > runs/extraction/explorer.log 2>&1 &
 echo $! > runs/extraction/explorer.pid
