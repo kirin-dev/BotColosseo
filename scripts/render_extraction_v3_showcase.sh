@@ -33,9 +33,27 @@ PY
 }
 
 strong_report="$(report_from_selection runs/extraction/strong-ppo/selection.json strong)"
-aggressive_report="$(report_from_selection runs/extraction/styles/aggressive/selection.json aggressive)"
-defensive_report="$(report_from_selection runs/extraction/styles/defensive/selection.json defensive)"
-explorer_report="$(report_from_selection runs/extraction/styles/explorer/selection.json explorer)"
+declare -A style_checkpoint
+declare -A style_report
+for policy in aggressive defensive explorer; do
+  resolved="$("$PYTHON" -m \
+    botcolosseo.cli.resolve_extraction_showcase_artifact \
+    --policy "$policy")"
+  readarray -t artifact < <("$PYTHON" - "$resolved" <<'PY'
+import json
+import sys
+
+payload = json.loads(sys.argv[1])
+print(payload["checkpoint"])
+print(payload["validation_report"])
+PY
+)
+  style_checkpoint["$policy"]="${artifact[0]}"
+  style_report["$policy"]="${artifact[1]}"
+done
+aggressive_report="${style_report[aggressive]}"
+defensive_report="${style_report[defensive]}"
+explorer_report="${style_report[explorer]}"
 selection="$REPORTS/selection.json"
 if [[ ! -f "$selection" ]]; then
   "$PYTHON" -u -m botcolosseo.cli.select_extraction_showcases \
@@ -57,7 +75,7 @@ PY
     checkpoint="$BASE"
     base_args=()
   else
-    checkpoint="runs/extraction/styles/$policy/selected.pt"
+    checkpoint="${style_checkpoint[$policy]}"
     base_args=(--base-checkpoint "$BASE")
   fi
   if [[ ! -f "$MEDIA/$policy.mp4" ]]; then

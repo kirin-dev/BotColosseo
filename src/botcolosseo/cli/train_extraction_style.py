@@ -6,7 +6,7 @@ import json
 import math
 import shutil
 from collections import Counter
-from dataclasses import asdict
+from dataclasses import asdict, fields, replace
 from pathlib import Path
 
 import torch
@@ -133,24 +133,52 @@ def _planned_updates(
     return updates
 
 
-def _style_reward_factory(style: str, scale: float):
+def _resolved_style_reward_config(
+    style: str,
+    overrides: object = None,
+):
+    defaults = {
+        "aggressive": AggressiveExtractionRewardConfig,
+        "defensive": DefensiveExtractionRewardConfig,
+        "explorer": ExplorerExtractionRewardConfig,
+    }
+    if style not in defaults:
+        raise ValueError("Unsupported Extraction style")
+    config = defaults[style]()
+    if overrides is None:
+        return config
+    if not isinstance(overrides, dict):
+        raise ValueError("Style reward overrides must be a mapping")
+    known = {field.name: getattr(config, field.name) for field in fields(config)}
+    if not set(overrides).issubset(known):
+        raise ValueError("Style reward override field is unknown")
+    for name, value in overrides.items():
+        default = known[name]
+        if isinstance(default, int):
+            valid = isinstance(value, int) and not isinstance(value, bool)
+        else:
+            valid = (
+                isinstance(value, (int, float))
+                and not isinstance(value, bool)
+                and math.isfinite(float(value))
+            )
+        if not valid:
+            raise ValueError("Style reward override value is invalid")
+    return replace(config, **overrides)
+
+
+def _style_reward_factory(style: str, scale: float, config):
     if style == "aggressive":
         return lambda side: AggressiveExtractionRewardLedger(
-            AggressiveExtractionRewardConfig(),
-            learner_side=side,
-            scale=scale,
+            config, learner_side=side, scale=scale
         )
     if style == "defensive":
         return lambda side: DefensiveExtractionRewardLedger(
-            DefensiveExtractionRewardConfig(),
-            learner_side=side,
-            scale=scale,
+            config, learner_side=side, scale=scale
         )
     if style == "explorer":
         return lambda side: ExplorerExtractionRewardLedger(
-            ExplorerExtractionRewardConfig(),
-            learner_side=side,
-            scale=scale,
+            config, learner_side=side, scale=scale
         )
     raise ValueError("Unsupported Extraction style")
 
@@ -331,6 +359,13 @@ def main(argv: list[str] | None = None) -> int:
         expected_sha256=base_sha256,
         device=device,
     )
+    style_reward_overrides = config.get("style_reward_overrides", {})
+    if not isinstance(style_reward_overrides, dict):
+        raise ValueError("Style reward overrides must be a mapping")
+    resolved_style_reward_config = _resolved_style_reward_config(
+        args.style,
+        style_reward_overrides.get(args.style),
+    )
 
     def opponent_factory(assignment, side):
         if assignment.opponent_kind == "script":
@@ -355,6 +390,7 @@ def main(argv: list[str] | None = None) -> int:
         style_reward_factory=_style_reward_factory(
             args.style,
             float(config["style_reward_scale"][args.style]),
+            resolved_style_reward_config,
         ),
     )
     events: Counter[str] = history.event_counts
@@ -459,6 +495,9 @@ def main(argv: list[str] | None = None) -> int:
                 "learned_residual_adapter": True,
                 "lineage": lineage,
                 "reward_components": dict(sorted(rewards.items())),
+                "resolved_style_reward_config": asdict(
+                    resolved_style_reward_config
+                ),
                 "scenario_hash": scenario_hash,
                 "style": args.style,
                 "test_cases_accessed": False,

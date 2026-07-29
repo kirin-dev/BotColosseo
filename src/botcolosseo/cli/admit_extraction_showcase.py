@@ -12,13 +12,19 @@ from botcolosseo.evaluation.extraction_gates import (
     aggressive_showcase_direction_counts,
     directional_showcase_heldout_gate,
     style_heldout_gate,
+    style_showcase_direction_counts,
     style_validation_gate,
 )
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Admit directional Aggressive evidence for product Showcase use"
+        description="Admit directional style evidence for product Showcase use"
+    )
+    parser.add_argument(
+        "--policy",
+        choices=("aggressive", "defensive", "explorer"),
+        default="aggressive",
     )
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--validation-report", type=Path, required=True)
@@ -70,14 +76,15 @@ def build_directional_showcase_admission(
     strong_validation_path: Path,
     heldout_path: Path,
     strong_heldout_path: Path,
+    policy: str = "aggressive",
 ) -> dict[str, object]:
-    validation = _load_report(
-        validation_path, policy="aggressive", split="validation"
-    )
+    if policy not in {"aggressive", "defensive", "explorer"}:
+        raise ValueError("Directional Showcase policy is unsupported")
+    validation = _load_report(validation_path, policy=policy, split="validation")
     strong_validation = _load_report(
         strong_validation_path, policy="strong", split="validation"
     )
-    heldout = _load_report(heldout_path, policy="aggressive", split="heldout")
+    heldout = _load_report(heldout_path, policy=policy, split="heldout")
     strong_heldout = _load_report(
         strong_heldout_path, policy="strong", split="heldout"
     )
@@ -91,23 +98,23 @@ def build_directional_showcase_admission(
         validation["checkpoint_sha256"] != checkpoint_sha256
         or heldout["checkpoint_sha256"] != checkpoint_sha256
     ):
-        raise ValueError("Aggressive Showcase checkpoint evidence does not match")
+        raise ValueError("Style Showcase checkpoint evidence does not match")
     if strong_heldout["checkpoint_sha256"] != strong_sha256:
         raise ValueError("Strong Showcase checkpoint evidence does not match")
     if (
         validation.get("base_checkpoint_sha256") != strong_sha256
         or heldout.get("base_checkpoint_sha256") != strong_sha256
     ):
-        raise ValueError("Aggressive Showcase Strong Base lineage does not match")
+        raise ValueError("Style Showcase Strong Base lineage does not match")
     if len({report["protocol_sha256"] for report in reports}) != 1:
-        raise ValueError("Aggressive Showcase protocols do not match")
+        raise ValueError("Style Showcase protocols do not match")
     if len({report["scenario_hash"] for report in reports}) != 1:
-        raise ValueError("Aggressive Showcase scenarios do not match")
+        raise ValueError("Style Showcase scenarios do not match")
 
     strong_validation_episodes = _episodes(strong_validation)
     validation_episodes = _episodes(validation)
     validation_gate = style_validation_gate(
-        style="aggressive",
+        style=policy,
         strong=strong_validation_episodes,
         styled=validation_episodes,
     )
@@ -118,17 +125,32 @@ def build_directional_showcase_admission(
         raise ValueError(
             "Directional Showcase requires style_ci_lower as the sole research failure"
         )
-    direction_counts = aggressive_showcase_direction_counts(
-        strong_validation_episodes,
-        validation_episodes,
+    direction_counts = (
+        aggressive_showcase_direction_counts(
+            strong_validation_episodes,
+            validation_episodes,
+        )
+        if policy == "aggressive"
+        else style_showcase_direction_counts(
+            style=policy,
+            strong=strong_validation_episodes,
+            styled=validation_episodes,
+        )
     )
     if direction_counts["positive_pairs"] <= direction_counts["negative_pairs"]:
-        raise ValueError("Aggressive Showcase has no positive paired majority")
-    if (
-        direction_counts["new_complete_chains"]
-        <= direction_counts["lost_complete_chains"]
-    ):
-        raise ValueError("Aggressive Showcase has no positive complete-chain balance")
+        raise ValueError("Style Showcase has no positive paired majority")
+    new_chain_key = (
+        "new_complete_chains"
+        if policy == "aggressive"
+        else "new_showcase_chains"
+    )
+    lost_chain_key = (
+        "lost_complete_chains"
+        if policy == "aggressive"
+        else "lost_showcase_chains"
+    )
+    if direction_counts[new_chain_key] <= direction_counts[lost_chain_key]:
+        raise ValueError("Style Showcase has no positive complete-chain balance")
 
     original_heldout_gate = style_heldout_gate(
         strong=_episodes(strong_heldout),
@@ -137,10 +159,22 @@ def build_directional_showcase_admission(
     original_heldout_failed_checks = [
         check.name for check in original_heldout_gate.checks if not check.passed
     ]
-    if original_heldout_failed_checks != ["heldout_worst_opponent_retention"]:
+    allowed_heldout_failures = (
+        ["heldout_worst_opponent_retention"] if policy == "aggressive" else []
+    )
+    if policy == "aggressive" and (
+        original_heldout_failed_checks != allowed_heldout_failures
+    ):
         raise ValueError(
             "Directional Showcase requires worst-opponent retention as the "
             "sole original heldout failure"
+        )
+    if policy != "aggressive" and any(
+        name != "heldout_worst_opponent_retention"
+        for name in original_heldout_failed_checks
+    ):
+        raise ValueError(
+            "Directional Showcase original heldout capability evidence failed"
         )
     showcase_heldout_gate, per_opponent_heldout = (
         directional_showcase_heldout_gate(
@@ -149,7 +183,7 @@ def build_directional_showcase_admission(
         )
     )
     if not showcase_heldout_gate.passed:
-        raise ValueError("Aggressive Showcase relative heldout capability failed")
+        raise ValueError("Style Showcase relative heldout capability failed")
 
     evidence = (
         validation_path,
@@ -161,8 +195,12 @@ def build_directional_showcase_admission(
         "schema_version": 1,
         "admission_schema_version": 1,
         "admission_kind": "directional_showcase",
-        "admission_rule_timing": "post_heldout_product_review",
-        "policy": "aggressive",
+        "admission_rule_timing": (
+            "post_heldout_product_review"
+            if policy == "aggressive"
+            else "pre_heldout_product_rule"
+        ),
+        "policy": policy,
         "showcase_eligible": True,
         "research_gate_passed": False,
         "research_failed_checks": [
@@ -217,6 +255,7 @@ def main(argv: list[str] | None = None) -> int:
         strong_validation_path=_resolve(root, args.strong_validation_report),
         heldout_path=_resolve(root, args.heldout_report),
         strong_heldout_path=_resolve(root, args.strong_heldout_report),
+        policy=args.policy,
     )
     output_checkpoint.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(checkpoint, checkpoint_temporary)

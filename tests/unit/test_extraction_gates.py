@@ -10,6 +10,7 @@ from botcolosseo.evaluation.extraction_gates import (
     directional_showcase_heldout_gate,
     strong_validation_gate,
     style_heldout_gate,
+    style_showcase_direction_counts,
     style_validation_gate,
 )
 
@@ -138,6 +139,52 @@ def test_aggressive_showcase_rejects_duplicate_pair_identity() -> None:
         assert "uniquely paired" in str(error)
     else:
         raise AssertionError("duplicate paired evidence was accepted")
+
+
+def test_explorer_showcase_counts_direction_and_upgrade_chains() -> None:
+    strong = episodes(240)
+    styled = list(strong)
+    styled[0] = replace(
+        styled[0],
+        meaningful_loot_regions=3,
+        backpack_upgrades=1,
+        upgrade_to_extraction_conversions=1,
+    )
+    styled[1] = replace(styled[1], meaningful_loot_regions=0)
+
+    counts = style_showcase_direction_counts(
+        style="explorer",
+        strong=strong,
+        styled=tuple(styled),
+    )
+
+    assert counts == {
+        "showcase_chain_kind": "upgrade_to_extraction",
+        "positive_pairs": 1,
+        "negative_pairs": 1,
+        "unchanged_pairs": 238,
+        "new_showcase_chains": 1,
+        "lost_showcase_chains": 0,
+    }
+
+
+def test_defensive_showcase_requires_disengagement_and_extraction_chain() -> None:
+    strong = episodes(240)
+    styled = list(strong)
+    styled[0] = replace(
+        styled[0],
+        disengagement_opportunities=1,
+        successful_disengagements=1,
+    )
+
+    counts = style_showcase_direction_counts(
+        style="defensive",
+        strong=strong,
+        styled=tuple(styled),
+    )
+
+    assert counts["positive_pairs"] == 1
+    assert counts["new_showcase_chains"] == 1
 
 
 def test_style_gate_rejects_aggressive_hits_without_conversion() -> None:

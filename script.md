@@ -202,6 +202,44 @@ BOTCOLOSSEO_GPU=1 \
   > runs/extraction/explorer-selection.log 2>&1
 ```
 
+If Explorer reaches the approved positive directional validation gate but
+misses only `style_ci_lower`, evaluate heldout and create its product-only
+admission using the rule frozen before heldout access:
+
+```bash
+BOTCOLOSSEO_GPU=1 \
+  bash scripts/run_extraction_v3_admit_style_showcase.sh explorer \
+  > runs/extraction/explorer-showcase-admission.log 2>&1
+```
+
+The original Defensive 200k/400k route is retained as failed development
+evidence. Run the single approved targeted calibration from a fresh adapter:
+
+```bash
+BOTCOLOSSEO_GPU=0 BOTCOLOSSEO_STOP_AFTER_STEPS=200000 \
+  bash scripts/run_extraction_v3_defensive_calibration.sh \
+  > runs/extraction/defensive-calibration-v2.log 2>&1
+
+BOTCOLOSSEO_GPU=0 \
+  BOTCOLOSSEO_STYLE_OUTPUT=runs/extraction/styles/defensive-calibration-v2 \
+  bash scripts/run_extraction_v3_select_style.sh defensive \
+  > runs/extraction/defensive-calibration-v2-selection.log 2>&1
+```
+
+Resume to 400k only when the frozen validation mean is positive and every
+capability, anti-hacking, and protocol check passes but directional Showcase
+evidence is incomplete. Once a calibrated candidate meets the directional
+validation rule, bind heldout evidence and copy it into the canonical
+Defensive Showcase location:
+
+```bash
+BOTCOLOSSEO_GPU=0 \
+  BOTCOLOSSEO_STYLE_SOURCE=\
+runs/extraction/styles/defensive-calibration-v2 \
+  bash scripts/run_extraction_v3_admit_style_showcase.sh defensive \
+  > runs/extraction/defensive-showcase-admission.log 2>&1
+```
+
 ## Freeze release and run the official test once
 
 The official-test cases do not exist during training or validation. After all

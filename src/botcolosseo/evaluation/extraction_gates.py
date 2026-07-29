@@ -173,6 +173,78 @@ def aggressive_showcase_direction_counts(
     }
 
 
+def style_showcase_direction_counts(
+    *,
+    style: str,
+    strong: tuple[ExtractionEpisodeMetrics, ...],
+    styled: tuple[ExtractionEpisodeMetrics, ...],
+) -> dict[str, int | str]:
+    """Count paired direction and complete product-story changes."""
+    if style not in {"defensive", "explorer"}:
+        raise ValueError("Style Showcase direction counts require a supported style")
+    if len(strong) != 240 or len(styled) != 240:
+        raise ValueError("Style Showcase requires paired 240-episode budgets")
+    strong_by_case = {
+        (item.seed, item.learner_side, item.opponent_style): item for item in strong
+    }
+    styled_by_case = {
+        (item.seed, item.learner_side, item.opponent_style): item for item in styled
+    }
+    if (
+        len(strong_by_case) != len(strong)
+        or len(styled_by_case) != len(styled)
+        or set(strong_by_case) != set(styled_by_case)
+    ):
+        raise ValueError("Style Showcase evidence is not uniquely paired")
+
+    def complete_chain(episode: ExtractionEpisodeMetrics) -> bool:
+        if style == "defensive":
+            return (
+                episode.successful_disengagements > 0
+                and episode.meaningful_extractions > 0
+                and episode.extracted_value > 0
+            )
+        return (
+            episode.upgrade_to_extraction_conversions > 0
+            and episode.extracted_value > 0
+        )
+
+    positive_pairs = 0
+    negative_pairs = 0
+    unchanged_pairs = 0
+    new_showcase_chains = 0
+    lost_showcase_chains = 0
+    for key in sorted(strong_by_case):
+        strong_episode = strong_by_case[key]
+        styled_episode = styled_by_case[key]
+        difference = _style_score(style, styled_episode) - _style_score(
+            style, strong_episode
+        )
+        if difference > 0:
+            positive_pairs += 1
+        elif difference < 0:
+            negative_pairs += 1
+        else:
+            unchanged_pairs += 1
+        strong_chain = complete_chain(strong_episode)
+        styled_chain = complete_chain(styled_episode)
+        new_showcase_chains += styled_chain and not strong_chain
+        lost_showcase_chains += strong_chain and not styled_chain
+
+    return {
+        "showcase_chain_kind": (
+            "disengagement_to_meaningful_extraction"
+            if style == "defensive"
+            else "upgrade_to_extraction"
+        ),
+        "positive_pairs": positive_pairs,
+        "negative_pairs": negative_pairs,
+        "unchanged_pairs": unchanged_pairs,
+        "new_showcase_chains": new_showcase_chains,
+        "lost_showcase_chains": lost_showcase_chains,
+    }
+
+
 def _paired_bootstrap_interval(
     values: tuple[float, ...],
     *,

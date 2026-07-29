@@ -138,6 +138,71 @@ def _evidence(tmp_path: Path) -> dict[str, Path]:
     }
 
 
+def _explorer_evidence(tmp_path: Path) -> dict[str, Path | str]:
+    strong_checkpoint = tmp_path / "strong.pt"
+    explorer_checkpoint = tmp_path / "explorer.pt"
+    strong_checkpoint.write_bytes(b"strong")
+    explorer_checkpoint.write_bytes(b"explorer")
+    strong_sha256 = sha256_file(strong_checkpoint)
+    paths = {
+        "strong_validation_path": tmp_path / "strong-validation.json",
+        "validation_path": tmp_path / "explorer-validation.json",
+        "strong_heldout_path": tmp_path / "strong-heldout.json",
+        "heldout_path": tmp_path / "explorer-heldout.json",
+    }
+    strong_validation_episodes = episodes(240)
+    explorer_validation_episodes = list(strong_validation_episodes)
+    for index in range(140):
+        explorer_validation_episodes[index] = replace(
+            explorer_validation_episodes[index],
+            meaningful_loot_regions=3,
+            backpack_upgrades=1,
+            upgrade_to_extraction_conversions=1,
+        )
+    for index in range(140, 240):
+        explorer_validation_episodes[index] = replace(
+            explorer_validation_episodes[index],
+            meaningful_loot_regions=0,
+        )
+    _write_report(
+        paths["strong_validation_path"],
+        policy="strong",
+        split="validation",
+        checkpoint=strong_checkpoint,
+        base_sha256=None,
+        episode_items=strong_validation_episodes,
+    )
+    _write_report(
+        paths["validation_path"],
+        policy="explorer",
+        split="validation",
+        checkpoint=explorer_checkpoint,
+        base_sha256=strong_sha256,
+        episode_items=tuple(explorer_validation_episodes),
+    )
+    _write_report(
+        paths["strong_heldout_path"],
+        policy="strong",
+        split="heldout",
+        checkpoint=strong_checkpoint,
+        base_sha256=None,
+        episode_items=episodes(120),
+    )
+    _write_report(
+        paths["heldout_path"],
+        policy="explorer",
+        split="heldout",
+        checkpoint=explorer_checkpoint,
+        base_sha256=strong_sha256,
+        episode_items=episodes(120),
+    )
+    return {
+        "checkpoint": explorer_checkpoint,
+        "policy": "explorer",
+        **paths,
+    }
+
+
 def test_directional_admission_accepts_only_ci_lower_failure(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -167,6 +232,32 @@ def test_directional_admission_accepts_only_ci_lower_failure(
     ] == pytest.approx(8 / 30)
     assert result["direction_counts"]["positive_pairs"] == 140
     assert result["direction_counts"]["negative_pairs"] == 100
+
+
+def test_explorer_admission_uses_rule_frozen_before_heldout(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    evidence = _explorer_evidence(tmp_path)
+    monkeypatch.setattr(
+        "botcolosseo.evaluation.extraction_gates._paired_bootstrap_interval",
+        lambda values: (sum(values) / len(values), -0.01, 0.5),
+    )
+
+    result = build_directional_showcase_admission(root=tmp_path, **evidence)
+
+    assert result["policy"] == "explorer"
+    assert result["admission_rule_timing"] == "pre_heldout_product_rule"
+    assert result["research_failed_checks"] == ["style_ci_lower"]
+    assert result["original_heldout_gate_passed"] is True
+    assert result["direction_counts"] == {
+        "showcase_chain_kind": "upgrade_to_extraction",
+        "positive_pairs": 140,
+        "negative_pairs": 100,
+        "unchanged_pairs": 0,
+        "new_showcase_chains": 140,
+        "lost_showcase_chains": 0,
+    }
 
 
 def test_directional_admission_rejects_non_ci_failure(

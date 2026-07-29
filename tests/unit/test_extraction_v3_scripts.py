@@ -44,6 +44,29 @@ def test_aggressive_calibration_runner_is_isolated_and_staged() -> None:
     assert '--resume "$OUTPUT/latest.pt"' in source
 
 
+def test_defensive_calibration_runner_is_fresh_isolated_and_staged() -> None:
+    source = Path(
+        "scripts/run_extraction_v3_defensive_calibration.sh"
+    ).read_text(encoding="utf-8")
+
+    assert 'STOP_AFTER_STEPS:-200000' in source
+    assert 'OUTPUT="runs/extraction/styles/defensive-calibration-v2"' in source
+    assert "styles-defensive-calibration.yaml" in source
+    assert '--resume "$OUTPUT/latest.pt"' in source
+    assert "--initialize-from" not in source
+
+
+def test_directional_style_admission_runner_freezes_source_and_destination() -> None:
+    source = Path(
+        "scripts/run_extraction_v3_admit_style_showcase.sh"
+    ).read_text(encoding="utf-8")
+
+    assert "BOTCOLOSSEO_STYLE_SOURCE" in source
+    assert 'DESTINATION="runs/extraction/styles/$STYLE"' in source
+    assert "botcolosseo.cli.admit_extraction_showcase" in source
+    assert '--policy "$STYLE"' in source
+
+
 def test_style_selector_accepts_an_isolated_output_root() -> None:
     source = Path(
         "scripts/run_extraction_v3_select_style.sh"

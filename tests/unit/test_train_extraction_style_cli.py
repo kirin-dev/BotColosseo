@@ -10,6 +10,7 @@ from botcolosseo.agents.checkpoint import (
 )
 from botcolosseo.cli.train_extraction_style import (
     _initialize_style_weights,
+    _resolved_style_reward_config,
     build_parser,
 )
 from botcolosseo.data.demonstrations import sha256_file
@@ -112,3 +113,32 @@ def test_style_weights_only_initialization_rejects_base_drift(
             scenario_hash="scenario",
             root=tmp_path,
         )
+
+
+def test_defensive_reward_overrides_are_targeted_and_auditable() -> None:
+    config = _resolved_style_reward_config(
+        "defensive",
+        {
+            "risk_disengagement": 0.30,
+            "combat_with_value": -0.030,
+        },
+    )
+
+    assert config.risk_disengagement == pytest.approx(0.30)
+    assert config.combat_with_value == pytest.approx(-0.030)
+    assert config.meaningful_extraction == pytest.approx(0.20)
+    assert config.empty_idle == pytest.approx(-0.003)
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    (
+        {"unknown": 1.0},
+        {"risk_disengagement": float("nan")},
+        {"risk_disengagement": True},
+        {"risk_disengagement_cap": 1.5},
+    ),
+)
+def test_style_reward_overrides_fail_closed(overrides: dict[str, object]) -> None:
+    with pytest.raises(ValueError, match="override"):
+        _resolved_style_reward_config("defensive", overrides)
