@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
+import torch
 import yaml
 
 from botcolosseo.data.demonstrations import sha256_file
@@ -115,11 +116,17 @@ def _config_payload(
     variant: str,
     style: str,
     base_sha256: str,
-) -> tuple[dict[str, object], Path]:
+) -> tuple[dict[str, object], dict[str, object], Path]:
     summary_path = checkpoint.parent / "summary.json"
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     config_path = root / str(summary["config"])
     config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    checkpoint_payload = torch.load(
+        checkpoint,
+        map_location="cpu",
+        weights_only=False,
+    )
+    metadata = checkpoint_payload.get("metadata", {})
     beta_kl, rho_residual = COEFFICIENTS[variant]
     expected_horizon = 400_000 if style == "defensive" else 600_000
     expected_overrides = (
@@ -139,6 +146,10 @@ def _config_payload(
         or summary.get("frozen_strong_base") is not True
         or summary.get("learned_residual_adapter") is not True
         or summary.get("test_cases_accessed") is not False
+        or checkpoint_payload.get("schema_version") != 1
+        or metadata.get("config_hash") != summary.get("config_hash")
+        or metadata.get("scenario_hash") != summary.get("scenario_hash")
+        or metadata.get("counters", {}).get("environment_steps") != 200_000
         or float(config["beta_kl"]) != beta_kl
         or float(config["rho_residual"]) != rho_residual
         or int(config["environment_steps"]) != expected_horizon
@@ -148,7 +159,7 @@ def _config_payload(
         raise ValueError(
             f"Ablation training configuration does not match: {summary_path}"
         )
-    return summary, config_path
+    return summary, metadata, config_path
 
 
 def _check_map(gate) -> dict[str, dict[str, object]]:
@@ -196,7 +207,7 @@ def summarize(root: Path) -> dict[str, object]:
                 protocol_sha256=protocol_sha256,
                 scenario_hash=scenario_hash,
             )
-            summary, config_path = _config_payload(
+            summary, metadata, config_path = _config_payload(
                 root,
                 checkpoint,
                 variant=variant,
@@ -222,7 +233,10 @@ def summarize(root: Path) -> dict[str, object]:
                 "training_summary_sha256": sha256_file(
                     checkpoint.parent / "summary.json"
                 ),
-                "training_environment_steps_observed": summary[
+                "checkpoint_environment_steps": metadata["counters"][
+                    "environment_steps"
+                ],
+                "latest_training_environment_steps": summary[
                     "environment_steps"
                 ],
                 "validation_report": str(report_path.relative_to(root)),
