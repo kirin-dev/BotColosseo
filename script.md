@@ -156,8 +156,10 @@ do not increase reward scale or relax the gate.
 If calibration ends without a research-eligible selection, generate the
 approved product-only directional admission for the original 600k candidate.
 This evaluates its paired heldout capability if needed, copies the exact
-candidate to `showcase.pt`, and records that `style_ci_lower` remains the sole
-research-gate failure:
+candidate to `showcase.pt`, and records both research failures:
+`style_ci_lower` on validation and the original heldout gate's absolute
+worst-opponent floor. The separate product gate uses relative retention within
+20 percentage points and records that it was adopted after heldout review:
 
 ```bash
 BOTCOLOSSEO_GPU=0 \

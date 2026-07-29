@@ -87,13 +87,39 @@ def _evidence(tmp_path: Path) -> dict[str, Path]:
         base_sha256=strong_sha256,
         episode_items=tuple(aggressive_validation_episodes),
     )
+    strong_heldout_episodes = list(episodes(120))
+    aggressive_heldout_episodes = list(episodes(120))
+    strong_wins = {
+        "aggressive": 22,
+        "defensive": 15,
+        "explorer": 7,
+        "strong": 25,
+    }
+    aggressive_wins = {
+        "aggressive": 22,
+        "defensive": 11,
+        "explorer": 8,
+        "strong": 26,
+    }
+    seen = {opponent: 0 for opponent in strong_wins}
+    for index, item in enumerate(strong_heldout_episodes):
+        opponent = item.opponent_style
+        strong_heldout_episodes[index] = replace(
+            item,
+            won=seen[opponent] < strong_wins[opponent],
+        )
+        aggressive_heldout_episodes[index] = replace(
+            aggressive_heldout_episodes[index],
+            won=seen[opponent] < aggressive_wins[opponent],
+        )
+        seen[opponent] += 1
     _write_report(
         strong_heldout,
         policy="strong",
         split="heldout",
         checkpoint=strong_checkpoint,
         base_sha256=None,
-        episode_items=episodes(120),
+        episode_items=tuple(strong_heldout_episodes),
     )
     _write_report(
         aggressive_heldout,
@@ -101,7 +127,7 @@ def _evidence(tmp_path: Path) -> dict[str, Path]:
         split="heldout",
         checkpoint=aggressive_checkpoint,
         base_sha256=strong_sha256,
-        episode_items=episodes(120),
+        episode_items=tuple(aggressive_heldout_episodes),
     )
     return {
         "checkpoint": aggressive_checkpoint,
@@ -124,9 +150,21 @@ def test_directional_admission_accepts_only_ci_lower_failure(
 
     result = build_directional_showcase_admission(root=tmp_path, **evidence)
 
-    assert result["research_failed_checks"] == ["style_ci_lower"]
+    assert result["research_failed_checks"] == [
+        "style_ci_lower",
+        "heldout_worst_opponent_retention",
+    ]
+    assert result["research_validation_failed_checks"] == ["style_ci_lower"]
+    assert result["original_heldout_gate_passed"] is False
+    assert result["original_heldout_failed_checks"] == [
+        "heldout_worst_opponent_retention"
+    ]
     assert result["research_gate_passed"] is False
     assert result["showcase_eligible"] is True
+    assert all(check["passed"] for check in result["showcase_heldout_checks"])
+    assert result["per_opponent_heldout"]["explorer"][
+        "styled_win_rate"
+    ] == pytest.approx(8 / 30)
     assert result["direction_counts"]["positive_pairs"] == 140
     assert result["direction_counts"]["negative_pairs"] == 100
 
@@ -162,10 +200,20 @@ def test_prerequisite_accepts_bound_admission_and_rejects_drift(
     admission = {
         "admission_schema_version": 1,
         "admission_kind": "directional_showcase",
+        "admission_rule_timing": "post_heldout_product_review",
         "policy": "aggressive",
         "showcase_eligible": True,
         "research_gate_passed": False,
-        "research_failed_checks": ["style_ci_lower"],
+        "research_failed_checks": [
+            "style_ci_lower",
+            "heldout_worst_opponent_retention",
+        ],
+        "research_validation_failed_checks": ["style_ci_lower"],
+        "original_heldout_gate_passed": False,
+        "original_heldout_failed_checks": [
+            "heldout_worst_opponent_retention"
+        ],
+        "showcase_heldout_checks": [{"name": "relative", "passed": True}],
         "actor_privilege_violations": 0,
         "test_cases_accessed": False,
         "showcase_checkpoint_sha256": sha256_file(showcase),

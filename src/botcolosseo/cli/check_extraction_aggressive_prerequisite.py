@@ -45,16 +45,31 @@ def check_aggressive_prerequisite(root: Path, directory: Path) -> str:
     if not (
         admission.get("admission_schema_version") == 1
         and admission.get("admission_kind") == "directional_showcase"
+        and admission.get("admission_rule_timing")
+        == "post_heldout_product_review"
         and admission.get("policy") == "aggressive"
         and admission.get("showcase_eligible") is True
         and admission.get("research_gate_passed") is False
-        and admission.get("research_failed_checks") == ["style_ci_lower"]
+        and admission.get("research_failed_checks")
+        == ["style_ci_lower", "heldout_worst_opponent_retention"]
+        and admission.get("research_validation_failed_checks")
+        == ["style_ci_lower"]
+        and admission.get("original_heldout_gate_passed") is False
+        and admission.get("original_heldout_failed_checks")
+        == ["heldout_worst_opponent_retention"]
         and admission.get("actor_privilege_violations") == 0
         and admission.get("test_cases_accessed") is False
         and isinstance(expected, str)
         and sha256_file(showcase_path) == expected
     ):
         raise ValueError("Aggressive Showcase admission identity does not match")
+    showcase_checks = admission.get("showcase_heldout_checks")
+    if (
+        not isinstance(showcase_checks, list)
+        or not showcase_checks
+        or any(check.get("passed") is not True for check in showcase_checks)
+    ):
+        raise ValueError("Aggressive Showcase heldout checks do not pass")
     evidence_hashes = admission.get("evidence_sha256")
     if not isinstance(evidence_hashes, dict) or not evidence_hashes:
         raise ValueError("Aggressive Showcase admission has no bound evidence")

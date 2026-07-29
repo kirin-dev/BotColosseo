@@ -10,6 +10,7 @@ from botcolosseo.cli.select_extraction_candidate import _episodes, _load_report
 from botcolosseo.data.demonstrations import sha256_file
 from botcolosseo.evaluation.extraction_gates import (
     aggressive_showcase_direction_counts,
+    directional_showcase_heldout_gate,
     style_heldout_gate,
     style_validation_gate,
 )
@@ -129,12 +130,26 @@ def build_directional_showcase_admission(
     ):
         raise ValueError("Aggressive Showcase has no positive complete-chain balance")
 
-    heldout_gate = style_heldout_gate(
+    original_heldout_gate = style_heldout_gate(
         strong=_episodes(strong_heldout),
         styled=_episodes(heldout),
     )
-    if not heldout_gate.passed:
-        raise ValueError("Aggressive Showcase heldout capability gate failed")
+    original_heldout_failed_checks = [
+        check.name for check in original_heldout_gate.checks if not check.passed
+    ]
+    if original_heldout_failed_checks != ["heldout_worst_opponent_retention"]:
+        raise ValueError(
+            "Directional Showcase requires worst-opponent retention as the "
+            "sole original heldout failure"
+        )
+    showcase_heldout_gate, per_opponent_heldout = (
+        directional_showcase_heldout_gate(
+            strong=_episodes(strong_heldout),
+            styled=_episodes(heldout),
+        )
+    )
+    if not showcase_heldout_gate.passed:
+        raise ValueError("Aggressive Showcase relative heldout capability failed")
 
     evidence = (
         validation_path,
@@ -146,12 +161,25 @@ def build_directional_showcase_admission(
         "schema_version": 1,
         "admission_schema_version": 1,
         "admission_kind": "directional_showcase",
+        "admission_rule_timing": "post_heldout_product_review",
         "policy": "aggressive",
         "showcase_eligible": True,
         "research_gate_passed": False,
-        "research_failed_checks": failed_checks,
+        "research_failed_checks": [
+            *failed_checks,
+            *original_heldout_failed_checks,
+        ],
+        "research_validation_failed_checks": failed_checks,
+        "original_heldout_gate_passed": original_heldout_gate.passed,
+        "original_heldout_failed_checks": original_heldout_failed_checks,
         "validation_checks": [asdict(check) for check in validation_gate.checks],
-        "heldout_checks": [asdict(check) for check in heldout_gate.checks],
+        "original_heldout_checks": [
+            asdict(check) for check in original_heldout_gate.checks
+        ],
+        "showcase_heldout_checks": [
+            asdict(check) for check in showcase_heldout_gate.checks
+        ],
+        "per_opponent_heldout": per_opponent_heldout,
         "direction_counts": direction_counts,
         "candidate_checkpoint": _relative(root, checkpoint),
         "candidate_checkpoint_sha256": checkpoint_sha256,

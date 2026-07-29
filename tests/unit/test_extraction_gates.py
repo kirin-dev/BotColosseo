@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+import pytest
+
 from botcolosseo.evaluation.extraction import ExtractionEpisodeMetrics
 from botcolosseo.evaluation.extraction_gates import (
     aggressive_showcase_direction_counts,
+    directional_showcase_heldout_gate,
     strong_validation_gate,
     style_heldout_gate,
     style_validation_gate,
@@ -217,6 +220,46 @@ def test_style_heldout_gate_rejects_one_opponent_collapse() -> None:
     )
 
     result = style_heldout_gate(
+        strong=episodes(120),
+        styled=styled,
+    )
+
+    assert not result.passed
+
+
+def test_directional_showcase_heldout_uses_relative_strong_retention() -> None:
+    strong = list(episodes(120))
+    styled = list(episodes(120))
+    explorer_indices = [
+        index
+        for index, item in enumerate(strong)
+        if item.opponent_style == "explorer"
+    ]
+    for offset, index in enumerate(explorer_indices):
+        strong[index] = replace(strong[index], won=offset < 7)
+        styled[index] = replace(styled[index], won=offset < 8)
+
+    result, comparisons = directional_showcase_heldout_gate(
+        strong=tuple(strong),
+        styled=tuple(styled),
+    )
+
+    assert result.passed
+    assert comparisons["explorer"]["strong_win_rate"] == 7 / 30
+    assert comparisons["explorer"]["styled_win_rate"] == 8 / 30
+    assert comparisons["explorer"]["allowed_floor"] == pytest.approx(1 / 30)
+    assert comparisons["explorer"]["relative_margin"] == pytest.approx(7 / 30)
+
+
+def test_directional_showcase_heldout_rejects_real_relative_collapse() -> None:
+    styled = tuple(
+        replace(item, won=False)
+        if item.opponent_style == "defensive"
+        else item
+        for item in episodes(120)
+    )
+
+    result, _ = directional_showcase_heldout_gate(
         strong=episodes(120),
         styled=styled,
     )

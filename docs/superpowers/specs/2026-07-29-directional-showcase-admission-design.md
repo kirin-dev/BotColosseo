@@ -7,6 +7,11 @@ Approved product-first fallback for the
 training rewards, validation cases, research thresholds, or official-test
 discipline.
 
+The heldout portion of this design is amended by
+`2026-07-29-directional-showcase-heldout-amendment-design.md`. The original
+research gate remains unchanged; only the product admission uses the amended
+relative-retention rule.
+
 ## Evidence
 
 The original 600k Aggressive policy is the strongest style candidate:

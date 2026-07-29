@@ -430,3 +430,71 @@ def style_heldout_gate(
         ),
     )
     return GateResult(all(item.passed for item in checks), checks)
+
+
+def directional_showcase_heldout_gate(
+    *,
+    strong: tuple[ExtractionEpisodeMetrics, ...],
+    styled: tuple[ExtractionEpisodeMetrics, ...],
+) -> tuple[GateResult, dict[str, dict[str, float]]]:
+    """Evaluate product-only heldout retention relative to the frozen Strong Bot."""
+    if len(strong) != 120 or len(styled) != 120:
+        raise ValueError("Showcase heldout gate requires frozen 120-episode budgets")
+    strong_by_case = {
+        (item.seed, item.learner_side, item.opponent_style): item for item in strong
+    }
+    styled_by_case = {
+        (item.seed, item.learner_side, item.opponent_style): item for item in styled
+    }
+    if (
+        len(strong_by_case) != len(strong)
+        or len(styled_by_case) != len(styled)
+        or set(strong_by_case) != set(styled_by_case)
+    ):
+        raise ValueError("Showcase and Strong heldout cases are not uniquely paired")
+
+    opponents = sorted({item.opponent_style for item in strong})
+    comparisons: dict[str, dict[str, float]] = {}
+    for opponent in opponents:
+        strong_rate = _rate(
+            tuple(item for item in strong if item.opponent_style == opponent),
+            "won",
+        )
+        styled_rate = _rate(
+            tuple(item for item in styled if item.opponent_style == opponent),
+            "won",
+        )
+        allowed_floor = max(0.0, strong_rate - 0.20)
+        comparisons[opponent] = {
+            "strong_win_rate": strong_rate,
+            "styled_win_rate": styled_rate,
+            "allowed_floor": allowed_floor,
+            "relative_margin": styled_rate - allowed_floor,
+        }
+
+    extraction_delta = _rate(styled, "extracted") - _rate(strong, "extracted")
+    worst_margin = min(item["relative_margin"] for item in comparisons.values())
+    integrity_errors = sum(
+        item.max_peer_tic_lag > 2 or item.truncated for item in styled
+    )
+    checks = (
+        GateCheck(
+            "showcase_heldout_extraction_delta",
+            extraction_delta >= -0.10,
+            extraction_delta,
+            ">=-0.10",
+        ),
+        GateCheck(
+            "showcase_worst_opponent_relative_retention",
+            worst_margin >= 0,
+            worst_margin,
+            ">=0.00",
+        ),
+        GateCheck(
+            "showcase_heldout_protocol_integrity",
+            integrity_errors == 0,
+            float(integrity_errors),
+            "==0",
+        ),
+    )
+    return GateResult(all(item.passed for item in checks), checks), comparisons
