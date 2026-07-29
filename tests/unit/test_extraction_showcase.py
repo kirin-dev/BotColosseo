@@ -3,14 +3,32 @@ from __future__ import annotations
 from dataclasses import fields
 
 import numpy as np
+import torch
 
-from botcolosseo.demo.extraction_showcase import compose_extraction_showcase_frame
+from botcolosseo.agents.extraction_model import create_extraction_actor
+from botcolosseo.cli.render_extraction_v3 import _representative_claims
+from botcolosseo.demo.extraction_showcase import (
+    _warm_extraction_policy,
+    compose_extraction_showcase_frame,
+)
 from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.extraction_protocol import ExtractionProtocolSnapshot
 from botcolosseo.envs.extraction_types import (
     ExtractionActorObservation,
     ExtractionPrivilegedState,
 )
+
+
+def test_extraction_showcase_warms_policy_before_starting_live_game() -> None:
+    model = create_extraction_actor()
+    calls: list[torch.Size] = []
+    model.register_forward_hook(
+        lambda _module, _inputs, output: calls.append(output.logits.shape)
+    )
+
+    _warm_extraction_policy(model, device=torch.device("cpu"))
+
+    assert calls == [torch.Size((1, 1, 13))]
 
 
 def test_extraction_showcase_frame_has_viewer_overlay_geometry() -> None:
@@ -77,3 +95,53 @@ def test_extraction_showcase_frame_has_viewer_overlay_geometry() -> None:
     assert frame.shape == (360, 640, 3)
     assert frame.dtype == np.uint8
     assert np.count_nonzero(frame) > 10_000
+
+
+def test_showcase_story_checks_are_fail_closed_and_style_specific() -> None:
+    base = {
+        "decisions": 300,
+        "died": False,
+        "extracted": True,
+        "extracted_value": 85,
+        "valid_hits": 0,
+        "kills": 0,
+        "cache_looted": 0,
+        "aggressive_chains": 0,
+        "successful_disengagements": 0,
+        "meaningful_extractions": 1,
+        "meaningful_loot_regions": 4,
+        "backpack_upgrades": 1,
+        "upgrade_to_extraction_conversions": 1,
+    }
+    explorer_ok, explorer_failures = _representative_claims("explorer", base)
+    aggressive_ok, aggressive_failures = _representative_claims(
+        "aggressive", base
+    )
+
+    assert explorer_ok
+    assert explorer_failures == []
+    assert not aggressive_ok
+    assert "missing_aggressive_chains" in aggressive_failures
+
+
+def test_showcase_story_rejects_short_or_combat_noisy_explorer() -> None:
+    claims = {
+        "decisions": 90,
+        "died": False,
+        "extracted": True,
+        "extracted_value": 85,
+        "valid_hits": 1,
+        "kills": 0,
+        "cache_looted": 0,
+        "aggressive_chains": 0,
+        "successful_disengagements": 0,
+        "meaningful_extractions": 1,
+        "meaningful_loot_regions": 4,
+        "backpack_upgrades": 1,
+        "upgrade_to_extraction_conversions": 1,
+    }
+
+    accepted, failures = _representative_claims("explorer", claims)
+
+    assert not accepted
+    assert failures == ["too_short", "explorer_combat"]

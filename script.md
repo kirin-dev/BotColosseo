@@ -240,6 +240,27 @@ runs/extraction/styles/defensive-calibration-v2 \
   > runs/extraction/defensive-showcase-admission.log 2>&1
 ```
 
+When validation direction, capability, anti-hacking, and protocol checks pass
+but the stricter directional or heldout product rule does not, the final
+product Showcase may use the explicitly lower
+`validation_demonstration` tier:
+
+```bash
+BOTCOLOSSEO_GPU=1 \
+  BOTCOLOSSEO_STYLE_SOURCE=runs/extraction/styles/explorer \
+  bash scripts/run_extraction_v3_create_style_demonstration.sh explorer
+
+BOTCOLOSSEO_GPU=0 \
+  BOTCOLOSSEO_STYLE_SOURCE=\
+runs/extraction/styles/defensive-calibration-v2 \
+  bash scripts/run_extraction_v3_create_style_demonstration.sh defensive
+```
+
+This tier binds the exact Strong lineage, complete paired validation, complete
+heldout disclosure, and the learned residual checkpoint. It is eligible only
+for validation media: `research_gate_passed=false` and
+`official_test_eligible=false` are written into the immutable manifest.
+
 ## Freeze release and run the official test once
 
 The official-test cases do not exist during training or validation. After all
@@ -275,7 +296,6 @@ echo $! > runs/extraction/release/official-test.pid
 
 ```bash
 BOTCOLOSSEO_GPU=0 bash scripts/render_extraction_v3_showcase.sh
-python scripts/audit_extraction_v3_release.py
 ```
 
 The selector searches the full validation ledgers for representative cases:
@@ -286,7 +306,11 @@ The selector searches the full validation ledgers for representative cases:
 - Explorer: distinct loot regions, a real backpack upgrade, then extraction.
 
 Generated videos contain viewer-only telemetry. They are not policy inputs and
-are never selected from official-test episodes.
+are never selected from official-test episodes. Rendering retries the same
+preselected validation case at most five times and writes media only when the
+actual replay completes its advertised causal chain. The script finishes with
+a separate product Showcase audit; it does not run or claim the strict
+research release audit.
 
 ## Final verification
 

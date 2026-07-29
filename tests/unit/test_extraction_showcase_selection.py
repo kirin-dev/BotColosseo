@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from botcolosseo.cli.select_extraction_showcases import _score
+from botcolosseo.cli.select_extraction_showcases import _representative, _score
 from botcolosseo.evaluation.extraction import ExtractionEpisodeMetrics
 
 
@@ -61,3 +61,52 @@ def test_showcase_selection_uses_distinct_visible_style_signatures() -> None:
         "explorer",
         episode(unique_route_cells=20),
     )
+
+
+def test_explorer_prefers_no_combat_upgrade_story_over_noisy_combat() -> None:
+    strong = episode(
+        meaningful_loot_regions=1,
+        backpack_upgrades=0,
+        upgrade_to_extraction_conversions=0,
+    )
+    quiet = episode(
+        decisions=300,
+        meaningful_loot_regions=4,
+        backpack_upgrades=1,
+        upgrade_to_extraction_conversions=1,
+        valid_hits=0,
+        kills=0,
+    )
+    noisy = episode(
+        decisions=300,
+        meaningful_loot_regions=4,
+        backpack_upgrades=1,
+        upgrade_to_extraction_conversions=1,
+        valid_hits=4,
+        kills=1,
+    )
+
+    assert _representative("explorer", quiet, strong)
+    assert _score("explorer", quiet, strong) > _score(
+        "explorer", noisy, strong
+    )
+
+
+def test_defensive_requires_disengagement_to_meaningful_extraction() -> None:
+    strong = episode(successful_disengagements=0, meaningful_extractions=1)
+    merely_passive = episode(
+        decisions=300,
+        successful_disengagements=0,
+        meaningful_extractions=1,
+        attack_decisions=0,
+    )
+    complete = episode(
+        decisions=300,
+        successful_disengagements=1,
+        disengagement_opportunities=1,
+        meaningful_extractions=1,
+        attack_decisions=0,
+    )
+
+    assert not _representative("defensive", merely_passive, strong)
+    assert _representative("defensive", complete, strong)

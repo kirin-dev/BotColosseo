@@ -174,6 +174,76 @@ def _resolve_admission(
     }
 
 
+def _resolve_demonstration(
+    root: Path,
+    *,
+    policy: str,
+    directory: Path,
+) -> dict[str, str]:
+    manifest_path = directory / "showcase-demonstration.json"
+    checkpoint = directory / "showcase.pt"
+    if not manifest_path.is_file() or not checkpoint.is_file():
+        raise ValueError(f"No valid {policy} Showcase artifact exists")
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    validation_failures = payload.get("validation_failed_checks")
+    heldout_failures = payload.get("heldout_failed_checks")
+    heldout_checks = payload.get("heldout_checks")
+    if (
+        not isinstance(validation_failures, list)
+        or any(name != "style_ci_lower" for name in validation_failures)
+        or not isinstance(heldout_failures, list)
+        or not isinstance(heldout_checks, list)
+        or not heldout_checks
+        or heldout_failures
+        != [
+            check.get("name")
+            for check in heldout_checks
+            if check.get("passed") is not True
+        ]
+    ):
+        raise ValueError("Showcase demonstration check ledger does not match")
+    expected = payload.get("showcase_checkpoint_sha256")
+    if not (
+        payload.get("demonstration_schema_version") == 1
+        and payload.get("evidence_tier") == "validation_demonstration"
+        and payload.get("policy") == policy
+        and payload.get("product_demo_eligible") is True
+        and payload.get("research_gate_passed") is False
+        and payload.get("official_test_eligible") is False
+        and payload.get("research_failed_checks")
+        == [*validation_failures, *heldout_failures]
+        and payload.get("heldout_gate_passed") is (not heldout_failures)
+        and payload.get("actor_privilege_violations") == 0
+        and payload.get("test_cases_accessed") is False
+        and isinstance(expected, str)
+        and sha256_file(checkpoint) == expected
+    ):
+        raise ValueError("Showcase demonstration identity does not match")
+    validation = _verify_evidence(root, policy=policy, payload=payload)
+    evidence = payload["evidence"]
+    heldout_reports = []
+    for relative in evidence:
+        if not str(relative).endswith("-heldout.json"):
+            continue
+        report = json.loads((root / str(relative)).read_text(encoding="utf-8"))
+        if report.get("policy") == policy:
+            heldout_reports.append(report)
+    if (
+        len(heldout_reports) != 1
+        or heldout_reports[0].get("split") != "heldout"
+        or heldout_reports[0].get("complete") is not True
+        or heldout_reports[0].get("test_cases_accessed") is not False
+        or heldout_reports[0].get("actor_privilege_violations") != 0
+    ):
+        raise ValueError("Showcase demonstration heldout identity does not match")
+    return {
+        "mode": "validation_demonstration",
+        "checkpoint": str(checkpoint.relative_to(root)),
+        "validation_report": str(validation.relative_to(root)),
+        "manifest": str(manifest_path.relative_to(root)),
+    }
+
+
 def resolve_style_showcase_artifacts(
     root: Path,
     *,
@@ -188,11 +258,26 @@ def resolve_style_showcase_artifacts(
         policy=policy,
         directory=directory,
     )
-    return selection or _resolve_admission(
-        root,
-        policy=policy,
-        directory=directory,
-    )
+    if selection is not None:
+        return selection
+    try:
+        return _resolve_admission(
+            root,
+            policy=policy,
+            directory=directory,
+        )
+    except ValueError as admission_error:
+        try:
+            return _resolve_demonstration(
+                root,
+                policy=policy,
+                directory=directory,
+            )
+        except ValueError as demonstration_error:
+            raise ValueError(
+                f"No valid {policy} Showcase artifact exists: "
+                f"{admission_error}; {demonstration_error}"
+            ) from demonstration_error
 
 
 def main(argv: list[str] | None = None) -> int:

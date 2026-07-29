@@ -55,6 +55,15 @@ class RecordedExtractionShowcase:
         return payload
 
 
+@dataclass(frozen=True)
+class _ShowcaseFrameInput:
+    observation: ExtractionActorObservation
+    privileged: ExtractionPrivilegedState
+    protocol: ExtractionProtocolSnapshot
+    action: MacroAction
+    event_label: str
+
+
 def _event_label(
     events: tuple[ExtractionEvent, ...],
     *,
@@ -106,6 +115,36 @@ def _draw_bar(
     filled = round(width * max(0.0, min(value / maximum, 1.0)))
     cv2.rectangle(canvas, (x, y), (x + filled, y + 10), color, -1)
     cv2.rectangle(canvas, (x, y), (x + width, y + 10), (210, 210, 210), 1)
+
+
+def _warm_extraction_policy(
+    model: torch.nn.Module,
+    *,
+    device: torch.device,
+) -> None:
+    observation = ExtractionActorObservation(
+        frame=np.zeros((84, 84), dtype=np.uint8),
+        health=100,
+        ammo=30,
+        carried_value=0,
+        free_slots=3,
+        minimum_slot_value=0,
+        banked_value=0,
+        extraction_open=False,
+        extraction_progress=0,
+        remaining_time=75,
+        previous_action=int(MacroAction.IDLE),
+    )
+    model(
+        *extraction_observation_tensors(
+            observation,
+            episode_start=True,
+            device=device,
+        ),
+        model.initial_state(1, device=device),
+    )
+    if device.type == "cuda":
+        torch.cuda.synchronize(device)
 
 
 def compose_extraction_showcase_frame(
@@ -354,6 +393,7 @@ def record_extraction_showcase(
         )
     else:
         model = policy_model
+    _warm_extraction_policy(model, device=device)
     env = SynchronousExtractionEnv(
         config_path=root
         / "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg",
@@ -365,7 +405,7 @@ def record_extraction_showcase(
         side=opponent_side,
         style=case.opponent_style,
     )
-    frames: list[NDArray[np.uint8]] = []
+    frame_inputs: list[_ShowcaseFrameInput] = []
     event_counts: Counter[str] = Counter()
     hidden = model.initial_state(1, device=device)
     event_banner = "ENTER RAID  |  SEARCH FOR VALUE"
@@ -452,12 +492,14 @@ def record_extraction_showcase(
                     state_after.host_y,
                 )
             )
+            disengaged_now = False
             if disengagement_active and math.dist(
                 (after_x, after_y),
                 (after_opponent_x, after_opponent_y),
             ) >= 512:
                 successful_disengagements += 1
                 disengagement_active = False
+                disengaged_now = True
             for event in step.events:
                 event_counts[f"{event.side}:{event.type.value}"] += event.count
             learner_events = tuple(
@@ -502,6 +544,10 @@ def record_extraction_showcase(
                 if upgraded_backpack:
                     upgrade_to_extraction_conversions += 1
             label = _event_label(step.events, learner_side=case.learner_side)
+            if disengaged_now:
+                label = "DISENGAGED  SAFE DISTANCE CREATED" + (
+                    f" | {label}" if label else ""
+                )
             if label:
                 event_banner = label
                 banner_ttl = 18
@@ -513,13 +559,11 @@ def record_extraction_showcase(
                 step.host if case.learner_side == "host" else step.opponent
             )
             if decisions % frame_stride == 0 or label or step.terminated or step.truncated:
-                frames.append(
-                    compose_extraction_showcase_frame(
-                        learner_observation,
+                frame_inputs.append(
+                    _ShowcaseFrameInput(
+                        observation=learner_observation,
                         privileged=env.privileged_state(),
                         protocol=env.protocol_snapshot(),
-                        learner_side=case.learner_side,
-                        style=style,
                         action=learner_action,
                         event_label=event_banner,
                     )
@@ -534,10 +578,23 @@ def record_extraction_showcase(
             else observations.opponent
         )
         life = env.protocol_snapshot().public_state(case.learner_side).life_state
+        env.close()
+        frames = tuple(
+            compose_extraction_showcase_frame(
+                item.observation,
+                privileged=item.privileged,
+                protocol=item.protocol,
+                learner_side=case.learner_side,
+                style=style,
+                action=item.action,
+                event_label=item.event_label,
+            )
+            for item in frame_inputs
+        )
         return RecordedExtractionShowcase(
             style=style,
             case=case,
-            frames=tuple(frames),
+            frames=frames,
             decisions=decisions,
             extracted_value=final.banked_value,
             extracted=life == 3,

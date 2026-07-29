@@ -67,6 +67,29 @@ def test_directional_style_admission_runner_freezes_source_and_destination() -> 
     assert '--policy "$STYLE"' in source
 
 
+def test_validation_demonstration_runner_freezes_source_and_disclosure_tier() -> None:
+    source = Path(
+        "scripts/run_extraction_v3_create_style_demonstration.sh"
+    ).read_text(encoding="utf-8")
+
+    assert "BOTCOLOSSEO_STYLE_SOURCE" in source
+    assert 'DESTINATION="runs/extraction/styles/$STYLE"' in source
+    assert "botcolosseo.cli.create_extraction_showcase_demonstration" in source
+    assert "showcase-demonstration.json" in source
+
+
+def test_showcase_runner_binds_manifests_retries_and_product_audits() -> None:
+    source = Path(
+        "scripts/render_extraction_v3_showcase.sh"
+    ).read_text(encoding="utf-8")
+
+    assert "--aggressive-manifest" in source
+    assert "--defensive-manifest" in source
+    assert "--explorer-manifest" in source
+    assert "--max-attempts 5" in source
+    assert "botcolosseo.cli.audit_extraction_showcase" in source
+
+
 def test_style_selector_accepts_an_isolated_output_root() -> None:
     source = Path(
         "scripts/run_extraction_v3_select_style.sh"

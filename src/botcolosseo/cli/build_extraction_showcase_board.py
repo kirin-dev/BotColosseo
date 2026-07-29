@@ -19,6 +19,7 @@ def build_parser() -> argparse.ArgumentParser:
     for policy in POLICIES:
         parser.add_argument(f"--{policy}-video", type=Path, required=True)
         parser.add_argument(f"--{policy}-evidence", type=Path, required=True)
+    parser.add_argument("--selection", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
     return parser
@@ -67,9 +68,17 @@ def main(argv: list[str] | None = None) -> int:
     root = Path(__file__).resolve().parents[3]
     output = _resolve(root, args.output)
     manifest_path = _resolve(root, args.manifest)
+    selection_path = _resolve(root, args.selection)
     if output.exists() or manifest_path.exists():
         raise FileExistsError("Refusing to overwrite showcase board artifacts")
     canvas = np.full((660, 1020, 3), (15, 20, 28), dtype=np.uint8)
+    selection = json.loads(selection_path.read_text(encoding="utf-8"))
+    if (
+        selection.get("schema_version") != 2
+        or selection.get("selection_split") != "validation"
+        or selection.get("test_cases_accessed") is not False
+    ):
+        raise ValueError("Showcase selection identity does not match")
     cv2.putText(
         canvas,
         "CRYSTAL RUN: EXTRACTION",
@@ -82,7 +91,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     cv2.putText(
         canvas,
-        "One Strong Base. Three learned, skill-preserving styles.",
+        "One Strong Base. Three learned behavioral styles.",
         (30, 67),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.52,
@@ -95,6 +104,8 @@ def main(argv: list[str] | None = None) -> int:
         video = _resolve(root, getattr(args, f"{policy}_video"))
         evidence_path = _resolve(root, getattr(args, f"{policy}_evidence"))
         evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+        selected = selection["selections"][policy]
+        evidence_tier = selected["evidence_tier"]
         if (
             evidence.get("policy") != policy
             or evidence.get("test_cases_accessed") is not False
@@ -115,6 +126,23 @@ def main(argv: list[str] | None = None) -> int:
             2,
             cv2.LINE_AA,
         )
+        tier_label = {
+            "research_selection": "RESEARCH SELECTED",
+            "directional_showcase": "DIRECTIONAL SHOWCASE",
+            "validation_demonstration": "VALIDATION DEMO",
+        }.get(evidence_tier)
+        if tier_label is None:
+            raise ValueError(f"{policy} Showcase evidence tier is invalid")
+        cv2.putText(
+            canvas,
+            tier_label,
+            (x + 250, y + 23),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.34,
+            (205, 205, 205),
+            1,
+            cv2.LINE_AA,
+        )
         cv2.putText(
             canvas,
             _caption(policy, evidence),
@@ -130,6 +158,7 @@ def main(argv: list[str] | None = None) -> int:
             "video_sha256": sha256_file(video),
             "evidence": str(evidence_path.relative_to(root)),
             "evidence_sha256": sha256_file(evidence_path),
+            "evidence_tier": evidence_tier,
         }
     output.parent.mkdir(parents=True, exist_ok=True)
     if not cv2.imwrite(str(output), canvas):
@@ -138,6 +167,8 @@ def main(argv: list[str] | None = None) -> int:
         "schema_version": 1,
         "board": str(output.relative_to(root)),
         "board_sha256": sha256_file(output),
+        "selection": str(selection_path.relative_to(root)),
+        "selection_sha256": sha256_file(selection_path),
         "artifacts": artifacts,
         "source_split": "validation",
         "test_cases_accessed": False,

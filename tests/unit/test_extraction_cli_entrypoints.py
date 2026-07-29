@@ -14,7 +14,9 @@ import pytest
         "botcolosseo.cli.train_extraction_style",
         "botcolosseo.cli.evaluate_extraction_v3",
         "botcolosseo.cli.admit_extraction_showcase",
+        "botcolosseo.cli.create_extraction_showcase_demonstration",
         "botcolosseo.cli.resolve_extraction_showcase_artifact",
+        "botcolosseo.cli.audit_extraction_showcase",
     ),
 )
 def test_v3_cli_modules_expose_executable_help(module: str) -> None:

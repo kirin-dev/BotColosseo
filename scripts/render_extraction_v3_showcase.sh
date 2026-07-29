@@ -35,6 +35,7 @@ PY
 strong_report="$(report_from_selection runs/extraction/strong-ppo/selection.json strong)"
 declare -A style_checkpoint
 declare -A style_report
+declare -A style_manifest
 for policy in aggressive defensive explorer; do
   resolved="$("$PYTHON" -m \
     botcolosseo.cli.resolve_extraction_showcase_artifact \
@@ -46,10 +47,12 @@ import sys
 payload = json.loads(sys.argv[1])
 print(payload["checkpoint"])
 print(payload["validation_report"])
+print(payload["manifest"])
 PY
 )
   style_checkpoint["$policy"]="${artifact[0]}"
   style_report["$policy"]="${artifact[1]}"
+  style_manifest["$policy"]="${artifact[2]}"
 done
 aggressive_report="${style_report[aggressive]}"
 defensive_report="${style_report[defensive]}"
@@ -58,9 +61,13 @@ selection="$REPORTS/selection.json"
 if [[ ! -f "$selection" ]]; then
   "$PYTHON" -u -m botcolosseo.cli.select_extraction_showcases \
     --strong-report "$strong_report" \
+    --strong-manifest runs/extraction/strong-ppo/selection.json \
     --aggressive-report "$aggressive_report" \
+    --aggressive-manifest "${style_manifest[aggressive]}" \
     --defensive-report "$defensive_report" \
+    --defensive-manifest "${style_manifest[defensive]}" \
     --explorer-report "$explorer_report" \
+    --explorer-manifest "${style_manifest[explorer]}" \
     --output "$selection"
 fi
 
@@ -85,6 +92,7 @@ PY
       --policy "$policy" \
       --case-index "$case_index" \
       --device cuda:0 \
+      --max-attempts 5 \
       --output "$MEDIA/$policy.mp4" \
       --evidence "$REPORTS/$policy.json"
   fi
@@ -100,8 +108,17 @@ if [[ ! -f "$MEDIA/showcase-board.png" ]]; then
     --defensive-evidence "$REPORTS/defensive.json" \
     --explorer-video "$MEDIA/explorer.mp4" \
     --explorer-evidence "$REPORTS/explorer.json" \
+    --selection "$selection" \
     --output "$MEDIA/showcase-board.png" \
     --manifest "$REPORTS/manifest.json"
+fi
+
+if [[ ! -f "$REPORTS/audit.json" ]]; then
+  "$PYTHON" -u -m botcolosseo.cli.audit_extraction_showcase \
+    --selection "$selection" \
+    --board-manifest "$REPORTS/manifest.json" \
+    --method "$MEDIA/method.svg" \
+    --output "$REPORTS/audit.json"
 fi
 
 echo "Crystal Run: Extraction showcase complete"
