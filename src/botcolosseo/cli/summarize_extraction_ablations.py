@@ -36,6 +36,11 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("reports/extraction/style-ablation.json"),
     )
+    parser.add_argument(
+        "--markdown-output",
+        type=Path,
+        default=Path("reports/extraction/style-ablation.md"),
+    )
     return parser
 
 
@@ -278,12 +283,55 @@ def summarize(root: Path) -> dict[str, object]:
     }
 
 
+def markdown_table(payload: dict[str, object]) -> str:
+    matrix = payload["matrix"]
+    labels = {
+        "full": "Full",
+        "reward-plus-kl": "Reward + KL",
+        "reward-only": "Reward only",
+    }
+    lines = [
+        "# Extraction style ablation",
+        "",
+        "All cells use the same frozen Strong Actor and matched 200k training "
+        "budget. Each cell is `paired style shift / paired task retention`.",
+        "",
+        "| Variant | Aggressive | Defensive | Explorer |",
+        "|---|---:|---:|---:|",
+    ]
+    for variant in VARIANTS:
+        cells = matrix[variant]
+        values = []
+        for style in STYLES:
+            cell = cells[style]
+            values.append(
+                f"{float(cell['paired_style_shift']):+.3f} / "
+                f"{float(cell['paired_task_retention']):.1%}"
+            )
+        lines.append(
+            f"| {labels[variant]} | {values[0]} | {values[1]} | {values[2]} |"
+        )
+    lines.extend(
+        (
+            "",
+            "Style-shift metrics are style-specific and are not a cross-style "
+            "ranking. Full gate values and disclosed failures are stored in "
+            "[`style-ablation.json`](style-ablation.json).",
+            "",
+            "`test_cases_accessed=false`; official-test cases were not opened.",
+            "",
+        )
+    )
+    return "\n".join(lines)
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     root = Path(__file__).resolve().parents[3]
     output = _resolve(root, args.output)
-    if output.exists():
-        raise FileExistsError(f"Refusing to overwrite ablation summary: {output}")
+    markdown_output = _resolve(root, args.markdown_output)
+    if output.exists() or markdown_output.exists():
+        raise FileExistsError("Refusing to overwrite ablation summary outputs")
     payload = summarize(root)
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = output.with_name(f".{output.name}.tmp")
@@ -292,6 +340,15 @@ def main(argv: list[str] | None = None) -> int:
         encoding="utf-8",
     )
     temporary.replace(output)
+    markdown_output.parent.mkdir(parents=True, exist_ok=True)
+    markdown_temporary = markdown_output.with_name(
+        f".{markdown_output.name}.tmp"
+    )
+    markdown_temporary.write_text(
+        markdown_table(payload),
+        encoding="utf-8",
+    )
+    markdown_temporary.replace(markdown_output)
     print(json.dumps(payload, indent=2, sort_keys=True))
     return 0
 

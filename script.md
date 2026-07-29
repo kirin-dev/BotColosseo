@@ -353,7 +353,8 @@ After all six validation reports finish:
 
 ```bash
 python -m botcolosseo.cli.summarize_extraction_ablations \
-  --output reports/extraction/style-ablation.json
+  --output reports/extraction/style-ablation.json \
+  --markdown-output reports/extraction/style-ablation.md
 ```
 
 The ablation uses validation only and never opens heldout or official-test

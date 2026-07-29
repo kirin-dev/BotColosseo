@@ -8,6 +8,7 @@ from botcolosseo.cli.summarize_extraction_ablations import (
     COEFFICIENTS,
     STYLES,
     VARIANTS,
+    markdown_table,
 )
 
 
@@ -81,3 +82,26 @@ def test_ablation_runner_has_two_fixed_gpu_lanes_and_200k_stop() -> None:
     assert "--stop-after-steps \"$TARGET_STEPS\"" in source
     assert "--split heldout" not in source
     assert "--split test" not in source
+
+
+def test_ablation_markdown_table_is_derived_from_summary_values() -> None:
+    payload = {
+        "matrix": {
+            variant: {
+                style: {
+                    "paired_style_shift": (index + 1) / 100,
+                    "paired_task_retention": 0.9 + index / 100,
+                }
+                for index, style in enumerate(STYLES)
+            }
+            for variant in VARIANTS
+        }
+    }
+
+    rendered = markdown_table(payload)
+
+    assert "| Variant | Aggressive | Defensive | Explorer |" in rendered
+    assert "| Full | +0.010 / 90.0% | +0.020 / 91.0% | +0.030 / 92.0% |" in rendered
+    assert "| Reward + KL |" in rendered
+    assert "| Reward only |" in rendered
+    assert "`test_cases_accessed=false`" in rendered
