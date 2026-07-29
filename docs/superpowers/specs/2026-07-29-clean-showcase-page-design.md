@@ -1,7 +1,7 @@
 # Clean Showcase Page Design
 
 **Date:** 2026-07-29
-**Status:** approved direction, pending written-spec review
+**Status:** approved
 
 ## Goal
 
@@ -113,8 +113,9 @@ all styles passed a strict research gate or official test.
 
 - `docs/index.html`: GitHub Pages entry page.
 - `docs/showcase.css`: page styles.
-- `docs/assets/extraction/`: existing videos and generated diagrams.
-- `img/`: user-provided style identifiers.
+- `docs/assets/extraction/`: existing videos, diagrams, and deployable copies of
+  the style identifiers.
+- `img/`: user-provided source style identifiers.
 - `README.md` and `README_CN.md`: concise overview, Showcase link, reproduction
   entry points, and evidence boundary.
 

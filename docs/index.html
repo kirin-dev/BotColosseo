@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Crystal Run: Extraction — one capable ViZDoom Bot, three learned play styles."
+    >
+    <title>Crystal Run: Extraction</title>
+    <link rel="stylesheet" href="showcase.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Crystal Run home">
+        <span class="brand-mark">CR</span>
+        <span>Crystal Run</span>
+      </a>
+      <nav aria-label="Showcase sections">
+        <a href="#bots">Bots</a>
+        <a href="#scenario">Scenario</a>
+        <a href="#method">Method</a>
+        <a href="#results">Results</a>
+      </nav>
+      <a class="quiet-link" href="https://github.com/kirin-dev/BotColosseo">
+        GitHub ↗
+      </a>
+    </header>
+
+    <main id="top">
+      <section class="hero shell">
+        <p class="eyebrow">CONTROLLABLE GAME BOTS · VIZDOOM</p>
+        <h1>One capable Bot.<br><span>Four ways to play.</span></h1>
+        <p class="hero-copy">
+          A compact 1v1 extraction shooter where a shared visual policy becomes
+          Strong, Aggressive, Defensive, or Explorer—without changing the rules
+          or giving the deployed Actor hidden information.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="#bots">Watch the Bots</a>
+          <a
+            class="button secondary"
+            href="https://github.com/kirin-dev/BotColosseo/blob/main/reports/extraction/showcase/audit.json"
+          >View evidence</a>
+        </div>
+      </section>
+
+      <section class="section shell" id="bots">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">01 · PLAY STYLES</p>
+            <h2>Watch the camera Bot</h2>
+          </div>
+          <p>
+            Every clip is the first-person view of the Bot controlling the
+            camera. The right-side telemetry explains the trajectory to viewers;
+            it is not a policy input.
+          </p>
+        </div>
+
+        <div class="video-grid">
+          <article class="video-card strong">
+            <div class="bot-heading">
+              <img
+                src="assets/extraction/emotes/Strong.jpg"
+                alt=""
+                width="56"
+                height="56"
+              >
+              <div>
+                <h3>Strong</h3>
+                <p>Balanced task capability</p>
+              </div>
+            </div>
+            <video
+              controls
+              muted
+              playsinline
+              preload="metadata"
+              aria-label="Strong Bot representative validation video"
+            >
+              <source src="assets/extraction/strong.mp4" type="video/mp4">
+              Your browser does not support HTML video.
+            </video>
+            <p class="causal-chain">
+              <span>Search</span><b>→</b><span>valuable loot</span><b>→</b>
+              <span>extract</span><b>→</b><span>bank value</span>
+            </p>
+          </article>
+
+          <article class="video-card aggressive">
+            <div class="bot-heading">
+              <img
+                src="assets/extraction/emotes/Aggressive.jpg"
+                alt=""
+                width="56"
+                height="56"
+              >
+              <div>
+                <h3>Aggressive</h3>
+                <p>Useful combat conversion</p>
+              </div>
+            </div>
+            <video
+              controls
+              muted
+              playsinline
+              preload="metadata"
+              aria-label="Aggressive Bot representative validation video"
+            >
+              <source src="assets/extraction/aggressive.mp4" type="video/mp4">
+              Your browser does not support HTML video.
+            </video>
+            <p class="causal-chain">
+              <span>Five hits</span><b>→</b><span>kill</span><b>→</b>
+              <span>loot cache</span><b>→</b><span>extract</span>
+            </p>
+          </article>
+
+          <article class="video-card defensive">
+            <div class="bot-heading">
+              <img
+                src="assets/extraction/emotes/Defensive.jpg"
+                alt=""
+                width="56"
+                height="56"
+              >
+              <div>
+                <h3>Defensive</h3>
+                <p>Value preservation under risk</p>
+              </div>
+            </div>
+            <video
+              controls
+              muted
+              playsinline
+              preload="metadata"
+              aria-label="Defensive Bot representative validation video"
+            >
+              <source src="assets/extraction/defensive.mp4" type="video/mp4">
+              Your browser does not support HTML video.
+            </video>
+            <p class="causal-chain">
+              <span>Low HP + loot</span><b>→</b><span>stop pursuit</span><b>→</b>
+              <span>disengage</span><b>→</b><span>preserve value</span>
+            </p>
+          </article>
+
+          <article class="video-card explorer">
+            <div class="bot-heading">
+              <img
+                src="assets/extraction/emotes/Explorer.jpg"
+                alt=""
+                width="56"
+                height="56"
+              >
+              <div>
+                <h3>Explorer</h3>
+                <p>Useful route and loot diversity</p>
+              </div>
+            </div>
+            <video
+              controls
+              muted
+              playsinline
+              preload="metadata"
+              aria-label="Explorer Bot representative validation video"
+            >
+              <source src="assets/extraction/explorer.mp4" type="video/mp4">
+              Your browser does not support HTML video.
+            </video>
+            <p class="causal-chain">
+              <span>Multiple regions</span><b>→</b><span>upgrade backpack</span>
+              <b>→</b><span>extract</span>
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section shell" id="scenario">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">02 · SCENARIO</p>
+            <h2>Search, fight, extract</h2>
+          </div>
+          <p>
+            The rules create a real choice: contest valuable loot, fight for an
+            opponent's carried value, or leave safely with what you have.
+          </p>
+        </div>
+
+        <div class="scenario-layout">
+          <figure class="map-card">
+            <img
+              src="assets/extraction/map.svg"
+              alt="Top-down Crystal Run map with two extraction zones, two spawns, loot regions, and a contested center."
+            >
+            <figcaption>Training and validation base layout</figcaption>
+          </figure>
+          <div class="rules-card">
+            <dl class="rules">
+              <div><dt>Raid</dt><dd>1v1 · 75 seconds</dd></div>
+              <div><dt>Combat</dt><dd>100 HP · 20 damage · 30 rounds</dd></div>
+              <div><dt>Inventory</dt><dd>3 slots · loot worth 10 / 25 / 50</dd></div>
+              <div><dt>Extraction</dt><dd>2 zones · opens at 30s · hold for 3s</dd></div>
+              <div><dt>Death</dt><dd>Unbanked loot becomes a collectible cache</dd></div>
+              <div><dt>Objective</dt><dd>Only successfully extracted value counts</dd></div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <section class="section shell" id="method">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">03 · METHOD</p>
+            <h2>One base, three learned adapters</h2>
+          </div>
+          <p>
+            Capability is learned once. Style is added with small bounded
+            residual adapters over the same frozen Strong Actor.
+          </p>
+        </div>
+        <figure class="method-card">
+          <img
+            src="assets/extraction/method.svg"
+            alt="First-person observation flows into a CNN-GRU Strong policy, then branches into three bounded learned style adapters."
+          >
+        </figure>
+        <div class="method-steps" aria-label="Training flow">
+          <span>Scripted Teacher</span><b>→</b>
+          <span>Behavioral Cloning</span><b>→</b>
+          <span>Recurrent PPO</span><b>→</b>
+          <span>Frozen Strong Actor</span><b>→</b>
+          <span>Residual Style Adapter</span>
+        </div>
+        <p class="fairness-note">
+          <strong>Fair observation.</strong> Public inference uses only
+          first-person pixels and the player's own public state. Privileged
+          Critic features and reward ledgers are training-only.
+        </p>
+      </section>
+
+      <section class="section shell" id="styles">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">04 · HOW TO TELL</p>
+            <h2>Different priorities, visible decisions</h2>
+          </div>
+          <p>
+            Style is not a costume or a runtime rule. It is a learned shift in
+            what the policy chooses to do under the same game mechanics.
+          </p>
+        </div>
+
+        <div class="style-grid">
+          <article class="style-card strong">
+            <h3>Strong</h3>
+            <p class="style-priority">Priority · complete the task</p>
+            <p>Balances loot, combat risk, and extraction timing.</p>
+            <small>Watch: high-value loot becomes banked value.</small>
+          </article>
+          <article class="style-card aggressive">
+            <h3>Aggressive</h3>
+            <p class="style-priority">Priority · convert useful fights</p>
+            <p>Initiates encounters when combat can create extractable value.</p>
+            <small>Watch: hit → kill → corpse cache → extraction.</small>
+          </article>
+          <article class="style-card defensive">
+            <h3>Defensive</h3>
+            <p class="style-priority">Priority · protect carried value</p>
+            <p>Disengages when low resources make continued combat costly.</p>
+            <small>Watch: stops chasing, creates distance, leaves alive.</small>
+          </article>
+          <article class="style-card explorer">
+            <h3>Explorer</h3>
+            <p class="style-priority">Priority · improve route and inventory</p>
+            <p>Visits useful loot regions and replaces low-value items.</p>
+            <small>Watch: broader search → backpack upgrade → extraction.</small>
+          </article>
+        </div>
+      </section>
+
+      <section class="section shell" id="results">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">05 · RESULTS</p>
+            <h2>Capability first, style second</h2>
+          </div>
+          <p>
+            The most direct frozen validation evidence for the product claim.
+            Selection never accesses the test split.
+          </p>
+        </div>
+
+        <div class="metric-grid" aria-label="Strong Bot capability">
+          <article><strong>100%</strong><span>solo extraction</span></article>
+          <article><strong>89.2%</strong><span>scripted-opponent win rate</span></article>
+          <article><strong>94.6%</strong><span>validation extraction</span></article>
+          <article><strong>85.8%</strong><span>heldout-layout extraction</span></article>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Style adapter</th>
+                <th>Paired style shift</th>
+                <th>Task retention</th>
+                <th>Evidence tier</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Aggressive</th>
+                <td class="positive">+0.101</td>
+                <td>93.5%</td>
+                <td>Directional Showcase</td>
+              </tr>
+              <tr>
+                <th>Defensive</th>
+                <td class="positive">+0.006</td>
+                <td>96.3%</td>
+                <td>Validation demonstration</td>
+              </tr>
+              <tr>
+                <th>Explorer</th>
+                <td class="positive">+0.050</td>
+                <td>94.4%</td>
+                <td>Validation demonstration</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="result-note">
+          Positive paired shifts mean each adapter moved its own style metric in
+          the intended direction; the three metric scales are not a cross-style
+          ranking. Aggressive misses one heldout opponent-retention check.
+          Defensive and Explorer lose 11.7 and 17.5 percentage points of
+          heldout extraction respectively. These are product Showcase artifacts,
+          not official-test results.
+        </p>
+      </section>
+    </main>
+
+    <footer class="shell">
+      <p>Crystal Run: Extraction · ViZDoom · MIT</p>
+      <div>
+        <a href="https://github.com/kirin-dev/BotColosseo">Repository</a>
+        <a href="https://github.com/kirin-dev/BotColosseo/blob/main/README_CN.md">中文说明</a>
+        <a href="#top">Back to top ↑</a>
+      </div>
+    </footer>
+  </body>
+</html>
