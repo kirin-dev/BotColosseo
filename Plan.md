@@ -147,10 +147,10 @@ but none of these privileged overlay values enter the policy.
 | G0 scenario and layouts | reproducible WAD, real two-player reset, human layout approval | PASS |
 | G1 engineering | full unit suite, real Teacher→BC→PPO→style→evaluation preflight | PASS |
 | G2 Strong | full demonstrations, BC, PPO, validation selection, heldout gate | PASS |
-| G3 styles | three learned adapters with explicit evidence tiers | IN PROGRESS |
-| G4 Showcase | contrastive validation cases, four audited videos, public board | PENDING |
-| G5 public cleanup | v3-only public narrative and audited artifacts | IN PROGRESS |
+| G3 styles | three learned adapters with explicit evidence tiers | PASS |
+| G4 Showcase | contrastive validation cases, four audited videos, public board | PASS |
+| G5 public cleanup | v3-only public narrative and audited artifacts | PASS |
 
-The current product milestone is complete when G0–G5 are evidenced and the
-Showcase branch is public. A strict all-style research release and the
-single-use official test remain clearly labeled future work.
+The current product milestone is complete: G0–G5 are evidenced and the
+Showcase artifacts are ready for the public branch. A strict all-style research
+release and the single-use official test remain clearly labeled future work.

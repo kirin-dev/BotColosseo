@@ -161,6 +161,24 @@ def audit_extraction_showcase(
             or evidence.get("test_cases_accessed") is not False
         ):
             raise ValueError(f"{policy} Showcase replay identity does not match")
+        capture_mode = evidence.get("capture_mode", "live_render")
+        if capture_mode == "verified_existing_live_capture":
+            source_evidence_sha256 = evidence.get("source_evidence_sha256")
+            if (
+                evidence.get("source_media_sha256")
+                != evidence.get("media_sha256")
+                or not evidence.get("source_media")
+                or not evidence.get("source_evidence")
+                or not isinstance(source_evidence_sha256, str)
+                or len(source_evidence_sha256) != 64
+                or any(
+                    character not in "0123456789abcdef"
+                    for character in source_evidence_sha256
+                )
+            ):
+                raise ValueError(f"{policy} verified capture provenance is invalid")
+        elif capture_mode != "live_render":
+            raise ValueError(f"{policy} Showcase capture mode is invalid")
         claims = evidence.get("showcase_claims")
         if not isinstance(claims, dict):
             raise ValueError(f"{policy} Showcase claims are missing")
@@ -229,6 +247,7 @@ def audit_extraction_showcase(
             "direction_counts": manifest.get("direction_counts"),
             "validation_style_paired_difference": style_difference,
             "render_attempt_count": attempt_count,
+            "capture_mode": capture_mode,
             "story_checks_passed": True,
         }
     return {

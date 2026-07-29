@@ -71,7 +71,7 @@ def main(argv: list[str] | None = None) -> int:
     selection_path = _resolve(root, args.selection)
     if output.exists() or manifest_path.exists():
         raise FileExistsError("Refusing to overwrite showcase board artifacts")
-    canvas = np.full((660, 1020, 3), (15, 20, 28), dtype=np.uint8)
+    canvas = np.full((790, 1080, 3), (15, 20, 28), dtype=np.uint8)
     selection = json.loads(selection_path.read_text(encoding="utf-8"))
     if (
         selection.get("schema_version") != 2
@@ -113,13 +113,20 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError(f"{policy} showcase evidence identity does not match")
         frame = _representative_frame(video)
         row, column = divmod(index, 2)
-        x, y = 20 + column * 500, 90 + row * 285
-        canvas[y : y + 270, x : x + 480] = frame
-        cv2.rectangle(canvas, (x, y), (x + 480, y + 270), (100, 120, 145), 1)
+        x, y = 20 + column * 530, 90 + row * 345
+        frame_x, frame_y = x + 15, y + 38
+        cv2.rectangle(
+            canvas,
+            (x, y),
+            (x + 510, y + 330),
+            (100, 120, 145),
+            1,
+        )
+        canvas[frame_y : frame_y + 270, frame_x : frame_x + 480] = frame
         cv2.putText(
             canvas,
             policy.upper(),
-            (x + 12, y + 24),
+            (x + 12, y + 25),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.58,
             (80, 220, 255),
@@ -136,7 +143,7 @@ def main(argv: list[str] | None = None) -> int:
         cv2.putText(
             canvas,
             tier_label,
-            (x + 250, y + 23),
+            (x + 285, y + 23),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.34,
             (205, 205, 205),
@@ -146,7 +153,7 @@ def main(argv: list[str] | None = None) -> int:
         cv2.putText(
             canvas,
             _caption(policy, evidence),
-            (x + 12, y + 254),
+            (x + 12, y + 323),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.45,
             (245, 245, 245),

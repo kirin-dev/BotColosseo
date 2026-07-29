@@ -1,118 +1,125 @@
 # Crystal Run: Extraction
 
-[中文](README_CN.md)
+[中文说明](README_CN.md)
 
-Train one capable visual game Bot, then shape it into recognizable play styles
-without throwing away its task skill.
+Train one capable first-person game Bot, then derive three visibly different
+learned play styles without changing the game rules or giving the Actor hidden
+state.
 
-Crystal Run: Extraction is a compact 1v1 extraction-shooter research product
-built in real ViZDoom:
+![Four-policy Crystal Run Showcase](docs/assets/extraction/showcase-board.png)
+
+## Watch the Bots
+
+Every clip is the **first-person view of the Bot controlling the camera**.
+Judge that camera Bot—not the opponent visible on screen. The right-hand panel
+is viewer-only telemetry and is never a policy input.
+
+| Bot | What to watch | Clip | Evidence tier |
+|---|---|---|---|
+| **Strong** | collects high-value loot and converts it into banked value | [MP4](docs/assets/extraction/strong.mp4) | research selection |
+| **Aggressive** | lands five 20-HP hits, creates and loots the enemy corpse cache, then extracts | [MP4](docs/assets/extraction/aggressive.mp4) | directional Showcase |
+| **Defensive** | creates safe distance under risk, avoids a kill, and preserves value through extraction | [MP4](docs/assets/extraction/defensive.mp4) | validation demonstration |
+| **Explorer** | searches multiple loot regions, upgrades a full backpack, avoids combat, and extracts | [MP4](docs/assets/extraction/explorer.mp4) | validation demonstration |
+
+The videos are selected from a frozen 240-case validation protocol. Rendering
+replays the same preselected case at most five times and writes media only when
+the actual trajectory completes the advertised causal chain.
+
+## The task
+
+Crystal Run is a compact 1v1 extraction shooter built in real ViZDoom:
 
 ```text
 search for loot -> fight or disengage -> manage a 3-slot backpack
                 -> reach either extraction zone -> bank value
 ```
 
-The project is about product-facing agent behavior, not a new RL algorithm. It
-combines a fair-observation recurrent policy, asymmetric training, scripted
-opponents, historical self-play, lightweight PFSP, and learned residual style
-adapters into one auditable workflow.
-
-> Status: the v3 environment, training stack, evaluation protocol, release
-> guards, and end-to-end short preflight are complete. Full Strong/style
-> experiments are running next; no benchmark-success claim is made before the
-> frozen gates pass.
-
-## The game
-
-- Two players, two neutral extraction zones, one 75-second raid.
-- Extraction opens at 30 seconds and requires a continuous 3-second hold.
+- One 75-second raid, two neutral extraction zones.
+- Extraction opens after 30 seconds and requires a continuous 3-second hold.
 - Each player has 100 HP; every valid hit deals exactly 20 damage.
-- Each player starts with 30 rounds. There is no reload and no respawn.
-- The backpack has three slots. Loot values are 10, 25, or 50.
-- Better loot deterministically replaces the lowest-value carried item.
-- Death creates a lootable corpse cache.
-- Kills score nothing. Only value carried through extraction is banked.
+- Each player starts with 30 rounds; there is no reload and no respawn.
+- The backpack has three slots. Loot is worth 10, 25, or 50; a better item
+  replaces the lowest-value item when the backpack is full.
+- Death drops all unbanked loot into a corpse cache that the opponent can take.
+- A kill has no intrinsic score. Only value carried through extraction counts.
 
-Training and normal validation use the `base` loot layout. Heldout validation
-and the one frozen official test use the approved `heldout-a` distribution:
+The Actor chooses among 13 macro actions: idle; move forward/backward; strafe
+left/right; turn left/right; forward-turn combinations; and attack while
+standing, moving forward, or turning. Five valid hits eliminate a full-health
+opponent.
 
-![Base and heldout loot layouts](docs/review/extraction-layout-review.svg)
+## One base, three learned styles
 
-## The four Bots
+![Policy architecture](docs/assets/extraction/method.svg)
 
-| Policy | Intended visible behavior | Implementation |
-|---|---|---|
-| Strong | win, survive, collect value, and extract reliably | CNN-GRU Actor, BC warm start, recurrent PPO, scripted pool, historical checkpoints, PFSP |
-| Aggressive | create useful engagements and convert kills into extracted cache value | bounded learned delta-logit adapter over Strong |
-| Defensive | disengage under risk and preserve carried value without empty camping | bounded learned delta-logit adapter over Strong |
-| Explorer | visit useful new loot regions, upgrade the backpack, and still extract | bounded learned delta-logit adapter over Strong |
-
-All three styles derive from the exact same frozen Strong Actor hash. There are
-no runtime behavior governors in the v3 policies.
-
-## Fair observation boundary
-
-The deployed Actor receives only:
-
-- its 84×84 first-person grayscale frame;
-- its own public health, ammunition, backpack, banked value, extraction state,
-  remaining time, and previous action.
-
-The Actor never receives opponent HP, opponent position, world coordinates,
-automap, depth, object labels, privileged protocol state, or viewer overlays.
-During training only, the Critic and reward/evaluation ledgers may use
-privileged state. Public inference exports the Actor alone.
-
-## Training and evaluation
+The shared **Strong** policy is a visual CNN-GRU trained with scripted Teacher
+behavioral cloning, recurrent PPO, historical checkpoints, and lightweight
+PFSP opponent sampling. Aggressive, Defensive, and Explorer are small bounded
+residual logit adapters trained over the exact same frozen Strong Actor hash:
 
 ```text
-Strong Teacher demonstrations
-          |
-          v
-behavioral cloning -> recurrent PPO -> historical checkpoints + PFSP
-          |
-          v
-one selected Strong Actor hash
-          |
-          +----------+-----------+
-          v          v           v
-     Aggressive  Defensive   Explorer
-       adapter     adapter     adapter
+style_logits = strong_logits + max_delta * tanh(delta(features))
 ```
 
-Candidate selection cannot access official-test cases because those cases are
-generated only after all four policies pass selection:
+- **Aggressive:** useful encounter initiation and
+  hit → kill → cache → extraction conversion.
+- **Defensive:** low-resource disengagement and meaningful value preservation,
+  with penalties for empty camping and fighting while carrying high value.
+- **Explorer:** useful loot-region coverage, backpack upgrades, and
+  upgrade → extraction conversion—not raw wandering or extraction alone.
 
-- 240 paired validation episodes per policy;
-- 120 heldout-layout episodes per policy where required;
-- exactly one frozen 400-episode official test per policy;
-- 1,600 official-test episodes in total.
+All three adapters use the same frozen Strong Actor hash; the public Actor has
+no runtime behavior governors.
 
-The sealed 400-case manifest is generated from system entropy, hashed into the
-release, and then consumed by the test runner. The runner creates a release
-lock before the first test episode, supports infrastructure-safe resume for
-that same immutable release, and refuses a second completed official test.
+## Fair observation
 
-Strong must meet every frozen capability threshold before style training is
-accepted. Each style must retain at least 85% of paired Strong successes,
-remain within 10 percentage points of Strong extraction rate, retain at least
-85% of Strong mean extracted value, avoid catastrophic per-opponent
-regression, and show a positive paired style shift with a 10,000-resample 95%
-bootstrap interval. Style evidence is causal: kill-cache-extract for
-Aggressive, opportunity-conditioned disengagement and meaningful banking for
-Defensive, and backpack-upgrade-to-extraction for Explorer. Attack count and
-raw route distance are diagnostics, not success criteria. Extraction denial
-is reported as an auxiliary Aggressive pressure metric, never as a task reward
-or a requirement that the opponent must die before either player can extract.
+The deployed Actor receives only its 84×84 first-person grayscale frame and
+its own public HP, ammunition, backpack, banked value, extraction state, timer,
+and previous action. The Actor never receives opponent HP or position, world
+coordinates, depth, labels, automap, privileged protocol state, or the viewer
+overlay.
+
+During training only, a privileged Critic and reward/evaluation ledgers may be
+used. Public inference exports the Actor only.
+
+## Evidence, without overclaiming
+
+The Strong checkpoint passes the frozen research gate: 100% solo extraction,
+89.2% scripted-opponent win rate, 94.6% validation extraction, and 85.8%
+heldout-layout extraction.
+
+Style artifacts use explicit evidence tiers:
+
+- `research_selection`: all frozen validation and heldout gates pass;
+- `directional_showcase`: product direction and capability pass, with named
+  research failures disclosed;
+- `validation_demonstration`: paired validation direction, capability,
+  anti-hacking, and protocol checks pass, while heldout failures remain
+  visible.
+
+Aggressive has a +0.101 paired validation style shift with 93.5% paired task
+retention; its CI lower bound and one heldout opponent-retention check fail.
+Defensive has a +0.006 paired validation style shift, 96.3% paired task
+retention, and +1.3 percentage-point validation extraction delta; its CI lower
+bound fails and its heldout extraction delta is −11.7 percentage points.
+Explorer has a +0.050 paired validation style shift, 94.4% paired task
+retention, and +0.8 percentage-point validation extraction delta; its heldout
+extraction delta is −17.5 percentage points. These artifacts are product
+Showcase evidence, not official-test results.
+
+This is a product Showcase with no benchmark-success claim for all styles.
+Candidate selection never accesses the test split.
+
+The machine-readable [Showcase audit](reports/extraction/showcase/audit.json)
+binds every video, case, model hash, evidence tier, disclosed failed check, and
+render-attempt ledger. The strict all-style research release and single-use
+official test are deliberately deferred. The deferred protocol allows one frozen 400-episode official test per policy
+(1,600 episodes total), but it has not been run.
 
 ## Reproduce
 
-The project environment is `botcolosseo`. Long-run commands, resume behavior,
-selection, official-test locking, and media generation are documented in
-[script.md](script.md).
-
-Short verification:
+Use the `botcolosseo` Conda environment. Full training, resume, selection, and
+media commands are in [script.md](script.md).
 
 ```bash
 conda activate botcolosseo
@@ -126,19 +133,7 @@ python scripts/build_crystal_run_extraction.py \
   --acc-include "$ACC_ROOT"
 ```
 
-The approved technical and release gates are recorded in [Plan.md](Plan.md).
-
-## Repository map
-
-```text
-assets/scenarios/crystal_run_extraction/  ViZDoom map, ACS rules, two layouts
-configs/extraction/                       frozen train and evaluation protocols
-src/botcolosseo/agents/                   recurrent Actor-Critic and adapters
-src/botcolosseo/training/                 BC, PPO, rewards, rollout, PFSP, resume
-src/botcolosseo/evaluation/               paired metrics and frozen gates
-src/botcolosseo/demo/                     viewer-only telemetry and replay capture
-scripts/run_extraction_v3_*.sh            reproducible long-stage entrypoints
-```
+The frozen task and product gates are documented in [Plan.md](Plan.md).
 
 ## License
 

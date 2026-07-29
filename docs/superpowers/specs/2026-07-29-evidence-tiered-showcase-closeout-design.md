@@ -190,4 +190,3 @@ The branch is complete for the current product Showcase when all four videos
 are visibly representative, every public claim is traceable to a hashed
 artifact, the bilingual README is current, and the clean branch is pushed.
 The deferred strict research release and official test remain future work.
-
