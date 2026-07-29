@@ -312,6 +312,53 @@ actual replay completes its advertised causal chain. The script finishes with
 a separate product Showcase audit; it does not run or claim the strict
 research release audit.
 
+## Run the matched 200k style ablations
+
+The frozen ablation compares the existing Full method against Reward+KL and
+Reward-only variants for all three styles. It reuses the Full 200k reports and
+launches six new train-then-validation jobs over two GPU lanes:
+
+```bash
+mkdir -p runs/extraction/ablations/control
+
+BOTCOLOSSEO_ABLATION_PREFLIGHT_ONLY=1 \
+BOTCOLOSSEO_PYTHON="$CONDA_PREFIX/bin/python" \
+  scripts/run_extraction_v3_ablations.sh
+
+nohup bash -c '
+  BOTCOLOSSEO_PYTHON="'"$CONDA_PREFIX"'/bin/python" \
+    scripts/run_extraction_v3_ablations.sh
+  code=$?
+  printf "%s\n" "$code" \
+    > runs/extraction/ablations/control/pipeline.exit
+  exit "$code"
+' > runs/extraction/ablations/control/pipeline.log 2>&1 &
+echo $! > runs/extraction/ablations/control/pipeline.pid
+```
+
+The expected wall time is about 4.5 hours. Apply the 50%-of-estimate monitoring
+rule: first inspect progress about 2 hours 15 minutes after launch, then use
+half of the revised remaining estimate for any later check.
+
+```bash
+pid="$(cat runs/extraction/ablations/control/pipeline.pid)"
+ps -p "$pid" -o pid,etime,%cpu,%mem,stat,cmd
+tail -n 40 runs/extraction/ablations/control/pipeline.log
+tail -n 8 runs/extraction/ablations/control/*.log
+nvidia-smi --query-gpu=index,utilization.gpu,memory.used,memory.total \
+  --format=csv,noheader
+```
+
+After all six validation reports finish:
+
+```bash
+python -m botcolosseo.cli.summarize_extraction_ablations \
+  --output reports/extraction/style-ablation.json
+```
+
+The ablation uses validation only and never opens heldout or official-test
+cases.
+
 ## Final verification
 
 ```bash
