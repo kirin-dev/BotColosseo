@@ -200,6 +200,12 @@ def audit_extraction_showcase(
             raise ValueError(f"{policy} Showcase evidence is not validation-safe")
         tiers[policy] = str(tier)
         validation_checks = manifest.get("validation_checks", [])
+        if not validation_checks:
+            validation_checks = manifest.get("checks", [])
+        heldout_checks = manifest.get(
+            "heldout_checks",
+            manifest.get("original_heldout_checks", []),
+        )
         style_difference = next(
             (
                 check.get("value")
@@ -218,6 +224,9 @@ def audit_extraction_showcase(
                 "research_failed_checks",
                 [],
             ),
+            "validation_checks": validation_checks,
+            "heldout_checks": heldout_checks,
+            "direction_counts": manifest.get("direction_counts"),
             "validation_style_paired_difference": style_difference,
             "render_attempt_count": attempt_count,
             "story_checks_passed": True,

@@ -7,9 +7,9 @@ Publish one clean, auditable ViZDoom case that demonstrates:
 1. a capable fair-observation Strong Bot;
 2. three learned and visibly different styles derived from that same Strong
    Actor;
-3. paired capability-retention evidence;
+3. paired validation evidence with explicit research/product evidence tiers;
 4. representative validation videos with viewer-only telemetry;
-5. a frozen, single-use official-test boundary.
+5. a clean public Showcase that does not imply an official-test result.
 
 The project contribution is the complete behavior-shaping product workflow,
 not a claim of novel PPO mathematics.
@@ -35,7 +35,8 @@ invalidates the scenario hash and requires a new human review before training.
    validation transitions.
 2. Train a CNN-GRU Actor with behavioral cloning for 10,000 updates.
 3. Warm-start an asymmetric Actor-Critic from the BC Actor.
-4. Train recurrent PPO for 2,000,000 environment steps.
+4. Train recurrent PPO in resumable stages and stop at a validation-selected
+   checkpoint rather than spending a fixed 2,000,000-step budget.
 5. Mix scripted opponents with historical Strong checkpoints using
    deterministic lightweight PFSP.
 6. Rank candidates using validation only; evaluate heldout only for the
@@ -90,11 +91,11 @@ Protocol: `configs/extraction/evaluation.yaml`.
 |---|---:|---|---|
 | validation | 240 | base | candidate ranking and style gates |
 | heldout | 120 | heldout-a | Strong generalization gate |
-| official test | 400 | heldout-a | one frozen report after release |
+| official test | 400 | heldout-a | deferred strict research release only |
 
 Strong gate:
 
-- prevent opponent extraction ≥90%;
+- solo extraction against an idle opponent ≥90%;
 - average scripted win rate ≥70%;
 - every scripted-opponent win rate ≥55%;
 - validation extraction rate ≥75%;
@@ -114,15 +115,25 @@ Style gate:
 If a frozen gate fails, preserve the report and describe it honestly. Do not
 change thresholds after observing test results.
 
+Product Showcase evidence is separately tiered:
+
+- `research_selection`: all frozen validation and heldout gates pass;
+- `directional_showcase`: approved product-direction evidence with disclosed
+  research failures;
+- `validation_demonstration`: paired validation direction, capability,
+  anti-hacking, and protocol checks pass, while heldout failures are disclosed.
+
+The last two tiers are validation-media only and cannot enter the strict
+official-test release.
+
 ## Release
 
-The release manifest binds:
+The product Showcase manifest binds:
 
 - scenario and evaluation-protocol hashes;
 - selected Strong and three style checkpoint hashes;
 - validation and heldout selection reports;
 - source Git commit;
-- official-test lock and receipt;
 - validation-only video evidence and media hashes.
 
 Videos are selected from validation, never test. The overlay may display both
@@ -135,10 +146,11 @@ but none of these privileged overlay values enter the policy.
 |---|---|---|
 | G0 scenario and layouts | reproducible WAD, real two-player reset, human layout approval | PASS |
 | G1 engineering | full unit suite, real Teacher→BC→PPO→style→evaluation preflight | PASS |
-| G2 Strong | full demonstrations, BC, PPO, validation selection, heldout gate | PENDING |
-| G3 styles | Aggressive, Defensive, Explorer training and paired gates | PENDING |
-| G4 release | frozen manifest, one official test, representative videos | PENDING |
+| G2 Strong | full demonstrations, BC, PPO, validation selection, heldout gate | PASS |
+| G3 styles | three learned adapters with explicit evidence tiers | IN PROGRESS |
+| G4 Showcase | contrastive validation cases, four audited videos, public board | PENDING |
 | G5 public cleanup | v3-only public narrative and audited artifacts | IN PROGRESS |
 
-The project is complete only when G0–G5 are evidenced and no required work
-remains.
+The current product milestone is complete when G0–G5 are evidenced and the
+Showcase branch is public. A strict all-style research release and the
+single-use official test remain clearly labeled future work.

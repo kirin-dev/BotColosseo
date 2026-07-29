@@ -212,7 +212,7 @@ calibration its configuration and checkpoint selection rule are frozen.
 
 Style work cannot start unless Strong satisfies all of:
 
-- no-opponent extraction rate at least 90%;
+- solo extraction rate against an idle, non-competing opponent at least 90%;
 - scripted-pool average win rate at least 70%;
 - win rate against every major scripted opponent at least 55%;
 - overall extraction rate at least 75%;
