@@ -36,7 +36,7 @@ This one resumable script runs:
 
 1. 100,000 train and 20,000 validation Teacher transitions;
 2. 10,000 BC updates;
-3. 2,000,000 recurrent PPO environment steps.
+3. a first 600,000-step recurrent PPO stage.
 
 Demonstrations commit one hashed episode shard and `progress.json` at a time.
 Their identity includes the privileged Teacher source hash, so labels from an
@@ -61,6 +61,21 @@ tail -n 60 runs/extraction/strong-pipeline.log
 nvidia-smi --query-compute-apps=pid,process_name,used_memory \
   --format=csv,noheader
 ```
+
+Run Strong selection after the 600k stage. If no candidate passes, or the
+validation trend still has clear headroom, resume the same optimizer and PFSP
+state to 800k, then at most 1M before reassessing:
+
+```bash
+BOTCOLOSSEO_GPU=0 BOTCOLOSSEO_STOP_AFTER_STEPS=800000 \
+  bash scripts/run_extraction_v3_strong.sh
+
+BOTCOLOSSEO_GPU=0 BOTCOLOSSEO_STOP_AFTER_STEPS=1000000 \
+  bash scripts/run_extraction_v3_strong.sh
+```
+
+Do not run to the 2M configuration ceiling by default. The older frozen run
+peaked near 600k; later stages are justified only by new validation evidence.
 
 Safe resume after interruption uses the same command. Do not delete partial
 shards or checkpoints. Do not resume after changing the scenario, configs, or

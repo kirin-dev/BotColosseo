@@ -21,6 +21,15 @@ def test_style_runner_exposes_resumable_stage_budget() -> None:
     assert "STOP_AFTER_STEPS > 600000" in source
 
 
+def test_strong_runner_defaults_to_resumable_600k_stage() -> None:
+    source = Path("scripts/run_extraction_v3_strong.sh").read_text(encoding="utf-8")
+
+    assert 'BOTCOLOSSEO_STOP_AFTER_STEPS:-600000' in source
+    assert '--stop-after-steps "$STOP_AFTER_STEPS"' in source
+    assert "STOP_AFTER_STEPS > 2000000" in source
+    assert 'int(sys.argv[3]) <= summary.get("environment_steps", 0)' in source
+
+
 def test_style_selector_rebuilds_ranking_after_new_stage_candidates() -> None:
     source = Path(
         "scripts/run_extraction_v3_select_style.sh"

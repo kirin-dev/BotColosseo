@@ -4,6 +4,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PYTHON="${BOTCOLOSSEO_PYTHON:-python}"
 GPU="${BOTCOLOSSEO_GPU:-0}"
+STOP_AFTER_STEPS="${BOTCOLOSSEO_STOP_AFTER_STEPS:-600000}"
+if [[ ! "$STOP_AFTER_STEPS" =~ ^[1-9][0-9]*$ ]] || \
+  (( STOP_AFTER_STEPS > 2000000 )); then
+  echo "BOTCOLOSSEO_STOP_AFTER_STEPS must be an integer in [1, 2000000]" >&2
+  exit 2
+fi
 export PYTHONPATH="$ROOT/src"
 export CUDA_VISIBLE_DEVICES="$GPU"
 cd "$ROOT"
@@ -110,7 +116,10 @@ else
 fi
 
 if [[ -f "$PPO_ROOT/summary.json" ]] && \
-  "$PYTHON" - "$PPO_ROOT/summary.json" "$BC_ROOT/best.pt" <<'PY'
+  "$PYTHON" - \
+    "$PPO_ROOT/summary.json" \
+    "$BC_ROOT/best.pt" \
+    "$STOP_AFTER_STEPS" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -119,8 +128,7 @@ from botcolosseo.data.demonstrations import sha256_file
 
 summary = json.load(open(sys.argv[1], encoding="utf-8"))
 raise SystemExit(not (
-    summary.get("completed") is True
-    and summary.get("environment_steps") == 2_000_000
+    int(sys.argv[3]) <= summary.get("environment_steps", 0) <= 2_000_000
     and summary.get("bc_checkpoint_sha256") == sha256_file(Path(sys.argv[2]))
     and summary.get("freeze_actor_backbone") is True
     and summary.get("teacher_supervision")
@@ -129,11 +137,10 @@ raise SystemExit(not (
 ))
 PY
 then
-  echo "SKIP completed Strong PPO"
+  echo "SKIP completed Strong PPO stage: $STOP_AFTER_STEPS"
 else
-  if [[ -f "$PPO_ROOT/summary.json" ]]; then
-    echo "REFUSE incompatible completed Strong PPO" >&2
-    echo "Archive the existing $PPO_ROOT before starting a new run." >&2
+  if [[ -f "$PPO_ROOT/summary.json" ]] && [[ ! -f "$PPO_ROOT/latest.pt" ]]; then
+    echo "REFUSE Strong PPO summary without a resumable latest checkpoint" >&2
     exit 1
   fi
   ppo_resume=()
@@ -144,6 +151,7 @@ else
     --config configs/extraction/strong-ppo.yaml \
     --device cuda:0 \
     --output-dir "$PPO_ROOT" \
+    --stop-after-steps "$STOP_AFTER_STEPS" \
     "${ppo_resume[@]}"
 fi
 
