@@ -52,13 +52,59 @@ footer a:hover {
   color: var(--text);
 }
 
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(18px, 3vw, 48px);
+  min-height: 52px;
+  padding-inline: var(--page-gutter);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+}
+
+.site-brand,
 .github-link {
-  position: absolute;
-  top: 22px;
-  right: var(--page-gutter);
-  color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 700;
+  white-space: nowrap;
+}
+
+.site-brand {
+  color: var(--text);
+}
+
+.github-link {
+  color: var(--muted);
+}
+
+.site-header nav {
+  display: flex;
+  justify-content: center;
+  gap: clamp(16px, 2.2vw, 34px);
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.site-header nav::-webkit-scrollbar {
+  display: none;
+}
+
+.site-header nav a {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.site-header a:hover {
+  color: var(--accent);
 }
 
 .hero {
@@ -69,7 +115,7 @@ footer a:hover {
 }
 
 .eyebrow {
-  margin: 0 0 7px;
+  margin: 0;
   color: var(--accent);
   font-size: 0.82rem;
   font-weight: 750;
@@ -97,6 +143,7 @@ h1 {
 }
 
 .section {
+  scroll-margin-top: 52px;
   padding-block: 80px;
   border-top: 1px solid var(--border);
 }
@@ -109,15 +156,7 @@ h1 {
   margin-bottom: 38px;
 }
 
-.section-heading h2 {
-  margin-bottom: 0;
-  font-size: clamp(1.1rem, 1.8vw, 1.6rem);
-  line-height: 1.06;
-  letter-spacing: -0.035em;
-  white-space: nowrap;
-}
-
-.section-heading > p {
+.section-copy {
   margin-bottom: 2px;
   color: var(--muted);
   font-size: 0.94rem;
@@ -455,12 +494,22 @@ footer div {
 }
 
 @media (max-width: 620px) {
-  .github-link {
-    top: 12px;
-    font-size: 0.7rem;
+  .site-header {
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    padding-block: 7px;
+  }
+
+  .site-header nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: space-between;
+    gap: 12px;
+    overflow-x: visible;
   }
 
   .section {
+    scroll-margin-top: 88px;
     padding-block: 68px;
   }
 

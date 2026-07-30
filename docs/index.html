@@ -8,13 +8,22 @@
       content="BotColosseo — controllable game Bots for search, fight, and extract."
     >
     <title>BotColosseo · Controllable Game Bots for SFE</title>
-    <link rel="stylesheet" href="showcase.css?v=heading-balance-1">
+    <link rel="stylesheet" href="showcase.css?v=sticky-nav-1">
   </head>
   <body>
-    <a
-      class="github-link"
-      href="https://github.com/kirin-dev/BotColosseo"
-    >GitHub ↗</a>
+    <header class="site-header">
+      <a class="site-brand" href="#top">BotColosseo</a>
+      <nav aria-label="Primary navigation">
+        <a href="#scenario">01 Scenario</a>
+        <a href="#method">02 Method</a>
+        <a href="#styles">03 Styles</a>
+        <a href="#results">04 Results</a>
+      </nav>
+      <a
+        class="github-link"
+        href="https://github.com/kirin-dev/BotColosseo"
+      >GitHub ↗</a>
+    </header>
 
     <main id="top">
       <section class="hero shell">
@@ -143,11 +152,8 @@
 
       <section class="section shell" id="scenario">
         <div class="section-heading">
-          <div>
-            <p class="eyebrow">01 · SCENARIO</p>
-            <h2>Search, fight, extract</h2>
-          </div>
-          <p>
+          <p class="eyebrow">01 · SCENARIO</p>
+          <p class="section-copy">
             The rules create a real choice: contest valuable loot, fight for an
             opponent's carried value, or leave safely with what you have.
           </p>
@@ -176,11 +182,8 @@
 
       <section class="section shell" id="method">
         <div class="section-heading">
-          <div>
-            <p class="eyebrow">02 · METHOD</p>
-            <h2>One base, three learned adapters</h2>
-          </div>
-          <p>
+          <p class="eyebrow">02 · METHOD</p>
+          <p class="section-copy">
             Capability is learned once. Style is added with small bounded
             residual adapters over the same frozen Strong Actor.
           </p>
@@ -207,11 +210,8 @@
 
       <section class="section shell" id="styles">
         <div class="section-heading">
-          <div>
-            <p class="eyebrow">03 · HOW TO TELL</p>
-            <h2>Different priorities, visible decisions</h2>
-          </div>
-          <p>
+          <p class="eyebrow">03 · HOW TO TELL</p>
+          <p class="section-copy">
             Style is not a costume or a runtime rule. It is a learned shift in
             what the policy chooses to do under the same game mechanics.
           </p>
@@ -247,11 +247,8 @@
 
       <section class="section shell" id="results">
         <div class="section-heading">
-          <div>
-            <p class="eyebrow">04 · RESULTS</p>
-            <h2>Capability first, style second</h2>
-          </div>
-          <p>
+          <p class="eyebrow">04 · RESULTS</p>
+          <p class="section-copy">
             The most direct frozen validation evidence for the product claim.
             Selection never accesses the test split.
           </p>

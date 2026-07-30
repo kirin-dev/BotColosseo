@@ -67,15 +67,19 @@ def test_showcase_opens_with_compact_botcolosseo_identity_and_video_grid() -> No
     source, _ = _parse_showcase()
 
     assert "<title>BotColosseo · Controllable Game Bots for SFE</title>" in source
-    assert 'href="showcase.css?v=heading-balance-1"' in source
+    assert 'href="showcase.css?v=sticky-nav-1"' in source
     assert "<h1>BotColosseo Controllable Game Bots for SFE</h1>" in source
     assert 'class="github-link"' in source
+    assert '<header class="site-header">' in source
+    assert '<nav aria-label="Primary navigation">' in source
+    assert all(
+        f'href="#{target}"' in source
+        for target in ("scenario", "method", "styles", "results")
+    )
     assert "VIZDOOM · REINFORCEMENT LEARNING" not in source
     assert "Search · Fight · Extract" not in source
     assert "One capable visual Bot" not in source
     assert "Evidence ↗" not in source
-    assert "<nav" not in source
-    assert "site-header" not in source
     assert "Crystal Run" not in source
 
     hero = source.index('<section class="hero shell">')
@@ -84,7 +88,7 @@ def test_showcase_opens_with_compact_botcolosseo_identity_and_video_grid() -> No
     assert hero < bot_grid < scenario
 
 
-def test_showcase_sections_are_sequential_and_headings_do_not_wrap() -> None:
+def test_showcase_sections_use_numbered_labels_without_secondary_titles() -> None:
     source, _ = _parse_showcase()
     stylesheet = Path("docs/showcase.css").read_text(encoding="utf-8")
 
@@ -93,8 +97,12 @@ def test_showcase_sections_are_sequential_and_headings_do_not_wrap() -> None:
     assert "03 · HOW TO TELL" in source
     assert "04 · RESULTS" in source
     assert "05 ·" not in source
-    assert ".section-heading h2" in stylesheet
-    assert "white-space: nowrap" in stylesheet
+    assert "Search, fight, extract" not in source
+    assert "One base, three learned adapters" not in source
+    assert "Different priorities, visible decisions" not in source
+    assert "Capability first, style second" not in source
+    assert ".section-heading h2" not in stylesheet
+    assert "scroll-margin-top: 52px" in stylesheet
 
 
 def test_showcase_footer_keeps_only_back_to_top_link() -> None:
@@ -112,9 +120,21 @@ def test_showcase_uses_fluid_viewport_gutters_for_chrome_and_content() -> None:
 
     assert "--page-gutter: clamp(12px, 2.5vw, 48px)" in stylesheet
     assert "margin-inline: var(--page-gutter)" in stylesheet
-    assert "right: var(--page-gutter)" in stylesheet
+    assert "padding-inline: var(--page-gutter)" in stylesheet
     assert "width: min(1180px" not in stylesheet
     assert "footer {\n    flex-direction: column" not in stylesheet
+
+
+def test_mobile_navigation_keeps_full_section_names() -> None:
+    source, _ = _parse_showcase()
+    stylesheet = Path("docs/showcase.css").read_text(encoding="utf-8")
+
+    assert all(
+        label in source
+        for label in ("01 Scenario", "02 Method", "03 Styles", "04 Results")
+    )
+    assert "overflow-x: auto" in stylesheet
+    assert "01</a>" not in source
 
 
 def test_showcase_title_has_responsive_vertical_space() -> None:
@@ -160,7 +180,8 @@ def test_showcase_is_dependency_free_and_all_local_assets_resolve() -> None:
     assert "color-scheme: light" in stylesheet
     assert "--background: #ffffff" in stylesheet
     assert "width: 80px" in stylesheet
-    assert ".site-header" not in stylesheet
+    assert ".site-header" in stylesheet
+    assert "position: sticky" in stylesheet
     assert "@media (max-width: 860px)" in stylesheet
     assert "@media (max-width: 620px)" in stylesheet
     assert "@media (prefers-reduced-motion: reduce)" in stylesheet
