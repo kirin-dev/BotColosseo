@@ -10,7 +10,7 @@ STYLE="$1"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PYTHON="${BOTCOLOSSEO_PYTHON:-python}"
 GPU="${BOTCOLOSSEO_GPU:-0}"
-STOP_AFTER_STEPS="${BOTCOLOSSEO_STOP_AFTER_STEPS:-600000}"
+STOP_AFTER_STEPS="${BOTCOLOSSEO_STOP_AFTER_STEPS:-200000}"
 if [[ ! "$STOP_AFTER_STEPS" =~ ^[1-9][0-9]*$ ]] || \
   (( STOP_AFTER_STEPS > 600000 )); then
   echo "BOTCOLOSSEO_STOP_AFTER_STEPS must be an integer in [1, 600000]" >&2
@@ -34,13 +34,12 @@ if [[ "$STYLE" != "aggressive" ]]; then
 fi
 
 if [[ -f "$OUTPUT/summary.json" ]] && \
-  "$PYTHON" - "$OUTPUT/summary.json" "$STYLE" <<'PY'
+  "$PYTHON" - "$OUTPUT/summary.json" "$STYLE" "$STOP_AFTER_STEPS" <<'PY'
 import json
 import sys
 summary = json.load(open(sys.argv[1], encoding="utf-8"))
 raise SystemExit(not (
-    summary.get("completed") is True
-    and summary.get("environment_steps") == 600_000
+    int(sys.argv[3]) <= summary.get("environment_steps", 0) <= 600_000
     and summary.get("style") == sys.argv[2]
     and summary.get("frozen_strong_actor") is True
     and summary.get("frozen_strong_base") is True
@@ -49,8 +48,12 @@ raise SystemExit(not (
 ))
 PY
 then
-  echo "SKIP completed style: $STYLE"
+  echo "SKIP completed $STYLE stage: $STOP_AFTER_STEPS"
 else
+  if [[ -f "$OUTPUT/summary.json" ]] && [[ ! -f "$OUTPUT/latest.pt" ]]; then
+    echo "REFUSE $STYLE summary without a resumable latest checkpoint" >&2
+    exit 1
+  fi
   resume=()
   if [[ -f "$OUTPUT/latest.pt" ]]; then
     resume=(--resume "$OUTPUT/latest.pt")

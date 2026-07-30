@@ -115,7 +115,8 @@ do not relax thresholds.
 ## Long stage 2: learned styles
 
 Aggressive is first. Run styles in resumable 200k-step stages and evaluate the
-newest candidate before deciding whether to extend to 400k or 600k:
+newest candidate before deciding whether to extend to 400k or 600k. The runner
+defaults to 200k if `BOTCOLOSSEO_STOP_AFTER_STEPS` is omitted:
 
 ```bash
 nohup env BOTCOLOSSEO_GPU=0 BOTCOLOSSEO_STOP_AFTER_STEPS=200000 \

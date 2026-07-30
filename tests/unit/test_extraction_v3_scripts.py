@@ -13,12 +13,14 @@ def test_downstream_style_runners_use_fail_closed_aggressive_prerequisite() -> N
         )
 
 
-def test_style_runner_exposes_resumable_stage_budget() -> None:
+def test_style_runner_defaults_to_resumable_200k_stage() -> None:
     source = Path("scripts/run_extraction_v3_style.sh").read_text(encoding="utf-8")
 
-    assert 'BOTCOLOSSEO_STOP_AFTER_STEPS:-600000' in source
+    assert 'BOTCOLOSSEO_STOP_AFTER_STEPS:-200000' in source
     assert '--stop-after-steps "$STOP_AFTER_STEPS"' in source
     assert "STOP_AFTER_STEPS > 600000" in source
+    assert 'int(sys.argv[3]) <= summary.get("environment_steps", 0)' in source
+    assert '[[ ! -f "$OUTPUT/latest.pt" ]]' in source
 
 
 def test_strong_runner_defaults_to_resumable_600k_stage() -> None:
