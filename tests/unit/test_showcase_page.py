@@ -94,7 +94,7 @@ def test_showcase_sections_use_numbered_labels_without_secondary_titles() -> Non
 
     assert "01 · SCENARIO" in source
     assert "02 · METHOD" in source
-    assert "03 · HOW TO TELL" in source
+    assert "03 · STYLES" in source
     assert "04 · RESULTS" in source
     assert "05 ·" not in source
     assert "Search, fight, extract" not in source
