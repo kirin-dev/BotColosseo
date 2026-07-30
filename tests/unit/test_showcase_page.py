@@ -95,6 +95,16 @@ def test_showcase_sections_are_sequential_and_headings_do_not_wrap() -> None:
     assert "white-space: nowrap" in stylesheet
 
 
+def test_showcase_footer_keeps_only_back_to_top_link() -> None:
+    source, _ = _parse_showcase()
+    footer = source[source.index('<footer class="shell">') :]
+
+    assert footer.count("<a ") == 1
+    assert '<a href="#top">Back to top ↑</a>' in footer
+    assert "Repository" not in footer
+    assert "中文说明" not in footer
+
+
 def test_showcase_covers_scenario_method_styles_and_results() -> None:
     source, parser = _parse_showcase()
 
