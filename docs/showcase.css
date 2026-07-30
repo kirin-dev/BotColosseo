@@ -63,8 +63,8 @@ footer a:hover {
 
 .hero {
   padding-block:
-    clamp(84px, 8vw, 112px)
-    clamp(72px, 7vw, 96px);
+    clamp(84px, 8vw, 88px)
+    clamp(42px, 5vw, 48px);
   text-align: center;
 }
 
