@@ -13,7 +13,6 @@ RELEASE_ARTIFACTS = (
     "configs/extraction_v2/showcase-candidates.json",
     "configs/extraction_v2/aggressive-showcase-search.json",
     "docs/assets/extraction-v2/showcase-board.png",
-    "docs/superpowers/specs/2026-07-26-crystal-run-extraction-v2-design.md",
     "reports/extraction-v2/x0-mechanics.json",
     "reports/extraction-v2/training-artifact-audit.json",
     "reports/extraction-v2/showcase-candidates-strong.json",

@@ -25,3 +25,9 @@ See also https://github.com/freedoom/freedoom/blob/master/COPYING.adoc.
 Bot Colosseo does not redistribute assets from the commercial Doom or Doom II
 games. Contributors must not add commercial IWADs, textures, sounds, maps, or
 other proprietary game data to this repository.
+
+## Showcase emotes and favicon
+
+The cat emotes and favicon are presentation assets supplied by the repository
+author. They are not covered by the project's MIT source-code license. Rights,
+where applicable, remain with their respective owners.

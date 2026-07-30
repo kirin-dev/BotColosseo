@@ -33,11 +33,18 @@ def test_hybrid_release_refuses_overwrite(tmp_path: Path) -> None:
 
 
 def test_hybrid_release_rejects_showcase_identity_drift(tmp_path: Path) -> None:
-    source = Path("reports/showcase/hybrid-product/manifest.json")
-    payload = json.loads(source.read_text(encoding="utf-8"))
-    payload["config_sha256"] = "0" * 64
     manifest = tmp_path / "manifest.json"
-    manifest.write_text(json.dumps(payload), encoding="utf-8")
+    manifest.write_text(
+        json.dumps(
+            {
+                "stage": "hybrid_product_showcase",
+                "publication": True,
+                "test_cases_accessed": False,
+                "config_sha256": "0" * 64,
+            }
+        ),
+        encoding="utf-8",
+    )
 
     with pytest.raises(ValueError, match="showcase evidence"):
         release.build_hybrid_release(

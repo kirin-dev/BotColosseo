@@ -1,4 +1,6 @@
-# Crystal Run: Extraction
+# BotColosseo
+
+**面向搜打撤的可控风格 Game Bot**
 
 [English](README.md)
 

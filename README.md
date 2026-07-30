@@ -1,4 +1,6 @@
-# Crystal Run: Extraction
+# BotColosseo
+
+**Controllable Game Bots for Search-Fight-Extract**
 
 [中文说明](README_CN.md)
 

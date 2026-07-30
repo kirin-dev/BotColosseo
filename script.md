@@ -1,7 +1,6 @@
-# Crystal Run: Extraction v3 runbook
+# BotColosseo v3 runbook
 
-All commands run from the repository root on branch
-`feat/crystal-run-extraction-v3`.
+All commands run from the repository root.
 
 ```bash
 cd /path/to/BotColosseo
@@ -10,9 +9,9 @@ export BOTCOLOSSEO_PYTHON="$CONDA_PREFIX/bin/python"
 export PYTHONPATH="$PWD/src"
 ```
 
-The scripts use the explicitly selected `BOTCOLOSSEO_PYTHON`; they never fall
-back to another user's Conda installation or the ambient shell interpreter.
-Select the physical GPU with
+The scripts use `BOTCOLOSSEO_PYTHON` when set and otherwise use `python` from
+the active environment. They contain no machine-specific Conda paths. Select
+the physical GPU with
 `BOTCOLOSSEO_GPU=0` or `BOTCOLOSSEO_GPU=1`; the process sees it as `cuda:0`.
 
 ## Verify code and scenario
@@ -172,9 +171,9 @@ cannot be used by research selection, release freezing, or official-test
 commands.
 
 After Aggressive has either a strict selection or this directional admission,
-Defensive and Explorer may use the two A100s concurrently. Start with a 200k
-stage and resume to 400k/600k only if the frozen validation evidence warrants
-it:
+Defensive and Explorer may use two GPUs concurrently when available. Start with
+a 200k stage and resume to 400k/600k only if the frozen validation evidence
+warrants it:
 
 ```bash
 nohup env BOTCOLOSSEO_GPU=0 BOTCOLOSSEO_STOP_AFTER_STEPS=200000 \

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PYTHON="${BOTCOLOSSEO_PYTHON:-/home/wencong/miniconda3/envs/botcolosseo/bin/python}"
+PYTHON="${BOTCOLOSSEO_PYTHON:-python}"
 TARGET_STEPS=200000
 BASE="runs/extraction/strong-ppo/selected.pt"
 CONTROL="runs/extraction/ablations/control"

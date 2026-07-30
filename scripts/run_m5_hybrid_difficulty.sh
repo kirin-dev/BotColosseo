@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PYTHON="${BOTCOLOSSEO_PYTHON:-/home/wencong/miniconda3/envs/botcolosseo/bin/python}"
+PYTHON="${BOTCOLOSSEO_PYTHON:-python}"
 DEVICE="${BOTCOLOSSEO_DEVICE:-cuda:0}"
 
 run_style() {

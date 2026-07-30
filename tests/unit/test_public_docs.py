@@ -53,7 +53,8 @@ def test_public_documentation_local_links_resolve() -> None:
 def test_readme_publishes_clean_v3_product_and_evidence_boundary() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
 
-    assert "# Crystal Run: Extraction" in readme
+    assert "# BotColosseo" in readme
+    assert "Controllable Game Bots for Search-Fight-Extract" in readme
     assert "100 HP" in readme
     assert "20 damage" in readme
     assert "30 rounds" in readme

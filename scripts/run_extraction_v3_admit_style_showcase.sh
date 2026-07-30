@@ -8,7 +8,7 @@ fi
 
 STYLE="$1"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PYTHON="${BOTCOLOSSEO_PYTHON:-/home/wencong/miniconda3/envs/botcolosseo/bin/python}"
+PYTHON="${BOTCOLOSSEO_PYTHON:-python}"
 GPU="${BOTCOLOSSEO_GPU:-0}"
 export PYTHONPATH="$ROOT/src"
 export CUDA_VISIBLE_DEVICES="$GPU"

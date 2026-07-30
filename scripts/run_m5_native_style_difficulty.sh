@@ -8,7 +8,7 @@ fi
 
 STYLE=$1
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-PYTHON=/home/wencong/miniconda3/envs/botcolosseo/bin/python
+PYTHON="${BOTCOLOSSEO_PYTHON:-python}"
 BASE="$ROOT/runs/m3/league-full/candidate-boundary-0200000.pt"
 CHECKPOINT="$ROOT/runs/m5/$STYLE-ppo-main/candidate-0200000.pt"
 UPSTREAM="$ROOT/reports/m5/$STYLE/ppo-repair/formal/summary.json"

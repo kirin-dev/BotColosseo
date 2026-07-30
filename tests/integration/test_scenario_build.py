@@ -1,3 +1,5 @@
+import os
+import shutil
 from pathlib import Path
 
 import pytest
@@ -6,13 +8,22 @@ import vizdoom as vzd
 from botcolosseo.scenarios.build import MAPS, BuildSettings, build_crystal_run
 
 SCENARIO_DIR = Path("assets/scenarios/crystal_run").resolve()
-ACC_PATH = Path("/home/wencong/.local/bin/acc")
-ACC_INCLUDE = Path("/home/wencong/.local/src/acc-1.60")
+ACC_PATH = Path(os.environ.get("BOTCOLOSSEO_ACC", shutil.which("acc") or "acc"))
+_acc_include = os.environ.get("BOTCOLOSSEO_ACC_INCLUDE")
+ACC_INCLUDE = Path(_acc_include).resolve() if _acc_include else None
 
 
 @pytest.mark.integration
 @pytest.mark.timeout(60)
+@pytest.mark.skipif(
+    not ACC_PATH.is_file() or ACC_INCLUDE is None or not ACC_INCLUDE.is_dir(),
+    reason=(
+        "set BOTCOLOSSEO_ACC and BOTCOLOSSEO_ACC_INCLUDE to run the clean "
+        "scenario rebuild"
+    ),
+)
 def test_tracked_scenario_matches_clean_rebuild(tmp_path: Path) -> None:
+    assert ACC_INCLUDE is not None
     manifest = build_crystal_run(
         BuildSettings(
             source_dir=SCENARIO_DIR / "src",

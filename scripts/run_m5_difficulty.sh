@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-PYTHON=/home/wencong/miniconda3/envs/botcolosseo/bin/python
+PYTHON="${BOTCOLOSSEO_PYTHON:-python}"
 BASE="$ROOT/runs/m3/league-full/candidate-boundary-0200000.pt"
 AGGRESSIVE="$ROOT/runs/m4/aggressive-interpolation/alpha-025.pt"
 CONFIG="$ROOT/configs/difficulty.yaml"

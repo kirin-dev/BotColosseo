@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-python_bin="/home/wencong/miniconda3/envs/botcolosseo/bin/python"
+python_bin="${BOTCOLOSSEO_PYTHON:-python}"
 log_root="${repo_root}/runs/extraction-v2/aggressive-dagger-pipeline"
 mkdir -p "${log_root}"
 cd "${repo_root}"

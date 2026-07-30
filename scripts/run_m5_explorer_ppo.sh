@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-PYTHON=/home/wencong/miniconda3/envs/botcolosseo/bin/python
+PYTHON="${BOTCOLOSSEO_PYTHON:-python}"
 CONFIG="$ROOT/configs/m5/explorer_ppo.yaml"
 BASE="$ROOT/runs/m3/league-full/candidate-boundary-0200000.pt"
 WARM="$ROOT/runs/m5/explorer-interpolation/alpha-025.pt"

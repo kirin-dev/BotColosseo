@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-PYTHON=${BOTCOLOSSEO_PYTHON:-/home/wencong/miniconda3/envs/botcolosseo/bin/python}
-M2_WORKTREE=${M2_WORKTREE:-/home/wencong/BotColosseo/.worktrees/m2-base-training}
+PYTHON=${BOTCOLOSSEO_PYTHON:-python}
+M2_WORKTREE=${M2_WORKTREE:-$ROOT/.worktrees/m2-base-training}
 M3_PHYSICAL_GPU=${M3_PHYSICAL_GPU:-1}
 RUN_DIR="$ROOT/runs/m3/league-full"
 REPORT_ROOT="$ROOT/reports/m3"

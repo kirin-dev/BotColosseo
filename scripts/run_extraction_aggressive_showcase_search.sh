@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 export PYTHONPATH=src
-PYTHON=/home/wencong/miniconda3/envs/botcolosseo/bin/python
+PYTHON="${BOTCOLOSSEO_PYTHON:-python}"
 OUTPUT=reports/extraction-v2/aggressive-showcase-search.json
 
 if [[ -e "$OUTPUT" ]]; then
