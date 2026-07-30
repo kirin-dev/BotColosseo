@@ -35,8 +35,9 @@ invalidates the scenario hash and requires a new human review before training.
    validation transitions.
 2. Train a CNN-GRU Actor with behavioral cloning for 10,000 updates.
 3. Warm-start an asymmetric Actor-Critic from the BC Actor.
-4. Train recurrent PPO in resumable stages and stop at a validation-selected
-   checkpoint rather than spending a fixed 2,000,000-step budget.
+4. Train recurrent PPO through the frozen 2,000,000-step candidate horizon,
+   saving resumable checkpoints about every 200k steps; select by validation
+   rather than defaulting to the final checkpoint.
 5. Mix scripted opponents with historical Strong checkpoints using
    deterministic lightweight PFSP.
 6. Rank candidates using validation only; evaluate heldout only for the
