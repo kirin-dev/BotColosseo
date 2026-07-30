@@ -62,7 +62,9 @@ footer a:hover {
 }
 
 .hero {
-  padding-block: 44px 32px;
+  padding-block:
+    clamp(84px, 8vw, 112px)
+    clamp(72px, 7vw, 96px);
   text-align: center;
 }
 
@@ -453,10 +455,6 @@ footer div {
 }
 
 @media (max-width: 620px) {
-  .hero {
-    padding-block: 42px 28px;
-  }
-
   .github-link {
     top: 12px;
     font-size: 0.7rem;

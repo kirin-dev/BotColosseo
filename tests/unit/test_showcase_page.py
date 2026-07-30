@@ -67,8 +67,10 @@ def test_showcase_opens_with_compact_botcolosseo_identity_and_video_grid() -> No
     source, _ = _parse_showcase()
 
     assert "<title>BotColosseo · Controllable Game Bots for SFE</title>" in source
+    assert 'href="showcase.css?v=fluid-spacing-1"' in source
     assert "<h1>BotColosseo Controllable Game Bots for SFE</h1>" in source
     assert 'class="github-link"' in source
+    assert "VIZDOOM · REINFORCEMENT LEARNING" not in source
     assert "Search · Fight · Extract" not in source
     assert "One capable visual Bot" not in source
     assert "Evidence ↗" not in source
@@ -113,6 +115,13 @@ def test_showcase_uses_fluid_viewport_gutters_for_chrome_and_content() -> None:
     assert "right: var(--page-gutter)" in stylesheet
     assert "width: min(1180px" not in stylesheet
     assert "footer {\n    flex-direction: column" not in stylesheet
+
+
+def test_showcase_title_has_responsive_vertical_space() -> None:
+    stylesheet = Path("docs/showcase.css").read_text(encoding="utf-8")
+
+    assert "clamp(84px, 8vw, 112px)" in stylesheet
+    assert "clamp(72px, 7vw, 96px)" in stylesheet
 
 
 def test_showcase_covers_scenario_method_styles_and_results() -> None:
