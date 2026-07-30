@@ -69,9 +69,9 @@ footer a:hover {
 }
 
 .eyebrow {
-  margin: 0 0 10px;
+  margin: 0 0 7px;
   color: var(--accent);
-  font-size: 0.68rem;
+  font-size: 0.82rem;
   font-weight: 750;
   letter-spacing: 0.16em;
 }
@@ -111,7 +111,7 @@ h1 {
 
 .section-heading h2 {
   margin-bottom: 0;
-  font-size: clamp(1.05rem, 2.4vw, 1.9rem);
+  font-size: clamp(1.1rem, 1.8vw, 1.6rem);
   line-height: 1.06;
   letter-spacing: -0.035em;
   white-space: nowrap;

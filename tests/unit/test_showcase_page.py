@@ -67,7 +67,7 @@ def test_showcase_opens_with_compact_botcolosseo_identity_and_video_grid() -> No
     source, _ = _parse_showcase()
 
     assert "<title>BotColosseo · Controllable Game Bots for SFE</title>" in source
-    assert 'href="showcase.css?v=fluid-spacing-2"' in source
+    assert 'href="showcase.css?v=heading-balance-1"' in source
     assert "<h1>BotColosseo Controllable Game Bots for SFE</h1>" in source
     assert 'class="github-link"' in source
     assert "VIZDOOM · REINFORCEMENT LEARNING" not in source
