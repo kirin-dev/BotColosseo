@@ -12,6 +12,7 @@
   --defensive: #25875f;
   --explorer: #ad7620;
   --radius: 14px;
+  --page-gutter: clamp(12px, 2.5vw, 48px);
 }
 
 * {
@@ -44,8 +45,7 @@ video {
 }
 
 .shell {
-  width: min(1180px, calc(100% - 40px));
-  margin-inline: auto;
+  margin-inline: var(--page-gutter);
 }
 
 footer a:hover {
@@ -55,7 +55,7 @@ footer a:hover {
 .github-link {
   position: absolute;
   top: 22px;
-  right: max(20px, calc((100% - 1180px) / 2));
+  right: var(--page-gutter);
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 700;
@@ -412,7 +412,9 @@ tbody tr:last-child td {
 
 footer {
   display: flex;
+  align-items: flex-end;
   justify-content: space-between;
+  gap: 20px;
   padding-block: 34px 48px;
   border-top: 1px solid var(--border);
   color: var(--muted);
@@ -425,6 +427,7 @@ footer p {
 
 footer div {
   display: flex;
+  flex-shrink: 0;
   gap: 20px;
 }
 
@@ -450,21 +453,12 @@ footer div {
 }
 
 @media (max-width: 620px) {
-  .shell {
-    width: min(100% - 24px, 1180px);
-  }
-
   .hero {
     padding-block: 42px 28px;
   }
 
-  footer {
-    flex-direction: column;
-  }
-
   .github-link {
     top: 12px;
-    right: 12px;
     font-size: 0.7rem;
   }
 
@@ -500,11 +494,11 @@ footer div {
   }
 
   footer {
-    gap: 14px;
+    gap: 12px;
   }
 
-  footer div {
-    flex-wrap: wrap;
+  footer p {
+    max-width: 65%;
   }
 
   .bot-heading img {

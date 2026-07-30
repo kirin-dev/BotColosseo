@@ -105,6 +105,16 @@ def test_showcase_footer_keeps_only_back_to_top_link() -> None:
     assert "中文说明" not in footer
 
 
+def test_showcase_uses_fluid_viewport_gutters_for_chrome_and_content() -> None:
+    stylesheet = Path("docs/showcase.css").read_text(encoding="utf-8")
+
+    assert "--page-gutter: clamp(12px, 2.5vw, 48px)" in stylesheet
+    assert "margin-inline: var(--page-gutter)" in stylesheet
+    assert "right: var(--page-gutter)" in stylesheet
+    assert "width: min(1180px" not in stylesheet
+    assert "footer {\n    flex-direction: column" not in stylesheet
+
+
 def test_showcase_covers_scenario_method_styles_and_results() -> None:
     source, parser = _parse_showcase()
 
