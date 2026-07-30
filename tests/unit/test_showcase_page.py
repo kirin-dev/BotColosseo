@@ -67,9 +67,11 @@ def test_showcase_opens_with_compact_botcolosseo_identity_and_video_grid() -> No
     source, _ = _parse_showcase()
 
     assert "<title>BotColosseo · Controllable Game Bots for SFE</title>" in source
-    assert "<h1>BotColosseo</h1>" in source
-    assert "Controllable Game Bots for SFE" in source
-    assert "Search · Fight · Extract" in source
+    assert "<h1>BotColosseo Controllable Game Bots for SFE</h1>" in source
+    assert 'class="github-link"' in source
+    assert "Search · Fight · Extract" not in source
+    assert "One capable visual Bot" not in source
+    assert "Evidence ↗" not in source
     assert "<nav" not in source
     assert "site-header" not in source
     assert "Crystal Run" not in source
@@ -78,6 +80,19 @@ def test_showcase_opens_with_compact_botcolosseo_identity_and_video_grid() -> No
     bot_grid = source.index('<section class="bot-showcase shell" id="bots"')
     scenario = source.index('<section class="section shell" id="scenario">')
     assert hero < bot_grid < scenario
+
+
+def test_showcase_sections_are_sequential_and_headings_do_not_wrap() -> None:
+    source, _ = _parse_showcase()
+    stylesheet = Path("docs/showcase.css").read_text(encoding="utf-8")
+
+    assert "01 · SCENARIO" in source
+    assert "02 · METHOD" in source
+    assert "03 · HOW TO TELL" in source
+    assert "04 · RESULTS" in source
+    assert "05 ·" not in source
+    assert ".section-heading h2" in stylesheet
+    assert "white-space: nowrap" in stylesheet
 
 
 def test_showcase_covers_scenario_method_styles_and_results() -> None:
