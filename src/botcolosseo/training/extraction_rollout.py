@@ -83,6 +83,26 @@ class ExtractionCaseSchedule:
         return 1 - min(environment_steps / self.shaping_decay_steps, 1)
 
 
+def _record_completed_schedule_result(
+    schedule: ExtractionSchedule,
+    assignment: ExtractionEpisodeAssignment,
+    *,
+    winner: int,
+    won: bool,
+    terminated: bool,
+) -> None:
+    record_result = getattr(schedule, "record_result", None)
+    if record_result is None or not terminated:
+        return
+    if winner not in {1, 2, 3}:
+        raise RuntimeError("A terminated Extraction episode requires a final winner")
+    record_result(
+        assignment,
+        won=won,
+        draw=winner == 3,
+    )
+
+
 class ExtractionOpponentController(Protocol):
     def reset(self, *, seed: int) -> None: ...
 
@@ -561,13 +581,13 @@ class ExtractionRolloutCollector:
                         if assignment.case.learner_side == "host"
                         else step.winner == 2
                     )
-                    record_result = getattr(self.schedule, "record_result", None)
-                    if record_result is not None:
-                        record_result(
-                            assignment,
-                            won=won,
-                            draw=step.winner == 0,
-                        )
+                    _record_completed_schedule_result(
+                        self.schedule,
+                        assignment,
+                        winner=step.winner,
+                        won=won,
+                        terminated=step.terminated,
+                    )
                     episodes.append(
                         ExtractionTrainingEpisode(
                             episode_index=self.episode_index,

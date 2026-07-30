@@ -42,6 +42,10 @@ invalidates the scenario hash and requires a new human review before training.
 6. Rank candidates using validation only; evaluate heldout only for the
    validation-selected candidate.
 
+Closeout auditing fixed PFSP draw bookkeeping after the frozen Strong
+checkpoint had been trained. Its independent validation/heldout evidence
+remains the current product result; a causal PFSP-gain claim requires retraining.
+
 ### Styles
 
 Freeze the selected Strong Actor and train a bounded residual delta-logit
@@ -51,11 +55,18 @@ adapter for each style:
 style logits = strong logits + max_delta * tanh(delta(features))
 ```
 
-Optimize:
+Build the PPO return from:
 
 ```text
-task reward + style reward - beta * KL(style || Strong)
-            - rho * residual magnitude
+r_t = environment task reward + task shaping + style shaping
+```
+
+Then minimize:
+
+```text
+L_style = L_PPO(r_t)
+        + beta * KL(style || Strong)
+        + rho * squared residual magnitude
 ```
 
 Aggressive rewards useful hits and kill-cache-extraction conversion.
@@ -74,11 +85,12 @@ Public Actor input:
 - own public health, ammunition, backpack, banked value, extraction state,
   remaining time, previous action.
 
-Training-only privileged Critic/reward/evaluation:
+Privileged training and offline-evaluation support:
 
-- both poses and health values;
-- both inventories and banked values;
-- cache and world-loot state.
+- the asymmetric training Critic and reward shaping may use both poses, health
+  values, inventories, banked values, cache state, and world-loot state;
+- offline evaluation and viewer telemetry may use the same state to score and
+  explain behavior.
 
 No privileged field may enter the Actor, checkpoint opponent, selected public
 policy, or video policy path.
@@ -133,12 +145,14 @@ The product Showcase manifest binds:
 - scenario and evaluation-protocol hashes;
 - selected Strong and three style checkpoint hashes;
 - validation and heldout selection reports;
-- source Git commit;
 - validation-only video evidence and media hashes.
 
 Videos are selected from validation, never test. The overlay may display both
 HP bars, damage, cache transfer, backpack, and extraction progress for viewers,
 but none of these privileged overlay values enter the policy.
+
+The repository revision provides source provenance separately. The current
+product Showcase manifest does not embed a Git commit.
 
 ## Milestones
 
@@ -147,10 +161,10 @@ but none of these privileged overlay values enter the policy.
 | G0 scenario and layouts | reproducible WAD, real two-player reset, human layout approval | PASS |
 | G1 engineering | full unit suite, real Teacher→BC→PPO→style→evaluation preflight | PASS |
 | G2 Strong | full demonstrations, BC, PPO, validation selection, heldout gate | PASS |
-| G3 styles | three learned adapters with explicit evidence tiers | PASS |
+| G3 product styles | three learned adapters with explicit evidence tiers | PASS |
 | G4 Showcase | contrastive validation cases, four audited videos, public board | PASS |
-| G5 public cleanup | v3-only public narrative and audited artifacts | PASS |
+| G5 public cleanup | v3-only public narrative and audited artifacts published on `main` | PASS |
 
 The current product milestone is complete: G0–G5 are evidenced and the
-Showcase artifacts are ready for the public branch. A strict all-style research
-release and the single-use official test remain clearly labeled future work.
+Showcase artifacts are public. A strict all-style research release and the
+single-use official test remain clearly labeled future work.

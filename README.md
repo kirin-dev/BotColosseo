@@ -39,6 +39,21 @@ cloning, recurrent PPO, historical opponents, and lightweight PFSP. The three
 styles are bounded residual logit adapters over the same frozen Strong Actor hash;
 the public Actor has no runtime behavior governors.
 
+Closeout auditing fixed PFSP draw bookkeeping after the frozen Strong checkpoint
+was trained. Its closed-loop evaluation below is unchanged, but this release
+does not claim a causal PFSP gain; retraining is deferred.
+
+### Current v3 code path
+
+| Layer | Entry point |
+|---|---|
+| Game rules and ACS map | `assets/scenarios/crystal_run_extraction/` |
+| Synchronized environment and public protocol | `src/botcolosseo/envs/synchronous_extraction.py` |
+| CNN-GRU Actor and asymmetric Critic | `src/botcolosseo/agents/extraction_model.py` |
+| BC, recurrent PPO, PFSP, and style shaping | `src/botcolosseo/training/extraction_*.py` |
+| Frozen evaluation and evidence tiers | `src/botcolosseo/evaluation/extraction_*.py` |
+| Reproducible commands | `script.md` |
+
 ## Results
 
 | Strong capability | Result |
@@ -80,8 +95,9 @@ failures. Style metrics are not comparable across columns. See the
 
 The deployed Actor sees only its 84×84 first-person grayscale frame and its own
 public state. The Actor never receives opponent HP or position, world
-coordinates, depth, labels, automap, or viewer telemetry. During training only,
-a privileged Critic and reward/evaluation ledgers may be used.
+coordinates, depth, labels, automap, or viewer telemetry. Privileged state is
+confined to the asymmetric training Critic and reward shaping, plus offline
+evaluation and viewer telemetry; none of it enters the deployed Actor.
 
 This is a product Showcase with no benchmark-success claim for all styles.
 Candidate selection never accesses the test split. The deferred protocol allows

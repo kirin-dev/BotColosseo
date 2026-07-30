@@ -368,5 +368,13 @@ python scripts/build_crystal_run_extraction.py \
   --check \
   --acc "$ACC_ROOT/build/acc" \
   --acc-include "$ACC_ROOT"
+
+audit_dir="$(mktemp -d)"
+python -m botcolosseo.cli.audit_extraction_showcase \
+  --selection reports/extraction/showcase/selection.json \
+  --board-manifest reports/extraction/showcase/manifest.json \
+  --method docs/assets/extraction/method.svg \
+  --output "$audit_dir/audit.json"
+
 git status --short
 ```

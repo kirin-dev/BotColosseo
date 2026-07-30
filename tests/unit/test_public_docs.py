@@ -68,9 +68,13 @@ def test_readme_preserves_fair_actor_and_learned_style_boundary() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
 
     assert "The Actor never receives opponent HP" in readme
-    assert "During training only" in readme
+    assert "asymmetric training Critic and reward shaping" in readme
+    assert "offline" in readme
+    assert "evaluation and viewer telemetry" in readme
+    assert "none of it enters the deployed Actor" in readme
     assert "same frozen Strong Actor hash" in readme
     assert "no runtime behavior governors" in readme
+    assert "does not claim a causal PFSP gain" in readme
     assert "one frozen 400-episode official test per policy" in readme
 
 
@@ -81,4 +85,7 @@ def test_chinese_readme_preserves_pending_and_test_boundaries() -> None:
     assert "候选选择阶段禁止访问 test" in readme
     assert "同一个冻结 Strong Actor 哈希" in readme
     assert "不包含规则式风格" in readme
+    assert "不声称 PFSP 带来了确定因果增益" in readme
+    assert "不会进入" in readme
+    assert "部署 Actor" in readme
     assert "official test 总计 1,600 局" in readme

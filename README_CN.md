@@ -37,6 +37,20 @@ Strong CNN-GRU Actor 依次经过脚本 Teacher 数据、行为克隆、循环 P
 和轻量 PFSP 训练。三个风格是绑定同一个冻结 Strong Actor 哈希的有界残差
 logit adapter；公开推理不包含规则式风格 governor。
 
+收尾审查在冻结 Strong checkpoint 训练完成后修复了 PFSP 平局记账。下方闭环
+评测结果不受影响，但本版本不声称 PFSP 带来了确定因果增益；重训练留待后续。
+
+### 当前 v3 代码入口
+
+| 层级 | 入口 |
+|---|---|
+| 游戏规则与 ACS 地图 | `assets/scenarios/crystal_run_extraction/` |
+| 同步环境与公开协议 | `src/botcolosseo/envs/synchronous_extraction.py` |
+| CNN-GRU Actor 与非对称 Critic | `src/botcolosseo/agents/extraction_model.py` |
+| BC、循环 PPO、PFSP 与风格塑形 | `src/botcolosseo/training/extraction_*.py` |
+| 冻结评测与证据分层 | `src/botcolosseo/evaluation/extraction_*.py` |
+| 完整运行命令 | `script.md` |
+
 ## 核心结果
 
 | Strong 能力 | 结果 |
@@ -75,8 +89,9 @@ logit adapter；公开推理不包含规则式风格 governor。
 ## 证据边界
 
 部署时 Actor 只能接收 84×84 第一视角灰度图及自身公开状态，不能接收敌方
-血量或位置、世界坐标、深度图、目标标签、俯视图或观众遥测。特权 Critic 和
-reward/evaluation ledger 仅用于训练。
+血量或位置、世界坐标、深度图、目标标签、俯视图或观众遥测。特权状态仅用于
+非对称训练 Critic、训练 reward shaping，以及离线评测与观众遥测，不会进入
+部署 Actor。
 
 在冻结门通过前，不声称取得了全风格 benchmark 成功或 official-test 结果。
 候选选择阶段禁止访问 test。冻结协议规定每个策略仅测试一次 400 局，

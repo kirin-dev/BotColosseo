@@ -18,9 +18,11 @@ from botcolosseo.envs.extraction_types import (
 )
 from botcolosseo.training.extraction_rollout import (
     ExtractionCaseSchedule,
+    ExtractionEpisodeAssignment,
     ExtractionRolloutCollector,
     PolicyExtractionOpponentController,
     RandomLegalExtractionOpponentController,
+    _record_completed_schedule_result,
     extraction_privileged_tensor,
 )
 
@@ -173,6 +175,73 @@ def schedule() -> ExtractionCaseSchedule:
         ),
         shaping_decay_steps=10,
     )
+
+
+class RecordingSchedule:
+    def __init__(self) -> None:
+        self.results: list[tuple[bool, bool]] = []
+
+    def record_result(self, assignment, *, won: bool, draw: bool) -> None:
+        del assignment
+        self.results.append((won, draw))
+
+
+def test_schedule_result_uses_final_winner_encoding_and_ignores_truncation() -> None:
+    recorder = RecordingSchedule()
+    assignment = ExtractionEpisodeAssignment(
+        ExtractionCase("train", 11, "host", "strong"),
+        opponent_id="checkpoint",
+        opponent_kind="checkpoint",
+    )
+
+    _record_completed_schedule_result(
+        recorder,
+        assignment,
+        winner=1,
+        won=True,
+        terminated=True,
+    )
+    _record_completed_schedule_result(
+        recorder,
+        assignment,
+        winner=2,
+        won=False,
+        terminated=True,
+    )
+    _record_completed_schedule_result(
+        recorder,
+        assignment,
+        winner=3,
+        won=False,
+        terminated=True,
+    )
+    _record_completed_schedule_result(
+        recorder,
+        assignment,
+        winner=0,
+        won=False,
+        terminated=False,
+    )
+
+    assert recorder.results == [(True, False), (False, False), (False, True)]
+
+
+def test_schedule_result_rejects_terminated_episode_without_final_winner() -> None:
+    recorder = RecordingSchedule()
+    assignment = ExtractionEpisodeAssignment(
+        ExtractionCase("train", 11, "host", "strong"),
+        opponent_id="checkpoint",
+        opponent_kind="checkpoint",
+    )
+
+    with pytest.raises(RuntimeError, match="requires a final winner"):
+        _record_completed_schedule_result(
+            recorder,
+            assignment,
+            winner=0,
+            won=False,
+            terminated=True,
+        )
 
 
 def test_extraction_privileged_tensor_is_learner_relative() -> None:
