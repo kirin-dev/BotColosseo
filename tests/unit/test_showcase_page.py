@@ -144,6 +144,21 @@ def test_showcase_title_has_responsive_vertical_space() -> None:
     assert "clamp(42px, 5vw, 48px)" in stylesheet
 
 
+def test_showcase_declares_resolvable_favicon_assets() -> None:
+    source, _ = _parse_showcase()
+    favicon_assets = {
+        "assets/favicon-16x16.png": b"\x89PNG\r\n\x1a\n",
+        "assets/favicon-32x32.png": b"\x89PNG\r\n\x1a\n",
+        "assets/apple-touch-icon.png": b"\x89PNG\r\n\x1a\n",
+    }
+
+    assert 'rel="apple-touch-icon"' in source
+    for asset, signature in favicon_assets.items():
+        path = Path("docs") / asset
+        assert f'href="{asset}"' in source
+        assert path.read_bytes().startswith(signature)
+
+
 def test_showcase_covers_scenario_method_styles_and_results() -> None:
     source, parser = _parse_showcase()
 
