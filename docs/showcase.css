@@ -69,7 +69,7 @@ footer a:hover {
 
 .site-brand,
 .github-link {
-  font-size: 0.76rem;
+  font-size: 0.84rem;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -98,7 +98,7 @@ footer a:hover {
 .site-header nav a {
   flex: 0 0 auto;
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.84rem;
   font-weight: 650;
   white-space: nowrap;
 }
