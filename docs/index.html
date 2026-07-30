@@ -25,7 +25,7 @@
       sizes="180x180"
       href="assets/apple-touch-icon.png"
     >
-    <link rel="stylesheet" href="showcase.css?v=nav-type-1">
+    <link rel="stylesheet" href="showcase.css?v=ablation-1">
   </head>
   <body>
     <header class="site-header">
@@ -317,6 +317,54 @@
           Defensive and Explorer lose 11.7 and 17.5 percentage points of
           heldout extraction respectively. These are product Showcase artifacts,
           not official-test results.
+        </p>
+
+        <h3 class="result-subheading">Matched 200k style ablation</h3>
+        <p class="ablation-key">
+          Each cell is paired style shift / paired task retention.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Variant</th>
+                <th>Aggressive</th>
+                <th>Defensive</th>
+                <th>Explorer</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Full</th>
+                <td>+0.023 / 91.1%</td>
+                <td>+0.006 / 96.3%</td>
+                <td>+0.004 / 91.6%</td>
+              </tr>
+              <tr>
+                <th>Reward + KL</th>
+                <td>+0.017 / 92.1%</td>
+                <td>-0.031 / 92.1%</td>
+                <td>-0.031 / 87.9%</td>
+              </tr>
+              <tr>
+                <th>Reward only</th>
+                <td>+0.082 / 94.4%</td>
+                <td>+0.081 / 88.8%</td>
+                <td>-0.016 / 87.4%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="result-note">
+          All nine cells use the same frozen Strong Actor, 200k budget, scenario,
+          protocol, and 240-case validation split. Removing regularization can
+          increase the measured Aggressive or Defensive shift, while Explorer
+          reverses direction and triggers anti-hacking failures. The style
+          metrics are not comparable across columns.
+          <a href="https://github.com/kirin-dev/BotColosseo/blob/main/reports/extraction/style-ablation.json">
+            Inspect the machine-readable audit ↗
+          </a>
+          Test and official-test cases were not opened.
         </p>
       </section>
     </main>

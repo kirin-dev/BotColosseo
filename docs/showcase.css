@@ -451,6 +451,18 @@ tbody tr:last-child td {
   font-weight: 750;
 }
 
+.result-subheading {
+  margin: 38px 0 8px;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.ablation-key {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
 footer {
   display: flex;
   align-items: flex-end;

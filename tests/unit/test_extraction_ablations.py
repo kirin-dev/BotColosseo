@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import yaml
@@ -105,3 +106,46 @@ def test_ablation_markdown_table_is_derived_from_summary_values() -> None:
     assert "| Reward + KL |" in rendered
     assert "| Reward only |" in rendered
     assert "`test_cases_accessed=false`" in rendered
+
+
+def test_published_ablation_tables_match_machine_readable_audit() -> None:
+    payload = json.loads(
+        Path("reports/extraction/style-ablation.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    english = Path("README.md").read_text(encoding="utf-8")
+    chinese = Path("README_CN.md").read_text(encoding="utf-8")
+    showcase = Path("docs/index.html").read_text(encoding="utf-8")
+    labels = {
+        "full": "Full",
+        "reward-plus-kl": "Reward + KL",
+        "reward-only": "Reward only",
+    }
+
+    assert payload["comparison_environment_steps"] == 200_000
+    assert payload["selection_split"] == "validation"
+    assert payload["test_cases_accessed"] is False
+    assert payload["official_test_accessed"] is False
+    assert payload["actor_privilege_violations"] == 0
+    assert set(payload["matrix"]) == set(VARIANTS)
+
+    for variant in VARIANTS:
+        cells = []
+        for style in STYLES:
+            cell = payload["matrix"][variant][style]
+            assert cell["checkpoint_environment_steps"] == 200_000
+            cells.append(
+                f"{float(cell['paired_style_shift']):+.3f} / "
+                f"{float(cell['paired_task_retention']):.1%}"
+            )
+        markdown_row = (
+            f"| {labels[variant]} | {cells[0]} | {cells[1]} | "
+            f"{cells[2]} |"
+        )
+        assert markdown_row in english
+        assert markdown_row in chinese
+        for cell in cells:
+            assert f"<td>{cell}</td>" in showcase
+
+    assert "Test and official-test cases were not opened." in showcase

@@ -56,6 +56,24 @@ Positive style shifts use style-specific metrics and are not a cross-style
 ranking. See the [machine-readable audit](reports/extraction/showcase/audit.json)
 for cases, hashes, evidence tiers, and disclosed failed checks.
 
+### Matched 200k style ablation
+
+Each cell is `paired style shift / paired task retention`.
+
+| Variant | Aggressive | Defensive | Explorer |
+|---|---:|---:|---:|
+| Full | +0.023 / 91.1% | +0.006 / 96.3% | +0.004 / 91.6% |
+| Reward + KL | +0.017 / 92.1% | -0.031 / 92.1% | -0.031 / 87.9% |
+| Reward only | +0.082 / 94.4% | +0.081 / 88.8% | -0.016 / 87.4% |
+
+All nine cells use the same frozen Strong Actor, training budget, scenario,
+protocol, and 240-case validation split. The result shows a style-dependent
+trade-off: removing regularization can increase the measured Aggressive or
+Defensive shift, while Explorer reverses direction and triggers anti-hacking
+failures. Style metrics are not comparable across columns. See the
+[ablation audit](reports/extraction/style-ablation.json);
+`test_cases_accessed=false`, and official-test cases were not opened.
+
 ## Evidence boundary
 
 The deployed Actor sees only its 84×84 first-person grayscale frame and its own

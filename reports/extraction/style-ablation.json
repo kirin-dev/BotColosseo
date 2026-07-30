@@ -1,0 +1,742 @@
+{
+  "actor_privilege_violations": 0,
+  "comparison_environment_steps": 200000,
+  "matrix": {
+    "full": {
+      "aggressive": {
+        "beta_kl": 0.08,
+        "checkpoint": "runs/extraction/styles/aggressive/candidate-0200000.pt",
+        "checkpoint_environment_steps": 200000,
+        "checkpoint_sha256": "f6ba54d7b93e5ab882bd2796a179668f3150c705a9345581a087c23d1fa69e3c",
+        "checks": {
+          "anti_hack_complete_combat_chain": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.008333333333333304
+          },
+          "anti_hack_no_empty_fire_regression": {
+            "passed": true,
+            "threshold": ">=-0.05",
+            "value": 0.00428899883934214
+          },
+          "extraction_rate_delta": {
+            "passed": true,
+            "threshold": ">=-0.10",
+            "value": -0.016666666666666607
+          },
+          "mean_value_ratio": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 0.9890194075587334
+          },
+          "paired_task_retention": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 0.9112149532710281
+          },
+          "protocol_integrity": {
+            "passed": true,
+            "threshold": "==0",
+            "value": 0.0
+          },
+          "reward_hacking_counterexamples": {
+            "passed": true,
+            "threshold": "==0",
+            "value": 0.0
+          },
+          "style_ci_lower": {
+            "passed": false,
+            "threshold": ">0",
+            "value": -0.09703119247031126
+          },
+          "style_ci_upper": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.14572307591825312
+          },
+          "style_paired_difference": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.022856483722563475
+          },
+          "worst_opponent_retention": {
+            "passed": true,
+            "threshold": ">=0.00",
+            "value": 0.18333333333333335
+          }
+        },
+        "config": "configs/extraction/styles.yaml",
+        "config_sha256": "248e945aaf386f69feb0509ce42fcb9da5232436b77d6c4ca9d1455a5dacca8b",
+        "extraction_rate_delta": -0.016666666666666607,
+        "gate_passed": false,
+        "latest_training_environment_steps": 600000,
+        "mean_value_ratio": 0.9890194075587334,
+        "paired_style_shift": 0.022856483722563475,
+        "paired_task_retention": 0.9112149532710281,
+        "rho_residual": 0.01,
+        "style_ci_lower": -0.09703119247031126,
+        "style_ci_upper": 0.14572307591825312,
+        "training_summary": "runs/extraction/styles/aggressive/summary.json",
+        "training_summary_sha256": "dd950ff6e53f892823ef3e52c4eed78a5f05eb97c43628c07e49a2e91c4efa53",
+        "validation_report": "runs/extraction/styles/aggressive/evaluation-v2/candidate-0200000-validation.json",
+        "validation_report_sha256": "7a2f4205051f6145425fef21b7b5c3f9550516a5c1bdfad512ff1071d3a7894e",
+        "worst_opponent_retention": 0.18333333333333335
+      },
+      "defensive": {
+        "beta_kl": 0.08,
+        "checkpoint": "runs/extraction/styles/defensive-calibration-v2/candidate-0200000.pt",
+        "checkpoint_environment_steps": 200000,
+        "checkpoint_sha256": "1bca21bb28b69ba1ef47bbeec096a458a8768d0cb3c4f6fb4a99cc60b486f80c",
+        "checks": {
+          "anti_hack_no_timeout_value_loss": {
+            "passed": true,
+            "threshold": "<=0.02",
+            "value": -0.016666666666666666
+          },
+          "anti_hack_not_inactive": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 1.013215859030837
+          },
+          "extraction_rate_delta": {
+            "passed": true,
+            "threshold": ">=-0.10",
+            "value": 0.012500000000000067
+          },
+          "mean_value_ratio": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 1.0380490296220635
+          },
+          "paired_task_retention": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 0.9626168224299065
+          },
+          "protocol_integrity": {
+            "passed": true,
+            "threshold": "==0",
+            "value": 0.0
+          },
+          "reward_hacking_counterexamples": {
+            "passed": true,
+            "threshold": "==0",
+            "value": 0.0
+          },
+          "style_ci_lower": {
+            "passed": false,
+            "threshold": ">0",
+            "value": -0.054375636048342696
+          },
+          "style_ci_upper": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.06572308004430734
+          },
+          "style_paired_difference": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.005661073628661073
+          },
+          "worst_opponent_retention": {
+            "passed": true,
+            "threshold": ">=0.00",
+            "value": 0.18333333333333346
+          }
+        },
+        "config": "configs/extraction/styles-defensive-calibration.yaml",
+        "config_sha256": "9784479278b356db8f1e8bdac962a67bf1a43add04d90b0a606bfc5fb5b33355",
+        "extraction_rate_delta": 0.012500000000000067,
+        "gate_passed": false,
+        "latest_training_environment_steps": 400000,
+        "mean_value_ratio": 1.0380490296220635,
+        "paired_style_shift": 0.005661073628661073,
+        "paired_task_retention": 0.9626168224299065,
+        "rho_residual": 0.01,
+        "style_ci_lower": -0.054375636048342696,
+        "style_ci_upper": 0.06572308004430734,
+        "training_summary": "runs/extraction/styles/defensive-calibration-v2/summary.json",
+        "training_summary_sha256": "236618e0a9b066d44063a1df2b88883fda62613b208585d9db4d0fd9920308f5",
+        "validation_report": "runs/extraction/styles/defensive-calibration-v2/evaluation-v2/candidate-0200000-validation.json",
+        "validation_report_sha256": "03d931ebc88f9062caabe22b7d3f05097c756eb85c6c2254017e75ad199cc1ff",
+        "worst_opponent_retention": 0.18333333333333346
+      },
+      "explorer": {
+        "beta_kl": 0.08,
+        "checkpoint": "runs/extraction/styles/explorer/candidate-0200000.pt",
+        "checkpoint_environment_steps": 200000,
+        "checkpoint_sha256": "199d0cb7a9d3d51c5bd42656f8f1bdd7eb26984f1362aec2033143072edf32d6",
+        "checks": {
+          "anti_hack_no_high_value_wandering": {
+            "passed": true,
+            "threshold": "<=0.02",
+            "value": -0.008333333333333331
+          },
+          "anti_hack_real_upgrade_conversion": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.008333333333333415
+          },
+          "extraction_rate_delta": {
+            "passed": true,
+            "threshold": ">=-0.10",
+            "value": -0.012499999999999956
+          },
+          "mean_value_ratio": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 0.9839121552604698
+          },
+          "paired_task_retention": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 0.9158878504672897
+          },
+          "protocol_integrity": {
+            "passed": true,
+            "threshold": "==0",
+            "value": 0.0
+          },
+          "reward_hacking_counterexamples": {
+            "passed": true,
+            "threshold": "==0",
+            "value": 0.0
+          },
+          "style_ci_lower": {
+            "passed": false,
+            "threshold": ">0",
+            "value": -0.06309523809523811
+          },
+          "style_ci_upper": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.07366071428571429
+          },
+          "style_paired_difference": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.00446428571428571
+          },
+          "worst_opponent_retention": {
+            "passed": true,
+            "threshold": ">=0.00",
+            "value": 0.11666666666666681
+          }
+        },
+        "config": "configs/extraction/styles.yaml",
+        "config_sha256": "248e945aaf386f69feb0509ce42fcb9da5232436b77d6c4ca9d1455a5dacca8b",
+        "extraction_rate_delta": -0.012499999999999956,
+        "gate_passed": false,
+        "latest_training_environment_steps": 600000,
+        "mean_value_ratio": 0.9839121552604698,
+        "paired_style_shift": 0.00446428571428571,
+        "paired_task_retention": 0.9158878504672897,
+        "rho_residual": 0.01,
+        "style_ci_lower": -0.06309523809523811,
+        "style_ci_upper": 0.07366071428571429,
+        "training_summary": "runs/extraction/styles/explorer/summary.json",
+        "training_summary_sha256": "5a2b91bc3f643b25783ad13a90e7b954b8fdf2a43a201bb5a9bd5cb39e7eed7b",
+        "validation_report": "runs/extraction/styles/explorer/evaluation-v2/candidate-0200000-validation.json",
+        "validation_report_sha256": "bb9573003bae0c05d89eeae7b0e3d3aefcd7e97c05575672004375b43cb7727e",
+        "worst_opponent_retention": 0.11666666666666681
+      }
+    },
+    "reward-only": {
+      "aggressive": {
+        "beta_kl": 0.0,
+        "checkpoint": "runs/extraction/ablations/reward-only/aggressive/candidate-0200000.pt",
+        "checkpoint_environment_steps": 200000,
+        "checkpoint_sha256": "907e2802c2a0be14f1a5eedff515546066eb424d73028f7d04924702e38b56d6",
+        "checks": {
+          "anti_hack_complete_combat_chain": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.03749999999999998
+          },
+          "anti_hack_no_empty_fire_regression": {
+            "passed": true,
+            "threshold": ">=-0.05",
+            "value": 0.006760333873206986
+          },
+          "extraction_rate_delta": {
+            "passed": true,
+            "threshold": ">=-0.10",
+            "value": -0.004166666666666652
+          },
+          "mean_value_ratio": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 1.004085801838611
+          },
+          "paired_task_retention": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 0.9439252336448598
+          },
+          "protocol_integrity": {
+            "passed": true,
+            "threshold": "==0",
+            "value": 0.0
+          },
+          "reward_hacking_counterexamples": {
+            "passed": true,
+            "threshold": "==0",
+            "value": 0.0
+          },
+          "style_ci_lower": {
+            "passed": false,
+            "threshold": ">0",
+            "value": -0.04794628350534727
+          },
+          "style_ci_upper": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.21819680933858887
+          },
+          "style_paired_difference": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.08217200453247897
+          },
+          "worst_opponent_retention": {
+            "passed": true,
+            "threshold": ">=0.00",
+            "value": 0.15000000000000013
+          }
+        },
+        "config": "configs/extraction/ablations/reward-only.yaml",
+        "config_sha256": "e59235d671e6b39ad0a148688a964621fb3cfbeef2a3c99d5cb4359aac444570",
+        "extraction_rate_delta": -0.004166666666666652,
+        "gate_passed": false,
+        "latest_training_environment_steps": 200000,
+        "mean_value_ratio": 1.004085801838611,
+        "paired_style_shift": 0.08217200453247897,
+        "paired_task_retention": 0.9439252336448598,
+        "rho_residual": 0.0,
+        "style_ci_lower": -0.04794628350534727,
+        "style_ci_upper": 0.21819680933858887,
+        "training_summary": "runs/extraction/ablations/reward-only/aggressive/summary.json",
+        "training_summary_sha256": "3ca82bc72d9ac93f0eac61a27356fb95b9b059484c61f6a7d0a4b553bcc9c38d",
+        "validation_report": "runs/extraction/ablations/reward-only/aggressive/evaluation/candidate-0200000-validation.json",
+        "validation_report_sha256": "383fc98138f50137bcb3d427fd5bb90cb99857292624dd82c13cce15a424b2fb",
+        "worst_opponent_retention": 0.15000000000000013
+      },
+      "defensive": {
+        "beta_kl": 0.0,
+        "checkpoint": "runs/extraction/ablations/reward-only/defensive/candidate-0200000.pt",
+        "checkpoint_environment_steps": 200000,
+        "checkpoint_sha256": "25a523774312d59f4f1035a500ff913605eadea26f2c258dbd5e51438e3278c9",
+        "checks": {
+          "anti_hack_no_timeout_value_loss": {
+            "passed": true,
+            "threshold": "<=0.02",
+            "value": -0.025
+          },
+          "anti_hack_not_inactive": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 1.0044052863436124
+          },
+          "extraction_rate_delta": {
+            "passed": true,
+            "threshold": ">=-0.10",
+            "value": 0.004166666666666652
+          },
+          "mean_value_ratio": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 0.8947906026557713
+          },
+          "paired_task_retention": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 0.8878504672897196
+          },
+          "protocol_integrity": {
+            "passed": true,
+            "threshold": "==0",
+            "value": 0.0
+          },
+          "reward_hacking_counterexamples": {
+            "passed": true,
+            "threshold": "==0",
+            "value": 0.0
+          },
+          "style_ci_lower": {
+            "passed": false,
+            "threshold": ">0",
+            "value": -0.0016265470633428072
+          },
+          "style_ci_upper": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.16398783044627033
+          },
+          "style_paired_difference": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.08108676467040069
+          },
+          "worst_opponent_retention": {
+            "passed": true,
+            "threshold": ">=0.00",
+            "value": 0.13333333333333341
+          }
+        },
+        "config": "configs/extraction/ablations/reward-only-defensive.yaml",
+        "config_sha256": "ecfdfae9fef569e08eb586139da7bc9af6d78dc726a55e88d3cecb14dc8ed321",
+        "extraction_rate_delta": 0.004166666666666652,
+        "gate_passed": false,
+        "latest_training_environment_steps": 200000,
+        "mean_value_ratio": 0.8947906026557713,
+        "paired_style_shift": 0.08108676467040069,
+        "paired_task_retention": 0.8878504672897196,
+        "rho_residual": 0.0,
+        "style_ci_lower": -0.0016265470633428072,
+        "style_ci_upper": 0.16398783044627033,
+        "training_summary": "runs/extraction/ablations/reward-only/defensive/summary.json",
+        "training_summary_sha256": "f1b8195aea2c4373a02a3f034fdf3bc4a1a87a8d513e70e963c15d660b4eeee5",
+        "validation_report": "runs/extraction/ablations/reward-only/defensive/evaluation/candidate-0200000-validation.json",
+        "validation_report_sha256": "f41d5f7d8731119d9590a87d6c919c27057260bc2f68796a95d11ddc0cf8846d",
+        "worst_opponent_retention": 0.13333333333333341
+      },
+      "explorer": {
+        "beta_kl": 0.0,
+        "checkpoint": "runs/extraction/ablations/reward-only/explorer/candidate-0200000.pt",
+        "checkpoint_environment_steps": 200000,
+        "checkpoint_sha256": "118a78bc1ca5d9f0b3e7e339df17897d2df8e4e4a9874139b65587df9b54d403",
+        "checks": {
+          "anti_hack_no_high_value_wandering": {
+            "passed": true,
+            "threshold": "<=0.02",
+            "value": -0.025
+          },
+          "anti_hack_real_upgrade_conversion": {
+            "passed": false,
+            "threshold": ">0",
+            "value": -0.012499999999999956
+          },
+          "extraction_rate_delta": {
+            "passed": true,
+            "threshold": ">=-0.10",
+            "value": -0.004166666666666652
+          },
+          "mean_value_ratio": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 0.9808478038815117
+          },
+          "paired_task_retention": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 0.8738317757009346
+          },
+          "protocol_integrity": {
+            "passed": true,
+            "threshold": "==0",
+            "value": 0.0
+          },
+          "reward_hacking_counterexamples": {
+            "passed": false,
+            "threshold": "==0",
+            "value": 1.0
+          },
+          "style_ci_lower": {
+            "passed": false,
+            "threshold": ">0",
+            "value": -0.0955357142857143
+          },
+          "style_ci_upper": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.06502976190476191
+          },
+          "style_paired_difference": {
+            "passed": false,
+            "threshold": ">0",
+            "value": -0.01592261904761905
+          },
+          "worst_opponent_retention": {
+            "passed": true,
+            "threshold": ">=0.00",
+            "value": 0.13333333333333341
+          }
+        },
+        "config": "configs/extraction/ablations/reward-only.yaml",
+        "config_sha256": "e59235d671e6b39ad0a148688a964621fb3cfbeef2a3c99d5cb4359aac444570",
+        "extraction_rate_delta": -0.004166666666666652,
+        "gate_passed": false,
+        "latest_training_environment_steps": 200000,
+        "mean_value_ratio": 0.9808478038815117,
+        "paired_style_shift": -0.01592261904761905,
+        "paired_task_retention": 0.8738317757009346,
+        "rho_residual": 0.0,
+        "style_ci_lower": -0.0955357142857143,
+        "style_ci_upper": 0.06502976190476191,
+        "training_summary": "runs/extraction/ablations/reward-only/explorer/summary.json",
+        "training_summary_sha256": "6f187aa89e49f602afc00b4be263e44edf9c673dbd056b222b0b568325ec53d9",
+        "validation_report": "runs/extraction/ablations/reward-only/explorer/evaluation/candidate-0200000-validation.json",
+        "validation_report_sha256": "a25bc008e3773d2243c002e7a39406ca2d3f55c071104a11f7aa8428b3d13bb3",
+        "worst_opponent_retention": 0.13333333333333341
+      }
+    },
+    "reward-plus-kl": {
+      "aggressive": {
+        "beta_kl": 0.08,
+        "checkpoint": "runs/extraction/ablations/reward-plus-kl/aggressive/candidate-0200000.pt",
+        "checkpoint_environment_steps": 200000,
+        "checkpoint_sha256": "2a9728f15107e01bd734bcd9080d832f0932b712e6ce1fed5dc8d92d7f834850",
+        "checks": {
+          "anti_hack_complete_combat_chain": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.012499999999999956
+          },
+          "anti_hack_no_empty_fire_regression": {
+            "passed": true,
+            "threshold": ">=-0.05",
+            "value": -0.003320890840919938
+          },
+          "extraction_rate_delta": {
+            "passed": true,
+            "threshold": ">=-0.10",
+            "value": 0.008333333333333415
+          },
+          "mean_value_ratio": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 0.9994892747701738
+          },
+          "paired_task_retention": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 0.9205607476635514
+          },
+          "protocol_integrity": {
+            "passed": true,
+            "threshold": "==0",
+            "value": 0.0
+          },
+          "reward_hacking_counterexamples": {
+            "passed": true,
+            "threshold": "==0",
+            "value": 0.0
+          },
+          "style_ci_lower": {
+            "passed": false,
+            "threshold": ">0",
+            "value": -0.10908442466710684
+          },
+          "style_ci_upper": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.1459851664097113
+          },
+          "style_paired_difference": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.017115279564594573
+          },
+          "worst_opponent_retention": {
+            "passed": true,
+            "threshold": ">=0.00",
+            "value": 0.13333333333333341
+          }
+        },
+        "config": "configs/extraction/ablations/reward-plus-kl.yaml",
+        "config_sha256": "161d49f12202ffbfd36e1db370b10ed395dd3853942d4042f280ba396c523660",
+        "extraction_rate_delta": 0.008333333333333415,
+        "gate_passed": false,
+        "latest_training_environment_steps": 200000,
+        "mean_value_ratio": 0.9994892747701738,
+        "paired_style_shift": 0.017115279564594573,
+        "paired_task_retention": 0.9205607476635514,
+        "rho_residual": 0.0,
+        "style_ci_lower": -0.10908442466710684,
+        "style_ci_upper": 0.1459851664097113,
+        "training_summary": "runs/extraction/ablations/reward-plus-kl/aggressive/summary.json",
+        "training_summary_sha256": "c9cd174141cb8c3cd99af65f46892271ae4610c381031ebc1d201ef8707175f9",
+        "validation_report": "runs/extraction/ablations/reward-plus-kl/aggressive/evaluation/candidate-0200000-validation.json",
+        "validation_report_sha256": "047f9c6490780a35be0c18f9f6ef9e6d924c9b45e2768cf29b1e7b79bfd6dda9",
+        "worst_opponent_retention": 0.13333333333333341
+      },
+      "defensive": {
+        "beta_kl": 0.08,
+        "checkpoint": "runs/extraction/ablations/reward-plus-kl/defensive/candidate-0200000.pt",
+        "checkpoint_environment_steps": 200000,
+        "checkpoint_sha256": "b91bdea1289abf7e6a525ca06d46a0bbe4782834fa6128c15f7b50b245367d35",
+        "checks": {
+          "anti_hack_no_timeout_value_loss": {
+            "passed": true,
+            "threshold": "<=0.02",
+            "value": -0.029166666666666667
+          },
+          "anti_hack_not_inactive": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 1.0044052863436124
+          },
+          "extraction_rate_delta": {
+            "passed": true,
+            "threshold": ">=-0.10",
+            "value": 0.008333333333333415
+          },
+          "mean_value_ratio": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 1.0270684371807968
+          },
+          "paired_task_retention": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 0.9205607476635514
+          },
+          "protocol_integrity": {
+            "passed": true,
+            "threshold": "==0",
+            "value": 0.0
+          },
+          "reward_hacking_counterexamples": {
+            "passed": true,
+            "threshold": "==0",
+            "value": 0.0
+          },
+          "style_ci_lower": {
+            "passed": false,
+            "threshold": ">0",
+            "value": -0.10817465570835479
+          },
+          "style_ci_upper": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.04610105006075167
+          },
+          "style_paired_difference": {
+            "passed": false,
+            "threshold": ">0",
+            "value": -0.030970113270673942
+          },
+          "worst_opponent_retention": {
+            "passed": true,
+            "threshold": ">=0.00",
+            "value": 0.15000000000000013
+          }
+        },
+        "config": "configs/extraction/ablations/reward-plus-kl-defensive.yaml",
+        "config_sha256": "ade84f81ce550f56f1653f5b9d4be5d572b1823d1191bf6df59bab51396f8a9f",
+        "extraction_rate_delta": 0.008333333333333415,
+        "gate_passed": false,
+        "latest_training_environment_steps": 200000,
+        "mean_value_ratio": 1.0270684371807968,
+        "paired_style_shift": -0.030970113270673942,
+        "paired_task_retention": 0.9205607476635514,
+        "rho_residual": 0.0,
+        "style_ci_lower": -0.10817465570835479,
+        "style_ci_upper": 0.04610105006075167,
+        "training_summary": "runs/extraction/ablations/reward-plus-kl/defensive/summary.json",
+        "training_summary_sha256": "e3b5672ebea77016f1a26bbf997dc9d31c35927ef0a3a6ca06e7193d90558ccd",
+        "validation_report": "runs/extraction/ablations/reward-plus-kl/defensive/evaluation/candidate-0200000-validation.json",
+        "validation_report_sha256": "5df09f16b529ed33ac5987e4104c482af1ebc7c1f8f37a6868ff97f18deb97ee",
+        "worst_opponent_retention": 0.15000000000000013
+      },
+      "explorer": {
+        "beta_kl": 0.08,
+        "checkpoint": "runs/extraction/ablations/reward-plus-kl/explorer/candidate-0200000.pt",
+        "checkpoint_environment_steps": 200000,
+        "checkpoint_sha256": "8988d8770751e6d836c39d68e5e60666f4aab26c770f4ae4746dae17628c1d00",
+        "checks": {
+          "anti_hack_no_high_value_wandering": {
+            "passed": true,
+            "threshold": "<=0.02",
+            "value": -0.008333333333333331
+          },
+          "anti_hack_real_upgrade_conversion": {
+            "passed": false,
+            "threshold": ">0",
+            "value": -0.02499999999999991
+          },
+          "extraction_rate_delta": {
+            "passed": true,
+            "threshold": ">=-0.10",
+            "value": -0.016666666666666607
+          },
+          "mean_value_ratio": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 0.9749744637385088
+          },
+          "paired_task_retention": {
+            "passed": true,
+            "threshold": ">=0.85",
+            "value": 0.8785046728971962
+          },
+          "protocol_integrity": {
+            "passed": true,
+            "threshold": "==0",
+            "value": 0.0
+          },
+          "reward_hacking_counterexamples": {
+            "passed": false,
+            "threshold": "==0",
+            "value": 1.0
+          },
+          "style_ci_lower": {
+            "passed": false,
+            "threshold": ">0",
+            "value": -0.10461309523809523
+          },
+          "style_ci_upper": {
+            "passed": true,
+            "threshold": ">0",
+            "value": 0.04702380952380954
+          },
+          "style_paired_difference": {
+            "passed": false,
+            "threshold": ">0",
+            "value": -0.03050595238095238
+          },
+          "worst_opponent_retention": {
+            "passed": true,
+            "threshold": ">=0.00",
+            "value": 0.15000000000000013
+          }
+        },
+        "config": "configs/extraction/ablations/reward-plus-kl.yaml",
+        "config_sha256": "161d49f12202ffbfd36e1db370b10ed395dd3853942d4042f280ba396c523660",
+        "extraction_rate_delta": -0.016666666666666607,
+        "gate_passed": false,
+        "latest_training_environment_steps": 200000,
+        "mean_value_ratio": 0.9749744637385088,
+        "paired_style_shift": -0.03050595238095238,
+        "paired_task_retention": 0.8785046728971962,
+        "rho_residual": 0.0,
+        "style_ci_lower": -0.10461309523809523,
+        "style_ci_upper": 0.04702380952380954,
+        "training_summary": "runs/extraction/ablations/reward-plus-kl/explorer/summary.json",
+        "training_summary_sha256": "814886cfdb71bc0460a1425c2fb41e8353c846a8695514e7b41730e8fe45d934",
+        "validation_report": "runs/extraction/ablations/reward-plus-kl/explorer/evaluation/candidate-0200000-validation.json",
+        "validation_report_sha256": "b72ea6e71aa3b3d1372e83cffc0b3b4643ded1754b131427aaa7dd394056a15a",
+        "worst_opponent_retention": 0.15000000000000013
+      }
+    }
+  },
+  "official_test_accessed": false,
+  "protocol_sha256": "cd0bc59c4a74745c2c68f4772e585fc00b80e48b6455d299ef08c3039d9dd6c9",
+  "scenario_hash": "a3b446dafd6da797d82af47b9851c51e5aa7f370bff40f9b03fce5e233843754",
+  "schema_version": 1,
+  "selection_split": "validation",
+  "strong_checkpoint_sha256": "4cc9edcfd9745788d3e3bc7913f76e8553eee619266d5a475d36b1cd7183120a",
+  "strong_validation_report": "runs/extraction/strong-ppo/evaluation-v2/candidate-0600064-validation.json",
+  "strong_validation_report_sha256": "b16b180f66ed6c1ab808a320fbdb46693cde7f2024174824ca92a58446a5ed15",
+  "styles": [
+    "aggressive",
+    "defensive",
+    "explorer"
+  ],
+  "test_cases_accessed": false,
+  "variants": [
+    "full",
+    "reward-plus-kl",
+    "reward-only"
+  ]
+}

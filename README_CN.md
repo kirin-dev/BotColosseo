@@ -54,6 +54,22 @@ logit adapter；公开推理不包含规则式风格 governor。
 哈希、证据层级及失败项见
 [机器可读审计](reports/extraction/showcase/audit.json)。
 
+### 匹配 200k 风格消融
+
+每格为“成对风格偏移 / 成对任务保持率”。
+
+| 变体 | Aggressive | Defensive | Explorer |
+|---|---:|---:|---:|
+| Full | +0.023 / 91.1% | +0.006 / 96.3% | +0.004 / 91.6% |
+| Reward + KL | +0.017 / 92.1% | -0.031 / 92.1% | -0.031 / 87.9% |
+| Reward only | +0.082 / 94.4% | +0.081 / 88.8% | -0.016 / 87.4% |
+
+九格均使用同一个冻结 Strong Actor、训练预算、场景、协议和 240-case validation
+划分。结果体现风格相关的取舍：移除正则可增大 Aggressive 或 Defensive 的测量
+偏移，但 Explorer 会反向并触发反作弊失败。各列风格指标不可横向比较。完整
+哈希、门禁和失败项见[消融审计](reports/extraction/style-ablation.json)；
+`test_cases_accessed=false`，未打开 official-test cases。
+
 ## 证据边界
 
 部署时 Actor 只能接收 84×84 第一视角灰度图及自身公开状态，不能接收敌方
