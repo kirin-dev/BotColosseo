@@ -42,7 +42,7 @@ def _parse_showcase() -> tuple[str, _ShowcaseParser]:
 
 
 def test_showcase_has_four_playable_style_videos_and_matching_emotes() -> None:
-    _, parser = _parse_showcase()
+    source, parser = _parse_showcase()
 
     assert parser.video_count == 4
     assert parser.sources == [
@@ -59,6 +59,25 @@ def test_showcase_has_four_playable_style_videos_and_matching_emotes() -> None:
     ]
     for asset in parser.sources + parser.images:
         assert (Path("docs") / asset).is_file()
+    assert source.count('width="80"') == 4
+    assert source.count('height="80"') == 4
+
+
+def test_showcase_opens_with_compact_botcolosseo_identity_and_video_grid() -> None:
+    source, _ = _parse_showcase()
+
+    assert "<title>BotColosseo · Controllable Game Bots for SFE</title>" in source
+    assert "<h1>BotColosseo</h1>" in source
+    assert "Controllable Game Bots for SFE" in source
+    assert "Search · Fight · Extract" in source
+    assert "<nav" not in source
+    assert "site-header" not in source
+    assert "Crystal Run" not in source
+
+    hero = source.index('<section class="hero shell">')
+    bot_grid = source.index('<section class="bot-showcase shell" id="bots"')
+    scenario = source.index('<section class="section shell" id="scenario">')
+    assert hero < bot_grid < scenario
 
 
 def test_showcase_covers_scenario_method_styles_and_results() -> None:
@@ -94,6 +113,10 @@ def test_showcase_is_dependency_free_and_all_local_assets_resolve() -> None:
     assert all((Path("docs") / target).is_file() for target in local_targets)
 
     stylesheet = Path("docs/showcase.css").read_text(encoding="utf-8")
+    assert "color-scheme: light" in stylesheet
+    assert "--background: #ffffff" in stylesheet
+    assert "width: 80px" in stylesheet
+    assert ".site-header" not in stylesheet
     assert "@media (max-width: 860px)" in stylesheet
     assert "@media (max-width: 620px)" in stylesheet
     assert "@media (prefers-reduced-motion: reduce)" in stylesheet
