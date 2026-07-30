@@ -61,6 +61,8 @@ Videos remain user-controlled, muted, and non-autoplaying.
   Scenario, Method, How to Tell, Results.
 - Those sections are numbered `01` through `04`. Their headings use smaller
   responsive type and remain on one line at all supported widths.
+- The footer keeps its left-side project identity. Its right side contains only
+  `Back to top ↑`; Repository and Chinese-documentation links are absent.
 
 ## Responsive Behavior
 
@@ -87,6 +89,7 @@ Videos remain user-controlled, muted, and non-autoplaying.
 - Verify the absence of the former SFE expansion, descriptive sentence, and
   Evidence action.
 - Verify the upper-right GitHub link and sequential `01`–`04` section labels.
+- Verify that `Back to top ↑` is the footer's only right-side link.
 - Render desktop and mobile screenshots locally and inspect the first viewport,
   card hierarchy, overflow, and readability.
 - Run public-document link checks, unit tests, Ruff, and `git diff --check`.
