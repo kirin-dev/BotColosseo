@@ -188,9 +188,9 @@ def _resolve_demonstration(
     validation_failures = payload.get("validation_failed_checks")
     heldout_failures = payload.get("heldout_failed_checks")
     heldout_checks = payload.get("heldout_checks")
+    tier = payload.get("evidence_tier")
     if (
         not isinstance(validation_failures, list)
-        or any(name != "style_ci_lower" for name in validation_failures)
         or not isinstance(heldout_failures, list)
         or not isinstance(heldout_checks, list)
         or not heldout_checks
@@ -202,10 +202,26 @@ def _resolve_demonstration(
         ]
     ):
         raise ValueError("Showcase demonstration check ledger does not match")
+    if tier == "validation_demonstration":
+        tier_identity_matches = all(
+            name == "style_ci_lower" for name in validation_failures
+        )
+    elif tier == "representative_case_demonstration":
+        tier_identity_matches = (
+            payload.get("admission_rule_timing")
+            == "post_validation_product_case_review"
+            and payload.get("claim_scope")
+            == "representative_validation_cases_only"
+            and payload.get("aggregate_style_gate_passed") is False
+            and isinstance(payload.get("representative_case_count"), int)
+            and payload["representative_case_count"] > 0
+        )
+    else:
+        tier_identity_matches = False
     expected = payload.get("showcase_checkpoint_sha256")
     if not (
         payload.get("demonstration_schema_version") == 1
-        and payload.get("evidence_tier") == "validation_demonstration"
+        and tier_identity_matches
         and payload.get("policy") == policy
         and payload.get("product_demo_eligible") is True
         and payload.get("research_gate_passed") is False
@@ -237,7 +253,7 @@ def _resolve_demonstration(
     ):
         raise ValueError("Showcase demonstration heldout identity does not match")
     return {
-        "mode": "validation_demonstration",
+        "mode": str(tier),
         "checkpoint": str(checkpoint.relative_to(root)),
         "validation_report": str(validation.relative_to(root)),
         "manifest": str(manifest_path.relative_to(root)),

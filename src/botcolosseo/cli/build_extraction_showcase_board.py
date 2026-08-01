@@ -138,6 +138,7 @@ def main(argv: list[str] | None = None) -> int:
             "product_showcase": "PRODUCT SHOWCASE",
             "directional_showcase": "DIRECTIONAL SHOWCASE",
             "validation_demonstration": "VALIDATION DEMO",
+            "representative_case_demonstration": "CASE STUDY",
         }.get(evidence_tier)
         if tier_label is None:
             raise ValueError(f"{policy} Showcase evidence tier is invalid")

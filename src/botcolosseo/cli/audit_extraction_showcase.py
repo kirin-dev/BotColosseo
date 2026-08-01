@@ -13,6 +13,7 @@ EVIDENCE_TIERS = {
     "product_showcase",
     "directional_showcase",
     "validation_demonstration",
+    "representative_case_demonstration",
 }
 
 
@@ -79,6 +80,19 @@ def _manifest_tier(
         and manifest.get("showcase_checkpoint_sha256") == checkpoint_sha256
     ):
         tier = "validation_demonstration"
+    elif (
+        manifest.get("evidence_tier") == "representative_case_demonstration"
+        and manifest.get("product_demo_eligible") is True
+        and manifest.get("research_gate_passed") is False
+        and manifest.get("official_test_eligible") is False
+        and manifest.get("claim_scope")
+        == "representative_validation_cases_only"
+        and manifest.get("aggregate_style_gate_passed") is False
+        and isinstance(manifest.get("representative_case_count"), int)
+        and manifest["representative_case_count"] > 0
+        and manifest.get("showcase_checkpoint_sha256") == checkpoint_sha256
+    ):
+        tier = "representative_case_demonstration"
     else:
         raise ValueError(f"{policy} Showcase artifact manifest is invalid")
     if (

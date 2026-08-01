@@ -133,3 +133,25 @@ def test_validation_demonstration_rejects_capability_failure(
 
     with pytest.raises(ValueError, match="capability"):
         build_validation_demonstration(root=tmp_path, **evidence)
+
+
+def test_representative_case_demonstration_discloses_aggregate_failure(
+    tmp_path: Path,
+) -> None:
+    evidence = _evidence(tmp_path)
+    validation_path = Path(evidence["validation_path"])
+    payload = json.loads(validation_path.read_text(encoding="utf-8"))
+    for index, episode in enumerate(payload["metrics"]["episodes"]):
+        episode["decisions"] = 300 if index == 0 else episode["decisions"]
+        episode["meaningful_loot_regions"] = 4 if index == 0 else 0
+        episode["backpack_upgrades"] = 1 if index == 0 else 0
+        episode["upgrade_to_extraction_conversions"] = 1 if index == 0 else 0
+    validation_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = build_validation_demonstration(root=tmp_path, **evidence)
+
+    assert result["evidence_tier"] == "representative_case_demonstration"
+    assert result["claim_scope"] == "representative_validation_cases_only"
+    assert result["aggregate_style_gate_passed"] is False
+    assert result["representative_case_count"] == 1
+    assert result["product_demo_eligible"] is True

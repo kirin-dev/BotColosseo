@@ -130,3 +130,25 @@ def test_showcase_selection_accepts_product_only_strong_manifest() -> None:
     }
 
     assert _evidence_tier("strong", report, manifest) == "product_showcase"
+
+
+def test_showcase_selection_accepts_representative_case_manifest() -> None:
+    checkpoint_sha256 = "a" * 64
+    report = {"checkpoint_sha256": checkpoint_sha256}
+    manifest = {
+        "policy": "explorer",
+        "evidence_tier": "representative_case_demonstration",
+        "product_demo_eligible": True,
+        "research_gate_passed": False,
+        "official_test_eligible": False,
+        "claim_scope": "representative_validation_cases_only",
+        "aggregate_style_gate_passed": False,
+        "representative_case_count": 3,
+        "showcase_checkpoint_sha256": checkpoint_sha256,
+        "test_cases_accessed": False,
+    }
+
+    assert (
+        _evidence_tier("explorer", report, manifest)
+        == "representative_case_demonstration"
+    )

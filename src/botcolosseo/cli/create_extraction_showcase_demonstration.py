@@ -13,6 +13,7 @@ from botcolosseo.cli.admit_extraction_showcase import (
     _verify_report_checkpoint,
 )
 from botcolosseo.cli.select_extraction_candidate import _episodes, _load_report
+from botcolosseo.cli.select_extraction_showcases import _representative
 from botcolosseo.data.demonstrations import sha256_file
 from botcolosseo.evaluation.extraction_gates import (
     aggressive_showcase_direction_counts,
@@ -23,6 +24,20 @@ from botcolosseo.evaluation.extraction_gates import (
 
 STYLES = ("aggressive", "defensive", "explorer")
 ALLOWED_VALIDATION_FAILURES = {"style_ci_lower"}
+CASE_STUDY_VALIDATION_FAILURES = {
+    "paired_task_retention",
+    "style_paired_difference",
+    "style_ci_lower",
+    "style_ci_upper",
+    "anti_hack_real_upgrade_conversion",
+    "reward_hacking_counterexamples",
+}
+CASE_STUDY_CAPABILITY_FLOORS = {
+    "paired_task_retention": 0.75,
+    "extraction_rate_delta": -0.10,
+    "mean_value_ratio": 0.85,
+    "worst_opponent_retention": 0.0,
+}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -92,15 +107,6 @@ def build_validation_demonstration(
     validation_failures = [
         check.name for check in validation_gate.checks if not check.passed
     ]
-    unsafe_validation_failures = sorted(
-        set(validation_failures) - ALLOWED_VALIDATION_FAILURES
-    )
-    if unsafe_validation_failures:
-        raise ValueError(
-            "Validation demonstration capability, anti-hacking, or direction "
-            f"checks failed: {unsafe_validation_failures}"
-        )
-
     direction_counts = (
         aggressive_showcase_direction_counts(
             strong_validation_episodes,
@@ -113,6 +119,43 @@ def build_validation_demonstration(
             styled=validation_episodes,
         )
     )
+    strong_by_case = {
+        (item.seed, item.learner_side, item.opponent_style): item
+        for item in strong_validation_episodes
+    }
+    representative_case_count = sum(
+        _representative(
+            policy,
+            item,
+            strong_by_case[(item.seed, item.learner_side, item.opponent_style)],
+        )
+        for item in validation_episodes
+    )
+    unsafe_validation_failures = sorted(
+        set(validation_failures) - ALLOWED_VALIDATION_FAILURES
+    )
+    if unsafe_validation_failures:
+        checks = {check.name: check for check in validation_gate.checks}
+        unsupported = sorted(
+            set(validation_failures) - CASE_STUDY_VALIDATION_FAILURES
+        )
+        capability_floor_failed = [
+            name
+            for name, floor in CASE_STUDY_CAPABILITY_FLOORS.items()
+            if checks[name].value < floor
+        ]
+        if unsupported or capability_floor_failed or representative_case_count < 1:
+            raise ValueError(
+                "Representative case demonstration has unsafe validation "
+                "capability or direction failures: "
+                f"unsupported={unsupported}, floors={capability_floor_failed}, "
+                f"representative_cases={representative_case_count}"
+            )
+        evidence_tier = "representative_case_demonstration"
+        claim_scope = "representative_validation_cases_only"
+    else:
+        evidence_tier = "validation_demonstration"
+        claim_scope = "validation_distribution"
     heldout_gate = style_heldout_gate(
         strong=_episodes(strong_heldout),
         styled=_episodes(heldout),
@@ -129,7 +172,11 @@ def build_validation_demonstration(
     return {
         "schema_version": 1,
         "demonstration_schema_version": 1,
-        "evidence_tier": "validation_demonstration",
+        "evidence_tier": evidence_tier,
+        "admission_rule_timing": "post_validation_product_case_review",
+        "claim_scope": claim_scope,
+        "representative_case_count": representative_case_count,
+        "aggregate_style_gate_passed": validation_gate.passed,
         "policy": policy,
         "product_demo_eligible": True,
         "research_gate_passed": False,

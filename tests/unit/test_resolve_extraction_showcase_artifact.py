@@ -188,3 +188,64 @@ def test_resolver_accepts_validation_demonstration_with_disclosed_failure(
 
     assert resolved["mode"] == "validation_demonstration"
     assert resolved["validation_report"] == "explorer-validation.json"
+
+
+def test_resolver_accepts_representative_case_demonstration(
+    tmp_path: Path,
+) -> None:
+    directory = tmp_path / "runs/extraction/styles/explorer"
+    directory.mkdir(parents=True)
+    checkpoint = directory / "showcase.pt"
+    checkpoint.write_bytes(b"explorer")
+    validation = tmp_path / "explorer-validation.json"
+    heldout = tmp_path / "explorer-heldout.json"
+    _report(validation, "explorer")
+    _report(heldout, "explorer", "heldout")
+    evidence = [
+        str(validation.relative_to(tmp_path)),
+        str(heldout.relative_to(tmp_path)),
+    ]
+    validation_failures = [
+        "style_paired_difference",
+        "style_ci_lower",
+        "style_ci_upper",
+    ]
+    demonstration = {
+        "demonstration_schema_version": 1,
+        "evidence_tier": "representative_case_demonstration",
+        "admission_rule_timing": "post_validation_product_case_review",
+        "claim_scope": "representative_validation_cases_only",
+        "aggregate_style_gate_passed": False,
+        "representative_case_count": 3,
+        "policy": "explorer",
+        "product_demo_eligible": True,
+        "research_gate_passed": False,
+        "official_test_eligible": False,
+        "research_failed_checks": validation_failures,
+        "validation_failed_checks": validation_failures,
+        "heldout_gate_passed": True,
+        "heldout_failed_checks": [],
+        "heldout_checks": [
+            {"name": "heldout_protocol_integrity", "passed": True}
+        ],
+        "actor_privilege_violations": 0,
+        "test_cases_accessed": False,
+        "showcase_checkpoint_sha256": sha256_file(checkpoint),
+        "evidence": evidence,
+        "evidence_sha256": {
+            relative: sha256_file(tmp_path / relative) for relative in evidence
+        },
+    }
+    (directory / "showcase-demonstration.json").write_text(
+        json.dumps(demonstration),
+        encoding="utf-8",
+    )
+
+    resolved = resolve_style_showcase_artifacts(
+        tmp_path,
+        policy="explorer",
+        directory=Path("runs/extraction/styles/explorer"),
+    )
+
+    assert resolved["mode"] == "representative_case_demonstration"
+    assert resolved["validation_report"] == "explorer-validation.json"
