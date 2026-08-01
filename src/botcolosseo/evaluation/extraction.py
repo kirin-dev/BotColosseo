@@ -28,6 +28,48 @@ ATTACK_ACTIONS = frozenset(
 )
 
 
+@dataclass
+class DisengagementTracker:
+    """Track low-resource retreats without counting terminal state jumps."""
+
+    active: bool = False
+    opportunities: int = 0
+    successes: int = 0
+
+    def observe_encounter(
+        self,
+        *,
+        health: int,
+        ammo: int,
+        opponent_distance: float,
+        learner_alive: bool = True,
+        opponent_alive: bool = True,
+    ) -> None:
+        if not learner_alive or not opponent_alive:
+            self.active = False
+            return
+        low_resources = health <= 40 or ammo <= 5
+        if low_resources and opponent_distance <= 384 and not self.active:
+            self.opportunities += 1
+            self.active = True
+
+    def resolve_after_action(
+        self,
+        *,
+        opponent_distance: float,
+        learner_alive: bool,
+        opponent_alive: bool,
+    ) -> bool:
+        if not learner_alive or not opponent_alive:
+            self.active = False
+            return False
+        if self.active and opponent_distance >= 512:
+            self.successes += 1
+            self.active = False
+            return True
+        return False
+
+
 @dataclass(frozen=True)
 class ExtractionEpisodeMetrics:
     seed: int
@@ -140,9 +182,7 @@ def evaluate_extraction_episode(
     favorable_encounter_initiations = 0
     encounter_active = False
     encounter_initiated = False
-    disengagement_opportunities = 0
-    successful_disengagements = 0
-    disengagement_active = False
+    disengagement = DisengagementTracker()
     killed_opponent = False
     looted_cache_after_kill = False
     kill_to_cache_conversions = 0
@@ -207,13 +247,11 @@ def evaluate_extraction_episode(
             if opponent_distance >= 512:
                 encounter_active = False
                 encounter_initiated = False
-            low_resources = observation.health <= 40 or observation.ammo <= 5
-            if low_resources and opponent_distance <= 384 and not disengagement_active:
-                disengagement_opportunities += 1
-                disengagement_active = True
-            if disengagement_active and opponent_distance >= 512:
-                successful_disengagements += 1
-                disengagement_active = False
+            disengagement.observe_encounter(
+                health=observation.health,
+                ammo=observation.ammo,
+                opponent_distance=opponent_distance,
+            )
             if (
                 observation.carried_value >= 50
                 and observation.remaining_time <= 20
@@ -240,6 +278,35 @@ def evaluate_extraction_episode(
             final_winner = step.winner
             max_peer_tic_lag = max(max_peer_tic_lag, step.peer_tic_lag)
             observations = type(observations)(step.host, step.opponent)
+            state_after = env.privileged_state()
+            after_x, after_y, after_opponent_x, after_opponent_y = (
+                (
+                    state_after.host_x,
+                    state_after.host_y,
+                    state_after.opponent_x,
+                    state_after.opponent_y,
+                )
+                if case.learner_side == "host"
+                else (
+                    state_after.opponent_x,
+                    state_after.opponent_y,
+                    state_after.host_x,
+                    state_after.host_y,
+                )
+            )
+            protocol_after = env.protocol_snapshot()
+            disengagement.resolve_after_action(
+                opponent_distance=math.dist(
+                    (after_x, after_y),
+                    (after_opponent_x, after_opponent_y),
+                ),
+                learner_alive=(
+                    protocol_after.public_state(case.learner_side).life_state == 1
+                ),
+                opponent_alive=(
+                    protocol_after.public_state(opponent_side).life_state == 1
+                ),
+            )
             for event in step.events:
                 events[(event.side, event.type)] += event.count
             learner_events = tuple(
@@ -356,8 +423,8 @@ def evaluate_extraction_episode(
             kill_to_cache_conversions=kill_to_cache_conversions,
             cache_to_extraction_conversions=cache_to_extraction_conversions,
             aggressive_chains=aggressive_chains,
-            disengagement_opportunities=disengagement_opportunities,
-            successful_disengagements=successful_disengagements,
+            disengagement_opportunities=disengagement.opportunities,
+            successful_disengagements=disengagement.successes,
             meaningful_extractions=meaningful_extractions,
             combat_with_meaningful_value=combat_with_meaningful_value,
             meaningful_loot_regions=len(loot_region_cells),

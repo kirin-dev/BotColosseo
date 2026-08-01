@@ -25,6 +25,7 @@ from botcolosseo.envs.extraction_types import (
     ExtractionPrivilegedState,
 )
 from botcolosseo.envs.synchronous_extraction import SynchronousExtractionEnv
+from botcolosseo.evaluation.extraction import DisengagementTracker
 from botcolosseo.training.extraction_bc import extraction_observation_tensors
 
 
@@ -417,8 +418,7 @@ def record_extraction_showcase(
     killed_opponent = False
     looted_cache_after_kill = False
     aggressive_chains = 0
-    disengagement_active = False
-    successful_disengagements = 0
+    disengagement = DisengagementTracker()
     meaningful_extractions = 0
     backpack_upgrades = 0
     upgraded_backpack = False
@@ -463,11 +463,11 @@ def record_extraction_showcase(
             )
             route_cells.add((math.floor(x / 160), math.floor(y / 160)))
             opponent_distance = math.dist((x, y), (opponent_x, opponent_y))
-            if (
-                (observation.health <= 40 or observation.ammo <= 5)
-                and opponent_distance <= 384
-            ):
-                disengagement_active = True
+            disengagement.observe_encounter(
+                health=observation.health,
+                ammo=observation.ammo,
+                opponent_distance=opponent_distance,
+            )
             opponent_action = opponent.act(state)
             host_action, away_action = (
                 (learner_action, opponent_action)
@@ -492,14 +492,19 @@ def record_extraction_showcase(
                     state_after.host_y,
                 )
             )
-            disengaged_now = False
-            if disengagement_active and math.dist(
-                (after_x, after_y),
-                (after_opponent_x, after_opponent_y),
-            ) >= 512:
-                successful_disengagements += 1
-                disengagement_active = False
-                disengaged_now = True
+            protocol_after = env.protocol_snapshot()
+            disengaged_now = disengagement.resolve_after_action(
+                opponent_distance=math.dist(
+                    (after_x, after_y),
+                    (after_opponent_x, after_opponent_y),
+                ),
+                learner_alive=(
+                    protocol_after.public_state(case.learner_side).life_state == 1
+                ),
+                opponent_alive=(
+                    protocol_after.public_state(opponent_side).life_state == 1
+                ),
+            )
             for event in step.events:
                 event_counts[f"{event.side}:{event.type.value}"] += event.count
             learner_events = tuple(
@@ -603,7 +608,7 @@ def record_extraction_showcase(
             attack_decisions=attack_decisions,
             unique_route_cells=len(route_cells),
             aggressive_chains=aggressive_chains,
-            successful_disengagements=successful_disengagements,
+            successful_disengagements=disengagement.successes,
             meaningful_extractions=meaningful_extractions,
             meaningful_loot_regions=len(loot_region_cells),
             backpack_upgrades=backpack_upgrades,

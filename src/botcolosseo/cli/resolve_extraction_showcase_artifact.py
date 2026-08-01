@@ -53,6 +53,8 @@ def _verify_evidence(
         or report.get("test_cases_accessed") is not False
     ):
         raise ValueError("Style Showcase validation report identity does not match")
+    if policy == "defensive" and report.get("disengagement_metric_version") != 2:
+        raise ValueError("Defensive Showcase uses the legacy disengagement metric")
     return validation_reports[0]
 
 

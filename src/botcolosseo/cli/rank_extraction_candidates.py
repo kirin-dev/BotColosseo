@@ -40,6 +40,8 @@ def _load(path: Path, policy: str) -> dict[str, object]:
         or payload.get("fair_actor_observation_only") is not True
     ):
         raise ValueError("Candidate ranking report identity does not match")
+    if policy == "defensive" and payload.get("disengagement_metric_version") != 2:
+        raise ValueError("Defensive report uses the legacy disengagement metric")
     if len(payload["metrics"]["episodes"]) != 240:
         raise ValueError("Candidate ranking requires 240 validation episodes")
     return payload
