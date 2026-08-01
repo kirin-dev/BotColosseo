@@ -21,11 +21,8 @@ export CUDA_VISIBLE_DEVICES="$GPU"
 cd "$ROOT"
 
 OUTPUT="runs/extraction/styles/$STYLE"
-BASE="runs/extraction/strong-ppo/selected.pt"
-if [[ ! -f "$BASE" ]]; then
-  echo "Selected Strong Base is missing: $BASE" >&2
-  exit 1
-fi
+BASE="$("$PYTHON" -m botcolosseo.cli.resolve_extraction_strong_artifact \
+  --field checkpoint)"
 if [[ "$STYLE" != "aggressive" ]]; then
   if ! "$PYTHON" -m botcolosseo.cli.check_extraction_aggressive_prerequisite; then
     echo "Defensive/Explorer require an admitted Aggressive vertical slice" >&2

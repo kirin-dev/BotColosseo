@@ -32,6 +32,14 @@ def test_strong_runner_defaults_to_resumable_600k_stage() -> None:
     assert 'int(sys.argv[3]) <= summary.get("environment_steps", 0)' in source
 
 
+def test_style_runner_resolves_research_or_product_strong_base() -> None:
+    source = Path("scripts/run_extraction_v3_style.sh").read_text(encoding="utf-8")
+
+    assert "botcolosseo.cli.resolve_extraction_strong_artifact" in source
+    assert "--field checkpoint" in source
+    assert 'BASE="runs/extraction/strong-ppo/selected.pt"' not in source
+
+
 def test_style_selector_rebuilds_ranking_after_new_stage_candidates() -> None:
     source = Path(
         "scripts/run_extraction_v3_select_style.sh"

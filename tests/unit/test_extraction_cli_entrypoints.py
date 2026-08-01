@@ -13,6 +13,8 @@ import pytest
         "botcolosseo.cli.train_extraction_strong",
         "botcolosseo.cli.train_extraction_style",
         "botcolosseo.cli.evaluate_extraction_v3",
+        "botcolosseo.cli.admit_extraction_strong_showcase",
+        "botcolosseo.cli.resolve_extraction_strong_artifact",
         "botcolosseo.cli.admit_extraction_showcase",
         "botcolosseo.cli.create_extraction_showcase_demonstration",
         "botcolosseo.cli.resolve_extraction_showcase_artifact",
