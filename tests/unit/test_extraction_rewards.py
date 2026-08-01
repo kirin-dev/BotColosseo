@@ -260,6 +260,42 @@ def test_defensive_reward_rejects_empty_camping_and_rewards_value_protection() -
     assert extraction.components["meaningful_extraction"] > 0
 
 
+def test_defensive_reward_only_counts_live_distance_creation() -> None:
+    ledger = DefensiveExtractionRewardLedger(
+        DefensiveExtractionRewardConfig(),
+        learner_side="host",
+        scale=1,
+    )
+
+    retreat = ledger.apply(
+        MacroAction.MOVE_BACKWARD,
+        (),
+        observation_before=observation(health=40),
+        state_before=state(opponent_x=300),
+        state_after=state(opponent_x=520),
+    )
+
+    assert retreat.components["risk_disengagement"] > 0
+
+
+def test_defensive_reward_does_not_treat_opponent_death_as_disengagement() -> None:
+    ledger = DefensiveExtractionRewardLedger(
+        DefensiveExtractionRewardConfig(),
+        learner_side="host",
+        scale=1,
+    )
+
+    reward = ledger.apply(
+        MacroAction.ATTACK,
+        (event(ExtractionEventType.DEATH, side="opponent"),),
+        observation_before=observation(health=40),
+        state_before=state(opponent_x=300),
+        state_after=state(opponent_x=900),
+    )
+
+    assert "risk_disengagement" not in reward.components
+
+
 def test_explorer_reward_needs_loot_regions_and_upgrade_not_raw_distance() -> None:
     ledger = ExplorerExtractionRewardLedger(
         ExplorerExtractionRewardConfig(),

@@ -284,7 +284,18 @@ class DefensiveExtractionRewardLedger(_BoundedLedger):
         after_distance = _opponent_distance(state_after, self.learner_side)
         low_resources = observation_before.health <= 40 or observation_before.ammo <= 5
         self._risk_active |= low_resources and before_distance <= 384
-        if self._risk_active and after_distance >= 512:
+        terminal_transition = any(
+            event.type
+            in {
+                ExtractionEventType.DEATH,
+                ExtractionEventType.EXTRACTED,
+                ExtractionEventType.TIMEOUT,
+            }
+            for event in events
+        )
+        if terminal_transition:
+            self._risk_active = False
+        elif self._risk_active and after_distance >= 512:
             self._add(
                 components,
                 "risk_disengagement",
