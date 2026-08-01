@@ -85,6 +85,26 @@ def test_defensive_calibration_runner_is_fresh_isolated_and_staged() -> None:
     assert "styles-defensive-calibration.yaml" in source
     assert '--resume "$OUTPUT/latest.pt"' in source
     assert "--initialize-from" not in source
+    assert "botcolosseo.cli.resolve_extraction_strong_artifact" in source
+    assert 'BASE="runs/extraction/strong-ppo/selected.pt"' not in source
+
+
+def test_explorer_calibration_targets_complete_conversion_chain() -> None:
+    source = Path(
+        "scripts/run_extraction_v3_explorer_calibration.sh"
+    ).read_text(encoding="utf-8")
+    config = Path(
+        "configs/extraction/styles-explorer-calibration.yaml"
+    ).read_text(encoding="utf-8")
+
+    assert 'STOP_AFTER_STEPS:-200000' in source
+    assert 'OUTPUT="runs/extraction/styles/explorer-calibration-v2"' in source
+    assert "styles-explorer-calibration.yaml" in source
+    assert '--resume "$OUTPUT/latest.pt"' in source
+    assert "botcolosseo.cli.resolve_extraction_strong_artifact" in source
+    assert "novel_loot_region: 0.02" in config
+    assert "backpack_upgrade: 0.10" in config
+    assert "upgrade_to_extraction: 0.50" in config
 
 
 def test_directional_style_admission_runner_freezes_source_and_destination() -> None:
