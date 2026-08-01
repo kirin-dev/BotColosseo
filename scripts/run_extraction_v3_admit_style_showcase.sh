@@ -17,8 +17,8 @@ cd "$ROOT"
 SOURCE="${BOTCOLOSSEO_STYLE_SOURCE:-runs/extraction/styles/$STYLE}"
 DESTINATION="runs/extraction/styles/$STYLE"
 RANKING="$SOURCE/evaluation-v2/ranking.json"
-BASE="runs/extraction/strong-ppo/selected.pt"
-STRONG_SELECTION="runs/extraction/strong-ppo/selection.json"
+BASE="$("$PYTHON" -m botcolosseo.cli.resolve_extraction_strong_artifact \
+  --field checkpoint)"
 if [[ ! -f "$RANKING" ]]; then
   echo "Style validation ranking is missing: $RANKING" >&2
   exit 1
@@ -47,27 +47,12 @@ VALIDATION="${candidate_evidence[1]}"
 TAG="$(basename "${CHECKPOINT%.pt}")"
 HELDOUT="$SOURCE/evaluation-v2/$TAG-heldout.json"
 
-readarray -t strong_evidence < <("$PYTHON" - "$STRONG_SELECTION" <<'PY'
-import json
-import sys
-
-selection = json.load(open(sys.argv[1], encoding="utf-8"))
-if not (
-    selection.get("policy") == "strong"
-    and selection.get("gate_schema_version") == 2
-    and selection.get("eligible") is True
-    and selection.get("test_cases_accessed") is False
-):
-    raise SystemExit("Strong selection identity does not match")
-for suffix in ("-validation.json", "-heldout.json"):
-    matches = [path for path in selection["evidence"] if path.endswith(suffix)]
-    if len(matches) != 1:
-        raise SystemExit(f"Strong selection has no unique {suffix} evidence")
-    print(matches[0])
-PY
-)
-STRONG_VALIDATION="${strong_evidence[0]}"
-STRONG_HELDOUT="${strong_evidence[1]}"
+STRONG_VALIDATION="$("$PYTHON" \
+  -m botcolosseo.cli.resolve_extraction_strong_artifact \
+  --field validation_report)"
+STRONG_HELDOUT="$("$PYTHON" \
+  -m botcolosseo.cli.resolve_extraction_strong_artifact \
+  --field heldout_report)"
 
 if [[ ! -f "$HELDOUT" ]]; then
   "$PYTHON" -u -m botcolosseo.cli.evaluate_extraction_v3 \

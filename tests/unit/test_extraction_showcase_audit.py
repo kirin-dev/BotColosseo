@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from botcolosseo.cli.audit_extraction_showcase import (
+    _manifest_tier,
     audit_extraction_showcase,
 )
 from botcolosseo.data.demonstrations import sha256_file
@@ -166,3 +167,21 @@ def test_product_showcase_audit_rejects_claim_drift(tmp_path: Path) -> None:
             board_manifest_path=board,
             method_path=method,
         )
+
+
+def test_showcase_audit_accepts_product_only_strong_manifest() -> None:
+    checkpoint_sha256 = "a" * 64
+    manifest = {
+        "policy": "strong",
+        "admission_kind": "strong_product_showcase",
+        "product_showcase_eligible": True,
+        "research_gate_passed": False,
+        "official_test_eligible": False,
+        "showcase_checkpoint_sha256": checkpoint_sha256,
+        "test_cases_accessed": False,
+    }
+
+    assert (
+        _manifest_tier("strong", checkpoint_sha256, manifest)
+        == "product_showcase"
+    )

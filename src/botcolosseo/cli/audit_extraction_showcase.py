@@ -10,6 +10,7 @@ from botcolosseo.data.demonstrations import sha256_file
 POLICIES = ("strong", "aggressive", "defensive", "explorer")
 EVIDENCE_TIERS = {
     "research_selection",
+    "product_showcase",
     "directional_showcase",
     "validation_demonstration",
 }
@@ -54,6 +55,15 @@ def _manifest_tier(
         and manifest.get("selected_checkpoint_sha256") == checkpoint_sha256
     ):
         tier = "research_selection"
+    elif (
+        policy == "strong"
+        and manifest.get("admission_kind") == "strong_product_showcase"
+        and manifest.get("product_showcase_eligible") is True
+        and manifest.get("research_gate_passed") is False
+        and manifest.get("official_test_eligible") is False
+        and manifest.get("showcase_checkpoint_sha256") == checkpoint_sha256
+    ):
+        tier = "product_showcase"
     elif (
         manifest.get("admission_kind") == "directional_showcase"
         and manifest.get("showcase_eligible") is True

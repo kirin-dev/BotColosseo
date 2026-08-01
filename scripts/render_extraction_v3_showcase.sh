@@ -10,29 +10,15 @@ cd "$ROOT"
 
 MEDIA="docs/assets/extraction"
 REPORTS="reports/extraction/showcase"
-BASE="runs/extraction/strong-ppo/selected.pt"
+BASE="$("$PYTHON" -m botcolosseo.cli.resolve_extraction_strong_artifact \
+  --field checkpoint)"
+STRONG_MANIFEST="$("$PYTHON" \
+  -m botcolosseo.cli.resolve_extraction_strong_artifact \
+  --field manifest)"
+strong_report="$("$PYTHON" \
+  -m botcolosseo.cli.resolve_extraction_strong_artifact \
+  --field validation_report)"
 mkdir -p "$MEDIA" "$REPORTS"
-
-report_from_selection() {
-  "$PYTHON" - "$1" "$2" <<'PY'
-import json
-import sys
-
-selection = json.load(open(sys.argv[1], encoding="utf-8"))
-matches = []
-for path in selection["evidence"]:
-    if not path.endswith("-validation.json"):
-        continue
-    report = json.load(open(path, encoding="utf-8"))
-    if report.get("policy") == sys.argv[2]:
-        matches.append(path)
-if len(matches) != 1:
-    raise SystemExit("Selection has no unique policy validation report")
-print(matches[0])
-PY
-}
-
-strong_report="$(report_from_selection runs/extraction/strong-ppo/selection.json strong)"
 declare -A style_checkpoint
 declare -A style_report
 declare -A style_manifest
@@ -61,7 +47,7 @@ selection="$REPORTS/selection.json"
 if [[ ! -f "$selection" ]]; then
   "$PYTHON" -u -m botcolosseo.cli.select_extraction_showcases \
     --strong-report "$strong_report" \
-    --strong-manifest runs/extraction/strong-ppo/selection.json \
+    --strong-manifest "$STRONG_MANIFEST" \
     --aggressive-report "$aggressive_report" \
     --aggressive-manifest "${style_manifest[aggressive]}" \
     --defensive-report "$defensive_report" \

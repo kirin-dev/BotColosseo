@@ -135,6 +135,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         tier_label = {
             "research_selection": "RESEARCH SELECTED",
+            "product_showcase": "PRODUCT SHOWCASE",
             "directional_showcase": "DIRECTIONAL SHOWCASE",
             "validation_demonstration": "VALIDATION DEMO",
         }.get(evidence_tier)

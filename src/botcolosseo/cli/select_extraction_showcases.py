@@ -142,13 +142,25 @@ def _evidence_tier(
 ) -> str:
     checkpoint_sha256 = report.get("checkpoint_sha256")
     if policy == "strong":
-        valid = (
+        if (
             manifest.get("gate_schema_version") == 2
-            and manifest.get("policy") == "strong"
             and manifest.get("eligible") is True
             and manifest.get("selected_checkpoint_sha256") == checkpoint_sha256
-        )
-        tier = "research_selection"
+        ):
+            valid = True
+            tier = "research_selection"
+        elif (
+            manifest.get("admission_kind") == "strong_product_showcase"
+            and manifest.get("product_showcase_eligible") is True
+            and manifest.get("research_gate_passed") is False
+            and manifest.get("official_test_eligible") is False
+            and manifest.get("showcase_checkpoint_sha256") == checkpoint_sha256
+        ):
+            valid = True
+            tier = "product_showcase"
+        else:
+            valid = False
+            tier = "unknown"
     elif (
         manifest.get("gate_schema_version") == 2
         and manifest.get("eligible") is True

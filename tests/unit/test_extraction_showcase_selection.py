@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from botcolosseo.cli.select_extraction_showcases import _representative, _score
+from botcolosseo.cli.select_extraction_showcases import (
+    _evidence_tier,
+    _representative,
+    _score,
+)
 from botcolosseo.evaluation.extraction import ExtractionEpisodeMetrics
 
 
@@ -110,3 +114,19 @@ def test_defensive_requires_disengagement_to_meaningful_extraction() -> None:
 
     assert not _representative("defensive", merely_passive, strong)
     assert _representative("defensive", complete, strong)
+
+
+def test_showcase_selection_accepts_product_only_strong_manifest() -> None:
+    checkpoint_sha256 = "a" * 64
+    report = {"checkpoint_sha256": checkpoint_sha256}
+    manifest = {
+        "policy": "strong",
+        "admission_kind": "strong_product_showcase",
+        "product_showcase_eligible": True,
+        "research_gate_passed": False,
+        "official_test_eligible": False,
+        "showcase_checkpoint_sha256": checkpoint_sha256,
+        "test_cases_accessed": False,
+    }
+
+    assert _evidence_tier("strong", report, manifest) == "product_showcase"

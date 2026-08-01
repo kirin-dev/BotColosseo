@@ -96,6 +96,8 @@ def test_directional_style_admission_runner_freezes_source_and_destination() -> 
     assert 'DESTINATION="runs/extraction/styles/$STYLE"' in source
     assert "botcolosseo.cli.admit_extraction_showcase" in source
     assert '--policy "$STYLE"' in source
+    assert source.count("botcolosseo.cli.resolve_extraction_strong_artifact") == 3
+    assert 'BASE="runs/extraction/strong-ppo/selected.pt"' not in source
 
 
 def test_validation_demonstration_runner_freezes_source_and_disclosure_tier() -> None:
@@ -107,6 +109,8 @@ def test_validation_demonstration_runner_freezes_source_and_disclosure_tier() ->
     assert 'DESTINATION="runs/extraction/styles/$STYLE"' in source
     assert "botcolosseo.cli.create_extraction_showcase_demonstration" in source
     assert "showcase-demonstration.json" in source
+    assert source.count("botcolosseo.cli.resolve_extraction_strong_artifact") == 3
+    assert 'STRONG_SELECTION="runs/extraction/strong-ppo/selection.json"' not in source
 
 
 def test_showcase_runner_binds_manifests_retries_and_product_audits() -> None:
@@ -119,6 +123,21 @@ def test_showcase_runner_binds_manifests_retries_and_product_audits() -> None:
     assert "--explorer-manifest" in source
     assert "--max-attempts 5" in source
     assert "botcolosseo.cli.audit_extraction_showcase" in source
+    assert source.count("botcolosseo.cli.resolve_extraction_strong_artifact") == 3
+    assert "--strong-manifest \"$STRONG_MANIFEST\"" in source
+    assert 'BASE="runs/extraction/strong-ppo/selected.pt"' not in source
+
+
+def test_aggressive_admission_resolves_product_or_research_strong_evidence() -> None:
+    source = Path(
+        "scripts/run_extraction_v3_admit_aggressive_showcase.sh"
+    ).read_text(encoding="utf-8")
+
+    assert source.count("botcolosseo.cli.resolve_extraction_strong_artifact") == 3
+    assert "--field checkpoint" in source
+    assert "--field validation_report" in source
+    assert "--field heldout_report" in source
+    assert 'STRONG_SELECTION="runs/extraction/strong-ppo/selection.json"' not in source
 
 
 def test_style_selector_accepts_an_isolated_output_root() -> None:
