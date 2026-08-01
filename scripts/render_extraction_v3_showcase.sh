@@ -8,8 +8,9 @@ export PYTHONPATH="$ROOT/src"
 export CUDA_VISIBLE_DEVICES="$GPU"
 cd "$ROOT"
 
-MEDIA="docs/assets/extraction"
-REPORTS="reports/extraction/showcase"
+MEDIA="${BOTCOLOSSEO_SHOWCASE_MEDIA:-docs/assets/extraction}"
+REPORTS="${BOTCOLOSSEO_SHOWCASE_REPORTS:-reports/extraction/showcase}"
+METHOD="${BOTCOLOSSEO_SHOWCASE_METHOD:-docs/assets/extraction/method.svg}"
 BASE="$("$PYTHON" -m botcolosseo.cli.resolve_extraction_strong_artifact \
   --field checkpoint)"
 STRONG_MANIFEST="$("$PYTHON" \
@@ -103,7 +104,7 @@ if [[ ! -f "$REPORTS/audit.json" ]]; then
   "$PYTHON" -u -m botcolosseo.cli.audit_extraction_showcase \
     --selection "$selection" \
     --board-manifest "$REPORTS/manifest.json" \
-    --method "$MEDIA/method.svg" \
+    --method "$METHOD" \
     --output "$REPORTS/audit.json"
 fi
 

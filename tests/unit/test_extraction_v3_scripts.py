@@ -146,6 +146,9 @@ def test_showcase_runner_binds_manifests_retries_and_product_audits() -> None:
     assert source.count("botcolosseo.cli.resolve_extraction_strong_artifact") == 3
     assert "--strong-manifest \"$STRONG_MANIFEST\"" in source
     assert 'BASE="runs/extraction/strong-ppo/selected.pt"' not in source
+    assert "BOTCOLOSSEO_SHOWCASE_MEDIA" in source
+    assert "BOTCOLOSSEO_SHOWCASE_REPORTS" in source
+    assert "BOTCOLOSSEO_SHOWCASE_METHOD" in source
 
 
 def test_aggressive_admission_resolves_product_or_research_strong_evidence() -> None:
