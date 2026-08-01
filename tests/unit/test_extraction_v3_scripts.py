@@ -138,6 +138,9 @@ def test_aggressive_admission_resolves_product_or_research_strong_evidence() -> 
     assert "--field validation_report" in source
     assert "--field heldout_report" in source
     assert 'STRONG_SELECTION="runs/extraction/strong-ppo/selection.json"' not in source
+    assert 'RANKING="$OUTPUT/evaluation-v2/ranking.json"' in source
+    assert 'CHECKPOINT="$OUTPUT/candidate-0600000.pt"' not in source
+    assert 'CHECKPOINT="${candidate_evidence[0]}"' in source
 
 
 def test_style_selector_accepts_an_isolated_output_root() -> None:

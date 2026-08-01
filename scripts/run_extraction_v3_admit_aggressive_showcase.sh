@@ -9,9 +9,7 @@ export CUDA_VISIBLE_DEVICES="$GPU"
 cd "$ROOT"
 
 OUTPUT="runs/extraction/styles/aggressive"
-CHECKPOINT="$OUTPUT/candidate-0600000.pt"
-VALIDATION="$OUTPUT/evaluation-v2/candidate-0600000-validation.json"
-HELDOUT="$OUTPUT/evaluation-v2/candidate-0600000-heldout.json"
+RANKING="$OUTPUT/evaluation-v2/ranking.json"
 BASE="$("$PYTHON" -m botcolosseo.cli.resolve_extraction_strong_artifact \
   --field checkpoint)"
 STRONG_VALIDATION="$("$PYTHON" \
@@ -20,6 +18,29 @@ STRONG_VALIDATION="$("$PYTHON" \
 STRONG_HELDOUT="$("$PYTHON" \
   -m botcolosseo.cli.resolve_extraction_strong_artifact \
   --field heldout_report)"
+
+readarray -t candidate_evidence < <("$PYTHON" - "$RANKING" <<'PY'
+import json
+import sys
+
+ranking = json.load(open(sys.argv[1], encoding="utf-8"))
+selected = ranking.get("selected", {})
+if (
+    ranking.get("policy") != "aggressive"
+    or ranking.get("selection_split") != "validation"
+    or ranking.get("test_cases_accessed") is not False
+    or not selected.get("checkpoint")
+    or not selected.get("report")
+):
+    raise SystemExit("Aggressive ranking identity does not match")
+print(selected["checkpoint"])
+print(selected["report"])
+PY
+)
+CHECKPOINT="${candidate_evidence[0]}"
+VALIDATION="${candidate_evidence[1]}"
+TAG="$(basename "${CHECKPOINT%.pt}")"
+HELDOUT="$OUTPUT/evaluation-v2/$TAG-heldout.json"
 
 if [[ ! -f "$HELDOUT" ]]; then
   "$PYTHON" -u -m botcolosseo.cli.evaluate_extraction_v3 \
