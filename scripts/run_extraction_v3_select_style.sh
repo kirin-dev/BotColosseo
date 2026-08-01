@@ -16,8 +16,8 @@ cd "$ROOT"
 
 OUTPUT="${BOTCOLOSSEO_STYLE_OUTPUT:-runs/extraction/styles/$STYLE}"
 EVAL_ROOT="$OUTPUT/evaluation-v2"
-BASE="runs/extraction/strong-ppo/selected.pt"
-STRONG_SELECTION="runs/extraction/strong-ppo/selection.json"
+BASE="$("$PYTHON" -m botcolosseo.cli.resolve_extraction_strong_artifact \
+  --field checkpoint)"
 mkdir -p "$EVAL_ROOT"
 
 if [[ "$STYLE" != "aggressive" ]]; then
@@ -27,34 +27,12 @@ if [[ "$STYLE" != "aggressive" ]]; then
   fi
 fi
 
-strong_validation="$("$PYTHON" - "$STRONG_SELECTION" <<'PY'
-import json
-import sys
-
-selection = json.load(open(sys.argv[1], encoding="utf-8"))
-matches = [
-    path for path in selection["evidence"]
-    if path.endswith("-validation.json")
-]
-if len(matches) != 1:
-    raise SystemExit("Strong selection has no unique validation evidence")
-print(matches[0])
-PY
-)"
-strong_heldout="$("$PYTHON" - "$STRONG_SELECTION" <<'PY'
-import json
-import sys
-
-selection = json.load(open(sys.argv[1], encoding="utf-8"))
-matches = [
-    path for path in selection["evidence"]
-    if path.endswith("-heldout.json")
-]
-if len(matches) != 1:
-    raise SystemExit("Strong selection has no unique heldout evidence")
-print(matches[0])
-PY
-)"
+strong_validation="$("$PYTHON" \
+  -m botcolosseo.cli.resolve_extraction_strong_artifact \
+  --field validation_report)"
+strong_heldout="$("$PYTHON" \
+  -m botcolosseo.cli.resolve_extraction_strong_artifact \
+  --field heldout_report)"
 reports=()
 for checkpoint in "$OUTPUT"/candidate-*.pt; do
   if [[ ! -f "$checkpoint" ]]; then

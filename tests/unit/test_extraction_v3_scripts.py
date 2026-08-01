@@ -50,6 +50,18 @@ def test_style_selector_rebuilds_ranking_after_new_stage_candidates() -> None:
     assert 'mv "$ranking_tmp" "$ranking"' in source
 
 
+def test_style_selector_resolves_strong_product_or_research_evidence() -> None:
+    source = Path(
+        "scripts/run_extraction_v3_select_style.sh"
+    ).read_text(encoding="utf-8")
+
+    assert source.count("botcolosseo.cli.resolve_extraction_strong_artifact") == 3
+    assert "--field checkpoint" in source
+    assert "--field validation_report" in source
+    assert "--field heldout_report" in source
+    assert 'STRONG_SELECTION="runs/extraction/strong-ppo/selection.json"' not in source
+
+
 def test_aggressive_calibration_runner_is_isolated_and_staged() -> None:
     source = Path(
         "scripts/run_extraction_v3_aggressive_calibration.sh"
