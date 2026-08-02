@@ -269,6 +269,7 @@ class DefensiveExtractionRewardLedger(_BoundedLedger):
         self.learner_side = learner_side
         self.scale = scale
         self._risk_active = False
+        self._encounter_available = True
 
     def apply(
         self,
@@ -297,7 +298,7 @@ class DefensiveExtractionRewardLedger(_BoundedLedger):
         both_alive_after = learner_health_after > 0 and opponent_health_after > 0
         if not both_alive_before:
             self._risk_active = False
-        else:
+        elif self._encounter_available:
             self._risk_active |= low_resources and before_distance <= 384
         terminal_transition = any(
             event.type
@@ -308,7 +309,9 @@ class DefensiveExtractionRewardLedger(_BoundedLedger):
             }
             for event in events
         )
-        if terminal_transition or not both_alive_after:
+        if terminal_transition:
+            self._encounter_available = False
+        if not self._encounter_available or not both_alive_after:
             self._risk_active = False
         elif self._risk_active and after_distance >= 512:
             self._add(

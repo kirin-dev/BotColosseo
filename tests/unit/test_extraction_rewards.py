@@ -316,6 +316,31 @@ def test_defensive_reward_does_not_reactivate_while_opponent_is_dead() -> None:
     assert "risk_disengagement" not in reward.components
 
 
+def test_defensive_reward_does_not_reactivate_after_opponent_extracts() -> None:
+    ledger = DefensiveExtractionRewardLedger(
+        DefensiveExtractionRewardConfig(),
+        learner_side="host",
+        scale=1,
+    )
+    ledger.apply(
+        MacroAction.IDLE,
+        (event(ExtractionEventType.EXTRACTED, side="opponent"),),
+        observation_before=observation(health=40),
+        state_before=state(opponent_x=300),
+        state_after=state(opponent_x=300),
+    )
+
+    reward = ledger.apply(
+        MacroAction.MOVE_BACKWARD,
+        (),
+        observation_before=observation(health=40),
+        state_before=state(opponent_x=300),
+        state_after=state(opponent_x=900),
+    )
+
+    assert "risk_disengagement" not in reward.components
+
+
 def test_explorer_reward_needs_loot_regions_and_upgrade_not_raw_distance() -> None:
     ledger = ExplorerExtractionRewardLedger(
         ExplorerExtractionRewardConfig(),
