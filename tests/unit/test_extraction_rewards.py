@@ -262,6 +262,24 @@ def test_defensive_reward_rejects_empty_camping_and_rewards_value_protection() -
     assert extraction.components["meaningful_extraction"] > 0
 
 
+def test_defensive_reward_penalizes_combat_with_meaningful_value() -> None:
+    ledger = DefensiveExtractionRewardLedger(
+        DefensiveExtractionRewardConfig(),
+        learner_side="host",
+        scale=1,
+    )
+
+    reward = ledger.apply(
+        MacroAction.ATTACK,
+        (),
+        observation_before=observation(carried=25),
+        state_before=state(host_slots=(25, 0, 0)),
+        state_after=state(host_slots=(25, 0, 0)),
+    )
+
+    assert reward.components["combat_with_value"] < 0
+
+
 def test_defensive_reward_only_counts_live_distance_creation() -> None:
     ledger = DefensiveExtractionRewardLedger(
         DefensiveExtractionRewardConfig(),

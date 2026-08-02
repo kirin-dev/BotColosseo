@@ -19,6 +19,7 @@ ATTACK_ACTIONS = frozenset(
         MacroAction.TURN_RIGHT_ATTACK,
     }
 )
+MEANINGFUL_VALUE = 25
 
 
 @dataclass(frozen=True)
@@ -323,12 +324,12 @@ class DefensiveExtractionRewardLedger(_BoundedLedger):
             self._risk_active = False
         learner_events = tuple(event for event in events if event.side == self.learner_side)
         if (
-            observation_before.carried_value >= 25
+            observation_before.carried_value >= MEANINGFUL_VALUE
             and any(event.type is ExtractionEventType.EXTRACTED for event in learner_events)
         ):
             components["meaningful_extraction"] = self.config.meaningful_extraction
         if (
-            observation_before.carried_value >= 50
+            observation_before.carried_value >= MEANINGFUL_VALUE
             and MacroAction(action) in ATTACK_ACTIONS
         ):
             self._add(

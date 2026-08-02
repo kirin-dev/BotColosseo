@@ -155,3 +155,58 @@ def test_representative_case_demonstration_discloses_aggregate_failure(
     assert result["aggregate_style_gate_passed"] is False
     assert result["representative_case_count"] == 1
     assert result["product_demo_eligible"] is True
+
+
+def test_defensive_case_study_allows_bounded_timeout_regression(
+    tmp_path: Path,
+) -> None:
+    evidence = _evidence(tmp_path)
+    evidence["policy"] = "defensive"
+    for key in ("validation_path", "heldout_path"):
+        path = Path(evidence[key])
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload["policy"] = "defensive"
+        payload["disengagement_metric_version"] = 3
+        path.write_text(json.dumps(payload), encoding="utf-8")
+
+    validation_path = Path(evidence["validation_path"])
+    payload = json.loads(validation_path.read_text(encoding="utf-8"))
+    for index, episode in enumerate(payload["metrics"]["episodes"]):
+        episode["decisions"] = 300 if index == 0 else episode["decisions"]
+        episode["successful_disengagements"] = 1 if index == 0 else 0
+        episode["disengagement_opportunities"] = 1
+        episode["meaningful_extractions"] = 1
+        episode["timeout_with_value"] = int(index < 6)
+    validation_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = build_validation_demonstration(root=tmp_path, **evidence)
+
+    assert result["evidence_tier"] == "representative_case_demonstration"
+    assert "anti_hack_no_timeout_value_loss" in result["validation_failed_checks"]
+    assert result["representative_case_count"] == 1
+
+
+def test_defensive_case_study_rejects_excessive_timeout_regression(
+    tmp_path: Path,
+) -> None:
+    evidence = _evidence(tmp_path)
+    evidence["policy"] = "defensive"
+    for key in ("validation_path", "heldout_path"):
+        path = Path(evidence[key])
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload["policy"] = "defensive"
+        payload["disengagement_metric_version"] = 3
+        path.write_text(json.dumps(payload), encoding="utf-8")
+
+    validation_path = Path(evidence["validation_path"])
+    payload = json.loads(validation_path.read_text(encoding="utf-8"))
+    for index, episode in enumerate(payload["metrics"]["episodes"]):
+        episode["decisions"] = 300 if index == 0 else episode["decisions"]
+        episode["successful_disengagements"] = 1 if index == 0 else 0
+        episode["disengagement_opportunities"] = 1
+        episode["meaningful_extractions"] = 1
+        episode["timeout_with_value"] = int(index < 13)
+    validation_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="maximums"):
+        build_validation_demonstration(root=tmp_path, **evidence)
