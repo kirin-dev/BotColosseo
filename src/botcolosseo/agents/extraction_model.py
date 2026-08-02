@@ -197,9 +197,9 @@ class ExtractionResidualStyleActor(nn.Module):
 
 
 class ExtractionDefensiveGuardedActor(nn.Module):
-    """Block attack macros under observable low-resource risk."""
+    """Block attack macros while carrying value under observable low-health risk."""
 
-    def __init__(self, actor: nn.Module) -> None:
+    def __init__(self, actor: ExtractionResidualStyleActor) -> None:
         super().__init__()
         self.actor = actor
         self.hidden_size = actor.hidden_size
@@ -218,9 +218,9 @@ class ExtractionDefensiveGuardedActor(nn.Module):
         hidden: torch.Tensor | None = None,
     ) -> ActorOutput:
         output = self.actor(frames, scalars, previous_actions, masks, hidden)
-        low_resources = (scalars[..., 0] <= 0.40) | (scalars[..., 1] <= 0.125)
+        low_health = scalars[..., 0] <= 0.40
         carrying_value = scalars[..., 2] >= (25 / 150)
-        guarded = low_resources & carrying_value
+        guarded = low_health & carrying_value
         attack_mask = torch.zeros_like(output.logits, dtype=torch.bool)
         attack_mask[..., DEFENSIVE_ATTACK_ACTIONS] = guarded.unsqueeze(-1)
         logits = output.logits.masked_fill(

@@ -36,8 +36,9 @@ search for loot → fight or disengage → manage inventory → extract → bank
 
 The Strong CNN-GRU Actor is trained through scripted Teacher data, behavioral
 cloning, recurrent PPO, historical opponents, and lightweight PFSP. The three
-styles are bounded residual logit adapters over the same frozen Strong Actor hash;
-the public Actor has no runtime behavior governors.
+styles are bounded residual logit adapters over the same frozen Strong Actor hash.
+Defensive additionally uses a fair-observation risk guardrail that blocks
+attack macros only while carrying value at low health.
 
 Closeout auditing fixed PFSP draw bookkeeping after the frozen Strong checkpoint
 was trained. Its closed-loop evaluation below is unchanged, but this release
@@ -58,38 +59,23 @@ does not claim a causal PFSP gain; retraining is deferred.
 
 | Strong capability | Result |
 |---|---:|
-| Solo extraction | **100%** |
-| Scripted-opponent win rate | **89.2%** |
 | Validation extraction | **94.6%** |
-| Heldout-layout extraction | **85.8%** |
+| Validation win rate | **87.9%** |
+| Validation mean banked value | **80.31** |
+| Heldout-layout extraction | **68.3%** *(research gate failed)* |
 
-| Style | Paired validation style shift | Paired task retention |
-|---|---:|---:|
-| Aggressive | **+0.101** | **93.5%** |
-| Defensive | **+0.006** | **96.3%** |
-| Explorer | **+0.050** | **94.4%** |
+| Bot | Public evidence | What the selected video proves |
+|---|---|---|
+| Aggressive | Directional Showcase | 5 hits → kill → corpse cache → 60-value extraction |
+| Defensive | Representative case | low-health disengagement → 45-value extraction, 0 kills |
+| Explorer | Representative case | 4 loot regions → backpack upgrade → 85-value extraction |
 
-Positive style shifts use style-specific metrics and are not a cross-style
-ranking. See the [machine-readable audit](reports/extraction/showcase/audit.json)
-for cases, hashes, evidence tiers, and disclosed failed checks.
-
-### Matched 200k style ablation
-
-Each cell is `paired style shift / paired task retention`.
-
-| Variant | Aggressive | Defensive | Explorer |
-|---|---:|---:|---:|
-| Full | +0.023 / 91.1% | +0.006 / 96.3% | +0.004 / 91.6% |
-| Reward + KL | +0.017 / 92.1% | -0.031 / 92.1% | -0.031 / 87.9% |
-| Reward only | +0.082 / 94.4% | +0.081 / 88.8% | -0.016 / 87.4% |
-
-All nine cells use the same frozen Strong Actor, training budget, scenario,
-protocol, and 240-case validation split. The result shows a style-dependent
-trade-off: removing regularization can increase the measured Aggressive or
-Defensive shift, while Explorer reverses direction and triggers anti-hacking
-failures. Style metrics are not comparable across columns. See the
-[ablation audit](reports/extraction/style-ablation.json);
-`test_cases_accessed=false`, and official-test cases were not opened.
+These are validation-selected product demonstrations, not proof that every
+style improves on the full distribution. Aggressive has positive mean paired
+direction but its confidence interval crosses zero. Defensive and Explorer are
+explicitly case-study evidence; their aggregate style gates failed. See the
+[machine-readable audit](reports/extraction/showcase/audit.json) for cases,
+checkpoint/media hashes, evidence tiers, and every disclosed failed check.
 
 ## Evidence boundary
 
@@ -99,7 +85,8 @@ coordinates, depth, labels, automap, or viewer telemetry. Privileged state is
 confined to the asymmetric training Critic and reward shaping, plus offline
 evaluation and viewer telemetry; none of it enters the deployed Actor.
 
-This is a product Showcase with no benchmark-success claim for all styles.
+This is a product Showcase with no benchmark-success claim and no aggregate
+skill-preservation claim for all styles.
 Candidate selection never accesses the test split. The deferred protocol allows
 one frozen 400-episode official test per policy (1,600 episodes total); it has
 not been run.

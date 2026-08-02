@@ -170,7 +170,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         ),
         "inference_guardrail": (
-            "block_attack_when_low_resource_and_carried_value_ge_25"
+            "block_attack_when_low_health_and_carried_value_ge_25"
             if args.policy == "defensive"
             else None
         ),

@@ -122,7 +122,7 @@ def test_style_loader_proves_frozen_strong_actor_identity(tmp_path: Path) -> Non
         )
 
 
-def test_defensive_style_loader_blocks_attacks_only_at_low_resources(
+def test_defensive_style_loader_blocks_attacks_only_at_low_health(
     tmp_path: Path,
 ) -> None:
     base = create_extraction_actor_critic()
@@ -154,6 +154,9 @@ def test_defensive_style_loader_blocks_attacks_only_at_low_resources(
     low_health[..., 2] = 25 / 150
     low_health_without_value = low_health.clone()
     low_health_without_value[..., 2] = 0
+    low_ammo_with_value = healthy.clone()
+    low_ammo_with_value[..., 1] = 0.125
+    low_ammo_with_value[..., 2] = 25 / 150
 
     healthy_output = actor(frames, healthy, previous_actions, masks)
     guarded_output = actor(frames, low_health, previous_actions, masks)
@@ -163,9 +166,16 @@ def test_defensive_style_loader_blocks_attacks_only_at_low_resources(
         previous_actions,
         masks,
     )
+    low_ammo_output = actor(
+        frames,
+        low_ammo_with_value,
+        previous_actions,
+        masks,
+    )
 
     assert healthy_output.logits.argmax(-1).item() == int(MacroAction.ATTACK)
     assert unguarded_output.logits.argmax(-1).item() == int(MacroAction.ATTACK)
+    assert low_ammo_output.logits.argmax(-1).item() == int(MacroAction.ATTACK)
     assert guarded_output.logits.argmax(-1).item() == int(
         MacroAction.MOVE_FORWARD
     )

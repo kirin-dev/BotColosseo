@@ -173,9 +173,9 @@ def test_showcase_covers_scenario_method_styles_and_results() -> None:
             "3 slots",
             "Scripted Teacher",
             "Behavioral Cloning",
-            "Paired style shift",
-            "Task retention",
-            "not official-test results",
+            "Evidence tier",
+            "Selected causal chain",
+            "official-test results",
         )
     )
 

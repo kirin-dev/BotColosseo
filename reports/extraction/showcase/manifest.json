@@ -2,38 +2,38 @@
   "artifacts": {
     "aggressive": {
       "evidence": "reports/extraction/showcase/aggressive.json",
-      "evidence_sha256": "faed7ac8ad1f2768d9929179abd8717324cc1e53f8146ba779759d600f631a21",
+      "evidence_sha256": "8eab65ada54975db030474814045e4a29ffaa8f3d22ca2b398dedb41a7bee4da",
       "evidence_tier": "directional_showcase",
       "video": "docs/assets/extraction/aggressive.mp4",
-      "video_sha256": "6329c16461999cf92c3a36d8a25663e59ea911d97642a418e97929581fa1be67"
+      "video_sha256": "1946946a031d0fbef2a5b34512ebb4eb1b89649a7f2853fcfcecbadcb9059255"
     },
     "defensive": {
       "evidence": "reports/extraction/showcase/defensive.json",
-      "evidence_sha256": "d49bcaefab6479533da3a9be9809bb19c01d2f3af60d7c1d6a5374c3d4c69b07",
-      "evidence_tier": "validation_demonstration",
+      "evidence_sha256": "e48a1a261e26d0e5c0a11891fe39f08998888e170c253edf8898350e49ba21de",
+      "evidence_tier": "representative_case_demonstration",
       "video": "docs/assets/extraction/defensive.mp4",
-      "video_sha256": "011a509f3eea6c64e5de139b0873cf0fbd65dd776c94cce0c2e4a4deb96bede8"
+      "video_sha256": "5bbad58c4af25e003888f6ded774e44c4c2dc42a2bb6ce1049dd15fb9adb31d6"
     },
     "explorer": {
       "evidence": "reports/extraction/showcase/explorer.json",
-      "evidence_sha256": "9fd844fc1264c2827c1a4f510a6c7f1158ee87060b5a57d7106c95cc9507f2ec",
-      "evidence_tier": "validation_demonstration",
+      "evidence_sha256": "db23e3f2ccc7413ce17587e8751a070ae5394004511bb749596b4d8723237474",
+      "evidence_tier": "representative_case_demonstration",
       "video": "docs/assets/extraction/explorer.mp4",
-      "video_sha256": "b195450fe9f37778a8722d31c6fc28e55afa8948f0da2f86137672564fd989b0"
+      "video_sha256": "d7f02378c727debb80a3627816397cee347c58ec56fdcb5f95944a49ab85c880"
     },
     "strong": {
       "evidence": "reports/extraction/showcase/strong.json",
-      "evidence_sha256": "0da3db384b85d178b721642247f449be7047e07f4b5daae4fdba397343811989",
-      "evidence_tier": "research_selection",
+      "evidence_sha256": "7e8e66d7ca62f4b0b48250c889357e85bb87c53ed599fc7a7c4993111bb42473",
+      "evidence_tier": "product_showcase",
       "video": "docs/assets/extraction/strong.mp4",
       "video_sha256": "6bb1c1deac24200a1c473b2cd096924e99a58b6ea76f8404dcb1ab68cdcc8179"
     }
   },
   "board": "docs/assets/extraction/showcase-board.png",
-  "board_sha256": "6630f0296df47c9e4ce8402d96048480f1ae841be0210d5b1d4b216b96f2d4e5",
+  "board_sha256": "603fa11041d4c0c32cc830dea241678634d22d3744eeab60c7024f933e54f412",
   "schema_version": 1,
   "selection": "reports/extraction/showcase/selection.json",
-  "selection_sha256": "cd957e4eccefb6076969c134ca98ba753dbb44bead5f02625cecbf92ff9d0662",
+  "selection_sha256": "f4d39c1c4e3dee50bdcf0d7703e606bcffe8c4e4236502aa038f10d8f3fe9b54",
   "source_split": "validation",
   "test_cases_accessed": false
 }

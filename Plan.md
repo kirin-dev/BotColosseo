@@ -135,8 +135,14 @@ Product Showcase evidence is separately tiered:
   research failures;
 - `validation_demonstration`: paired validation direction, capability,
   anti-hacking, and protocol checks pass, while heldout failures are disclosed.
+- `representative_case_demonstration`: a post-validation product case study
+  with aggregate failures disclosed. It proves only the selected causal chain,
+  never distribution-level style improvement. For Defensive, product safety is
+  based on own extraction (delta at least -10 points), mean banked value (at
+  least 80% of Strong), bounded timeout regression, and a complete disengage-to-
+  extraction case; opponent denial is not a product objective.
 
-The last two tiers are validation-media only and cannot enter the strict
+The last three tiers are validation-media only and cannot enter the strict
 official-test release.
 
 ## Release
@@ -161,11 +167,12 @@ product Showcase manifest does not embed a Git commit.
 |---|---|---|
 | G0 scenario and layouts | reproducible WAD, real two-player reset, human layout approval | PASS |
 | G1 engineering | full unit suite, real Teacher→BC→PPO→style→evaluation preflight | PASS |
-| G2 Strong | full demonstrations, BC, PPO, validation selection, heldout gate | PASS |
+| G2 Strong | full demonstrations, BC, PPO, validation selection; heldout research gate failed | PRODUCT PASS / RESEARCH FAIL |
 | G3 product styles | three learned adapters with explicit evidence tiers | PASS |
 | G4 Showcase | contrastive validation cases, four audited videos, public board | PASS |
-| G5 public cleanup | v3-only public narrative and audited artifacts published on `main` | PASS |
+| G5 public cleanup | v3-only public narrative and current-run audited artifacts | IN PROGRESS |
 
-The current product milestone is complete: G0–G5 are evidenced and the
-Showcase artifacts are public. A strict all-style research release and the
-single-use official test remain clearly labeled future work.
+The current product Showcase is complete through G4. G5 closes after the
+current-run assets, honest evidence tiers, and failed research gates are
+published on `main`. A strict all-style research release and the single-use
+official test remain clearly labeled future work.

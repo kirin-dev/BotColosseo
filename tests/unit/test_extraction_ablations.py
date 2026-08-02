@@ -108,7 +108,7 @@ def test_ablation_markdown_table_is_derived_from_summary_values() -> None:
     assert "`test_cases_accessed=false`" in rendered
 
 
-def test_published_ablation_tables_match_machine_readable_audit() -> None:
+def test_deferred_ablation_audit_remains_machine_readable_but_unpublished() -> None:
     payload = json.loads(
         Path("reports/extraction/style-ablation.json").read_text(
             encoding="utf-8"
@@ -117,12 +117,6 @@ def test_published_ablation_tables_match_machine_readable_audit() -> None:
     english = Path("README.md").read_text(encoding="utf-8")
     chinese = Path("README_CN.md").read_text(encoding="utf-8")
     showcase = Path("docs/index.html").read_text(encoding="utf-8")
-    labels = {
-        "full": "Full",
-        "reward-plus-kl": "Reward + KL",
-        "reward-only": "Reward only",
-    }
-
     assert payload["comparison_environment_steps"] == 200_000
     assert payload["selection_split"] == "validation"
     assert payload["test_cases_accessed"] is False
@@ -131,21 +125,12 @@ def test_published_ablation_tables_match_machine_readable_audit() -> None:
     assert set(payload["matrix"]) == set(VARIANTS)
 
     for variant in VARIANTS:
-        cells = []
         for style in STYLES:
             cell = payload["matrix"][variant][style]
             assert cell["checkpoint_environment_steps"] == 200_000
-            cells.append(
-                f"{float(cell['paired_style_shift']):+.3f} / "
-                f"{float(cell['paired_task_retention']):.1%}"
-            )
-        markdown_row = (
-            f"| {labels[variant]} | {cells[0]} | {cells[1]} | "
-            f"{cells[2]} |"
-        )
-        assert markdown_row in english
-        assert markdown_row in chinese
-        for cell in cells:
-            assert f"<td>{cell}</td>" in showcase
+            assert isinstance(cell["paired_style_shift"], float)
+            assert isinstance(cell["paired_task_retention"], float)
 
-    assert "Test and official-test cases were not opened." in showcase
+    for public_document in (english, chinese, showcase):
+        assert "Matched 200k style ablation" not in public_document
+        assert "匹配 200k 风格消融" not in public_document

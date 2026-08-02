@@ -12,8 +12,8 @@
     "split": "validation"
   },
   "case_index": 0,
-  "checkpoint": "runs/extraction/strong-ppo/selected.pt",
-  "checkpoint_sha256": "4cc9edcfd9745788d3e3bc7913f76e8553eee619266d5a475d36b1cd7183120a",
+  "checkpoint": "runs/extraction/strong-ppo/showcase.pt",
+  "checkpoint_sha256": "a1ccbd2ca4270ea7817224a49ced7e89006b8801f54c49e07610872c3dfb7e6a",
   "decisions": 357,
   "died": false,
   "events": {
@@ -34,6 +34,7 @@
   "fps": 10,
   "frame_count": 357,
   "frame_stride": 1,
+  "inference_guardrail": null,
   "meaningful_extractions": 1,
   "meaningful_loot_regions": 4,
   "media": "docs/assets/extraction/strong.mp4",
