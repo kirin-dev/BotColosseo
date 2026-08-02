@@ -170,9 +170,9 @@ product Showcase manifest does not embed a Git commit.
 | G2 Strong | full demonstrations, BC, PPO, validation selection; heldout research gate failed | PRODUCT PASS / RESEARCH FAIL |
 | G3 product styles | three learned adapters with explicit evidence tiers | PASS |
 | G4 Showcase | contrastive validation cases, four audited videos, public board | PASS |
-| G5 public cleanup | v3-only public narrative and current-run audited artifacts | IN PROGRESS |
+| G5 public cleanup | v3-only public narrative and current-run audited artifacts published on `main` | PASS |
 
-The current product Showcase is complete through G4. G5 closes after the
-current-run assets, honest evidence tiers, and failed research gates are
-published on `main`. A strict all-style research release and the single-use
-official test remain clearly labeled future work.
+The current product Showcase is complete through G5. Current-run assets, honest
+evidence tiers, and failed research gates are published on `main`. A strict
+all-style research release and the single-use official test remain clearly
+labeled future work.
