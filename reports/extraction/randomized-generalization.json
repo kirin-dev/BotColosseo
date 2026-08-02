@@ -1,0 +1,44 @@
+{
+  "baseline": {
+    "death_rate": 0.375,
+    "extraction_rate": 0.5,
+    "mean_extracted_value": 27.1875,
+    "mean_extracted_value_advantage": 8.4375,
+    "opponent_extraction_rate": 0.40625,
+    "protocol_inconsistencies": 0,
+    "win_rate": 0.375
+  },
+  "candidate": {
+    "death_rate": 0.3125,
+    "extraction_rate": 0.65625,
+    "mean_extracted_value": 30.15625,
+    "mean_extracted_value_advantage": 15.0,
+    "opponent_extraction_rate": 0.25,
+    "protocol_inconsistencies": 0,
+    "win_rate": 0.4375
+  },
+  "conclusion": "randomized-layout training improved held-random-seed generalization",
+  "delta": {
+    "death_rate": -0.0625,
+    "extraction_rate": 0.15625,
+    "mean_extracted_value": 2.96875,
+    "mean_extracted_value_advantage": 6.5625,
+    "opponent_extraction_rate": -0.15625,
+    "win_rate": 0.0625
+  },
+  "evidence": {
+    "baseline_report": "reports/extraction/randomized-generalization/baseline-fixed-strong.json",
+    "baseline_report_sha256": "b00e6be120c41c1c2a9adbb9de03db8e92ca6ce8be7abd2e44e6d48cc14d437c",
+    "candidate_report": "reports/extraction/randomized-generalization/randomized-strong-unseen-random.json",
+    "candidate_report_sha256": "1c17af934bfe9c3b9e2c9bb16137826c46cf1ebd68e9970b57529a902800cc3e"
+  },
+  "fair_actor_observation_only": true,
+  "notes": [
+    "The 128 safe-anchor permutations are finite domain randomization, not continuous placement.",
+    "The 200k budget establishes improvement but is not a convergence claim."
+  ],
+  "schema_version": 1,
+  "selected_checkpoint": "runs/extraction-randomized/strong-ppo/candidate-0200000.pt",
+  "selected_checkpoint_sha256": "a065a19ae56fa9034da6719ef6b9efc5022a9b9c16381a81f601913d7285fd8e",
+  "test_cases_accessed": false
+}

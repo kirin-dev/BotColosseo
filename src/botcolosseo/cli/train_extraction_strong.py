@@ -176,11 +176,13 @@ def main(argv: list[str] | None = None) -> int:
     pfsp_state_path = output_dir / "pfsp-state.json"
     if metrics_path.exists() and args.resume is None:
         raise FileExistsError(f"Strong PPO output already exists: {metrics_path}")
-    scenario_hash = json.loads(
-        (
-            root / "assets/scenarios/crystal_run_extraction/manifest.json"
-        ).read_text(encoding="utf-8")
-    )["wad_sha256"]
+    scenario_manifest = root / config.get(
+        "scenario_manifest",
+        "assets/scenarios/crystal_run_extraction/manifest.json",
+    )
+    scenario_hash = json.loads(scenario_manifest.read_text(encoding="utf-8"))[
+        "wad_sha256"
+    ]
     bc_sha256 = sha256_file(bc_checkpoint)
     target_steps = args.environment_steps or int(config["environment_steps"])
     stop_after = args.stop_after_steps or target_steps
@@ -192,7 +194,7 @@ def main(argv: list[str] | None = None) -> int:
     if not 0 < stop_after <= target_steps or min(rollout_steps, checkpoint_interval) <= 0:
         raise ValueError("Strong PPO step schedule is invalid")
     config_hash = _provenance_hash(
-        (config_path, train_cases_path, bc_checkpoint),
+        (config_path, train_cases_path, bc_checkpoint, scenario_manifest),
         {"environment_steps": target_steps, "rollout_steps": rollout_steps},
     )
     device = torch.device(args.device)
@@ -288,7 +290,10 @@ def main(argv: list[str] | None = None) -> int:
         schedule=schedule,
         device=device,
         config_path=root
-        / "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg",
+        / config.get(
+            "scenario_config",
+            "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg",
+        ),
         max_decisions=int(config["max_episode_decisions"]),
         episode_index=episode_index,
         gamma=float(config["gamma"]),

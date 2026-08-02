@@ -19,6 +19,7 @@ from botcolosseo.evaluation.extraction import (
     is_aggressive_showcase_chain,
     summarize_extraction_episodes,
 )
+from botcolosseo.training.extraction_checkpoint import load_extraction_strong_actor
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -51,6 +52,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--strong-ppo", action="store_true")
+    parser.add_argument(
+        "--scenario-directory",
+        default="crystal_run_extraction",
+    )
+    parser.add_argument("--checkpoint-scenario-directory")
     return parser
 
 
@@ -129,6 +136,26 @@ def main(argv: list[str] | None = None) -> int:
             remaining_time_threshold=args.governor_remaining,
         ).to(device)
         policy_model.eval()
+    elif args.strong_ppo:
+        if args.style != ExtractionStyle.STRONG.value:
+            raise ValueError("--strong-ppo requires --style strong")
+        checkpoint_scenario = (
+            args.checkpoint_scenario_directory or args.scenario_directory
+        )
+        scenario_hash = json.loads(
+            (
+                root
+                / "assets/scenarios"
+                / checkpoint_scenario
+                / "manifest.json"
+            ).read_text(encoding="utf-8")
+        )["wad_sha256"]
+        policy_model, _ = load_extraction_strong_actor(
+            checkpoint,
+            expected_scenario_hash=scenario_hash,
+            expected_sha256=sha256_file(checkpoint),
+            device=device,
+        )
     if args.stop_on_aggressive_chain and args.style != ExtractionStyle.AGGRESSIVE.value:
         raise ValueError("Aggressive chain search requires --style aggressive")
     evaluated = []
@@ -141,6 +168,7 @@ def main(argv: list[str] | None = None) -> int:
             case=case,
             device=device,
             policy_model=policy_model,
+            scenario_directory=args.scenario_directory,
         )
         evaluated.append(episode)
         if args.stop_on_aggressive_chain and is_aggressive_showcase_chain(episode):
@@ -149,7 +177,7 @@ def main(argv: list[str] | None = None) -> int:
     episodes = tuple(evaluated)
     scenario_hash = json.loads(
         (
-            root / "assets/scenarios/crystal_run_extraction/manifest.json"
+            root / "assets/scenarios" / args.scenario_directory / "manifest.json"
         ).read_text(encoding="utf-8")
     )["wad_sha256"]
     result = {
@@ -203,3 +231,7 @@ def main(argv: list[str] | None = None) -> int:
         _atomic_json(result, output)
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

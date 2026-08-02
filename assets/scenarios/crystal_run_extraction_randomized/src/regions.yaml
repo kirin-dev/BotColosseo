@@ -1,0 +1,47 @@
+arena:
+  min_x: -768.0
+  min_y: -512.0
+  max_x: 768.0
+  max_y: 512.0
+
+regions:
+  - id: 1
+    name: west_low_risk
+    bounds: {min_x: -768.0, min_y: -512.0, max_x: -256.0, max_y: 512.0}
+    neighbors: [center_contested, north_extraction, south_extraction]
+  - id: 2
+    name: center_contested
+    bounds: {min_x: -256.0, min_y: -352.0, max_x: 256.0, max_y: 352.0}
+    neighbors: [west_low_risk, east_low_risk, north_extraction, south_extraction]
+  - id: 3
+    name: east_low_risk
+    bounds: {min_x: 256.0, min_y: -512.0, max_x: 768.0, max_y: 512.0}
+    neighbors: [center_contested, north_extraction, south_extraction]
+  - id: 4
+    name: north_extraction
+    bounds: {min_x: -256.0, min_y: 352.0, max_x: 256.0, max_y: 512.0}
+    neighbors: [west_low_risk, center_contested, east_low_risk]
+  - id: 5
+    name: south_extraction
+    bounds: {min_x: -256.0, min_y: -512.0, max_x: 256.0, max_y: -352.0}
+    neighbors: [west_low_risk, center_contested, east_low_risk]
+
+routes:
+  central_high_value:
+    regions: [west_low_risk, center_contested, east_low_risk]
+    waypoints:
+      - [-520.0, 0.0]
+      - [0.0, 0.0]
+      - [520.0, 0.0]
+  north_extract:
+    regions: [west_low_risk, center_contested, north_extraction]
+    waypoints:
+      - [-520.0, 288.0]
+      - [0.0, 224.0]
+      - [0.0, 416.0]
+  south_extract:
+    regions: [west_low_risk, center_contested, south_extraction]
+    waypoints:
+      - [-520.0, -288.0]
+      - [0.0, -224.0]
+      - [0.0, -416.0]

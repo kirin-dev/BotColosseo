@@ -43,6 +43,7 @@ class SynchronousExtractionEnv:
         worker_timeout: float = 15.0,
         client_factory: Callable[[DuelWorkerSettings], Any] = spawn_duel_worker,
         port_allocator: Callable[[], int] = allocate_loopback_port,
+        layout_variant: int | None = None,
     ) -> None:
         if frame_skip <= 0 or max_decisions <= 0 or worker_timeout <= 0:
             raise ValueError("Extraction timing values must be positive")
@@ -53,6 +54,7 @@ class SynchronousExtractionEnv:
         self._worker_timeout = worker_timeout
         self._client_factory = client_factory
         self._port_allocator = port_allocator
+        self._layout_variant = layout_variant
         self._decoder = ExtractionEventDecoder()
         self._host: Any | None = None
         self._opponent: Any | None = None
@@ -203,6 +205,7 @@ class SynchronousExtractionEnv:
             "force_respawn": False,
             "time_limit_minutes": 1.5,
             "deathmatch": False,
+            "layout_variant": self._layout_variant,
         }
         self._host = self._client_factory(
             DuelWorkerSettings(role=WorkerRole.HOST, **common)

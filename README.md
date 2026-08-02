@@ -64,6 +64,16 @@ does not claim a causal PFSP gain; retraining is deferred.
 | Validation mean banked value | **80.31** |
 | Heldout-layout extraction | **68.3%** *(research gate failed)* |
 
+### Randomized-layout robustness experiment
+
+An independent Strong branch randomizes the seven loot items over 16 safe
+anchors using 128 deterministic, collision-free permutations. On the same 32
+held-random-seed episodes, it improves extraction from **50.0% to 65.6%** over
+the fixed-layout Strong, while reducing deaths from 37.5% to 31.3%. This is a
+finite domain-randomization result, not a continuous-placement or convergence
+claim, and it does not yet replace the Strong Actor used by the style Showcase.
+See the [machine-readable comparison](reports/extraction/randomized-generalization.json).
+
 | Bot | Public evidence | What the selected video proves |
 |---|---|---|
 | Aggressive | Directional Showcase | 5 hits → kill → corpse cache → 60-value extraction |

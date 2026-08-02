@@ -114,11 +114,13 @@ def main(argv: list[str] | None = None) -> int:
         train_manifest = root / train_manifest
     if not validation_manifest.is_absolute():
         validation_manifest = root / validation_manifest
-    scenario_hash = json.loads(
-        (
-            root / "assets/scenarios/crystal_run_extraction/manifest.json"
-        ).read_text(encoding="utf-8")
-    )["wad_sha256"]
+    scenario_manifest = root / config.get(
+        "scenario_manifest",
+        "assets/scenarios/crystal_run_extraction/manifest.json",
+    )
+    scenario_hash = json.loads(scenario_manifest.read_text(encoding="utf-8"))[
+        "wad_sha256"
+    ]
     output_dir = args.output_dir or root / config["output_root"] / style.value
     if not output_dir.is_absolute():
         output_dir = root / output_dir
@@ -129,7 +131,12 @@ def main(argv: list[str] | None = None) -> int:
         raise ValueError("--initial-checkpoint and --resume are mutually exclusive")
 
     base_checkpoint: Path | None = None
-    provenance_paths = [config_path, train_manifest, validation_manifest]
+    provenance_paths = [
+        config_path,
+        train_manifest,
+        validation_manifest,
+        scenario_manifest,
+    ]
     if style is ExtractionStyle.STRONG:
         model = create_extraction_actor()
         default_updates = int(config["strong_updates"])

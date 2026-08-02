@@ -1,0 +1,746 @@
+#include "zcommon.acs"
+
+#define EXTRACTION_PROTOCOL_ID 3
+#define ROUND_INITIALIZING 0
+#define ROUND_ACTIVE 1
+#define ROUND_COMPLETE 2
+#define LIFE_ACTIVE 1
+#define LIFE_DEAD 2
+#define LIFE_EXTRACTED 3
+#define NORTH_EXTRACTION 1
+#define SOUTH_EXTRACTION 2
+#define EXTRACTION_OPEN_TIC 1050
+#define EXTRACTION_REQUIRED_TICS 105
+#define RAID_TIMEOUT_TIC 2625
+#define LOOT_TID_BASE 1000
+#define MAX_WORLD_LOOT 32
+#define CACHE_TID 2000
+
+global int 1:protocol_version;
+global int 2:engine_tic;
+global int 3:round_state;
+global int 4:loot_template;
+global int 5:extraction_open;
+global int 6:host_life_state;
+global int 7:opponent_life_state;
+global int 8:host_slot_0;
+global int 9:host_slot_1;
+global int 10:host_slot_2;
+global int 11:opponent_slot_0;
+global int 12:opponent_slot_1;
+global int 13:opponent_slot_2;
+global int 14:host_banked;
+global int 15:opponent_banked;
+global int 16:host_extraction_zone;
+global int 17:opponent_extraction_zone;
+global int 18:host_extraction_progress;
+global int 19:opponent_extraction_progress;
+global int 20:host_loot_pickups;
+global int 21:opponent_loot_pickups;
+global int 22:host_loot_drops;
+global int 23:opponent_loot_drops;
+global int 24:host_cache_created;
+global int 25:opponent_cache_created;
+global int 26:host_cache_looted;
+global int 27:opponent_cache_looted;
+global int 28:host_extraction_started;
+global int 29:opponent_extraction_started;
+global int 30:host_extraction_interrupted;
+global int 31:opponent_extraction_interrupted;
+global int 32:host_extracted;
+global int 33:opponent_extracted;
+global int 34:host_valid_hits;
+global int 35:opponent_valid_hits;
+global int 36:host_deaths;
+global int 37:opponent_deaths;
+global int 38:timeouts;
+global int 39:winner;
+global int 40:cache_owner;
+global int 41:cache_slot_0;
+global int 42:cache_slot_1;
+global int 43:cache_slot_2;
+global int 44:cache_x;
+global int 45:cache_y;
+global int 46:last_loot_value;
+global int 47:last_loot_side;
+global int 48:last_damage;
+global int 49:world_loot_mask;
+global int 50:last_loot_id;
+global int 51:last_drop_value;
+global int 52:event_serial;
+global int 53:reserved_zero;
+
+int player_slots[6];
+int slot_age[6];
+int pickup_serial;
+int last_health[2];
+int damage_tic[2];
+int player_ready[2];
+int loot_values[MAX_WORLD_LOOT];
+int loot_active[MAX_WORLD_LOOT];
+
+function int Absolute(int value)
+{
+    if (value < 0) { return -value; }
+    return value;
+}
+
+function int PlayerLife(int player)
+{
+    if (player == 0) { return host_life_state; }
+    return opponent_life_state;
+}
+
+function void SetPlayerLife(int player, int value)
+{
+    if (player == 0) { host_life_state = value; }
+    else { opponent_life_state = value; }
+}
+
+function int PlayerBanked(int player)
+{
+    if (player == 0) { return host_banked; }
+    return opponent_banked;
+}
+
+function void AddBanked(int player, int value)
+{
+    if (player == 0) { host_banked += value; }
+    else { opponent_banked += value; }
+}
+
+function int PlayerProgress(int player)
+{
+    if (player == 0) { return host_extraction_progress; }
+    return opponent_extraction_progress;
+}
+
+function void SetPlayerProgress(int player, int value)
+{
+    if (player == 0) { host_extraction_progress = value; }
+    else { opponent_extraction_progress = value; }
+}
+
+function int PlayerZone(int player)
+{
+    if (player == 0) { return host_extraction_zone; }
+    return opponent_extraction_zone;
+}
+
+function void SetPlayerZone(int player, int value)
+{
+    if (player == 0) { host_extraction_zone = value; }
+    else { opponent_extraction_zone = value; }
+}
+
+function void SyncSlots(void)
+{
+    host_slot_0 = player_slots[0];
+    host_slot_1 = player_slots[1];
+    host_slot_2 = player_slots[2];
+    opponent_slot_0 = player_slots[3];
+    opponent_slot_1 = player_slots[4];
+    opponent_slot_2 = player_slots[5];
+}
+
+function void IncrementPickup(int player)
+{
+    if (player == 0) { host_loot_pickups++; }
+    else { opponent_loot_pickups++; }
+}
+
+function void IncrementDrop(int player)
+{
+    if (player == 0) { host_loot_drops++; }
+    else { opponent_loot_drops++; }
+}
+
+function void IncrementCacheLooted(int player)
+{
+    if (player == 0) { host_cache_looted++; }
+    else { opponent_cache_looted++; }
+}
+
+function void SpawnLootActor(int value, int x, int y, int tid)
+{
+    if (value == 10)
+    {
+        SpawnForced("BotLoot10Marker", x, y, 0.0, tid, 0);
+    }
+    else if (value == 25)
+    {
+        SpawnForced("BotLoot25Marker", x, y, 0.0, tid, 0);
+    }
+    else
+    {
+        SpawnForced("BotLoot50Marker", x, y, 0.0, tid, 0);
+    }
+}
+
+function void CreateWorldLoot(int index, int value, int x, int y)
+{
+    loot_values[index] = value;
+    loot_active[index] = 1;
+    SpawnLootActor(value, x, y, LOOT_TID_BASE + index);
+    if (index < 7)
+    {
+        world_loot_mask = world_loot_mask | (1 << index);
+    }
+}
+
+function int RandomizedAnchorX(int index)
+{
+    if (index == 0 || index == 1 || index == 2) { return -520.0; }
+    if (index == 3 || index == 4) { return -384.0; }
+    if (index == 5 || index == 6) { return -192.0; }
+    if (index == 7 || index == 8) { return 0.0; }
+    if (index == 9 || index == 10) { return 192.0; }
+    if (index == 11 || index == 12) { return 384.0; }
+    return 520.0;
+}
+
+function int RandomizedAnchorY(int index)
+{
+    if (index == 0 || index == 13) { return -288.0; }
+    if (index == 1 || index == 14) { return 0.0; }
+    if (index == 2 || index == 15) { return 288.0; }
+    if (index == 3 || index == 5 || index == 7 || index == 9 || index == 11)
+    {
+        return -224.0;
+    }
+    return 96.0;
+}
+
+function int RandomizedAnchorIndex(int loot_index, int variant)
+{
+    int multipliers[8] = {1, 3, 5, 7, 9, 11, 13, 15};
+    int multiplier = multipliers[variant % 8];
+    int offset = variant / 8;
+    return (multiplier * loot_index + offset) % 16;
+}
+
+function void CreateRandomizedLoot(int index, int value, int variant)
+{
+    int anchor = RandomizedAnchorIndex(index, variant);
+    CreateWorldLoot(
+        index,
+        value,
+        RandomizedAnchorX(anchor),
+        RandomizedAnchorY(anchor)
+    );
+}
+
+function void DropWorldLoot(int player, int value)
+{
+    int index = 7;
+    while (index < MAX_WORLD_LOOT && loot_active[index])
+    {
+        index++;
+    }
+    if (index < MAX_WORLD_LOOT)
+    {
+        CreateWorldLoot(index, value, GetActorX(0), GetActorY(0));
+        last_drop_value = value;
+        IncrementDrop(player);
+        event_serial++;
+    }
+}
+
+function int AddLootToBackpack(int player, int value)
+{
+    int base = player * 3;
+    int index = 0;
+    while (index < 3)
+    {
+        if (player_slots[base + index] == 0)
+        {
+            player_slots[base + index] = value;
+            pickup_serial++;
+            slot_age[base + index] = pickup_serial;
+            SyncSlots();
+            return 1;
+        }
+        index++;
+    }
+
+    int minimum = player_slots[base];
+    int replace_index = 0;
+    index = 1;
+    while (index < 3)
+    {
+        if (
+            player_slots[base + index] < minimum
+            || (
+                player_slots[base + index] == minimum
+                && slot_age[base + index] < slot_age[base + replace_index]
+            )
+        )
+        {
+            minimum = player_slots[base + index];
+            replace_index = index;
+        }
+        index++;
+    }
+    if (value <= minimum)
+    {
+        return 0;
+    }
+    DropWorldLoot(player, minimum);
+    player_slots[base + replace_index] = value;
+    pickup_serial++;
+    slot_age[base + replace_index] = pickup_serial;
+    SyncSlots();
+    return 1;
+}
+
+function int NearActor(int tid, int distance)
+{
+    if (ThingCount(0, tid) <= 0) { return 0; }
+    return (
+        Absolute(GetActorX(0) - GetActorX(tid)) <= distance
+        && Absolute(GetActorY(0) - GetActorY(tid)) <= distance
+    );
+}
+
+function void ProcessWorldLoot(int player)
+{
+    int index = 0;
+    while (index < MAX_WORLD_LOOT)
+    {
+        if (
+            loot_active[index]
+            && NearActor(LOOT_TID_BASE + index, 40.0)
+        )
+        {
+            if (AddLootToBackpack(player, loot_values[index]))
+            {
+                last_loot_value = loot_values[index];
+                last_loot_side = player + 1;
+                last_loot_id = index + 1;
+                IncrementPickup(player);
+                event_serial++;
+                loot_active[index] = 0;
+                Thing_Remove(LOOT_TID_BASE + index);
+                if (index < 7)
+                {
+                    world_loot_mask = world_loot_mask & ~(1 << index);
+                }
+                return;
+            }
+        }
+        index++;
+    }
+}
+
+function int HighestCacheSlot(void)
+{
+    int selected = -1;
+    int highest = 0;
+    if (cache_slot_0 > highest) { selected = 0; highest = cache_slot_0; }
+    if (cache_slot_1 > highest) { selected = 1; highest = cache_slot_1; }
+    if (cache_slot_2 > highest) { selected = 2; }
+    return selected;
+}
+
+function int CacheSlotValue(int slot)
+{
+    if (slot == 0) { return cache_slot_0; }
+    if (slot == 1) { return cache_slot_1; }
+    return cache_slot_2;
+}
+
+function void ClearCacheSlot(int slot)
+{
+    if (slot == 0) { cache_slot_0 = 0; }
+    else if (slot == 1) { cache_slot_1 = 0; }
+    else { cache_slot_2 = 0; }
+}
+
+function void ProcessCache(int player)
+{
+    if (cache_owner == 0 || !NearActor(CACHE_TID, 48.0)) { return; }
+    int slot = HighestCacheSlot();
+    if (slot < 0)
+    {
+        Thing_Remove(CACHE_TID);
+        cache_owner = 0;
+        return;
+    }
+    int value = CacheSlotValue(slot);
+    if (!AddLootToBackpack(player, value)) { return; }
+    ClearCacheSlot(slot);
+    last_loot_value = value;
+    last_loot_side = player + 1;
+    last_loot_id = 0;
+    IncrementPickup(player);
+    IncrementCacheLooted(player);
+    event_serial++;
+    if (HighestCacheSlot() < 0)
+    {
+        Thing_Remove(CACHE_TID);
+        cache_owner = 0;
+    }
+}
+
+function int ExtractionZone(void)
+{
+    int x = GetActorX(0);
+    int y = GetActorY(0);
+    if (x >= -128.0 && x <= 128.0 && y >= 352.0 && y <= 480.0)
+    {
+        return NORTH_EXTRACTION;
+    }
+    if (x >= -128.0 && x <= 128.0 && y >= -480.0 && y <= -352.0)
+    {
+        return SOUTH_EXTRACTION;
+    }
+    return 0;
+}
+
+function void InterruptExtraction(int player)
+{
+    if (PlayerProgress(player) > 0)
+    {
+        if (player == 0) { host_extraction_interrupted++; }
+        else { opponent_extraction_interrupted++; }
+        event_serial++;
+    }
+    SetPlayerProgress(player, 0);
+    SetPlayerZone(player, 0);
+}
+
+function void FinishExtraction(int player)
+{
+    int base = player * 3;
+    int value = (
+        player_slots[base]
+        + player_slots[base + 1]
+        + player_slots[base + 2]
+    );
+    AddBanked(player, value);
+    player_slots[base] = 0;
+    player_slots[base + 1] = 0;
+    player_slots[base + 2] = 0;
+    SyncSlots();
+    SetPlayerLife(player, LIFE_EXTRACTED);
+    SetPlayerProgress(player, EXTRACTION_REQUIRED_TICS);
+    if (player == 0) { host_extracted++; }
+    else { opponent_extracted++; }
+    event_serial++;
+    SetPlayerProperty(0, 1, PROP_TOTALLYFROZEN);
+}
+
+function void ProcessExtraction(int player)
+{
+    int zone = ExtractionZone();
+    int attacking = GetPlayerInput(-1, INPUT_BUTTONS) & BT_ATTACK;
+    int damaged = damage_tic[player] == engine_tic;
+    if (!extraction_open || zone == 0 || attacking || damaged)
+    {
+        InterruptExtraction(player);
+        return;
+    }
+    if (PlayerProgress(player) == 0)
+    {
+        if (player == 0) { host_extraction_started++; }
+        else { opponent_extraction_started++; }
+        event_serial++;
+    }
+    SetPlayerZone(player, zone);
+    SetPlayerProgress(player, PlayerProgress(player) + 1);
+    if (PlayerProgress(player) >= EXTRACTION_REQUIRED_TICS)
+    {
+        FinishExtraction(player);
+    }
+}
+
+function void DetermineWinner(void)
+{
+    if (host_banked > opponent_banked) { winner = 1; }
+    else if (opponent_banked > host_banked) { winner = 2; }
+    else { winner = 3; }
+}
+
+function void CheckRoundComplete(void)
+{
+    if (
+        round_state == ROUND_ACTIVE
+        && host_life_state != LIFE_ACTIVE
+        && opponent_life_state != LIFE_ACTIVE
+    )
+    {
+        DetermineWinner();
+        round_state = ROUND_COMPLETE;
+        ACS_ExecuteAlways(4, 0);
+    }
+}
+
+function void SpawnInitialLoot(void)
+{
+    if (loot_template == 2)
+    {
+        int variant = GetCVar("bot_extraction_layout_variant");
+        if (variant < 0 || variant >= 128) { variant = 0; }
+        CreateRandomizedLoot(0, 10, variant);
+        CreateRandomizedLoot(1, 10, variant);
+        CreateRandomizedLoot(2, 10, variant);
+        CreateRandomizedLoot(3, 10, variant);
+        CreateRandomizedLoot(4, 25, variant);
+        CreateRandomizedLoot(5, 25, variant);
+        CreateRandomizedLoot(6, 50, variant);
+    }
+    else if (loot_template == 1)
+    {
+        CreateWorldLoot(0, 10, -520.0, 0.0);
+        CreateWorldLoot(1, 10, 520.0, 0.0);
+        CreateWorldLoot(2, 10, 0.0, 224.0);
+        CreateWorldLoot(3, 10, 0.0, -224.0);
+        CreateWorldLoot(4, 25, -520.0, 288.0);
+        CreateWorldLoot(5, 25, 520.0, -288.0);
+    }
+    else
+    {
+        CreateWorldLoot(0, 10, -520.0, 288.0);
+        CreateWorldLoot(1, 10, -520.0, -288.0);
+        CreateWorldLoot(2, 10, 520.0, 288.0);
+        CreateWorldLoot(3, 10, 520.0, -288.0);
+        CreateWorldLoot(4, 25, -224.0, 0.0);
+        CreateWorldLoot(5, 25, 224.0, 0.0);
+    }
+    if (loot_template != 2)
+    {
+        CreateWorldLoot(6, 50, 0.0, 0.0);
+    }
+    SpawnForced("BotExtractionAmmo", -320.0, 352.0, 0.0, 3001, 0);
+    SpawnForced("BotExtractionAmmo", 320.0, -352.0, 0.0, 3002, 0);
+    SpawnForced("BotExtractionMarker", -64.0, 416.0, 0.0, 4001, 0);
+    SpawnForced("BotExtractionMarker", 64.0, 416.0, 0.0, 4002, 0);
+    SpawnForced("BotExtractionMarker", -64.0, -416.0, 0.0, 4003, 0);
+    SpawnForced("BotExtractionMarker", 64.0, -416.0, 0.0, 4004, 0);
+}
+
+function void InitializePlayer(int player)
+{
+    TakeInventory("Fist", 1);
+    TakeInventory("Pistol", 1);
+    TakeInventory("Clip", 999);
+    GiveInventory("BotExtractionRifle", 1);
+    TakeInventory("BotExtractionAmmo", 999);
+    GiveInventory("BotExtractionAmmo", 30);
+    SetWeapon("BotExtractionRifle");
+    SetActorProperty(0, APROP_Health, 100);
+    SetPlayerProperty(0, 0, PROP_TOTALLYFROZEN);
+    SetPlayerLife(player, LIFE_ACTIVE);
+    last_health[player] = 100;
+    damage_tic[player] = -1;
+    player_ready[player] = 1;
+    ACS_ExecuteAlways(6, 0, player);
+}
+
+script 1 OPEN
+{
+    protocol_version = 0;
+    engine_tic = 0;
+    round_state = ROUND_INITIALIZING;
+    loot_template = GetCVar("bot_extraction_layout");
+    extraction_open = 0;
+    host_life_state = 0;
+    opponent_life_state = 0;
+    host_slot_0 = 0;
+    host_slot_1 = 0;
+    host_slot_2 = 0;
+    opponent_slot_0 = 0;
+    opponent_slot_1 = 0;
+    opponent_slot_2 = 0;
+    host_banked = 0;
+    opponent_banked = 0;
+    host_extraction_zone = 0;
+    opponent_extraction_zone = 0;
+    host_extraction_progress = 0;
+    opponent_extraction_progress = 0;
+    host_loot_pickups = 0;
+    opponent_loot_pickups = 0;
+    host_loot_drops = 0;
+    opponent_loot_drops = 0;
+    host_cache_created = 0;
+    opponent_cache_created = 0;
+    host_cache_looted = 0;
+    opponent_cache_looted = 0;
+    host_extraction_started = 0;
+    opponent_extraction_started = 0;
+    host_extraction_interrupted = 0;
+    opponent_extraction_interrupted = 0;
+    host_extracted = 0;
+    opponent_extracted = 0;
+    host_valid_hits = 0;
+    opponent_valid_hits = 0;
+    host_deaths = 0;
+    opponent_deaths = 0;
+    timeouts = 0;
+    winner = 0;
+    cache_owner = 0;
+    cache_slot_0 = 0;
+    cache_slot_1 = 0;
+    cache_slot_2 = 0;
+    cache_x = 0;
+    cache_y = 0;
+    last_loot_value = 0;
+    last_loot_side = 0;
+    last_damage = 0;
+    reserved_zero = 0;
+    world_loot_mask = 0;
+    last_loot_id = 0;
+    last_drop_value = 0;
+    event_serial = 0;
+    pickup_serial = 0;
+    int reset_index = 0;
+    while (reset_index < 6)
+    {
+        player_slots[reset_index] = 0;
+        slot_age[reset_index] = 0;
+        reset_index++;
+    }
+    reset_index = 0;
+    while (reset_index < MAX_WORLD_LOOT)
+    {
+        loot_values[reset_index] = 0;
+        loot_active[reset_index] = 0;
+        reset_index++;
+    }
+    last_health[0] = 0;
+    last_health[1] = 0;
+    damage_tic[0] = -1;
+    damage_tic[1] = -1;
+    player_ready[0] = 0;
+    player_ready[1] = 0;
+    SpawnInitialLoot();
+    protocol_version = EXTRACTION_PROTOCOL_ID;
+
+    while (
+        !player_ready[0]
+        || !player_ready[1]
+    )
+    {
+        Delay(1);
+    }
+    round_state = ROUND_ACTIVE;
+
+    while (round_state == ROUND_ACTIVE)
+    {
+        engine_tic++;
+        if (engine_tic >= EXTRACTION_OPEN_TIC)
+        {
+            extraction_open = 1;
+        }
+        if (engine_tic >= RAID_TIMEOUT_TIC)
+        {
+            int index = 0;
+            while (index < 6)
+            {
+                player_slots[index] = 0;
+                index++;
+            }
+            SyncSlots();
+            timeouts++;
+            event_serial++;
+            DetermineWinner();
+            round_state = ROUND_COMPLETE;
+            ACS_ExecuteAlways(4, 0);
+        }
+        Delay(1);
+    }
+}
+
+script 2 ENTER
+{
+    int player = PlayerNumber();
+    if (player < 0 || player > 1) { terminate; }
+    while (protocol_version != EXTRACTION_PROTOCOL_ID)
+    {
+        Delay(1);
+    }
+    InitializePlayer(player);
+}
+
+script 6 (int player)
+{
+    while (round_state == ROUND_INITIALIZING)
+    {
+        Delay(1);
+    }
+    while (
+        round_state == ROUND_ACTIVE
+        && PlayerLife(player) == LIFE_ACTIVE
+    )
+    {
+        int health = GetActorProperty(0, APROP_Health);
+        if (health < last_health[player] && health > 0)
+        {
+            int attacker = 1 - player;
+            if (attacker == 0) { host_valid_hits++; }
+            else { opponent_valid_hits++; }
+            last_damage = last_health[player] - health;
+            damage_tic[player] = engine_tic;
+            event_serial++;
+        }
+        last_health[player] = health;
+        ProcessWorldLoot(player);
+        ProcessCache(player);
+        ProcessExtraction(player);
+        CheckRoundComplete();
+        Delay(1);
+    }
+}
+
+script 3 DEATH
+{
+    int player = PlayerNumber();
+    if (player < 0 || player > 1) { terminate; }
+    int attacker = 1 - player;
+    if (attacker == 0) { host_valid_hits++; }
+    else { opponent_valid_hits++; }
+    last_damage = 20;
+    damage_tic[player] = engine_tic;
+    if (player == 0) { host_deaths++; }
+    else { opponent_deaths++; }
+    SetPlayerLife(player, LIFE_DEAD);
+    InterruptExtraction(player);
+
+    int base = player * 3;
+    if (cache_owner == 0)
+    {
+        cache_owner = player + 1;
+        cache_slot_0 = player_slots[base];
+        cache_slot_1 = player_slots[base + 1];
+        cache_slot_2 = player_slots[base + 2];
+        cache_x = GetActorX(0);
+        cache_y = GetActorY(0);
+        SpawnForced("BotCorpseCacheMarker", cache_x, cache_y, 0.0, CACHE_TID, 0);
+        if (player == 0) { host_cache_created++; }
+        else { opponent_cache_created++; }
+    }
+    else
+    {
+        if (player_slots[base] > 0) { DropWorldLoot(player, player_slots[base]); }
+        if (player_slots[base + 1] > 0)
+        {
+            DropWorldLoot(player, player_slots[base + 1]);
+        }
+        if (player_slots[base + 2] > 0)
+        {
+            DropWorldLoot(player, player_slots[base + 2]);
+        }
+    }
+    player_slots[base] = 0;
+    player_slots[base + 1] = 0;
+    player_slots[base + 2] = 0;
+    SyncSlots();
+    event_serial++;
+    CheckRoundComplete();
+}
+
+script 4 (void)
+{
+    Delay(4);
+    Exit_Normal(0);
+}

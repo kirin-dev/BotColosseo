@@ -1,3 +1,4 @@
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -131,6 +132,15 @@ def test_extraction_settings_select_map_protocol_and_terminal_death(
     assert "-deathmatch" not in args
     assert "+teamdamage 1" in args
     assert len(result["protocol_values"]) == 53
+
+
+def test_layout_variant_is_forwarded_to_both_network_peers(tmp_path: Path) -> None:
+    for role in (WorkerRole.HOST, WorkerRole.OPPONENT):
+        game = FakeGame()
+        configured = replace(settings(tmp_path, role), layout_variant=37)
+        DuelWorker(configured, game_factory=lambda current=game: current)("init", None)
+        args = next(value for name, value in game.calls if name == "args")
+        assert "+set bot_extraction_layout_variant 37" in args
 
 
 def test_step_advances_exactly_one_tic_with_explicit_update_flag(tmp_path: Path) -> None:

@@ -1,0 +1,8 @@
+schema_version: 1
+train_cases: configs/extraction/randomized/train.json
+validation_cases: configs/extraction/randomized/validation.json
+train_transitions: 100000
+validation_transitions: 20000
+shard_size: 5000
+max_decisions: 700
+output_root: data/generated/extraction-randomized

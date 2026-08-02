@@ -4,6 +4,7 @@ import math
 from enum import Enum
 
 from botcolosseo.envs.actions import MacroAction
+from botcolosseo.envs.extraction_layouts import strong_randomized_route
 from botcolosseo.envs.extraction_types import ExtractionPrivilegedState
 
 
@@ -239,7 +240,13 @@ class StyledExtractionTeacher:
 class PrivilegedStrongExtractionTeacher:
     """Training-only expert kept separate from the scripted opponent pool."""
 
-    def __init__(self, *, side: str, combat_budget: int = 48) -> None:
+    def __init__(
+        self,
+        *,
+        side: str,
+        combat_budget: int = 48,
+        layout_variant: int | None = None,
+    ) -> None:
         if side not in ("host", "opponent"):
             raise ValueError(f"Unsupported extraction side: {side}")
         if combat_budget <= 0:
@@ -248,9 +255,14 @@ class PrivilegedStrongExtractionTeacher:
         self.style = ExtractionStyle.STRONG
         self._combat_budget = combat_budget
         self._combat_decisions = 0
+        route = (
+            _route(side, ExtractionStyle.STRONG)
+            if layout_variant is None
+            else strong_randomized_route(side=side, variant=layout_variant)
+        )
         self._waypoints = ExtractionWaypointTeacher(
             side=side,
-            waypoints=_route(side, ExtractionStyle.STRONG),
+            waypoints=route,
             arrival_tolerance=28.0,
         )
 
@@ -296,8 +308,12 @@ def privileged_extraction_teacher(
     *,
     side: str,
     style: ExtractionStyle | str,
+    layout_variant: int | None = None,
 ) -> StyledExtractionTeacher | PrivilegedStrongExtractionTeacher:
     selected = ExtractionStyle(style)
     if selected is ExtractionStyle.STRONG:
-        return PrivilegedStrongExtractionTeacher(side=side)
+        return PrivilegedStrongExtractionTeacher(
+            side=side,
+            layout_variant=layout_variant,
+        )
     return StyledExtractionTeacher(side=side, style=selected)

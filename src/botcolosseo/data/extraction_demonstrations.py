@@ -19,6 +19,7 @@ from botcolosseo.agents.extraction_teachers import (
 )
 from botcolosseo.data.demonstrations import sha256_file
 from botcolosseo.envs.actions import MacroAction
+from botcolosseo.envs.extraction_layouts import randomized_layout_variant
 from botcolosseo.envs.extraction_types import ExtractionActorObservation
 from botcolosseo.envs.ipc import WorkerTimeout
 from botcolosseo.envs.synchronous_extraction import SynchronousExtractionEnv
@@ -75,7 +76,7 @@ class ExtractionCase:
             raise ValueError("Extraction case seed must be nonnegative")
         if self.learner_side not in {"host", "opponent"}:
             raise ValueError(f"Invalid extraction learner side: {self.learner_side}")
-        if self.layout_id not in {"base", "heldout-a"}:
+        if self.layout_id not in {"base", "heldout-a", "randomized"}:
             raise ValueError(f"Invalid extraction layout: {self.layout_id}")
         if self.opponent_style == "idle":
             if self.split != "solo":
@@ -290,15 +291,24 @@ def _collect_episode_once(
     max_decisions: int,
     rollout_controller: ExtractionRolloutController | None = None,
 ) -> tuple[ExtractionDemonstrationBuffer, dict[str, int]]:
+    randomized = case.layout_id == "randomized"
     env = SynchronousExtractionEnv(
-        config_path=root
-        / "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg",
+        config_path=(
+            root
+            / "assets/scenarios/crystal_run_extraction_randomized/"
+            "crystal_run_extraction_randomized.cfg"
+            if randomized
+            else root
+            / "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg"
+        ),
         seed=case.seed,
         max_decisions=max_decisions,
+        layout_variant=(randomized_layout_variant(case.seed) if randomized else None),
     )
     learner = privileged_extraction_teacher(
         side=case.learner_side,
         style=style,
+        layout_variant=(randomized_layout_variant(case.seed) if randomized else None),
     )
     opponent_side = "opponent" if case.learner_side == "host" else "host"
     opponent = (
@@ -430,11 +440,21 @@ def generate_extraction_demonstrations(
     if output_dir.exists() and any(output_dir.iterdir()) and not resume:
         raise FileExistsError(f"Extraction data output is not empty: {output_dir}")
     output_dir.mkdir(parents=True, exist_ok=True)
-    scenario_manifest = json.loads(
+    scenario_directories = {
         (
-            root
-            / "assets/scenarios/crystal_run_extraction/manifest.json"
-        ).read_text(encoding="utf-8")
+            "crystal_run_extraction_randomized"
+            if case.layout_id == "randomized"
+            else "crystal_run_extraction"
+        )
+        for case in cases
+    }
+    if len(scenario_directories) != 1:
+        raise ValueError("One demonstration run cannot mix scenario binaries")
+    scenario_directory = next(iter(scenario_directories))
+    scenario_manifest = json.loads(
+        (root / "assets/scenarios" / scenario_directory / "manifest.json").read_text(
+            encoding="utf-8"
+        )
     )
     identity = {
         "case_manifest": str(cases_path.relative_to(root)),
@@ -446,6 +466,7 @@ def generate_extraction_demonstrations(
         ),
         "max_decisions": max_decisions,
         "scenario_hash": scenario_manifest["wad_sha256"],
+        "scenario_directory": scenario_directory,
         "schema_version": 1,
         "shard_size": shard_size,
         "source_policy_sha256": source_policy_sha256,

@@ -30,6 +30,7 @@ class DuelWorkerSettings:
     force_respawn: bool = True
     time_limit_minutes: float = 1.0
     deathmatch: bool = True
+    layout_variant: int | None = None
 
     def __post_init__(self) -> None:
         if not 1024 <= self.port <= 65535:
@@ -48,6 +49,8 @@ class DuelWorkerSettings:
             raise ValueError("Duel protocol USER indices are invalid")
         if self.time_limit_minutes <= 0:
             raise ValueError("Duel time limit must be positive")
+        if self.layout_variant is not None and not 0 <= self.layout_variant < 128:
+            raise ValueError("Extraction layout variant must be in [0, 128)")
 
 
 class DuelWorker:
@@ -112,12 +115,17 @@ class DuelWorker:
             raise
 
     def _network_args(self) -> str:
+        layout = (
+            ""
+            if self._settings.layout_variant is None
+            else f"+set bot_extraction_layout_variant {self._settings.layout_variant} "
+        )
         if self._settings.role is WorkerRole.HOST:
             force_respawn = 1 if self._settings.force_respawn else 0
             game_mode = "-deathmatch " if self._settings.deathmatch else ""
             team_damage = "" if self._settings.deathmatch else "+teamdamage 1 "
             return (
-                f"-host 2 -port {self._settings.port} {game_mode}"
+                f"-host 2 -port {self._settings.port} {game_mode}{layout}"
                 f"+timelimit {self._settings.time_limit_minutes} "
                 f"+sv_forcerespawn {force_respawn} +sv_noautoaim 1 "
                 f"{team_damage}"
@@ -125,7 +133,7 @@ class DuelWorker:
                 "+name BotHost +colorset 0"
             )
         return (
-            f"-join 127.0.0.1:{self._settings.port} "
+            f"-join 127.0.0.1:{self._settings.port} {layout}"
             "+name BotOpponent +colorset 3"
         )
 

@@ -13,6 +13,7 @@ from botcolosseo.agents.extraction_model import load_extraction_policy
 from botcolosseo.agents.extraction_teachers import StyledExtractionTeacher
 from botcolosseo.data.extraction_demonstrations import ExtractionCase
 from botcolosseo.envs.actions import MacroAction
+from botcolosseo.envs.extraction_layouts import randomized_layout_variant
 from botcolosseo.envs.extraction_protocol import ExtractionEventType
 from botcolosseo.envs.ipc import WorkerTimeout
 from botcolosseo.envs.synchronous_extraction import SynchronousExtractionEnv
@@ -138,10 +139,11 @@ def evaluate_extraction_episode(
     device: torch.device,
     max_decisions: int = 700,
     policy_model: torch.nn.Module | None = None,
+    scenario_directory: str = "crystal_run_extraction",
 ) -> ExtractionEpisodeMetrics:
     scenario_hash = json.loads(
         (
-            root / "assets/scenarios/crystal_run_extraction/manifest.json"
+            root / "assets/scenarios" / scenario_directory / "manifest.json"
         ).read_text(encoding="utf-8")
     )["wad_sha256"]
     if policy_model is None:
@@ -153,17 +155,28 @@ def evaluate_extraction_episode(
         )
     else:
         model = policy_model
-    env = SynchronousExtractionEnv(
-        config_path=(
-            root
-            / "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg"
+    scenario_root = root / "assets/scenarios" / scenario_directory
+    if scenario_directory == "crystal_run_extraction_randomized":
+        config_name = {
+            "base": "crystal_run_extraction_base.cfg",
+            "heldout-a": "crystal_run_extraction_heldout.cfg",
+            "randomized": "crystal_run_extraction_randomized.cfg",
+        }[case.layout_id]
+    else:
+        config_name = (
+            "crystal_run_extraction.cfg"
             if case.layout_id == "base"
-            else root
-            / "assets/scenarios/crystal_run_extraction/"
-            "crystal_run_extraction_heldout.cfg"
-        ),
+            else "crystal_run_extraction_heldout.cfg"
+        )
+    env = SynchronousExtractionEnv(
+        config_path=scenario_root / config_name,
         seed=case.seed,
         max_decisions=max_decisions,
+        layout_variant=(
+            randomized_layout_variant(case.seed)
+            if case.layout_id == "randomized"
+            else None
+        ),
     )
     opponent_side = "opponent" if case.learner_side == "host" else "host"
     opponent = (

@@ -19,6 +19,7 @@ from botcolosseo.agents.extraction_teachers import (
 )
 from botcolosseo.data.extraction_demonstrations import ExtractionCase
 from botcolosseo.envs.actions import MacroAction
+from botcolosseo.envs.extraction_layouts import randomized_layout_variant
 from botcolosseo.envs.extraction_rules import LifeState
 from botcolosseo.envs.extraction_types import (
     ExtractionActorObservation,
@@ -342,10 +343,16 @@ class ExtractionRolloutCollector:
     def _make_environment(
         self, assignment: ExtractionEpisodeAssignment
     ) -> SynchronousExtractionEnv:
+        randomized = assignment.case.layout_id == "randomized"
         return SynchronousExtractionEnv(
             config_path=self.config_path,
             seed=assignment.case.seed,
             max_decisions=self.max_decisions,
+            layout_variant=(
+                randomized_layout_variant(assignment.case.seed)
+                if randomized
+                else None
+            ),
         )
 
     @staticmethod
@@ -394,6 +401,11 @@ class ExtractionRolloutCollector:
         self._learner_teacher = (
             PrivilegedStrongExtractionTeacher(
                 side=assignment.case.learner_side,
+                layout_variant=(
+                    randomized_layout_variant(assignment.case.seed)
+                    if assignment.case.layout_id == "randomized"
+                    else None
+                ),
             )
             if self._teacher_supervision
             else None

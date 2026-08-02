@@ -1,0 +1,24 @@
+{
+  "acc_version": "This is version 1.60 (Jul 20 2026)",
+  "built_on": "2026-08-02",
+  "lump_names": [
+    "DECORATE",
+    "MAP01",
+    "TEXTMAP",
+    "BEHAVIOR",
+    "SCRIPTS",
+    "ENDMAP"
+  ],
+  "maps": [
+    "MAP01"
+  ],
+  "protocol_version": 3,
+  "schema_version": 1,
+  "source_sha256": {
+    "crystal_run_extraction.acs": "2ab09e63ed6791b9eb2efa7b420d9e1c206551d7275faa247130d4f927e690fd",
+    "decorate.txt": "f57eb960ce44a9835b83037ee515c8d8d11ac36dc050b5dfe3ee7cf1f41cf59f",
+    "map.udmf": "af976b87fac24dd0152111a4a57ed3c73a68774b52d88e2fd0dacbc77569ac4e",
+    "regions.yaml": "275b64b41c301378f648c23aedf19ac4506ca24c084849c28288e26b365a63f4"
+  },
+  "wad_sha256": "3f928c6606eaffae8a4a9ea829f9bea1b82d4f0b622db2acdcff6149d4c15024"
+}

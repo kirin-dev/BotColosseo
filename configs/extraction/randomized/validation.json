@@ -1,0 +1,455 @@
+{
+  "schema_version": 1,
+  "split": "validation",
+  "paired_side_swaps": true,
+  "cases": [
+    {
+      "split": "validation",
+      "seed": 61000,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61000,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61001,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61001,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61002,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61002,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61003,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61003,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61004,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61004,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61005,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61005,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61006,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61006,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61007,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61007,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61008,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61008,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61009,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61009,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61010,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61010,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61011,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61011,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61012,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61012,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61013,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61013,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61014,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61014,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61015,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61015,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61016,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61016,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61017,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61017,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61018,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61018,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61019,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61019,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61020,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61020,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61021,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61021,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61022,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61022,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61023,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61023,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61024,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61024,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61025,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61025,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61026,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61026,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61027,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61027,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61028,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61028,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61029,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61029,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61030,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61030,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61031,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 61031,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    }
+  ]
+}
