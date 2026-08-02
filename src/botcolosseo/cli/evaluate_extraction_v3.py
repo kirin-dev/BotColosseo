@@ -157,7 +157,7 @@ def main(argv: list[str] | None = None) -> int:
     result = {
         "schema_version": 1,
         "metric_schema_version": 2,
-        "disengagement_metric_version": 2,
+        "disengagement_metric_version": 3,
         "policy": args.policy,
         "policy_kind": (
             "strong-recurrent-ppo"

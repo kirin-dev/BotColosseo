@@ -18,7 +18,7 @@ def _report(path: Path, policy: str, split: str = "validation") -> None:
                 "policy": policy,
                 "metric_schema_version": 2,
                 **(
-                    {"disengagement_metric_version": 2}
+                    {"disengagement_metric_version": 3}
                     if policy == "defensive"
                     else {}
                 ),

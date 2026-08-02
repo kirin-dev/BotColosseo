@@ -41,7 +41,7 @@ def _write_report(
         "metrics": {"episodes": [asdict(item) for item in episode_items]},
     }
     if policy == "defensive":
-        payload["disengagement_metric_version"] = 2
+        payload["disengagement_metric_version"] = 3
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 

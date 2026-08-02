@@ -52,7 +52,7 @@ def _load_report(path: Path, *, policy: str, split: str) -> dict[str, object]:
         or payload.get("fair_actor_observation_only") is not True
     ):
         raise ValueError("Extraction evaluation report identity does not match")
-    if policy == "defensive" and payload.get("disengagement_metric_version") != 2:
+    if policy == "defensive" and payload.get("disengagement_metric_version") != 3:
         raise ValueError("Defensive report uses the legacy disengagement metric")
     return payload
 
