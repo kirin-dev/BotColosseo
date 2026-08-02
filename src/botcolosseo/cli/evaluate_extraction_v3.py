@@ -133,6 +133,7 @@ def main(argv: list[str] | None = None) -> int:
             max_delta=2.0,
             expected_sha256=checkpoint_sha256,
             device=device,
+            defensive_guardrail=args.policy == "defensive",
         )
     protocol = load_extraction_evaluation_protocol(protocol_path)
     cases = protocol.cases(args.split)
@@ -162,7 +163,16 @@ def main(argv: list[str] | None = None) -> int:
         "policy_kind": (
             "strong-recurrent-ppo"
             if args.policy == "strong"
-            else "learned-bounded-residual"
+            else (
+                "learned-bounded-residual-with-risk-guardrail"
+                if args.policy == "defensive"
+                else "learned-bounded-residual"
+            )
+        ),
+        "inference_guardrail": (
+            "block_attack_when_low_resource_and_carried_value_ge_25"
+            if args.policy == "defensive"
+            else None
         ),
         "split": args.split,
         "complete": len(episodes)

@@ -8,7 +8,7 @@ import torch
 from botcolosseo.agents.checkpoint import CheckpointMetadata
 from botcolosseo.agents.extraction_model import (
     ExtractionActorCritic,
-    ExtractionResidualStyleActor,
+    ExtractionDefensiveGuardedActor,
     ExtractionResidualStyleActorCritic,
     create_extraction_actor_critic,
 )
@@ -105,7 +105,8 @@ def load_extraction_style_actor(
     max_delta: float,
     expected_sha256: str | None = None,
     device: torch.device | str = "cpu",
-) -> tuple[ExtractionResidualStyleActor, CheckpointMetadata]:
+    defensive_guardrail: bool = False,
+) -> tuple[torch.nn.Module, CheckpointMetadata]:
     if sha256_file(base_checkpoint) != expected_base_sha256:
         raise ValueError("Extraction style base checkpoint SHA-256 does not match")
     base, _ = load_extraction_strong_actor_critic(
@@ -133,6 +134,9 @@ def load_extraction_style_actor(
         for name, value in frozen_actor.items()
     ):
         raise ValueError("Extraction style checkpoint changed the frozen Strong Actor")
-    actor = model.public_actor().to(device)
+    actor: torch.nn.Module = model.public_actor()
+    if defensive_guardrail:
+        actor = ExtractionDefensiveGuardedActor(actor)
+    actor = actor.to(device)
     actor.eval()
     return actor, metadata

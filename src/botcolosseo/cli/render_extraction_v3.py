@@ -183,6 +183,7 @@ def main(argv: list[str] | None = None) -> int:
             max_delta=2.0,
             expected_sha256=checkpoint_sha256,
             device=device,
+            defensive_guardrail=args.policy == "defensive",
         )
     attempts = []
     episode = None
@@ -240,7 +241,16 @@ def main(argv: list[str] | None = None) -> int:
         "policy_kind": (
             "strong-recurrent-ppo"
             if args.policy == "strong"
-            else "learned-bounded-residual"
+            else (
+                "learned-bounded-residual-with-risk-guardrail"
+                if args.policy == "defensive"
+                else "learned-bounded-residual"
+            )
+        ),
+        "inference_guardrail": (
+            "block_attack_when_low_resource_and_carried_value_ge_25"
+            if args.policy == "defensive"
+            else None
         ),
         "case_index": args.case_index,
         "protocol": str(protocol_path.relative_to(root)),

@@ -10,8 +10,18 @@ from botcolosseo.agents.checkpoint import CheckpointMetadata
 from botcolosseo.agents.model import ActorCriticOutput, ActorOutput, RecurrentActor
 from botcolosseo.agents.style_model import ResidualStyleAdapter, StyleActorCriticOutput
 from botcolosseo.data.extraction_demonstrations import EXTRACTION_SCALAR_DIM
+from botcolosseo.envs.actions import MacroAction
 
 EXTRACTION_PRIVILEGED_DIM = 20
+DEFENSIVE_ATTACK_ACTIONS = tuple(
+    int(action)
+    for action in (
+        MacroAction.ATTACK,
+        MacroAction.FORWARD_ATTACK,
+        MacroAction.TURN_LEFT_ATTACK,
+        MacroAction.TURN_RIGHT_ATTACK,
+    )
+)
 
 
 def create_extraction_actor() -> RecurrentActor:
@@ -184,6 +194,40 @@ class ExtractionResidualStyleActor(nn.Module):
             base.features,
             base.hidden,
         )
+
+
+class ExtractionDefensiveGuardedActor(nn.Module):
+    """Block attack macros under observable low-resource risk."""
+
+    def __init__(self, actor: nn.Module) -> None:
+        super().__init__()
+        self.actor = actor
+        self.hidden_size = actor.hidden_size
+
+    def initial_state(
+        self, batch_size: int, *, device: torch.device | str
+    ) -> torch.Tensor:
+        return self.actor.initial_state(batch_size, device=device)
+
+    def forward(
+        self,
+        frames: torch.Tensor,
+        scalars: torch.Tensor,
+        previous_actions: torch.Tensor,
+        masks: torch.Tensor,
+        hidden: torch.Tensor | None = None,
+    ) -> ActorOutput:
+        output = self.actor(frames, scalars, previous_actions, masks, hidden)
+        low_resources = (scalars[..., 0] <= 0.40) | (scalars[..., 1] <= 0.125)
+        carrying_value = scalars[..., 2] >= (25 / 150)
+        guarded = low_resources & carrying_value
+        attack_mask = torch.zeros_like(output.logits, dtype=torch.bool)
+        attack_mask[..., DEFENSIVE_ATTACK_ACTIONS] = guarded.unsqueeze(-1)
+        logits = output.logits.masked_fill(
+            attack_mask,
+            torch.finfo(output.logits.dtype).min,
+        )
+        return ActorOutput(logits, output.features, output.hidden)
 
 
 class ExtractionResidualActor(nn.Module):

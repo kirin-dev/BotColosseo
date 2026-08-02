@@ -86,6 +86,7 @@ def _load_policy(
         max_delta=2.0,
         expected_sha256=str(spec["checkpoint_sha256"]),
         device=device,
+        defensive_guardrail=policy == "defensive",
     )
     return model
 
