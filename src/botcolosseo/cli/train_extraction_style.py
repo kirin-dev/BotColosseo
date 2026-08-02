@@ -500,6 +500,9 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 "scenario_hash": scenario_hash,
                 "style": args.style,
+                "style_reward_schema_version": (
+                    3 if args.style == "defensive" else 1
+                ),
                 "test_cases_accessed": False,
                 "train_cases_sha256": sha256_file(cases_path),
                 "trainable_parameters": sum(
