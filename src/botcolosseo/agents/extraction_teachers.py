@@ -4,7 +4,10 @@ import math
 from enum import Enum
 
 from botcolosseo.envs.actions import MacroAction
-from botcolosseo.envs.extraction_layouts import strong_randomized_route
+from botcolosseo.envs.extraction_layouts import (
+    randomized_loot_layout,
+    strong_randomized_route,
+)
 from botcolosseo.envs.extraction_types import ExtractionPrivilegedState
 
 
@@ -255,6 +258,10 @@ class PrivilegedStrongExtractionTeacher:
         self.style = ExtractionStyle.STRONG
         self._combat_budget = combat_budget
         self._combat_decisions = 0
+        self._randomized_layout = (
+            None if layout_variant is None else randomized_loot_layout(layout_variant)
+        )
+        self._loot_target_id: int | None = None
         route = (
             _route(side, ExtractionStyle.STRONG)
             if layout_variant is None
@@ -268,7 +275,48 @@ class PrivilegedStrongExtractionTeacher:
 
     def reset(self) -> None:
         self._combat_decisions = 0
+        self._loot_target_id = None
         self._waypoints.reset()
+
+    def _useful_loot_ids(
+        self, state: ExtractionPrivilegedState
+    ) -> tuple[int, ...]:
+        if self._randomized_layout is None:
+            return ()
+        slots = player_slots(state, self.side)
+        minimum = min(slots)
+        return tuple(
+            loot_id
+            for loot_id, (value, _, _) in enumerate(self._randomized_layout)
+            if state.world_loot_mask & (1 << loot_id) and value > minimum
+        )
+
+    def _randomized_loot_action(
+        self, state: ExtractionPrivilegedState
+    ) -> MacroAction | None:
+        if self._randomized_layout is None:
+            return None
+        useful = self._useful_loot_ids(state)
+        if self._loot_target_id not in useful:
+            self._loot_target_id = None
+        if self._loot_target_id is None and useful:
+            own_x, own_y, _ = player_pose(state, self.side)
+            minimum = min(player_slots(state, self.side))
+            self._loot_target_id = min(
+                useful,
+                key=lambda loot_id: (
+                    -(self._randomized_layout[loot_id][0] - minimum),
+                    math.hypot(
+                        self._randomized_layout[loot_id][1] - own_x,
+                        self._randomized_layout[loot_id][2] - own_y,
+                    ),
+                    loot_id,
+                ),
+            )
+        if self._loot_target_id is None:
+            return None
+        _, target_x, target_y = self._randomized_layout[self._loot_target_id]
+        return steer_toward(state, self.side, (target_x, target_y))
 
     def act(self, state: ExtractionPrivilegedState) -> MacroAction:
         if player_health(state, self.side) <= 0:
@@ -297,7 +345,11 @@ class PrivilegedStrongExtractionTeacher:
             self._combat_decisions += 1
             return steer_toward(state, self.side, target, attack=True)
 
-        if self._waypoints.finished:
+        randomized_action = self._randomized_loot_action(state)
+        if randomized_action is not None:
+            return randomized_action
+
+        if self._randomized_layout is not None or self._waypoints.finished:
             if math.hypot(extraction[0] - own_x, extraction[1] - own_y) <= 28.0:
                 return MacroAction.IDLE
             return steer_toward(state, self.side, extraction)

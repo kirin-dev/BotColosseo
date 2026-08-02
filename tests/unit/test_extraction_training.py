@@ -10,6 +10,7 @@ from botcolosseo.agents.extraction_model import (
     EXTRACTION_PRIVILEGED_DIM,
     ExtractionResidualActor,
     ExtractionResidualStyleActorCritic,
+    configure_extraction_actor_for_visual_curriculum,
     create_extraction_actor,
     create_extraction_actor_critic,
     freeze_extraction_actor_backbone,
@@ -179,6 +180,27 @@ def test_strong_calibration_freezes_only_actor_backbone() -> None:
         for parameter in model.privileged_encoder.parameters()
     )
     assert all(parameter.requires_grad for parameter in model.value.parameters())
+
+
+def test_visual_curriculum_trains_only_final_convolution_from_visual_path() -> None:
+    model = create_extraction_actor_critic()
+
+    visual_parameters = configure_extraction_actor_for_visual_curriculum(model)
+
+    assert visual_parameters == tuple(model.actor.visual_encoder[4].parameters())
+    assert all(parameter.requires_grad for parameter in visual_parameters)
+    assert all(
+        not parameter.requires_grad
+        for index, module in enumerate(model.actor.visual_encoder)
+        if index != 4
+        for parameter in module.parameters()
+    )
+    assert all(
+        parameter.requires_grad
+        for parameter in model.actor.scalar_encoder.parameters()
+    )
+    assert all(parameter.requires_grad for parameter in model.actor.recurrent.parameters())
+    assert all(parameter.requires_grad for parameter in model.actor.policy.parameters())
 
 
 def test_extraction_style_is_zero_initialized_bounded_delta_over_frozen_base() -> None:

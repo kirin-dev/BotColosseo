@@ -13,6 +13,7 @@ import torch
 import yaml
 
 from botcolosseo.agents.extraction_model import (
+    configure_extraction_actor_for_visual_curriculum,
     create_extraction_actor_critic,
     freeze_extraction_actor_backbone,
 )
@@ -26,8 +27,12 @@ from botcolosseo.training.extraction_checkpoint import (
 from botcolosseo.training.extraction_pfsp import (
     ExtractionHistoricalOpponent,
     ExtractionPFSPSchedule,
+    LayoutCurriculumStage,
 )
-from botcolosseo.training.extraction_ppo import TeacherAnchoredPPOTrainer
+from botcolosseo.training.extraction_ppo import (
+    EnvironmentStepLRScheduler,
+    TeacherAnchoredPPOTrainer,
+)
 from botcolosseo.training.extraction_rollout import (
     ExtractionRolloutCollector,
     PolicyExtractionOpponentController,
@@ -115,12 +120,29 @@ def _copy_checkpoint(source: Path, destination: Path) -> None:
     temporary.replace(destination)
 
 
+def _display_path(path: Path, root: Path) -> str:
+    try:
+        return str(path.relative_to(root))
+    except ValueError:
+        return str(path)
+
+
 def _candidate_step(
     previous: int, current: int, *, interval: int, target: int
 ) -> int | None:
     if current == target or previous // interval < current // interval:
         return current
     return None
+
+
+def _collection_steps(
+    current: int, *, target: int, rollout: int, checkpoint_interval: int
+) -> int:
+    next_checkpoint = min(
+        ((current // checkpoint_interval) + 1) * checkpoint_interval,
+        target,
+    )
+    return min(rollout, target - current, next_checkpoint - current)
 
 
 def _candidate_manifest(output_dir: Path) -> list[dict[str, object]]:
@@ -202,8 +224,14 @@ def main(argv: list[str] | None = None) -> int:
         raise RuntimeError("CUDA was requested but is unavailable")
     seed_everything(int(config["seed"]))
     model = create_extraction_actor_critic().to(device)
-    freeze_actor_backbone = bool(config["freeze_actor_backbone"])
-    if freeze_actor_backbone:
+    freeze_actor_backbone = bool(config.get("freeze_actor_backbone", False))
+    visual_curriculum = bool(config.get("visual_curriculum", False))
+    if freeze_actor_backbone and visual_curriculum:
+        raise ValueError("Choose either legacy backbone freeze or visual curriculum")
+    visual_parameters: tuple[torch.nn.Parameter, ...] = ()
+    if visual_curriculum:
+        visual_parameters = configure_extraction_actor_for_visual_curriculum(model)
+    elif freeze_actor_backbone:
         freeze_extraction_actor_backbone(model)
     teacher_coefficient = float(config["teacher_auxiliary_coefficient"])
     trainer = TeacherAnchoredPPOTrainer.create(
@@ -224,6 +252,9 @@ def main(argv: list[str] | None = None) -> int:
         value_coefficient=float(config["value_coefficient"]),
         entropy_coefficient=float(config["entropy_coefficient"]),
         max_kl=float(config["max_kl"]),
+        visual_parameters=visual_parameters,
+        total_environment_steps=(target_steps if visual_curriculum else None),
+        final_learning_rate=float(config.get("final_learning_rate", 0.0)),
     )
     environment_steps = 0
     episode_index = 0
@@ -244,6 +275,11 @@ def main(argv: list[str] | None = None) -> int:
         )
         environment_steps = metadata.counters["environment_steps"]
         episode_index = metadata.counters["episodes"]
+        if (
+            isinstance(trainer.scheduler, EnvironmentStepLRScheduler)
+            and trainer.scheduler.environment_steps != environment_steps
+        ):
+            raise ValueError("Checkpoint LR schedule and committed steps disagree")
     history = reconcile_extraction_metrics(
         metrics_path,
         committed_environment_steps=environment_steps,
@@ -255,6 +291,13 @@ def main(argv: list[str] | None = None) -> int:
         shaping_decay_steps=int(config["shaping_decay_steps"]),
         master_seed=int(config["seed"]),
         history_probability=float(config["history_probability"]),
+        layout_curriculum=tuple(
+            LayoutCurriculumStage(
+                start_step=int(stage["start_step"]),
+                layout_variants=int(stage["layout_variants"]),
+            )
+            for stage in config.get("layout_curriculum", ())
+        ),
     )
     _register_candidates(schedule, output_dir)
     if args.resume is not None:
@@ -307,8 +350,17 @@ def main(argv: list[str] | None = None) -> int:
     try:
         while environment_steps < stop_after:
             previous_steps = environment_steps
+            trainer.set_environment_steps(environment_steps)
             collection = collector.collect(
-                steps=min(rollout_steps, stop_after - environment_steps),
+                steps=min(
+                    _collection_steps(
+                        environment_steps,
+                        target=target_steps,
+                        rollout=rollout_steps,
+                        checkpoint_interval=checkpoint_interval,
+                    ),
+                    stop_after - environment_steps,
+                ),
                 start_environment_step=environment_steps,
             )
             environment_steps += collection.environment_steps
@@ -322,6 +374,11 @@ def main(argv: list[str] | None = None) -> int:
                     "episodes_completed": len(collection.episodes),
                     "event_counts": collection.event_counts,
                     "reward_components": collection.reward_components,
+                    "layout_variant_limit": schedule.layout_variant_limit(
+                        previous_steps
+                    ),
+                    "teacher_coefficient": trainer.teacher_coefficient,
+                    "learning_rates": trainer.scheduler.get_last_lr(),
                 },
             )
             for episode in collection.episodes:
@@ -364,6 +421,7 @@ def main(argv: list[str] | None = None) -> int:
                     )
                 if stop_update:
                     break
+            trainer.set_environment_steps(environment_steps)
             latest = output_dir / "latest.pt"
             trainer.save(
                 latest,
@@ -394,13 +452,13 @@ def main(argv: list[str] | None = None) -> int:
                 pfsp_state_path,
             )
             summary = {
-                "bc_checkpoint": str(bc_checkpoint.relative_to(root)),
+                "bc_checkpoint": _display_path(bc_checkpoint, root),
                 "bc_checkpoint_sha256": bc_sha256,
                 "candidate_checkpoints": _candidate_manifest(output_dir),
-                "checkpoint": str(latest.relative_to(root)),
+                "checkpoint": _display_path(latest, root),
                 "checkpoint_sha256": sha256_file(latest),
                 "completed": environment_steps == target_steps,
-                "config": str(config_path.relative_to(root)),
+                "config": _display_path(config_path, root),
                 "config_hash": config_hash,
                 "device": str(device),
                 "environment_steps": environment_steps,
@@ -408,12 +466,17 @@ def main(argv: list[str] | None = None) -> int:
                 "event_counts": dict(sorted(events.items())),
                 "fair_actor_observation_only": True,
                 "freeze_actor_backbone": freeze_actor_backbone,
+                "visual_curriculum": visual_curriculum,
                 "kl_early_stop_count": kl_stops,
                 "pfsp_win_rates": schedule.win_rates,
                 "reward_components": dict(sorted(rewards.items())),
                 "scenario_hash": scenario_hash,
                 "test_cases_accessed": False,
-                "teacher_auxiliary_coefficient": teacher_coefficient,
+                "teacher_auxiliary_coefficient": trainer.teacher_coefficient,
+                "learning_rates": trainer.scheduler.get_last_lr(),
+                "layout_variant_limit": schedule.layout_variant_limit(
+                    environment_steps
+                ),
                 "teacher_supervision": "privileged-strong-training-only",
                 "train_cases_sha256": sha256_file(train_cases_path),
                 "updates": trainer.updates,

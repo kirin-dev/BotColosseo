@@ -8,6 +8,7 @@ from botcolosseo.data.extraction_demonstrations import ExtractionCase
 from botcolosseo.training.extraction_pfsp import (
     ExtractionHistoricalOpponent,
     ExtractionPFSPSchedule,
+    LayoutCurriculumStage,
 )
 
 
@@ -86,3 +87,47 @@ def test_extraction_pfsp_rejects_duplicate_checkpoint(tmp_path: Path) -> None:
     )
     with pytest.raises(ValueError, match="duplicated"):
         schedule.add(duplicate)
+
+
+def test_layout_curriculum_is_stratified_and_step_driven() -> None:
+    randomized = tuple(
+        ExtractionCase(
+            "train",
+            seed,
+            side,
+            ("strong", "aggressive", "defensive", "explorer")[seed % 4],
+            "randomized",
+        )
+        for seed in range(128)
+        for side in ("host", "opponent")
+    )
+    schedule = ExtractionPFSPSchedule(
+        randomized,
+        shaping_decay_steps=800_000,
+        master_seed=7,
+        history_probability=0,
+        layout_curriculum=(
+            LayoutCurriculumStage(0, 16),
+            LayoutCurriculumStage(100_000, 32),
+            LayoutCurriculumStage(300_000, 128),
+        ),
+    )
+
+    assert schedule.layout_variant_limit(99_999) == 16
+    assert schedule.layout_variant_limit(100_000) == 32
+    assert schedule.layout_variant_limit(300_000) == 128
+    assignments = [schedule.assignment(0, index) for index in range(32)]
+    assert {item.case.opponent_style for item in assignments} == {
+        "strong",
+        "aggressive",
+        "defensive",
+        "explorer",
+    }
+    assert all(
+        left.case.seed == right.case.seed
+        and left.case.learner_side == "host"
+        and right.case.learner_side == "opponent"
+        for left, right in zip(assignments[::2], assignments[1::2], strict=True)
+    )
+    assert max(item.case.seed % 128 for item in assignments) < 16
+    assert assignments == [schedule.assignment(0, index) for index in range(32)]

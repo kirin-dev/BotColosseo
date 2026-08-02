@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 import torch
 
 from botcolosseo.training.gae import normalize_advantages
@@ -9,6 +11,101 @@ from botcolosseo.training.ppo import (
     PPOTrainer,
     ppo_loss,
 )
+
+
+def teacher_coefficient_at_step(environment_steps: int) -> float:
+    if environment_steps < 0:
+        raise ValueError("Environment steps must be nonnegative")
+    if environment_steps <= 100_000:
+        return 1.0
+    if environment_steps < 600_000:
+        progress = (environment_steps - 100_000) / 500_000
+        return 1.0 - 0.8 * progress
+    return 0.2
+
+
+def main_learning_rate_at_step(
+    environment_steps: int,
+    *,
+    total_steps: int,
+    initial_rate: float,
+    final_rate: float,
+) -> float:
+    if not 0 <= environment_steps <= total_steps:
+        raise ValueError("Environment step is outside the learning-rate schedule")
+    progress = environment_steps / total_steps
+    cosine = 0.5 * (1.0 + math.cos(math.pi * progress))
+    return final_rate + (initial_rate - final_rate) * cosine
+
+
+def visual_learning_rate_at_step(environment_steps: int) -> float:
+    if environment_steps < 0:
+        raise ValueError("Environment steps must be nonnegative")
+    if environment_steps <= 600_000:
+        return 0.0
+    if environment_steps < 620_000:
+        return 5e-7 * (environment_steps - 600_000) / 20_000
+    progress = min((environment_steps - 620_000) / 380_000, 1.0)
+    return 1e-7 + (5e-7 - 1e-7) * 0.5 * (
+        1.0 + math.cos(math.pi * progress)
+    )
+
+
+class EnvironmentStepLRScheduler:
+    """Checkpointable LR schedule controlled by committed environment steps."""
+
+    def __init__(
+        self,
+        optimizer: torch.optim.Optimizer,
+        *,
+        total_steps: int,
+        main_initial_rate: float,
+        main_final_rate: float,
+    ) -> None:
+        if len(optimizer.param_groups) != 2:
+            raise ValueError("Visual curriculum optimizer requires two groups")
+        self.optimizer = optimizer
+        self.total_steps = total_steps
+        self.main_initial_rate = main_initial_rate
+        self.main_final_rate = main_final_rate
+        self.environment_steps = 0
+        self.set_environment_steps(0)
+
+    def set_environment_steps(self, environment_steps: int) -> None:
+        self.optimizer.param_groups[0]["lr"] = main_learning_rate_at_step(
+            environment_steps,
+            total_steps=self.total_steps,
+            initial_rate=self.main_initial_rate,
+            final_rate=self.main_final_rate,
+        )
+        self.optimizer.param_groups[1]["lr"] = visual_learning_rate_at_step(
+            environment_steps
+        )
+        self.environment_steps = environment_steps
+
+    def step(self) -> None:
+        return None
+
+    def get_last_lr(self) -> list[float]:
+        return [float(group["lr"]) for group in self.optimizer.param_groups]
+
+    def state_dict(self) -> dict[str, float | int]:
+        return {
+            "environment_steps": self.environment_steps,
+            "total_steps": self.total_steps,
+            "main_initial_rate": self.main_initial_rate,
+            "main_final_rate": self.main_final_rate,
+        }
+
+    def load_state_dict(self, state: dict[str, float | int]) -> None:
+        expected = {
+            "total_steps": self.total_steps,
+            "main_initial_rate": self.main_initial_rate,
+            "main_final_rate": self.main_final_rate,
+        }
+        if any(state.get(key) != value for key, value in expected.items()):
+            raise ValueError("Environment-step LR scheduler identity changed")
+        self.set_environment_steps(int(state["environment_steps"]))
 
 
 class TeacherAnchoredPPOTrainer(PPOTrainer):
@@ -38,18 +135,44 @@ class TeacherAnchoredPPOTrainer(PPOTrainer):
         entropy_coefficient: float,
         max_kl: float,
         weight_decay: float = 0.0,
+        visual_parameters: tuple[torch.nn.Parameter, ...] = (),
+        total_environment_steps: int | None = None,
+        final_learning_rate: float = 0.0,
     ) -> TeacherAnchoredPPOTrainer:
         if learning_rate <= 0 or total_updates <= 0 or weight_decay < 0:
             raise ValueError("Invalid teacher-anchored PPO optimizer settings")
-        optimizer = torch.optim.AdamW(
-            model.parameters(),
-            lr=learning_rate,
-            weight_decay=weight_decay,
-        )
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer,
-            T_max=total_updates,
-        )
+        if visual_parameters:
+            if total_environment_steps is None or final_learning_rate <= 0:
+                raise ValueError("Visual curriculum schedule is incomplete")
+            visual_ids = {id(parameter) for parameter in visual_parameters}
+            main_parameters = tuple(
+                parameter
+                for parameter in model.parameters()
+                if parameter.requires_grad and id(parameter) not in visual_ids
+            )
+            optimizer = torch.optim.AdamW(
+                (
+                    {"params": main_parameters, "lr": learning_rate},
+                    {"params": visual_parameters, "lr": 0.0},
+                ),
+                weight_decay=weight_decay,
+            )
+            scheduler = EnvironmentStepLRScheduler(
+                optimizer,
+                total_steps=total_environment_steps,
+                main_initial_rate=learning_rate,
+                main_final_rate=final_learning_rate,
+            )
+        else:
+            optimizer = torch.optim.AdamW(
+                model.parameters(),
+                lr=learning_rate,
+                weight_decay=weight_decay,
+            )
+            scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+                optimizer,
+                T_max=total_updates,
+            )
         return cls(
             model,
             optimizer,
@@ -62,6 +185,11 @@ class TeacherAnchoredPPOTrainer(PPOTrainer):
             entropy_coefficient=entropy_coefficient,
             max_kl=max_kl,
         )
+
+    def set_environment_steps(self, environment_steps: int) -> None:
+        if isinstance(self.scheduler, EnvironmentStepLRScheduler):
+            self.scheduler.set_environment_steps(environment_steps)
+            self.teacher_coefficient = teacher_coefficient_at_step(environment_steps)
 
     def _loss(self, batch: PPOBatch) -> PPOLoss:
         if batch.teacher_actions is None or batch.teacher_mask is None:

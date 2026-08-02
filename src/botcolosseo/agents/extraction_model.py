@@ -80,6 +80,18 @@ def freeze_extraction_actor_backbone(model: ExtractionActorCritic) -> None:
     model.actor.recurrent.requires_grad_(False)
 
 
+def configure_extraction_actor_for_visual_curriculum(
+    model: ExtractionActorCritic,
+) -> tuple[nn.Parameter, ...]:
+    """Freeze visual features except the final convolution used by the curriculum."""
+    model.actor.visual_encoder.requires_grad_(False)
+    final_convolution = model.actor.visual_encoder[4]
+    if not isinstance(final_convolution, nn.Conv2d):
+        raise TypeError("Extraction final visual curriculum layer is not Conv2d")
+    final_convolution.requires_grad_(True)
+    return tuple(final_convolution.parameters())
+
+
 class ExtractionResidualStyleActorCritic(nn.Module):
     """Bounded learned delta logits over one frozen Extraction Strong Base."""
 

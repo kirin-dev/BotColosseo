@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from botcolosseo.data.extraction_demonstrations import ExtractionCase
+from botcolosseo.envs.extraction_layouts import randomized_layout_variant
 from botcolosseo.training.extraction_rollout import ExtractionEpisodeAssignment
 from botcolosseo.training.pfsp import pfsp_probabilities
 
@@ -26,6 +27,16 @@ class ExtractionHistoricalOpponent:
             raise ValueError("Invalid Extraction historical opponent")
 
 
+@dataclass(frozen=True)
+class LayoutCurriculumStage:
+    start_step: int
+    layout_variants: int
+
+    def __post_init__(self) -> None:
+        if self.start_step < 0 or not 1 <= self.layout_variants <= 128:
+            raise ValueError("Invalid Extraction layout curriculum stage")
+
+
 class ExtractionPFSPSchedule:
     """Deterministic script/history mixture with online lightweight PFSP."""
 
@@ -36,6 +47,7 @@ class ExtractionPFSPSchedule:
         shaping_decay_steps: int,
         master_seed: int,
         history_probability: float = 0.5,
+        layout_curriculum: tuple[LayoutCurriculumStage, ...] = (),
     ) -> None:
         if (
             not cases
@@ -46,10 +58,21 @@ class ExtractionPFSPSchedule:
             raise ValueError("Invalid Extraction PFSP schedule")
         if any(case.split != "train" for case in cases):
             raise ValueError("Extraction PFSP schedule requires train cases")
+        if layout_curriculum:
+            starts = tuple(stage.start_step for stage in layout_curriculum)
+            variants = tuple(stage.layout_variants for stage in layout_curriculum)
+            if (
+                starts[0] != 0
+                or starts != tuple(sorted(set(starts)))
+                or variants != tuple(sorted(variants))
+                or any(case.layout_id != "randomized" for case in cases)
+            ):
+                raise ValueError("Invalid Extraction layout curriculum")
         self.cases = cases
         self.shaping_decay_steps = shaping_decay_steps
         self.master_seed = master_seed
         self.history_probability = history_probability
+        self.layout_curriculum = layout_curriculum
         self._history: dict[str, ExtractionHistoricalOpponent] = {}
         self._outcomes: dict[str, list[float]] = {}
 
@@ -118,12 +141,53 @@ class ExtractionPFSPSchedule:
         opponent_id = next(reversed(probabilities))
         return self._history[opponent_id], probabilities[opponent_id]
 
+    def layout_variant_limit(self, environment_steps: int) -> int | None:
+        if environment_steps < 0:
+            raise ValueError("Extraction environment steps must be nonnegative")
+        if not self.layout_curriculum:
+            return None
+        eligible = tuple(
+            stage
+            for stage in self.layout_curriculum
+            if stage.start_step <= environment_steps
+        )
+        if not eligible:
+            raise ValueError("Extraction layout curriculum has no active stage")
+        return eligible[-1].layout_variants
+
+    def _case(self, environment_steps: int, episode_index: int) -> ExtractionCase:
+        limit = self.layout_variant_limit(environment_steps)
+        if limit is None:
+            return self.cases[episode_index % len(self.cases)]
+        groups: dict[str, list[tuple[ExtractionCase, ExtractionCase]]] = {}
+        paired: dict[tuple[int, str], dict[str, ExtractionCase]] = {}
+        for case in self.cases:
+            if randomized_layout_variant(case.seed) >= limit:
+                continue
+            paired.setdefault((case.seed, case.opponent_style), {})[
+                case.learner_side
+            ] = case
+        for (_, opponent_style), sides in sorted(paired.items()):
+            if set(sides) != {"host", "opponent"}:
+                raise ValueError("Curriculum cases must contain paired learner sides")
+            groups.setdefault(opponent_style, []).append(
+                (sides["host"], sides["opponent"])
+            )
+        if not groups or any(not group for group in groups.values()):
+            raise ValueError("Extraction curriculum stage has no eligible cases")
+        styles = tuple(sorted(groups))
+        pair_slot, side_index = divmod(episode_index, 2)
+        style_index = pair_slot % len(styles)
+        style = styles[style_index]
+        cycle = pair_slot // len(styles)
+        return groups[style][cycle % len(groups[style])][side_index]
+
     def assignment(
         self, environment_steps: int, episode_index: int
     ) -> ExtractionEpisodeAssignment:
         if environment_steps < 0 or episode_index < 0:
             raise ValueError("Extraction PFSP indices must be nonnegative")
-        case = self.cases[episode_index % len(self.cases)]
+        case = self._case(environment_steps, episode_index)
         pair_slot = episode_index // 2
         choose_history = (
             self._history

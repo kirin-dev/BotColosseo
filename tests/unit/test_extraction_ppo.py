@@ -5,7 +5,12 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from botcolosseo.training.extraction_ppo import TeacherAnchoredPPOTrainer
+from botcolosseo.training.extraction_ppo import (
+    TeacherAnchoredPPOTrainer,
+    main_learning_rate_at_step,
+    teacher_coefficient_at_step,
+    visual_learning_rate_at_step,
+)
 from botcolosseo.training.ppo import PPOBatch
 
 
@@ -117,3 +122,47 @@ def test_teacher_anchor_requires_supervision() -> None:
 
     with pytest.raises(ValueError, match="missing supervision"):
         trainer.evaluate(unsupervised)
+
+
+def test_environment_step_schedules_match_curriculum_boundaries() -> None:
+    assert teacher_coefficient_at_step(100_000) == pytest.approx(1.0)
+    assert teacher_coefficient_at_step(350_000) == pytest.approx(0.6)
+    assert teacher_coefficient_at_step(600_000) == pytest.approx(0.2)
+    assert main_learning_rate_at_step(
+        0, total_steps=1_000_000, initial_rate=1e-5, final_rate=1e-6
+    ) == pytest.approx(1e-5)
+    assert main_learning_rate_at_step(
+        1_000_000,
+        total_steps=1_000_000,
+        initial_rate=1e-5,
+        final_rate=1e-6,
+    ) == pytest.approx(1e-6)
+    assert visual_learning_rate_at_step(600_000) == 0
+    assert visual_learning_rate_at_step(610_000) == pytest.approx(2.5e-7)
+    assert visual_learning_rate_at_step(620_000) == pytest.approx(5e-7)
+    assert visual_learning_rate_at_step(1_000_000) == pytest.approx(1e-7)
+
+
+def test_visual_curriculum_optimizer_updates_from_environment_steps() -> None:
+    model = TinyActorCritic()
+    trainer = TeacherAnchoredPPOTrainer.create(
+        model,
+        teacher_coefficient=1.0,
+        learning_rate=1e-5,
+        final_learning_rate=1e-6,
+        visual_parameters=(model.logits,),
+        total_environment_steps=1_000_000,
+        total_updates=2,
+        gradient_clip=1,
+        policy_clip=0.2,
+        value_clip=0.2,
+        value_coefficient=0,
+        entropy_coefficient=0,
+        max_kl=1,
+    )
+
+    trainer.set_environment_steps(610_000)
+
+    assert trainer.teacher_coefficient == pytest.approx(0.2)
+    assert trainer.optimizer.param_groups[0]["lr"] < 1e-5
+    assert trainer.optimizer.param_groups[1]["lr"] == pytest.approx(2.5e-7)

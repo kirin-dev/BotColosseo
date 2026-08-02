@@ -10,6 +10,7 @@ from botcolosseo.agents.extraction_teachers import (
     StyledExtractionTeacher,
 )
 from botcolosseo.envs.actions import MacroAction
+from botcolosseo.envs.extraction_layouts import randomized_loot_layout
 from botcolosseo.envs.extraction_types import ExtractionPrivilegedState
 
 
@@ -134,3 +135,42 @@ def test_privileged_strong_teacher_stops_unbounded_pursuit() -> None:
     assert teacher.act(encounter) is MacroAction.FORWARD_ATTACK
     assert teacher.act(encounter) is MacroAction.FORWARD_ATTACK
     assert teacher.act(encounter) is MacroAction.TURN_LEFT
+
+
+def test_randomized_strong_teacher_invalidates_removed_target() -> None:
+    teacher = PrivilegedStrongExtractionTeacher(side="host", layout_variant=0)
+    layout = randomized_loot_layout(0)
+    first = teacher.act(replace(state(), opponent_health=0))
+    assert first in {
+        MacroAction.MOVE_FORWARD,
+        MacroAction.FORWARD_TURN_LEFT,
+        MacroAction.FORWARD_TURN_RIGHT,
+        MacroAction.TURN_LEFT,
+        MacroAction.TURN_RIGHT,
+    }
+    target_id = teacher._loot_target_id
+    assert target_id is not None
+
+    removed = replace(
+        state(),
+        opponent_health=0,
+        world_loot_mask=127 & ~(1 << target_id),
+        host_x=layout[target_id][1],
+        host_y=layout[target_id][2],
+    )
+    teacher.act(removed)
+    assert teacher._loot_target_id != target_id
+
+
+def test_randomized_strong_teacher_ignores_non_improving_loot() -> None:
+    teacher = PrivilegedStrongExtractionTeacher(side="host", layout_variant=0)
+    only_tens = sum(1 << loot_id for loot_id in range(4))
+    full = replace(
+        state(),
+        opponent_health=0,
+        host_slots=(25, 25, 50),
+        world_loot_mask=only_tens,
+    )
+
+    assert teacher.act(full) is MacroAction.FORWARD_TURN_LEFT
+    assert teacher._loot_target_id is None
