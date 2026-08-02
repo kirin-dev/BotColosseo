@@ -25,6 +25,7 @@ from botcolosseo.envs.extraction_types import (
     ExtractionObservations,
     ExtractionPrivilegedState,
 )
+from botcolosseo.envs.ipc import WorkerTimeout
 from botcolosseo.envs.synchronous_extraction import SynchronousExtractionEnv
 from botcolosseo.training.extraction_bc import extraction_observation_tensors
 from botcolosseo.training.extraction_rewards import (
@@ -299,12 +300,14 @@ class ExtractionRolloutCollector:
         style_reward_factory: Callable[[str], ExtractionStyleRewardLedger]
         | None = None,
         teacher_supervision: bool = False,
+        startup_attempts: int = 3,
     ) -> None:
         if (
             max_decisions <= 0
             or episode_index < 0
             or not 0 <= gamma <= 1
             or not 0 <= gae_lambda <= 1
+            or startup_attempts <= 0
         ):
             raise ValueError("Extraction collector settings are invalid")
         self.model = model
@@ -323,6 +326,7 @@ class ExtractionRolloutCollector:
         )
         self._style_reward_factory = style_reward_factory
         self._teacher_supervision = teacher_supervision
+        self._startup_attempts = startup_attempts
         self._environment: Any | None = None
         self._opponent: ExtractionOpponentController | None = None
         self._assignment: ExtractionEpisodeAssignment | None = None
@@ -359,17 +363,25 @@ class ExtractionRolloutCollector:
 
     def _start_episode(self, environment_steps: int) -> None:
         assignment = self.schedule.assignment(environment_steps, self.episode_index)
-        environment = self._environment_factory(assignment)
         opponent_side = (
             "opponent" if assignment.case.learner_side == "host" else "host"
         )
-        opponent = self._opponent_factory(assignment, opponent_side)
-        try:
-            observations, _ = environment.reset()
-            opponent.reset(seed=assignment.case.seed)
-        except BaseException:
-            environment.close()
-            raise
+        for attempt in range(1, self._startup_attempts + 1):
+            environment = self._environment_factory(assignment)
+            opponent = self._opponent_factory(assignment, opponent_side)
+            try:
+                observations, _ = environment.reset()
+                opponent.reset(seed=assignment.case.seed)
+                break
+            except WorkerTimeout:
+                environment.close()
+                if attempt == self._startup_attempts:
+                    raise
+            except BaseException:
+                environment.close()
+                raise
+        else:
+            raise AssertionError("Extraction startup retry loop did not return")
         self._environment = environment
         self._opponent = opponent
         self._assignment = assignment

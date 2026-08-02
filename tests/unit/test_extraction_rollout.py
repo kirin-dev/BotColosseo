@@ -16,6 +16,7 @@ from botcolosseo.envs.extraction_types import (
     ExtractionPrivilegedState,
     ExtractionStep,
 )
+from botcolosseo.envs.ipc import WorkerTimeout
 from botcolosseo.training.extraction_rollout import (
     ExtractionCaseSchedule,
     ExtractionEpisodeAssignment,
@@ -299,6 +300,35 @@ def test_extraction_collector_resets_hidden_swaps_sides_and_records_outcome() ->
     ]
     assert all(item.closed for item in created)
     assert opponent.previous_actions == [3, 1, 0, 1, 3]
+
+
+def test_extraction_collector_retries_transient_startup_timeout() -> None:
+    created: list[FakeEnvironment] = []
+
+    def environment_factory(assignment):
+        environment = FakeEnvironment(assignment)
+        created.append(environment)
+        if len(created) < 3:
+            environment.reset = lambda: (_ for _ in ()).throw(
+                WorkerTimeout("port collision")
+            )
+        return environment
+
+    collector = ExtractionRolloutCollector(
+        FakeModel(),
+        schedule=schedule(),
+        device=torch.device("cpu"),
+        environment_factory=environment_factory,
+        opponent_factory=lambda assignment, side: FakeOpponent(),
+        startup_attempts=3,
+    )
+    try:
+        collector._start_episode(0)
+    finally:
+        collector.close()
+
+    assert len(created) == 3
+    assert all(environment.closed for environment in created)
 
 
 class PublicActor(torch.nn.Module):
