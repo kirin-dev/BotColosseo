@@ -15,13 +15,14 @@ fi
 
 mkdir -p "${run_dir}" "${log_dir}"
 cd "${repo_root}"
-nohup env \
+setsid nohup env \
   -u http_proxy -u https_proxy -u HTTP_PROXY -u HTTPS_PROXY \
   -u all_proxy -u ALL_PROXY CUDA_VISIBLE_DEVICES=0 \
   "${python_bin}" -m botcolosseo.cli.train_extraction_strong \
   --config configs/extraction/randomized/strong-ppo-1m.yaml \
   --device cuda:0 \
-  >"${log_file}" 2>&1 &
+  >"${log_file}" 2>&1 </dev/null &
 pid=$!
+disown "${pid}" 2>/dev/null || true
 printf '%s\n' "${pid}" >"${pid_file}"
 printf 'PID %s\nLOG %s\n' "${pid}" "${log_file}"
