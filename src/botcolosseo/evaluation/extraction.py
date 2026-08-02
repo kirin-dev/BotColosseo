@@ -239,6 +239,13 @@ def evaluate_extraction_episode(
             )
             route_cells.add((math.floor(x / 160.0), math.floor(y / 160.0)))
             opponent_distance = math.dist((x, y), (opponent_x, opponent_y))
+            protocol_before = env.protocol_snapshot()
+            learner_alive_before = (
+                protocol_before.public_state(case.learner_side).life_state == 1
+            )
+            opponent_alive_before = (
+                protocol_before.public_state(opponent_side).life_state == 1
+            )
             favorable_resources = observation.health >= 40 and observation.ammo > 5
             if opponent_distance <= 384 and favorable_resources and not encounter_active:
                 encounter_opportunities += 1
@@ -251,6 +258,8 @@ def evaluate_extraction_episode(
                 health=observation.health,
                 ammo=observation.ammo,
                 opponent_distance=opponent_distance,
+                learner_alive=learner_alive_before,
+                opponent_alive=opponent_alive_before,
             )
             if (
                 observation.carried_value >= 50

@@ -47,6 +47,8 @@ def state(
     host_x: float = 0,
     opponent_x: float = 100,
     host_slots: tuple[int, int, int] = (0, 0, 0),
+    host_health: int = 100,
+    opponent_health: int = 100,
 ) -> ExtractionPrivilegedState:
     return ExtractionPrivilegedState(
         host_x=host_x,
@@ -55,8 +57,8 @@ def state(
         opponent_x=opponent_x,
         opponent_y=0,
         opponent_angle=180,
-        host_health=100,
-        opponent_health=100,
+        host_health=host_health,
+        opponent_health=opponent_health,
         host_slots=host_slots,
         opponent_slots=(0, 0, 0),
         host_banked=0,
@@ -291,6 +293,24 @@ def test_defensive_reward_does_not_treat_opponent_death_as_disengagement() -> No
         observation_before=observation(health=40),
         state_before=state(opponent_x=300),
         state_after=state(opponent_x=900),
+    )
+
+    assert "risk_disengagement" not in reward.components
+
+
+def test_defensive_reward_does_not_reactivate_while_opponent_is_dead() -> None:
+    ledger = DefensiveExtractionRewardLedger(
+        DefensiveExtractionRewardConfig(),
+        learner_side="host",
+        scale=1,
+    )
+
+    reward = ledger.apply(
+        MacroAction.MOVE_BACKWARD,
+        (),
+        observation_before=observation(health=40),
+        state_before=state(opponent_x=300, opponent_health=0),
+        state_after=state(opponent_x=900, opponent_health=0),
     )
 
     assert "risk_disengagement" not in reward.components

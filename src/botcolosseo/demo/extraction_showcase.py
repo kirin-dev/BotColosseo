@@ -463,10 +463,17 @@ def record_extraction_showcase(
             )
             route_cells.add((math.floor(x / 160), math.floor(y / 160)))
             opponent_distance = math.dist((x, y), (opponent_x, opponent_y))
+            protocol_before = env.protocol_snapshot()
             disengagement.observe_encounter(
                 health=observation.health,
                 ammo=observation.ammo,
                 opponent_distance=opponent_distance,
+                learner_alive=(
+                    protocol_before.public_state(case.learner_side).life_state == 1
+                ),
+                opponent_alive=(
+                    protocol_before.public_state(opponent_side).life_state == 1
+                ),
             )
             opponent_action = opponent.act(state)
             host_action, away_action = (

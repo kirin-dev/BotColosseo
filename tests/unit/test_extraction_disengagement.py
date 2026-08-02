@@ -46,3 +46,17 @@ def test_learner_terminal_transition_cancels_disengagement() -> None:
     assert resolved is False
     assert tracker.successes == 0
     assert tracker.active is False
+
+
+def test_dead_opponent_does_not_create_repeated_opportunities() -> None:
+    tracker = DisengagementTracker()
+
+    tracker.observe_encounter(
+        health=35,
+        ammo=10,
+        opponent_distance=300,
+        opponent_alive=False,
+    )
+
+    assert tracker.opportunities == 0
+    assert tracker.active is False

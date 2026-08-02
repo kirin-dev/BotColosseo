@@ -283,7 +283,22 @@ class DefensiveExtractionRewardLedger(_BoundedLedger):
         before_distance = _opponent_distance(state_before, self.learner_side)
         after_distance = _opponent_distance(state_after, self.learner_side)
         low_resources = observation_before.health <= 40 or observation_before.ammo <= 5
-        self._risk_active |= low_resources and before_distance <= 384
+        learner_health_before, opponent_health_before = (
+            (state_before.host_health, state_before.opponent_health)
+            if self.learner_side == "host"
+            else (state_before.opponent_health, state_before.host_health)
+        )
+        learner_health_after, opponent_health_after = (
+            (state_after.host_health, state_after.opponent_health)
+            if self.learner_side == "host"
+            else (state_after.opponent_health, state_after.host_health)
+        )
+        both_alive_before = learner_health_before > 0 and opponent_health_before > 0
+        both_alive_after = learner_health_after > 0 and opponent_health_after > 0
+        if not both_alive_before:
+            self._risk_active = False
+        else:
+            self._risk_active |= low_resources and before_distance <= 384
         terminal_transition = any(
             event.type
             in {
@@ -293,7 +308,7 @@ class DefensiveExtractionRewardLedger(_BoundedLedger):
             }
             for event in events
         )
-        if terminal_transition:
+        if terminal_transition or not both_alive_after:
             self._risk_active = False
         elif self._risk_active and after_distance >= 512:
             self._add(
