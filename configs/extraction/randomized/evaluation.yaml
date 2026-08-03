@@ -1,0 +1,15 @@
+schema_version: 1
+splits:
+  validation:
+    seed_start: 62000
+    pairs_per_opponent: 30
+    layout_id: randomized
+  heldout:
+    seed_start: 63000
+    pairs_per_opponent: 15
+    layout_id: randomized
+  solo:
+    seed_start: 64000
+    pairs_per_opponent: 20
+    layout_id: randomized
+    opponent_styles: [idle]

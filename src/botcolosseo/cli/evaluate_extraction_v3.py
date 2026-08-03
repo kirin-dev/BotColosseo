@@ -45,6 +45,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-cases", type=int)
     parser.add_argument("--max-pairs-per-opponent", type=int)
     parser.add_argument("--device", default="cuda:0")
+    parser.add_argument(
+        "--scenario-directory",
+        choices=("crystal_run_extraction", "crystal_run_extraction_randomized"),
+        default="crystal_run_extraction",
+    )
     parser.add_argument("--output", type=Path, required=True)
     return parser
 
@@ -92,7 +97,7 @@ def main(argv: list[str] | None = None) -> int:
     output = _resolve(root, args.output)
     scenario_hash = json.loads(
         (
-            root / "assets/scenarios/crystal_run_extraction/manifest.json"
+            root / "assets/scenarios" / args.scenario_directory / "manifest.json"
         ).read_text(encoding="utf-8")
     )["wad_sha256"]
     device = torch.device(args.device)
@@ -152,6 +157,7 @@ def main(argv: list[str] | None = None) -> int:
             case=case,
             device=device,
             policy_model=model,
+            scenario_directory=args.scenario_directory,
         )
         for case in cases
     )
@@ -190,6 +196,7 @@ def main(argv: list[str] | None = None) -> int:
         "protocol": str(protocol_path.relative_to(root)),
         "protocol_sha256": protocol.sha256,
         "scenario_hash": scenario_hash,
+        "scenario_directory": args.scenario_directory,
         "metrics": summarize_extraction_episodes(episodes),
         "actor_privilege_violations": 0,
         "fair_actor_observation_only": True,
