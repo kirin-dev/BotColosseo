@@ -254,7 +254,13 @@ class PPOTrainer:
             }
         )
 
-    def _loss(self, batch: PPOBatch) -> PPOLoss:
+    def _loss(
+        self,
+        batch: PPOBatch,
+        replay_batch: dict[str, torch.Tensor] | None = None,
+    ) -> PPOLoss:
+        if replay_batch is not None:
+            raise ValueError("This PPO trainer does not support replay batches")
         normalized = normalize_advantages(batch.advantages, batch.loss_mask)
         output = self.model(
             batch.frames,
@@ -298,15 +304,33 @@ class PPOTrainer:
         )
 
     @torch.no_grad()
-    def evaluate(self, batch: PPOBatch) -> PPOUpdateMetrics:
+    def evaluate(
+        self,
+        batch: PPOBatch,
+        replay_batch: dict[str, torch.Tensor] | None = None,
+    ) -> PPOUpdateMetrics:
         self.model.eval()
-        return self._metrics(self._loss(self._move(batch)))
+        moved_replay = (
+            None
+            if replay_batch is None
+            else {name: tensor.to(self.device) for name, tensor in replay_batch.items()}
+        )
+        return self._metrics(self._loss(self._move(batch), moved_replay))
 
-    def train_step(self, batch: PPOBatch) -> PPOUpdateMetrics:
+    def train_step(
+        self,
+        batch: PPOBatch,
+        replay_batch: dict[str, torch.Tensor] | None = None,
+    ) -> PPOUpdateMetrics:
         self.model.train()
         moved = self._move(batch)
+        moved_replay = (
+            None
+            if replay_batch is None
+            else {name: tensor.to(self.device) for name, tensor in replay_batch.items()}
+        )
         self.optimizer.zero_grad(set_to_none=True)
-        loss = self._loss(moved)
+        loss = self._loss(moved, moved_replay)
         loss.total_loss.backward()
         pre_clip = float(
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.gradient_clip)

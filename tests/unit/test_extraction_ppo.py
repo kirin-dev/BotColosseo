@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from types import SimpleNamespace
 
 import pytest
@@ -14,11 +15,38 @@ from botcolosseo.training.extraction_ppo import (
 from botcolosseo.training.ppo import PPOBatch
 
 
-class TinyActorCritic(torch.nn.Module):
+class TinyActor(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.logits = torch.nn.Parameter(torch.tensor([2.0, -1.0]))
+
+    def forward(
+        self,
+        frames,
+        scalars,
+        previous_actions,
+        masks,
+        hidden=None,
+    ):
+        del scalars, previous_actions, masks
+        batch, time = frames.shape[:2]
+        if hidden is None:
+            hidden = torch.zeros(1, batch, 1, device=frames.device)
+        return SimpleNamespace(
+            logits=self.logits.expand(batch, time, 2),
+            hidden=hidden,
+        )
+
+
+class TinyActorCritic(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.actor = TinyActor()
         self.value = torch.nn.Parameter(torch.tensor(0.0))
+
+    @property
+    def logits(self):
+        return self.actor.logits
 
     def forward(
         self,
@@ -29,10 +57,17 @@ class TinyActorCritic(torch.nn.Module):
         privileged,
         hidden,
     ):
-        del scalars, previous_actions, masks, privileged
+        del privileged
         batch, time = frames.shape[:2]
+        actor = self.actor(
+            frames,
+            scalars,
+            previous_actions,
+            masks,
+            hidden,
+        )
         return SimpleNamespace(
-            logits=self.logits.expand(batch, time, 2),
+            logits=actor.logits,
             values=self.value.expand(batch, time),
             hidden=hidden,
         )
@@ -67,6 +102,17 @@ def batch(model: TinyActorCritic) -> PPOBatch:
         teacher_actions=torch.ones(1, 2, dtype=torch.long),
         teacher_mask=torch.tensor([[True, False]]),
     )
+
+
+def replay_batch() -> dict[str, torch.Tensor]:
+    return {
+        "frames": torch.zeros(1, 2, 1, 84, 84, dtype=torch.uint8),
+        "scalars": torch.zeros(1, 2, 1),
+        "previous_actions": torch.zeros(1, 2, dtype=torch.long),
+        "masks": torch.tensor([[0.0, 1.0]]),
+        "actions": torch.tensor([[0, 1]]),
+        "valid": torch.tensor([[True, False]]),
+    }
 
 
 def test_teacher_anchor_adds_masked_cross_entropy() -> None:
@@ -166,3 +212,70 @@ def test_visual_curriculum_optimizer_updates_from_environment_steps() -> None:
     assert trainer.teacher_coefficient == pytest.approx(0.2)
     assert trainer.optimizer.param_groups[0]["lr"] < 1e-5
     assert trainer.optimizer.param_groups[1]["lr"] == pytest.approx(2.5e-7)
+
+
+def test_conservative_anchors_preserve_frozen_reference_and_mask_replay() -> None:
+    model = TinyActorCritic()
+    reference = copy.deepcopy(model.actor)
+    trainer = TeacherAnchoredPPOTrainer.create(
+        model,
+        teacher_coefficient=0.1,
+        reference_actor=reference,
+        reference_kl_coefficient=1.0,
+        replay_coefficient=1.0,
+        learning_rate=1e-3,
+        total_updates=2,
+        gradient_clip=1,
+        policy_clip=0.2,
+        value_clip=0.2,
+        value_coefficient=0,
+        entropy_coefficient=0,
+        max_kl=1,
+    )
+
+    trainer.evaluate(batch(model), replay_batch())
+
+    assert trainer.last_reference_kl == pytest.approx(0, abs=1e-7)
+    assert trainer.last_replay_loss == pytest.approx(
+        torch.nn.functional.cross_entropy(
+            torch.tensor([[2.0, -1.0]]),
+            torch.tensor([0]),
+        ).item()
+    )
+    assert trainer.last_replay_agreement == 1
+    assert trainer.last_replay_tokens == 1
+    assert all(not parameter.requires_grad for parameter in reference.parameters())
+    optimized = {
+        id(parameter)
+        for group in trainer.optimizer.param_groups
+        for parameter in group["params"]
+    }
+    assert all(id(parameter) not in optimized for parameter in reference.parameters())
+
+    with torch.no_grad():
+        model.logits[1].add_(1)
+    trainer.evaluate(batch(model), replay_batch())
+
+    assert trainer.last_reference_kl > 0
+    trainer.train_step(batch(model), replay_batch())
+    assert all(parameter.grad is None for parameter in reference.parameters())
+
+
+def test_conservative_replay_is_required_when_enabled() -> None:
+    model = TinyActorCritic()
+    trainer = TeacherAnchoredPPOTrainer.create(
+        model,
+        teacher_coefficient=0.1,
+        replay_coefficient=1.0,
+        learning_rate=1e-3,
+        total_updates=2,
+        gradient_clip=1,
+        policy_clip=0.2,
+        value_clip=0.2,
+        value_coefficient=0,
+        entropy_coefficient=0,
+        max_kl=1,
+    )
+
+    with pytest.raises(ValueError, match="replay batch is missing"):
+        trainer.evaluate(batch(model))

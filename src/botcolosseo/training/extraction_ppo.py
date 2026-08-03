@@ -111,14 +111,46 @@ class EnvironmentStepLRScheduler:
 class TeacherAnchoredPPOTrainer(PPOTrainer):
     """PPO with an on-policy Strong Teacher anchor."""
 
-    def __init__(self, *args, teacher_coefficient: float, **kwargs) -> None:
-        if teacher_coefficient <= 0:
-            raise ValueError("Teacher auxiliary coefficient must be positive")
+    def __init__(
+        self,
+        *args,
+        teacher_coefficient: float,
+        reference_actor: torch.nn.Module | None = None,
+        reference_kl_coefficient: float = 0.0,
+        replay_coefficient: float = 0.0,
+        **kwargs,
+    ) -> None:
+        if min(
+            teacher_coefficient,
+            reference_kl_coefficient,
+            replay_coefficient,
+        ) < 0:
+            raise ValueError("Conservative PPO coefficients must be nonnegative")
+        if reference_kl_coefficient > 0 and reference_actor is None:
+            raise ValueError("Reference KL requires a frozen BC Actor")
         super().__init__(*args, **kwargs)
+        if reference_actor is not None:
+            reference_actor.requires_grad_(False)
+            reference_actor.eval()
+            optimized = {
+                id(parameter)
+                for group in self.optimizer.param_groups
+                for parameter in group["params"]
+            }
+            if any(id(parameter) in optimized for parameter in reference_actor.parameters()):
+                raise ValueError("Frozen BC reference is present in the optimizer")
+        self.reference_actor = reference_actor
+        self.reference_kl_coefficient = reference_kl_coefficient
+        self.replay_coefficient = replay_coefficient
+        self._teacher_coefficient_scale = teacher_coefficient
         self.teacher_coefficient = teacher_coefficient
         self.last_teacher_loss = 0.0
         self.last_teacher_agreement = 0.0
         self.last_supervised_tokens = 0
+        self.last_reference_kl = 0.0
+        self.last_replay_loss = 0.0
+        self.last_replay_agreement = 0.0
+        self.last_replay_tokens = 0
 
     @classmethod
     def create(
@@ -138,6 +170,9 @@ class TeacherAnchoredPPOTrainer(PPOTrainer):
         visual_parameters: tuple[torch.nn.Parameter, ...] = (),
         total_environment_steps: int | None = None,
         final_learning_rate: float = 0.0,
+        reference_actor: torch.nn.Module | None = None,
+        reference_kl_coefficient: float = 0.0,
+        replay_coefficient: float = 0.0,
     ) -> TeacherAnchoredPPOTrainer:
         if learning_rate <= 0 or total_updates <= 0 or weight_decay < 0:
             raise ValueError("Invalid teacher-anchored PPO optimizer settings")
@@ -178,6 +213,9 @@ class TeacherAnchoredPPOTrainer(PPOTrainer):
             optimizer,
             scheduler,
             teacher_coefficient=teacher_coefficient,
+            reference_actor=reference_actor,
+            reference_kl_coefficient=reference_kl_coefficient,
+            replay_coefficient=replay_coefficient,
             gradient_clip=gradient_clip,
             policy_clip=policy_clip,
             value_clip=value_clip,
@@ -189,9 +227,16 @@ class TeacherAnchoredPPOTrainer(PPOTrainer):
     def set_environment_steps(self, environment_steps: int) -> None:
         if isinstance(self.scheduler, EnvironmentStepLRScheduler):
             self.scheduler.set_environment_steps(environment_steps)
-            self.teacher_coefficient = teacher_coefficient_at_step(environment_steps)
+            self.teacher_coefficient = (
+                self._teacher_coefficient_scale
+                * teacher_coefficient_at_step(environment_steps)
+            )
 
-    def _loss(self, batch: PPOBatch) -> PPOLoss:
+    def _loss(
+        self,
+        batch: PPOBatch,
+        replay_batch: dict[str, torch.Tensor] | None = None,
+    ) -> PPOLoss:
         if batch.teacher_actions is None or batch.teacher_mask is None:
             raise ValueError("Teacher-anchored PPO batch is missing supervision")
         supervised = batch.teacher_mask & batch.loss_mask
@@ -233,8 +278,80 @@ class TeacherAnchoredPPOTrainer(PPOTrainer):
             (logits.argmax(dim=-1) == actions).float().mean().detach()
         )
         self.last_supervised_tokens = int(supervised.sum())
+        reference_kl = torch.zeros((), device=output.logits.device)
+        if self.reference_kl_coefficient > 0:
+            if self.reference_actor is None:
+                raise RuntimeError("Conservative PPO reference Actor is missing")
+            with torch.no_grad():
+                reference = self.reference_actor(
+                    batch.frames,
+                    batch.scalars,
+                    batch.previous_actions,
+                    batch.masks,
+                    batch.initial_hidden,
+                )
+            reference_log_probs = torch.nn.functional.log_softmax(
+                reference.logits[batch.loss_mask],
+                dim=-1,
+            )
+            current_log_probs = torch.nn.functional.log_softmax(
+                output.logits[batch.loss_mask],
+                dim=-1,
+            )
+            reference_probs = reference_log_probs.exp()
+            reference_kl = (
+                reference_probs * (reference_log_probs - current_log_probs)
+            ).sum(dim=-1).mean()
+            if not bool(torch.isfinite(reference_kl)):
+                raise FloatingPointError("Frozen-reference KL is not finite")
+        self.last_reference_kl = float(reference_kl.detach())
+
+        replay_loss = torch.zeros((), device=output.logits.device)
+        if self.replay_coefficient > 0:
+            if replay_batch is None:
+                raise ValueError("Conservative PPO replay batch is missing")
+            required = {
+                "frames",
+                "scalars",
+                "previous_actions",
+                "masks",
+                "actions",
+                "valid",
+            }
+            if not required.issubset(replay_batch):
+                raise ValueError("Conservative PPO replay batch is incomplete")
+            replay = self.model.actor(
+                replay_batch["frames"],
+                replay_batch["scalars"],
+                replay_batch["previous_actions"],
+                replay_batch["masks"],
+            )
+            replay_valid = replay_batch["valid"]
+            if replay_valid.dtype != torch.bool or not bool(replay_valid.any()):
+                raise ValueError("Conservative PPO replay selects no valid tokens")
+            replay_logits = replay.logits[replay_valid]
+            replay_actions = replay_batch["actions"][replay_valid]
+            replay_loss = torch.nn.functional.cross_entropy(
+                replay_logits,
+                replay_actions,
+            )
+            if not bool(torch.isfinite(replay_loss)):
+                raise FloatingPointError("Conservative PPO replay loss is not finite")
+            self.last_replay_agreement = float(
+                (replay_logits.argmax(dim=-1) == replay_actions)
+                .float()
+                .mean()
+                .detach()
+            )
+            self.last_replay_tokens = int(replay_actions.numel())
+        else:
+            self.last_replay_agreement = 0.0
+            self.last_replay_tokens = 0
+        self.last_replay_loss = float(replay_loss.detach())
         return loss._replace(
             total_loss=(
                 loss.total_loss + self.teacher_coefficient * teacher_loss
+                + self.reference_kl_coefficient * reference_kl
+                + self.replay_coefficient * replay_loss
             )
         )

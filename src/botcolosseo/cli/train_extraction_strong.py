@@ -16,13 +16,23 @@ from botcolosseo.agents.extraction_model import (
     configure_extraction_actor_for_visual_curriculum,
     create_extraction_actor_critic,
     freeze_extraction_actor_backbone,
+    load_extraction_policy,
 )
 from botcolosseo.data.demonstrations import sha256_file
 from botcolosseo.data.extraction_demonstrations import (
     ExtractionCase,
     extraction_teacher_sha256,
 )
-from botcolosseo.training.bc import append_jsonl, seed_everything
+from botcolosseo.training.bc import (
+    DeterministicBatchStream,
+    append_jsonl,
+    seed_everything,
+)
+from botcolosseo.training.extraction_bc import (
+    ExtractionChunkDataset,
+    extraction_manifest_teacher_sha256,
+    load_extraction_shard_paths,
+)
 from botcolosseo.training.extraction_checkpoint import (
     load_extraction_bc_warm_start,
     load_extraction_strong_actor,
@@ -219,6 +229,39 @@ def main(argv: list[str] | None = None) -> int:
             expected_teacher_sha256=required_teacher_sha256,
             expected_sha256=bc_sha256,
         )
+    replay_coefficient = float(config.get("replay_coefficient", 0.0))
+    reference_kl_coefficient = float(
+        config.get("reference_kl_coefficient", 0.0)
+    )
+    replay_manifest: Path | None = None
+    replay_stream: DeterministicBatchStream | None = None
+    provenance_paths = [
+        config_path,
+        train_cases_path,
+        bc_checkpoint,
+        scenario_manifest,
+    ]
+    if replay_coefficient > 0:
+        replay_manifest = root / config["replay_manifest"]
+        if required_teacher_sha256 is not None:
+            replay_teacher_sha256 = extraction_manifest_teacher_sha256(
+                replay_manifest
+            )
+            if replay_teacher_sha256 != required_teacher_sha256:
+                raise ValueError(
+                    "PPO replay manifest does not match the required Teacher"
+                )
+        replay_dataset = ExtractionChunkDataset(
+            load_extraction_shard_paths(replay_manifest),
+            chunk_length=int(config["replay_chunk_length"]),
+            max_transitions=config.get("replay_max_transitions"),
+        )
+        replay_stream = DeterministicBatchStream(
+            replay_dataset,
+            batch_size=int(config["replay_batch_size"]),
+            seed=int(config["seed"]) + 17,
+        )
+        provenance_paths.append(replay_manifest)
     target_steps = args.environment_steps or int(config["environment_steps"])
     stop_after = args.stop_after_steps or target_steps
     rollout_steps = args.rollout_steps or int(config["rollout_steps"])
@@ -229,7 +272,7 @@ def main(argv: list[str] | None = None) -> int:
     if not 0 < stop_after <= target_steps or min(rollout_steps, checkpoint_interval) <= 0:
         raise ValueError("Strong PPO step schedule is invalid")
     config_hash = _provenance_hash(
-        (config_path, train_cases_path, bc_checkpoint, scenario_manifest),
+        tuple(provenance_paths),
         {"environment_steps": target_steps, "rollout_steps": rollout_steps},
     )
     device = torch.device(args.device)
@@ -246,6 +289,14 @@ def main(argv: list[str] | None = None) -> int:
         visual_parameters = configure_extraction_actor_for_visual_curriculum(model)
     elif freeze_actor_backbone:
         freeze_extraction_actor_backbone(model)
+    reference_actor = None
+    if reference_kl_coefficient > 0:
+        reference_actor, _ = load_extraction_policy(
+            bc_checkpoint,
+            style="strong",
+            scenario_hash=scenario_hash,
+            device=device,
+        )
     teacher_coefficient = float(config["teacher_auxiliary_coefficient"])
     trainer = TeacherAnchoredPPOTrainer.create(
         model,
@@ -268,6 +319,9 @@ def main(argv: list[str] | None = None) -> int:
         visual_parameters=visual_parameters,
         total_environment_steps=(target_steps if visual_curriculum else None),
         final_learning_rate=float(config.get("final_learning_rate", 0.0)),
+        reference_actor=reference_actor,
+        reference_kl_coefficient=reference_kl_coefficient,
+        replay_coefficient=replay_coefficient,
     )
     environment_steps = 0
     episode_index = 0
@@ -407,7 +461,12 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 for batch in batches:
                     try:
-                        metrics = trainer.train_step(batch)
+                        replay_batch = (
+                            None
+                            if replay_stream is None
+                            else replay_stream.batch(trainer.updates)
+                        )
+                        metrics = trainer.train_step(batch, replay_batch)
                     except ExcessiveKLError as error:
                         kl_stops += 1
                         append_jsonl(
@@ -429,6 +488,10 @@ def main(argv: list[str] | None = None) -> int:
                             "teacher_loss": trainer.last_teacher_loss,
                             "teacher_agreement": trainer.last_teacher_agreement,
                             "supervised_tokens": trainer.last_supervised_tokens,
+                            "reference_kl": trainer.last_reference_kl,
+                            "replay_loss": trainer.last_replay_loss,
+                            "replay_agreement": trainer.last_replay_agreement,
+                            "replay_tokens": trainer.last_replay_tokens,
                             **asdict(metrics),
                         },
                     )
@@ -443,6 +506,12 @@ def main(argv: list[str] | None = None) -> int:
                 counters={
                     "environment_steps": environment_steps,
                     "episodes": collector.episode_index,
+                },
+                lineage={
+                    "bc_checkpoint_sha256": bc_sha256,
+                    "teacher_implementation_sha256": (
+                        required_teacher_sha256 or "not-required"
+                    ),
                 },
             )
             candidate_step = _candidate_step(
@@ -486,6 +555,22 @@ def main(argv: list[str] | None = None) -> int:
                 "scenario_hash": scenario_hash,
                 "test_cases_accessed": False,
                 "teacher_auxiliary_coefficient": trainer.teacher_coefficient,
+                "reference_kl_coefficient": reference_kl_coefficient,
+                "replay_coefficient": replay_coefficient,
+                "reference_kl": trainer.last_reference_kl,
+                "replay_loss": trainer.last_replay_loss,
+                "replay_agreement": trainer.last_replay_agreement,
+                "replay_tokens": trainer.last_replay_tokens,
+                "replay_manifest": (
+                    None
+                    if replay_manifest is None
+                    else _display_path(replay_manifest, root)
+                ),
+                "replay_manifest_sha256": (
+                    None
+                    if replay_manifest is None
+                    else sha256_file(replay_manifest)
+                ),
                 "learning_rates": trainer.scheduler.get_last_lr(),
                 "layout_variant_limit": schedule.layout_variant_limit(
                     environment_steps
