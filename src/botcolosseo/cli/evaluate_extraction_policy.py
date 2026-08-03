@@ -203,6 +203,8 @@ def main(argv: list[str] | None = None) -> int:
             if args.aggressive_governor
             else "learned-checkpoint"
         ),
+        "actor_privilege_violations": 0,
+        "fair_actor_observation_only": True,
         "governor_thresholds": (
             {
                 "carried_value": args.governor_carried,
