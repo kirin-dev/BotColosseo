@@ -110,6 +110,20 @@ def load_extraction_shard_paths(manifest_path: Path) -> tuple[Path, ...]:
     return paths
 
 
+def extraction_manifest_teacher_sha256(manifest_path: Path) -> str | None:
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    value = payload.get("teacher_implementation_sha256")
+    if value is None:
+        return None
+    if (
+        not isinstance(value, str)
+        or len(value) != 64
+        or any(character not in "0123456789abcdef" for character in value)
+    ):
+        raise ValueError("Extraction manifest Teacher SHA-256 is invalid")
+    return value
+
+
 def extraction_observation_tensors(
     observation: ExtractionActorObservation,
     *,

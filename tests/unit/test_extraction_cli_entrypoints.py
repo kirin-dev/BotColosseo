@@ -22,6 +22,7 @@ import pytest
         "botcolosseo.cli.adopt_extraction_showcase_capture",
         "botcolosseo.cli.summarize_extraction_ablations",
         "botcolosseo.cli.select_randomized_strong_1m",
+        "botcolosseo.cli.evaluate_extraction_teacher",
     ),
 )
 def test_v3_cli_modules_expose_executable_help(module: str) -> None:

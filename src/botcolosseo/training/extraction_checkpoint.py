@@ -58,6 +58,26 @@ def load_extraction_bc_warm_start(
     return metadata
 
 
+def validate_extraction_teacher_lineage(
+    path: Path,
+    *,
+    expected_scenario_hash: str,
+    expected_teacher_sha256: str,
+    expected_sha256: str | None = None,
+) -> CheckpointMetadata:
+    _, metadata = _training_payload(
+        path,
+        expected_scenario_hash=expected_scenario_hash,
+        expected_sha256=expected_sha256,
+    )
+    if (
+        metadata.lineage.get("teacher_implementation_sha256")
+        != expected_teacher_sha256
+    ):
+        raise ValueError("Extraction BC and PPO Teacher identities do not match")
+    return metadata
+
+
 def load_extraction_strong_actor(
     path: Path,
     *,

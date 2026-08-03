@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import numpy as np
+import pytest
 import torch
 
 from botcolosseo.agents.extraction_model import (
@@ -23,6 +24,7 @@ from botcolosseo.data.extraction_demonstrations import (
 from botcolosseo.envs.extraction_types import ExtractionActorObservation
 from botcolosseo.training.extraction_bc import (
     ExtractionChunkDataset,
+    extraction_manifest_teacher_sha256,
     load_extraction_shard_paths,
 )
 
@@ -80,6 +82,22 @@ def test_extraction_dataset_and_actor_shapes(tmp_path: Path) -> None:
 
     assert output.logits.shape == (1, 4, 13)
     assert batch["valid"].tolist() == [True, True, True, False]
+
+
+def test_extraction_manifest_teacher_identity_is_validated(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps({"teacher_implementation_sha256": "a" * 64}),
+        encoding="utf-8",
+    )
+
+    assert extraction_manifest_teacher_sha256(manifest) == "a" * 64
+    manifest.write_text(
+        json.dumps({"teacher_implementation_sha256": "not-a-hash"}),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="Teacher SHA-256"):
+        extraction_manifest_teacher_sha256(manifest)
 
 
 def test_style_actor_freezes_base_and_trains_small_branch() -> None:

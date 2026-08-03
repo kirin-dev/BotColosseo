@@ -319,7 +319,14 @@ class BCTrainer:
             weighted_loss / total, weighted_accuracy / total, total
         )
 
-    def save(self, path: Path, *, config_hash: str, scenario_hash: str) -> Path:
+    def save(
+        self,
+        path: Path,
+        *,
+        config_hash: str,
+        scenario_hash: str,
+        lineage: dict[str, str | int] | None = None,
+    ) -> Path:
         return save_training_checkpoint(
             path,
             model=self.model,
@@ -329,6 +336,7 @@ class BCTrainer:
                 config_hash=config_hash,
                 scenario_hash=scenario_hash,
                 counters={"updates": self.updates},
+                lineage=dict(lineage or {}),
             ),
         )
 

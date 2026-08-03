@@ -10,7 +10,10 @@ from pathlib import Path
 import torch
 
 from botcolosseo.agents.extraction_model import load_extraction_policy
-from botcolosseo.agents.extraction_teachers import StyledExtractionTeacher
+from botcolosseo.agents.extraction_teachers import (
+    PrivilegedStrongExtractionTeacher,
+    StyledExtractionTeacher,
+)
 from botcolosseo.data.extraction_demonstrations import ExtractionCase
 from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.extraction_layouts import randomized_layout_variant
@@ -133,12 +136,13 @@ def _learner_event_count(
 def evaluate_extraction_episode(
     *,
     root: Path,
-    checkpoint: Path,
+    checkpoint: Path | None,
     style: str,
     case: ExtractionCase,
     device: torch.device,
     max_decisions: int = 700,
     policy_model: torch.nn.Module | None = None,
+    privileged_teacher: PrivilegedStrongExtractionTeacher | None = None,
     scenario_directory: str = "crystal_run_extraction",
 ) -> ExtractionEpisodeMetrics:
     scenario_hash = json.loads(
@@ -146,7 +150,11 @@ def evaluate_extraction_episode(
             root / "assets/scenarios" / scenario_directory / "manifest.json"
         ).read_text(encoding="utf-8")
     )["wad_sha256"]
-    if policy_model is None:
+    if privileged_teacher is not None and policy_model is not None:
+        raise ValueError("Extraction evaluation accepts one learner controller")
+    if privileged_teacher is None and policy_model is None:
+        if checkpoint is None:
+            raise ValueError("Extraction policy evaluation requires a checkpoint")
         model, _ = load_extraction_policy(
             checkpoint,
             style=style,
@@ -210,9 +218,13 @@ def evaluate_extraction_episode(
     urgency_active = False
     urgency_extractions = 0
     timeout_with_value = 0
-    hidden = model.initial_state(1, device=device)
+    hidden = (
+        None if model is None else model.initial_state(1, device=device)
+    )
     try:
         observations, _ = env.reset()
+        if privileged_teacher is not None:
+            privileged_teacher.reset()
         if opponent is not None:
             opponent.reset()
         episode_start = True
@@ -228,19 +240,23 @@ def evaluate_extraction_episode(
                 if case.learner_side == "host"
                 else observations.opponent
             )
-            output = model(
-                *extraction_observation_tensors(
-                    observation,
-                    episode_start=episode_start,
-                    device=device,
-                ),
-                hidden,
-            )
-            learner_action = MacroAction(int(output.logits[0, 0].argmax()))
-            hidden = output.hidden
+            state = env.privileged_state()
+            if privileged_teacher is None:
+                assert model is not None and hidden is not None
+                output = model(
+                    *extraction_observation_tensors(
+                        observation,
+                        episode_start=episode_start,
+                        device=device,
+                    ),
+                    hidden,
+                )
+                learner_action = MacroAction(int(output.logits[0, 0].argmax()))
+                hidden = output.hidden
+            else:
+                learner_action = privileged_teacher.act(state)
             if learner_action in ATTACK_ACTIONS:
                 attack_decisions += 1
-            state = env.privileged_state()
             x, y, opponent_x, opponent_y = (
                 (state.host_x, state.host_y)
                 if case.learner_side == "host"

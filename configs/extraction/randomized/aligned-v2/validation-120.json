@@ -1,0 +1,847 @@
+{
+  "schema_version": 1,
+  "split": "validation",
+  "paired_side_swaps": true,
+  "cases": [
+    {
+      "split": "validation",
+      "seed": 63000,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63000,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63001,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63001,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63002,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63002,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63003,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63003,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63004,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63004,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63005,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63005,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63006,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63006,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63007,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63007,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63008,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63008,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63009,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63009,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63010,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63010,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63011,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63011,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63012,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63012,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63013,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63013,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63014,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63014,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63015,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63015,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63016,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63016,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63017,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63017,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63018,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63018,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63019,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63019,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63020,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63020,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63021,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63021,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63022,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63022,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63023,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63023,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63024,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63024,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63025,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63025,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63026,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63026,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63027,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63027,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63028,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63028,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63029,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63029,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63030,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63030,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63031,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63031,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63032,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63032,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63033,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63033,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63034,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63034,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63035,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63035,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63036,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63036,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63037,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63037,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63038,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63038,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63039,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63039,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63040,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63040,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63041,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63041,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63042,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63042,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63043,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63043,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63044,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63044,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63045,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63045,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63046,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63046,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63047,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63047,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63048,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63048,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63049,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63049,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63050,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63050,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63051,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63051,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63052,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63052,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63053,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63053,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63054,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63054,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63055,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63055,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63056,
+      "learner_side": "host",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63056,
+      "learner_side": "opponent",
+      "opponent_style": "strong",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63057,
+      "learner_side": "host",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63057,
+      "learner_side": "opponent",
+      "opponent_style": "aggressive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63058,
+      "learner_side": "host",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63058,
+      "learner_side": "opponent",
+      "opponent_style": "defensive",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63059,
+      "learner_side": "host",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    },
+    {
+      "split": "validation",
+      "seed": 63059,
+      "learner_side": "opponent",
+      "opponent_style": "explorer",
+      "layout_id": "randomized"
+    }
+  ]
+}

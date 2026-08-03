@@ -21,10 +21,17 @@ from botcolosseo.training.extraction_checkpoint import (
     load_extraction_strong_actor_critic,
     load_extraction_style_actor,
     sha256_file,
+    validate_extraction_teacher_lineage,
 )
 
 
-def save_checkpoint(path: Path, model: torch.nn.Module, scenario: str) -> Path:
+def save_checkpoint(
+    path: Path,
+    model: torch.nn.Module,
+    scenario: str,
+    *,
+    lineage: dict[str, str | int] | None = None,
+) -> Path:
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1)
     return save_training_checkpoint(
@@ -32,7 +39,9 @@ def save_checkpoint(path: Path, model: torch.nn.Module, scenario: str) -> Path:
         model=model,
         optimizer=optimizer,
         scheduler=scheduler,
-        metadata=CheckpointMetadata("config", scenario, {"updates": 3}),
+        metadata=CheckpointMetadata(
+            "config", scenario, {"updates": 3}, dict(lineage or {})
+        ),
     )
 
 
@@ -84,6 +93,31 @@ def test_strong_actor_loader_rejects_identity_drift(tmp_path: Path) -> None:
         load_extraction_strong_actor(
             checkpoint,
             expected_scenario_hash="changed",
+        )
+
+
+def test_teacher_lineage_preflight_rejects_mismatch(tmp_path: Path) -> None:
+    teacher_sha256 = "a" * 64
+    checkpoint = save_checkpoint(
+        tmp_path / "aligned-bc.pt",
+        create_extraction_actor(),
+        "scenario",
+        lineage={"teacher_implementation_sha256": teacher_sha256},
+    )
+
+    metadata = validate_extraction_teacher_lineage(
+        checkpoint,
+        expected_scenario_hash="scenario",
+        expected_teacher_sha256=teacher_sha256,
+        expected_sha256=sha256_file(checkpoint),
+    )
+
+    assert metadata.lineage["teacher_implementation_sha256"] == teacher_sha256
+    with pytest.raises(ValueError, match="Teacher identities"):
+        validate_extraction_teacher_lineage(
+            checkpoint,
+            expected_scenario_hash="scenario",
+            expected_teacher_sha256="b" * 64,
         )
 
 

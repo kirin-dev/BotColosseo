@@ -18,11 +18,15 @@ from botcolosseo.agents.extraction_model import (
     freeze_extraction_actor_backbone,
 )
 from botcolosseo.data.demonstrations import sha256_file
-from botcolosseo.data.extraction_demonstrations import ExtractionCase
+from botcolosseo.data.extraction_demonstrations import (
+    ExtractionCase,
+    extraction_teacher_sha256,
+)
 from botcolosseo.training.bc import append_jsonl, seed_everything
 from botcolosseo.training.extraction_checkpoint import (
     load_extraction_bc_warm_start,
     load_extraction_strong_actor,
+    validate_extraction_teacher_lineage,
 )
 from botcolosseo.training.extraction_pfsp import (
     ExtractionHistoricalOpponent,
@@ -206,6 +210,15 @@ def main(argv: list[str] | None = None) -> int:
         "wad_sha256"
     ]
     bc_sha256 = sha256_file(bc_checkpoint)
+    required_teacher_sha256: str | None = None
+    if bool(config.get("require_teacher_alignment", False)):
+        required_teacher_sha256 = extraction_teacher_sha256()
+        validate_extraction_teacher_lineage(
+            bc_checkpoint,
+            expected_scenario_hash=scenario_hash,
+            expected_teacher_sha256=required_teacher_sha256,
+            expected_sha256=bc_sha256,
+        )
     target_steps = args.environment_steps or int(config["environment_steps"])
     stop_after = args.stop_after_steps or target_steps
     rollout_steps = args.rollout_steps or int(config["rollout_steps"])
@@ -478,6 +491,7 @@ def main(argv: list[str] | None = None) -> int:
                     environment_steps
                 ),
                 "teacher_supervision": "privileged-strong-training-only",
+                "teacher_implementation_sha256": required_teacher_sha256,
                 "train_cases_sha256": sha256_file(train_cases_path),
                 "updates": trainer.updates,
             }

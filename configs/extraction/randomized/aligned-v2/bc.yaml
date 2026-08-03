@@ -1,0 +1,17 @@
+schema_version: 1
+seed: 20260803
+chunk_length: 16
+batch_size: 32
+learning_rate: 0.0003
+weight_decay: 0.00001
+gradient_clip: 1.0
+validation_interval: 250
+strong_updates: 10000
+style_updates: 1
+scenario_manifest: assets/scenarios/crystal_run_extraction_randomized/manifest.json
+require_teacher_alignment: true
+manifests:
+  strong:
+    train: data/generated/extraction-randomized-mask-aware-v2/strong/train/train-manifest.json
+    validation: data/generated/extraction-randomized-mask-aware-v2/strong/validation/validation-manifest.json
+output_root: runs/extraction-randomized/strong-bc-mask-aware-v2

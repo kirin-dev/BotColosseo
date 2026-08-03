@@ -26,6 +26,7 @@ from botcolosseo.training.bc import (
 )
 from botcolosseo.training.extraction_bc import (
     ExtractionChunkDataset,
+    extraction_manifest_teacher_sha256,
     load_extraction_shard_paths,
 )
 
@@ -114,6 +115,21 @@ def main(argv: list[str] | None = None) -> int:
         train_manifest = root / train_manifest
     if not validation_manifest.is_absolute():
         validation_manifest = root / validation_manifest
+    train_teacher_sha256 = extraction_manifest_teacher_sha256(train_manifest)
+    validation_teacher_sha256 = extraction_manifest_teacher_sha256(
+        validation_manifest
+    )
+    if train_teacher_sha256 != validation_teacher_sha256:
+        raise ValueError("Extraction BC manifest Teacher identities do not match")
+    if bool(config.get("require_teacher_alignment", False)) and (
+        train_teacher_sha256 is None
+    ):
+        raise ValueError("Aligned Extraction BC requires a Teacher identity")
+    checkpoint_lineage = (
+        {"teacher_implementation_sha256": train_teacher_sha256}
+        if train_teacher_sha256 is not None
+        else {}
+    )
     scenario_manifest = root / config.get(
         "scenario_manifest",
         "assets/scenarios/crystal_run_extraction/manifest.json",
@@ -249,6 +265,7 @@ def main(argv: list[str] | None = None) -> int:
                 output_dir / "latest.pt",
                 config_hash=config_hash,
                 scenario_hash=scenario_hash,
+                lineage=checkpoint_lineage,
             )
             if latest_validation.loss < best_loss:
                 best_loss = latest_validation.loss
@@ -257,6 +274,7 @@ def main(argv: list[str] | None = None) -> int:
                     output_dir / "best.pt",
                     config_hash=config_hash,
                     scenario_hash=scenario_hash,
+                    lineage=checkpoint_lineage,
                 )
             append_jsonl(
                 metrics_path,
@@ -311,6 +329,7 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "updates": trainer.updates,
         "target_updates": total_updates,
+        "teacher_implementation_sha256": train_teacher_sha256,
         "validation": asdict(latest_validation),
         "validation_manifest_sha256": sha256_file(validation_manifest),
         "validation_transitions_loaded": validation.transition_count,

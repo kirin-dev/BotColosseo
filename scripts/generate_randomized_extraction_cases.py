@@ -74,3 +74,8 @@ if __name__ == "__main__":
             layout_id=layout,
             seeds=range(62000, 62016),
         )
+    write_evaluation(
+        Path("configs/extraction/randomized/aligned-v2/validation-120.json"),
+        layout_id="randomized",
+        seeds=range(63000, 63060),
+    )
