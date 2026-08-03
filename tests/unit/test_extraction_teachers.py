@@ -128,6 +128,18 @@ def test_strong_profile_extracts_high_value_backpack() -> None:
     assert teacher.act(carrying) is MacroAction.FORWARD_TURN_LEFT
 
 
+def test_strong_profile_answers_close_threat_before_extracting() -> None:
+    teacher = PrivilegedStrongExtractionTeacher(side="host")
+    threatened = replace(
+        state(),
+        host_x=128,
+        opponent_x=640,
+        host_slots=(50, 25, 10),
+    )
+
+    assert teacher.act(threatened) is MacroAction.FORWARD_ATTACK
+
+
 def test_privileged_strong_teacher_stops_unbounded_pursuit() -> None:
     teacher = PrivilegedStrongExtractionTeacher(side="host", combat_budget=2)
     encounter = replace(state(), host_x=256)

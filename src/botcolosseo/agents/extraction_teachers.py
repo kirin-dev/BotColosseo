@@ -324,26 +324,26 @@ class PrivilegedStrongExtractionTeacher:
         own_x, own_y, _ = player_pose(state, self.side)
         carried = sum(player_slots(state, self.side))
         extraction = (0.0, 400.0 if self.side == "host" else -400.0)
+        enemy_alive = opponent_health(state, self.side) > 0
+        target = opponent_position(state, self.side)
+        distance = math.hypot(target[0] - own_x, target[1] - own_y)
+        if (
+            enemy_alive
+            and distance <= 512.0
+            and self._combat_decisions < self._combat_budget
+        ):
+            self._combat_decisions += 1
+            return steer_toward(state, self.side, target, attack=True)
+
         if carried >= 85 or (carried > 0 and state.engine_tic >= 1400):
             return steer_toward(state, self.side, extraction)
 
-        enemy_alive = opponent_health(state, self.side) > 0
         if not enemy_alive and state.cache_owner and sum(state.cache_slots) > 0:
             return steer_toward(
                 state,
                 self.side,
                 (state.cache_x, state.cache_y),
             )
-
-        target = opponent_position(state, self.side)
-        distance = math.hypot(target[0] - own_x, target[1] - own_y)
-        if (
-            enemy_alive
-            and distance <= 384.0
-            and self._combat_decisions < self._combat_budget
-        ):
-            self._combat_decisions += 1
-            return steer_toward(state, self.side, target, attack=True)
 
         randomized_action = self._randomized_loot_action(state)
         if randomized_action is not None:
