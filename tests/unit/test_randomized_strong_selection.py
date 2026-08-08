@@ -2,6 +2,7 @@ from botcolosseo.cli.select_randomized_strong_1m import (
     _case_manifest,
     _promotion_gates,
     _rank_key,
+    _regular_candidate_items,
 )
 
 
@@ -66,3 +67,17 @@ def test_promotion_gates_compare_against_same_protocol_baseline() -> None:
     )
 
     assert all(gates.values())
+
+
+def test_regular_candidate_items_accepts_separate_10k_smoke() -> None:
+    regular = [
+        {"environment_steps": step, "checkpoint": f"candidate-{step:07d}.pt"}
+        for step in range(50_000, 1_000_001, 50_000)
+    ]
+    smoke = {"environment_steps": 10_000, "checkpoint": "candidate-0010000.pt"}
+
+    selected = _regular_candidate_items([smoke, *reversed(regular)])
+
+    assert [item["environment_steps"] for item in selected] == list(
+        range(50_000, 1_000_001, 50_000)
+    )

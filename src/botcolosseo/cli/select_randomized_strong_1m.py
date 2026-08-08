@@ -21,6 +21,21 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--workers", type=int, default=2)
     parser.add_argument("--python", type=Path)
+    parser.add_argument(
+        "--run-dir",
+        type=Path,
+        default=Path("runs/extraction-randomized/strong-ppo-1m"),
+    )
+    parser.add_argument(
+        "--output-root",
+        type=Path,
+        default=Path("reports/extraction/randomized-strong-1m-selection"),
+    )
+    parser.add_argument(
+        "--report",
+        type=Path,
+        default=Path("reports/extraction/randomized-strong-1m-selection.json"),
+    )
     return parser
 
 
@@ -233,24 +248,43 @@ def _promotion_gates(
     }
 
 
+def _regular_candidate_items(
+    items: list[dict[str, object]],
+) -> tuple[dict[str, object], ...]:
+    expected_steps = tuple(range(50_000, 1_000_001, 50_000))
+    by_step: dict[int, dict[str, object]] = {}
+    for item in items:
+        step = int(item["environment_steps"])
+        if step in by_step:
+            raise ValueError(f"Duplicate candidate step: {step}")
+        by_step[step] = item
+    extras = set(by_step) - set(expected_steps)
+    if extras - {10_000} or any(step not in by_step for step in expected_steps):
+        raise ValueError("The 1M candidate schedule is incomplete")
+    return tuple(by_step[step] for step in expected_steps)
+
+
 def _audit_candidates(run_dir: Path) -> list[Path]:
     summary = json.loads((run_dir / "summary.json").read_text(encoding="utf-8"))
     if (
         summary.get("completed") is not True
         or summary.get("environment_steps") != 1_000_000
         or summary.get("test_cases_accessed") is not False
-        or len(summary.get("candidate_checkpoints", ())) != 20
     ):
         raise ValueError("The 1M training artifact is incomplete")
+    all_items = summary.get("candidate_checkpoints")
+    if not isinstance(all_items, list):
+        raise ValueError("The 1M candidate manifest is missing")
+    regular_items = _regular_candidate_items(all_items)
     checkpoints = []
-    for index, item in enumerate(summary["candidate_checkpoints"], 1):
+    for item in regular_items:
         path = run_dir / item["checkpoint"]
+        environment_steps = int(item["environment_steps"])
         payload = torch.load(path, map_location="cpu", weights_only=False)
         if (
-            int(item["environment_steps"]) != index * 50_000
-            or sha256_file(path) != item["sha256"]
+            sha256_file(path) != item["sha256"]
             or payload["metadata"]["counters"]["environment_steps"]
-            != index * 50_000
+            != environment_steps
             or payload["metadata"]["scenario_hash"] != summary["scenario_hash"]
         ):
             raise ValueError(f"Candidate artifact audit failed: {path}")
@@ -264,7 +298,12 @@ def main(argv: list[str] | None = None) -> int:
     python = args.python or Path(
         "/home/wencong/miniconda3/envs/botcolosseo/bin/python"
     )
-    output_root = root / "reports/extraction/randomized-strong-1m-selection"
+    run_dir = args.run_dir if args.run_dir.is_absolute() else root / args.run_dir
+    output_root = (
+        args.output_root
+        if args.output_root.is_absolute()
+        else root / args.output_root
+    )
     manifests = output_root / "manifests"
     manifest_specs = {
         "randomized-120.json": (120, "randomized"),
@@ -284,9 +323,7 @@ def main(argv: list[str] | None = None) -> int:
     screening_manifest = root / (
         "configs/extraction/randomized/evaluation-unseen-random.json"
     )
-    checkpoints = _audit_candidates(
-        root / "runs/extraction-randomized/strong-ppo-1m"
-    )
+    checkpoints = _audit_candidates(run_dir)
 
     def tasks_for(
         selected: list[Path], cases: Path, directory: str
@@ -397,6 +434,7 @@ def main(argv: list[str] | None = None) -> int:
         },
         "artifact_audit": {
             "candidate_count": 20,
+            "run_dir": str(run_dir.relative_to(root)),
             "checkpoint_interval_steps": 50_000,
             "hashes_and_counters_verified": True,
             "training_completed_steps": 1_000_000,
@@ -422,7 +460,7 @@ def main(argv: list[str] | None = None) -> int:
         "promoted_1m_candidate": selected in finalist_paths,
         "fallback_if_no_gate_passes": str(baseline_200k.relative_to(root)),
     }
-    report_path = root / "reports/extraction/randomized-strong-1m-selection.json"
+    report_path = args.report if args.report.is_absolute() else root / args.report
     _atomic_json(report, report_path)
     print(json.dumps(report, indent=2, sort_keys=True))
     return 0
