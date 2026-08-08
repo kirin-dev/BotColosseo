@@ -599,6 +599,7 @@ def main(argv: list[str] | None = None) -> int:
             summary = {
                 "base_checkpoint": str(base_checkpoint.relative_to(root)),
                 "base_checkpoint_sha256": base_sha256,
+                "adapter_bottleneck": int(config["adapter_bottleneck"]),
                 "checkpoint": str(latest.relative_to(root)),
                 "checkpoint_sha256": sha256_file(latest),
                 "completed": environment_steps == target_steps,
@@ -613,7 +614,11 @@ def main(argv: list[str] | None = None) -> int:
                 "frozen_strong_base": True,
                 "kl_early_stop_count": kl_stops,
                 "learned_residual_adapter": True,
+                "inference_guardrail": (
+                    args.style == "defensive" and not opportunity_enabled
+                ),
                 "lineage": lineage,
+                "max_delta": float(config["max_delta"]),
                 "reward_components": dict(sorted(rewards.items())),
                 "opportunity_conditioning": opportunity_enabled,
                 "opportunity_loss": {

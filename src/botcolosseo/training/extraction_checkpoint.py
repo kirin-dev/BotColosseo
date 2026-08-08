@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import hashlib
+import math
+from dataclasses import dataclass
 from pathlib import Path
 
 import torch
+import yaml
 
 from botcolosseo.agents.checkpoint import CheckpointMetadata
 from botcolosseo.agents.extraction_model import (
@@ -13,6 +16,67 @@ from botcolosseo.agents.extraction_model import (
     create_extraction_actor_critic,
 )
 from botcolosseo.agents.model import RecurrentActor
+
+
+@dataclass(frozen=True)
+class ExtractionStyleRuntimeSpec:
+    bottleneck: int
+    max_delta: float
+    defensive_guardrail: bool
+    opportunity_conditioned: bool
+
+
+def resolve_extraction_style_runtime_spec(
+    training_summary: dict[str, object],
+    *,
+    root: Path,
+) -> ExtractionStyleRuntimeSpec:
+    """Resolve inference architecture from the training-bound config."""
+    config_name = training_summary.get("config")
+    if not isinstance(config_name, str) or not config_name:
+        raise ValueError("Style training summary has no config provenance")
+    root = root.resolve()
+    config_path = (root / config_name).resolve()
+    try:
+        config_path.relative_to(root)
+    except ValueError as error:
+        raise ValueError("Style training config must be inside the project") from error
+    if not config_path.is_file():
+        raise FileNotFoundError(f"Style training config is missing: {config_path}")
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    if not isinstance(config, dict):
+        raise ValueError("Style training config must be a mapping")
+    bottleneck = training_summary.get(
+        "adapter_bottleneck", config.get("adapter_bottleneck")
+    )
+    max_delta = training_summary.get("max_delta", config.get("max_delta"))
+    if (
+        not isinstance(bottleneck, int)
+        or isinstance(bottleneck, bool)
+        or bottleneck <= 0
+        or not isinstance(max_delta, (int, float))
+        or isinstance(max_delta, bool)
+        or not math.isfinite(float(max_delta))
+        or float(max_delta) <= 0
+    ):
+        raise ValueError("Style inference architecture is invalid")
+    opportunity_conditioned = training_summary.get("opportunity_conditioning") is True
+    guardrail = training_summary.get("inference_guardrail")
+    if guardrail is None:
+        guardrail = (
+            training_summary.get("style") == "defensive"
+            and not opportunity_conditioned
+        )
+    if not isinstance(guardrail, bool):
+        raise ValueError("Style inference guardrail flag must be boolean")
+    if opportunity_conditioned and guardrail:
+        raise ValueError("Opportunity-conditioned styles cannot use a runtime guardrail")
+    return ExtractionStyleRuntimeSpec(
+        bottleneck=bottleneck,
+        max_delta=float(max_delta),
+        defensive_guardrail=guardrail,
+        opportunity_conditioned=opportunity_conditioned,
+    )
 
 
 def sha256_file(path: Path) -> str:

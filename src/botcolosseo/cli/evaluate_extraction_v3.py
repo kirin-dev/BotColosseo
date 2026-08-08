@@ -18,6 +18,7 @@ from botcolosseo.evaluation.extraction_protocol import (
 from botcolosseo.training.extraction_checkpoint import (
     load_extraction_strong_actor,
     load_extraction_style_actor,
+    resolve_extraction_style_runtime_spec,
 )
 
 
@@ -105,6 +106,7 @@ def main(argv: list[str] | None = None) -> int:
         raise RuntimeError("CUDA was requested but is unavailable")
     checkpoint_sha256 = sha256_file(checkpoint)
     training_summary = _training_summary(checkpoint)
+    runtime_spec = None
     if args.policy == "strong":
         if args.base_checkpoint is not None:
             raise ValueError("Strong evaluation does not accept --base-checkpoint")
@@ -129,16 +131,19 @@ def main(argv: list[str] | None = None) -> int:
             or training_summary.get("learned_residual_adapter") is not True
         ):
             raise ValueError("Style training summary identity does not match")
+        runtime_spec = resolve_extraction_style_runtime_spec(
+            training_summary, root=root
+        )
         model, _ = load_extraction_style_actor(
             checkpoint,
             base_checkpoint=base_checkpoint,
             expected_scenario_hash=scenario_hash,
             expected_base_sha256=base_sha256,
-            bottleneck=32,
-            max_delta=2.0,
+            bottleneck=runtime_spec.bottleneck,
+            max_delta=runtime_spec.max_delta,
             expected_sha256=checkpoint_sha256,
             device=device,
-            defensive_guardrail=args.policy == "defensive",
+            defensive_guardrail=runtime_spec.defensive_guardrail,
         )
     protocol = load_extraction_evaluation_protocol(protocol_path)
     cases = protocol.cases(args.split)
@@ -170,16 +175,24 @@ def main(argv: list[str] | None = None) -> int:
             "strong-recurrent-ppo"
             if args.policy == "strong"
             else (
-                "learned-bounded-residual-with-risk-guardrail"
-                if args.policy == "defensive"
-                else "learned-bounded-residual"
+                "learned-opportunity-conditioned-bounded-residual"
+                if runtime_spec is not None and runtime_spec.opportunity_conditioned
+                else (
+                    "learned-bounded-residual-with-risk-guardrail"
+                    if runtime_spec is not None and runtime_spec.defensive_guardrail
+                    else "learned-bounded-residual"
+                )
             )
         ),
         "inference_guardrail": (
             "block_attack_when_low_health_and_carried_value_ge_25"
-            if args.policy == "defensive"
+            if runtime_spec is not None and runtime_spec.defensive_guardrail
             else None
         ),
+        "adapter_bottleneck": (
+            None if runtime_spec is None else runtime_spec.bottleneck
+        ),
+        "max_delta": None if runtime_spec is None else runtime_spec.max_delta,
         "split": args.split,
         "complete": len(episodes)
         == protocol.splits[args.split].episode_count,

@@ -20,6 +20,7 @@ from botcolosseo.training.extraction_checkpoint import (
     load_extraction_strong_actor,
     load_extraction_strong_actor_critic,
     load_extraction_style_actor,
+    resolve_extraction_style_runtime_spec,
     sha256_file,
     validate_extraction_teacher_lineage,
 )
@@ -213,3 +214,56 @@ def test_defensive_style_loader_blocks_attacks_only_at_low_health(
     assert guarded_output.logits.argmax(-1).item() == int(
         MacroAction.MOVE_FORWARD
     )
+
+
+def test_style_runtime_spec_uses_training_config_and_disables_new_guardrail(
+    tmp_path: Path,
+) -> None:
+    config = tmp_path / "configs/style.yaml"
+    config.parent.mkdir(parents=True)
+    config.write_text("adapter_bottleneck: 16\nmax_delta: 1.5\n", encoding="utf-8")
+
+    spec = resolve_extraction_style_runtime_spec(
+        {
+            "config": "configs/style.yaml",
+            "style": "defensive",
+            "opportunity_conditioning": True,
+        },
+        root=tmp_path,
+    )
+
+    assert spec.bottleneck == 16
+    assert spec.max_delta == pytest.approx(1.5)
+    assert spec.opportunity_conditioned is True
+    assert spec.defensive_guardrail is False
+
+
+def test_style_runtime_spec_preserves_legacy_defensive_guardrail(
+    tmp_path: Path,
+) -> None:
+    config = tmp_path / "style.yaml"
+    config.write_text("adapter_bottleneck: 32\nmax_delta: 2.0\n", encoding="utf-8")
+
+    spec = resolve_extraction_style_runtime_spec(
+        {"config": "style.yaml", "style": "defensive"}, root=tmp_path
+    )
+
+    assert spec.defensive_guardrail is True
+
+
+def test_style_runtime_spec_rejects_guardrail_on_opportunity_policy(
+    tmp_path: Path,
+) -> None:
+    config = tmp_path / "style.yaml"
+    config.write_text("adapter_bottleneck: 32\nmax_delta: 1.5\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="cannot use"):
+        resolve_extraction_style_runtime_spec(
+            {
+                "config": "style.yaml",
+                "style": "defensive",
+                "opportunity_conditioning": True,
+                "inference_guardrail": True,
+            },
+            root=tmp_path,
+        )
