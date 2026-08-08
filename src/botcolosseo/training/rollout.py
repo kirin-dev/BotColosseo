@@ -27,6 +27,8 @@ class RolloutStep:
     teacher_actions: torch.Tensor | None = None
     teacher_mask: torch.Tensor | None = None
     route_modes: torch.Tensor | None = None
+    opportunity_mask: torch.Tensor | None = None
+    preferred_action_mask: torch.Tensor | None = None
 
 
 @dataclass(frozen=True)
@@ -46,6 +48,8 @@ class RecurrentRollout:
     teacher_actions: torch.Tensor | None = None
     teacher_mask: torch.Tensor | None = None
     route_modes: torch.Tensor | None = None
+    opportunity_mask: torch.Tensor | None = None
+    preferred_action_mask: torch.Tensor | None = None
 
     def sequence_minibatches(
         self,
@@ -120,7 +124,13 @@ class RecurrentRollout:
         }
         optional = {
             name: getattr(self, name)
-            for name in ("teacher_actions", "teacher_mask", "route_modes")
+            for name in (
+                "teacher_actions",
+                "teacher_mask",
+                "route_modes",
+                "opportunity_mask",
+                "preferred_action_mask",
+            )
             if getattr(self, name) is not None
         }
         collected.update({name: [] for name in optional})
@@ -229,6 +239,8 @@ class RolloutBuffer:
             "teacher_actions": (expected,),
             "teacher_mask": (expected,),
             "route_modes": (expected,),
+            "opportunity_mask": (expected,),
+            "preferred_action_mask": (expected, self.action_count),
         }
         for item in fields(step):
             tensor = getattr(step, item.name)
@@ -245,6 +257,11 @@ class RolloutBuffer:
             value is None for value in supervision
         ):
             raise ValueError("Rollout style supervision must be complete or absent")
+        opportunity = (step.opportunity_mask, step.preferred_action_mask)
+        if any(value is None for value in opportunity) and not all(
+            value is None for value in opportunity
+        ):
+            raise ValueError("Rollout opportunity supervision must be complete or absent")
         if step.terminated.dtype != torch.bool or step.truncated.dtype != torch.bool:
             raise ValueError("Rollout boundaries must be boolean")
         if bool((step.terminated & step.truncated).any()):
@@ -270,6 +287,18 @@ class RolloutBuffer:
                 raise ValueError("Teacher action is outside the action space")
             if int(step.route_modes.min()) < -1 or int(step.route_modes.max()) > 2:
                 raise ValueError("Route mode is outside the supported range")
+        if step.opportunity_mask is not None:
+            if (
+                step.preferred_action_mask is None
+                or step.opportunity_mask.dtype != torch.bool
+                or step.preferred_action_mask.dtype != torch.bool
+            ):
+                raise ValueError("Invalid rollout opportunity supervision")
+            preferred_counts = step.preferred_action_mask.sum(dim=-1)
+            if bool((preferred_counts[step.opportunity_mask] == 0).any()):
+                raise ValueError("Active opportunities require a preferred action")
+            if bool((preferred_counts[~step.opportunity_mask] != 0).any()):
+                raise ValueError("Inactive opportunities cannot prefer actions")
         devices = {
             tensor.device
             for item in fields(step)
@@ -329,5 +358,15 @@ class RolloutBuffer:
             ),
             route_modes=(
                 None if self._steps[0].route_modes is None else stack("route_modes")
+            ),
+            opportunity_mask=(
+                None
+                if self._steps[0].opportunity_mask is None
+                else stack("opportunity_mask")
+            ),
+            preferred_action_mask=(
+                None
+                if self._steps[0].preferred_action_mask is None
+                else stack("preferred_action_mask")
             ),
         )

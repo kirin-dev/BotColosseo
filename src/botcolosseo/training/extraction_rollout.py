@@ -34,6 +34,7 @@ from botcolosseo.training.extraction_rewards import (
     ExtractionTaskRewardConfig,
     ExtractionTaskRewardLedger,
 )
+from botcolosseo.training.extraction_style_opportunities import StyleOpportunity
 from botcolosseo.training.rollout import RecurrentRollout, RolloutBuffer, RolloutStep
 
 
@@ -274,6 +275,7 @@ class ExtractionRolloutCollection:
     episodes: tuple[ExtractionTrainingEpisode, ...]
     event_counts: dict[str, int]
     reward_components: dict[str, float]
+    style_training_counts: dict[str, int]
 
 
 class ExtractionRolloutCollector:
@@ -298,7 +300,9 @@ class ExtractionRolloutCollector:
         | None = None,
         action_sampler: Callable[[torch.distributions.Categorical], torch.Tensor]
         | None = None,
-        style_reward_factory: Callable[[str], ExtractionStyleRewardLedger]
+        style_reward_factory: Callable[
+            [ExtractionEpisodeAssignment], ExtractionStyleRewardLedger
+        ]
         | None = None,
         teacher_supervision: bool = False,
         startup_attempts: int = 3,
@@ -415,7 +419,7 @@ class ExtractionRolloutCollector:
         self._style_reward = (
             None
             if self._style_reward_factory is None
-            else self._style_reward_factory(assignment.case.learner_side)
+            else self._style_reward_factory(assignment)
         )
         self._episode_start = True
         self._episode_decisions = 0
@@ -450,6 +454,7 @@ class ExtractionRolloutCollector:
         episodes: list[ExtractionTrainingEpisode] = []
         event_counts: Counter[str] = Counter()
         reward_components: Counter[str] = Counter()
+        style_training_counts: Counter[str] = Counter()
         try:
             for offset in range(steps):
                 global_step = start_environment_step + offset
@@ -473,6 +478,22 @@ class ExtractionRolloutCollector:
                     raise RuntimeError("Extraction collector state is incomplete")
                 observation = self._learner_observation()
                 state_before = environment.privileged_state()
+                style_opportunity: StyleOpportunity | None = None
+                opportunity_fn = (
+                    None
+                    if self._style_reward is None
+                    else getattr(self._style_reward, "opportunity", None)
+                )
+                if opportunity_fn is not None:
+                    style_opportunity = opportunity_fn(
+                        observation_before=observation,
+                        state_before=state_before,
+                    )
+                    style_training_counts[
+                        f"phase:{style_opportunity.phase}"
+                    ] += 1
+                    if style_opportunity.active:
+                        style_training_counts["opportunity_tokens"] += 1
                 inputs = extraction_observation_tensors(
                     observation,
                     episode_start=self._episode_start,
@@ -583,6 +604,27 @@ class ExtractionRolloutCollector:
                             if teacher_action is None
                             else torch.tensor([-1], dtype=torch.long)
                         ),
+                        opportunity_mask=(
+                            None
+                            if style_opportunity is None
+                            else torch.tensor(
+                                [style_opportunity.active], dtype=torch.bool
+                            )
+                        ),
+                        preferred_action_mask=(
+                            None
+                            if style_opportunity is None
+                            else torch.tensor(
+                                [
+                                    [
+                                        MacroAction(index)
+                                        in style_opportunity.preferred_actions
+                                        for index in range(13)
+                                    ]
+                                ],
+                                dtype=torch.bool,
+                            )
+                        ),
                     )
                 )
                 self._hidden = output.hidden.detach()
@@ -641,6 +683,7 @@ class ExtractionRolloutCollector:
             episodes=tuple(episodes),
             event_counts=dict(sorted(event_counts.items())),
             reward_components=dict(sorted(reward_components.items())),
+            style_training_counts=dict(sorted(style_training_counts.items())),
         )
 
     def _close_episode(self) -> None:

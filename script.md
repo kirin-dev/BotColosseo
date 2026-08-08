@@ -112,7 +112,42 @@ runs/extraction/strong-ppo/selection.json
 Exit code 2 means the frozen capability gate failed. Preserve the evidence;
 do not relax thresholds.
 
-## Long stage 2: learned styles
+## Current randomized style repair: opportunity-conditioned PBRS
+
+The frozen Strong Base is
+`runs/extraction-randomized/strong-ppo-conservative-v2/candidate-0950000.pt`
+(SHA-256 `d05fa0cbcdf9d0aa3df363e66f6aa8957a35c76d9d3fb936b15d6fe5b5f22484`).
+Train all three fresh adapters for an initial 100k-step budget. GPU 0 runs
+Aggressive then Explorer; GPU 1 runs Defensive. The pipeline is resumable and
+does not read validation, heldout, or official-test cases:
+
+```bash
+mkdir -p runs/extraction-randomized/styles-opportunity-pbrs-v1/control
+nohup env \
+  BOTCOLOSSEO_PYTHON="$CONDA_PREFIX/bin/python" \
+  BOTCOLOSSEO_STYLE_STEPS=100000 \
+  bash scripts/run_extraction_randomized_opportunity_styles.sh \
+  > runs/extraction-randomized/styles-opportunity-pbrs-v1/control/pipeline.log \
+  2>&1 &
+echo $! \
+  > runs/extraction-randomized/styles-opportunity-pbrs-v1/control/pipeline.pid
+```
+
+Inspect without restarting anything:
+
+```bash
+pid="$(cat runs/extraction-randomized/styles-opportunity-pbrs-v1/control/pipeline.pid)"
+ps -p "$pid" -o pid,etime,%cpu,%mem,stat,cmd
+tail -n 12 runs/extraction-randomized/styles-opportunity-pbrs-v1/control/*.log
+nvidia-smi --query-gpu=index,utilization.gpu,memory.used,memory.total \
+  --format=csv,noheader
+```
+
+Do not extend past 100k before paired validation. The 50k and 100k candidates
+are both retained so validation can select the actual peak rather than the
+last checkpoint.
+
+## Legacy fixed-layout stage 2: learned styles
 
 Aggressive is first. Run styles in resumable 200k-step stages and evaluate the
 newest candidate before deciding whether to extend to 400k or 600k. The runner

@@ -5,6 +5,8 @@ from botcolosseo.training.style_ppo import (
     StylePPOTrainer,
     categorical_style_kl,
     masked_teacher_cross_entropy,
+    partitioned_style_kl,
+    preferred_action_set_margin_loss,
 )
 
 
@@ -51,6 +53,56 @@ def test_masked_teacher_loss_rejects_empty_mask() -> None:
             torch.zeros(1, 2, 13),
             torch.zeros(1, 2, dtype=torch.long),
             torch.zeros(1, 2, dtype=torch.bool),
+        )
+
+
+def test_partitioned_style_kl_separates_opportunity_tokens() -> None:
+    base = torch.zeros(1, 3, 2)
+    style = base.clone()
+    style[0, 0] = torch.tensor([4.0, -4.0])
+    style[0, 1] = torch.tensor([-3.0, 3.0])
+    valid = torch.tensor([[True, True, False]])
+    opportunity = torch.tensor([[True, False, True]])
+
+    inside, outside, inside_count, outside_count = partitioned_style_kl(
+        style, base, valid, opportunity
+    )
+
+    assert inside.item() > 0
+    assert outside.item() > 0
+    assert inside_count == 1
+    assert outside_count == 1
+
+
+def test_preferred_action_margin_rewards_probability_lift_over_base() -> None:
+    base = torch.zeros(1, 2, 3)
+    style = base.clone()
+    style[0, 0, 1] = 2.0
+    preferred = torch.zeros_like(style, dtype=torch.bool)
+    preferred[0, 0, 1:] = True
+    supervised = torch.tensor([[True, False]])
+
+    loss, lift, count = preferred_action_set_margin_loss(
+        style,
+        base,
+        preferred,
+        supervised,
+        margin=0.5,
+    )
+
+    assert lift > 0
+    assert loss.item() < 0.5
+    assert count == 1
+
+
+def test_preferred_action_margin_rejects_empty_preference_set() -> None:
+    with pytest.raises(ValueError, match="preferred action"):
+        preferred_action_set_margin_loss(
+            torch.zeros(1, 1, 2),
+            torch.zeros(1, 1, 2),
+            torch.zeros(1, 1, 2, dtype=torch.bool),
+            torch.ones(1, 1, dtype=torch.bool),
+            margin=0.1,
         )
     with pytest.raises(ValueError):
         categorical_style_kl(

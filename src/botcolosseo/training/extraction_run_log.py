@@ -13,6 +13,7 @@ class ExtractionRunHistory:
     event_counts: Counter[str]
     reward_components: Counter[str]
     kl_early_stops: int
+    style_training_counts: Counter[str]
 
 
 def reconcile_extraction_metrics(
@@ -25,7 +26,7 @@ def reconcile_extraction_metrics(
     if not path.exists():
         if committed_environment_steps:
             raise FileNotFoundError("Extraction checkpoint exists without metrics")
-        return ExtractionRunHistory(0, 0, Counter(), Counter(), 0)
+        return ExtractionRunHistory(0, 0, Counter(), Counter(), 0, Counter())
     kept: list[dict[str, object]] = []
     group_steps = 0
     for line in path.read_text(encoding="utf-8").splitlines():
@@ -51,12 +52,14 @@ def reconcile_extraction_metrics(
     rewards: Counter[str] = Counter()
     episodes = 0
     kl_stops = 0
+    style_training_counts: Counter[str] = Counter()
     last_steps = 0
     for record in kept:
         if record.get("kind") == "rollout":
             last_steps = int(record["environment_steps"])
             events.update(record["event_counts"])
             rewards.update(record["reward_components"])
+            style_training_counts.update(record.get("style_training_counts", {}))
         elif record.get("kind") == "episode":
             episodes += 1
         elif record.get("kind") == "kl_early_stop":
@@ -69,4 +72,5 @@ def reconcile_extraction_metrics(
         events,
         rewards,
         kl_stops,
+        style_training_counts,
     )

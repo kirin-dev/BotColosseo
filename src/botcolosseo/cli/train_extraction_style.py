@@ -19,6 +19,7 @@ from botcolosseo.agents.extraction_model import (
 from botcolosseo.agents.extraction_teachers import StyledExtractionTeacher
 from botcolosseo.data.demonstrations import sha256_file
 from botcolosseo.data.extraction_demonstrations import ExtractionCase
+from botcolosseo.envs.extraction_layouts import randomized_layout_variant
 from botcolosseo.training.bc import append_jsonl, seed_everything
 from botcolosseo.training.extraction_checkpoint import (
     load_extraction_strong_actor,
@@ -44,6 +45,14 @@ from botcolosseo.training.extraction_rollout import (
 )
 from botcolosseo.training.extraction_run_log import (
     reconcile_extraction_metrics,
+)
+from botcolosseo.training.extraction_style_opportunities import (
+    AggressiveOpportunityConfig,
+    AggressiveOpportunityLedger,
+    DefensiveOpportunityConfig,
+    DefensiveOpportunityLedger,
+    ExplorerOpportunityConfig,
+    ExplorerOpportunityLedger,
 )
 from botcolosseo.training.ppo import ExcessiveKLError
 from botcolosseo.training.style_ppo import StylePPOTrainer
@@ -167,19 +176,78 @@ def _resolved_style_reward_config(
     return replace(config, **overrides)
 
 
+def _resolved_opportunity_config(style: str, overrides: object = None):
+    defaults = {
+        "aggressive": AggressiveOpportunityConfig,
+        "defensive": DefensiveOpportunityConfig,
+        "explorer": ExplorerOpportunityConfig,
+    }
+    if style not in defaults:
+        raise ValueError("Unsupported Extraction style")
+    config = defaults[style]()
+    if overrides is None:
+        return config
+    if not isinstance(overrides, dict):
+        raise ValueError("Opportunity overrides must be a mapping")
+    known = {field.name: getattr(config, field.name) for field in fields(config)}
+    if not set(overrides).issubset(known):
+        raise ValueError("Opportunity override field is unknown")
+    for name, value in overrides.items():
+        default = known[name]
+        if isinstance(default, int):
+            valid = isinstance(value, int) and not isinstance(value, bool)
+        else:
+            valid = (
+                isinstance(value, (int, float))
+                and not isinstance(value, bool)
+                and math.isfinite(float(value))
+            )
+        if not valid:
+            raise ValueError("Opportunity override value is invalid")
+    return replace(config, **overrides)
+
+
 def _style_reward_factory(style: str, scale: float, config):
     if style == "aggressive":
-        return lambda side: AggressiveExtractionRewardLedger(
-            config, learner_side=side, scale=scale
+        return lambda assignment: AggressiveExtractionRewardLedger(
+            config, learner_side=assignment.case.learner_side, scale=scale
         )
     if style == "defensive":
-        return lambda side: DefensiveExtractionRewardLedger(
-            config, learner_side=side, scale=scale
+        return lambda assignment: DefensiveExtractionRewardLedger(
+            config, learner_side=assignment.case.learner_side, scale=scale
         )
     if style == "explorer":
-        return lambda side: ExplorerExtractionRewardLedger(
-            config, learner_side=side, scale=scale
+        return lambda assignment: ExplorerExtractionRewardLedger(
+            config, learner_side=assignment.case.learner_side, scale=scale
         )
+    raise ValueError("Unsupported Extraction style")
+
+
+def _opportunity_reward_factory(style: str, scale: float, config):
+    if style == "aggressive":
+        return lambda assignment: AggressiveOpportunityLedger(
+            config,
+            learner_side=assignment.case.learner_side,
+            scale=scale,
+        )
+    if style == "defensive":
+        return lambda assignment: DefensiveOpportunityLedger(
+            config,
+            learner_side=assignment.case.learner_side,
+            scale=scale,
+        )
+    if style == "explorer":
+        def explorer(assignment):
+            if assignment.case.layout_id != "randomized":
+                raise ValueError("Explorer opportunity training requires randomized layouts")
+            return ExplorerOpportunityLedger(
+                config,
+                learner_side=assignment.case.learner_side,
+                scale=scale,
+                layout_variant=randomized_layout_variant(assignment.case.seed),
+            )
+
+        return explorer
     raise ValueError("Unsupported Extraction style")
 
 
@@ -291,9 +359,27 @@ def main(argv: list[str] | None = None) -> int:
         bottleneck=int(config["adapter_bottleneck"]),
         max_delta=float(config["max_delta"]),
     ).to(device)
+    opportunity_settings = config.get("opportunity_conditioning", {})
+    if not isinstance(opportunity_settings, dict):
+        raise ValueError("Opportunity conditioning settings must be a mapping")
+    opportunity_enabled = opportunity_settings.get("enabled", False)
+    if not isinstance(opportunity_enabled, bool):
+        raise ValueError("Opportunity conditioning enabled flag must be boolean")
     trainer = StylePPOTrainer.create(
         model,
         beta_kl=float(config["beta_kl"]),
+        beta_kl_inside=float(
+            opportunity_settings.get("beta_kl_inside", config["beta_kl"])
+        ),
+        beta_kl_outside=float(
+            opportunity_settings.get("beta_kl_outside", config["beta_kl"])
+        ),
+        eta_preference=(
+            float(opportunity_settings.get("eta_preference", 0.0))
+            if opportunity_enabled
+            else 0.0
+        ),
+        preference_margin=float(opportunity_settings.get("preference_margin", 0.0)),
         rho_residual=float(config["rho_residual"]),
         learning_rate=float(config["learning_rate"]),
         weight_decay=float(config["weight_decay"]),
@@ -372,6 +458,17 @@ def main(argv: list[str] | None = None) -> int:
         args.style,
         style_reward_overrides.get(args.style),
     )
+    opportunity_overrides = opportunity_settings.get("style_overrides", {})
+    if not isinstance(opportunity_overrides, dict):
+        raise ValueError("Opportunity style overrides must be a mapping")
+    resolved_opportunity_config = (
+        _resolved_opportunity_config(
+            args.style,
+            opportunity_overrides.get(args.style),
+        )
+        if opportunity_enabled
+        else None
+    )
 
     def opponent_factory(assignment, side):
         if assignment.opponent_kind == "script":
@@ -392,14 +489,23 @@ def main(argv: list[str] | None = None) -> int:
         gamma=float(config["gamma"]),
         gae_lambda=float(config["gae_lambda"]),
         opponent_factory=opponent_factory,
-        style_reward_factory=_style_reward_factory(
-            args.style,
-            float(config["style_reward_scale"][args.style]),
-            resolved_style_reward_config,
+        style_reward_factory=(
+            _opportunity_reward_factory(
+                args.style,
+                float(config["style_reward_scale"][args.style]),
+                resolved_opportunity_config,
+            )
+            if opportunity_enabled
+            else _style_reward_factory(
+                args.style,
+                float(config["style_reward_scale"][args.style]),
+                resolved_style_reward_config,
+            )
         ),
     )
     events: Counter[str] = history.event_counts
     rewards: Counter[str] = history.reward_components
+    style_training_counts: Counter[str] = history.style_training_counts
     kl_stops = history.kl_early_stops
     try:
         while environment_steps < stop_after:
@@ -410,6 +516,7 @@ def main(argv: list[str] | None = None) -> int:
             environment_steps += collection.environment_steps
             events.update(collection.event_counts)
             rewards.update(collection.reward_components)
+            style_training_counts.update(collection.style_training_counts)
             append_jsonl(
                 metrics_path,
                 {
@@ -418,6 +525,7 @@ def main(argv: list[str] | None = None) -> int:
                     "episodes_completed": len(collection.episodes),
                     "event_counts": collection.event_counts,
                     "reward_components": collection.reward_components,
+                    "style_training_counts": collection.style_training_counts,
                 },
             )
             for episode in collection.episodes:
@@ -453,6 +561,13 @@ def main(argv: list[str] | None = None) -> int:
                             "environment_steps": environment_steps,
                             "epoch": epoch,
                             "style_kl": trainer.last_style_kl,
+                            "style_kl_inside": trainer.last_style_kl_inside,
+                            "style_kl_outside": trainer.last_style_kl_outside,
+                            "opportunity_tokens": trainer.last_opportunity_tokens,
+                            "preference_loss": trainer.last_preference_loss,
+                            "preferred_probability_lift": (
+                                trainer.last_preferred_probability_lift
+                            ),
                             "residual_magnitude": trainer.last_residual_magnitude,
                             **asdict(metrics),
                         },
@@ -500,13 +615,30 @@ def main(argv: list[str] | None = None) -> int:
                 "learned_residual_adapter": True,
                 "lineage": lineage,
                 "reward_components": dict(sorted(rewards.items())),
-                "resolved_style_reward_config": asdict(
-                    resolved_style_reward_config
+                "opportunity_conditioning": opportunity_enabled,
+                "opportunity_loss": {
+                    "beta_kl_inside": trainer.beta_kl_inside,
+                    "beta_kl_outside": trainer.beta_kl_outside,
+                    "eta_preference": trainer.eta_preference,
+                    "preference_margin": trainer.preference_margin,
+                },
+                "resolved_opportunity_config": (
+                    None
+                    if resolved_opportunity_config is None
+                    else asdict(resolved_opportunity_config)
+                ),
+                "resolved_style_reward_config": (
+                    None
+                    if opportunity_enabled
+                    else asdict(resolved_style_reward_config)
                 ),
                 "scenario_hash": scenario_hash,
                 "style": args.style,
+                "style_training_counts": dict(sorted(style_training_counts.items())),
                 "style_reward_schema_version": (
-                    4 if args.style == "defensive" else 1
+                    5
+                    if opportunity_enabled
+                    else (4 if args.style == "defensive" else 1)
                 ),
                 "test_cases_accessed": False,
                 "train_cases_sha256": sha256_file(cases_path),

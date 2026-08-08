@@ -8,6 +8,7 @@ import torch
 
 from botcolosseo.agents.model import ActorCriticOutput
 from botcolosseo.data.extraction_demonstrations import ExtractionCase
+from botcolosseo.envs.actions import MacroAction
 from botcolosseo.envs.extraction_protocol import ExtractionEvent, ExtractionEventType
 from botcolosseo.envs.extraction_rules import LifeState
 from botcolosseo.envs.extraction_types import (
@@ -17,6 +18,7 @@ from botcolosseo.envs.extraction_types import (
     ExtractionStep,
 )
 from botcolosseo.envs.ipc import WorkerTimeout
+from botcolosseo.training.extraction_rewards import ExtractionReward
 from botcolosseo.training.extraction_rollout import (
     ExtractionCaseSchedule,
     ExtractionEpisodeAssignment,
@@ -26,6 +28,7 @@ from botcolosseo.training.extraction_rollout import (
     _record_completed_schedule_result,
     extraction_privileged_tensor,
 )
+from botcolosseo.training.extraction_style_opportunities import StyleOpportunity
 
 
 def observation(*, banked: int = 0, previous_action: int = 0):
@@ -104,6 +107,28 @@ class FakeOpponent:
         self.previous_actions.append(observation.previous_action)
         assert callable(privileged_state)
         return 0
+
+
+class AlwaysActiveStyleReward:
+    def opportunity(self, *, observation_before, state_before):
+        del observation_before, state_before
+        return StyleOpportunity(
+            True,
+            frozenset({MacroAction.MOVE_FORWARD, MacroAction.STRAFE_LEFT}),
+            "test_opportunity",
+        )
+
+    def apply(
+        self,
+        action,
+        events,
+        *,
+        observation_before,
+        state_before,
+        state_after,
+    ):
+        del action, events, observation_before, state_before, state_after
+        return ExtractionReward(0.0, {})
 
 
 class FakeEnvironment:
@@ -274,6 +299,7 @@ def test_extraction_collector_resets_hidden_swaps_sides_and_records_outcome() ->
         environment_factory=environment_factory,
         opponent_factory=lambda assignment, side: opponent,
         action_sampler=lambda distribution: distribution.logits.argmax(-1),
+        style_reward_factory=lambda assignment: AlwaysActiveStyleReward(),
         teacher_supervision=True,
     )
     try:
@@ -290,8 +316,17 @@ def test_extraction_collector_resets_hidden_swaps_sides_and_records_outcome() ->
     assert collection.rollout.teacher_actions is not None
     assert collection.rollout.teacher_mask is not None
     assert collection.rollout.route_modes is not None
+    assert collection.rollout.opportunity_mask is not None
+    assert collection.rollout.preferred_action_mask is not None
     assert collection.rollout.teacher_mask.tolist() == [[True] * 5]
     assert collection.rollout.route_modes.tolist() == [[-1] * 5]
+    assert collection.rollout.opportunity_mask.tolist() == [[True] * 5]
+    assert collection.rollout.preferred_action_mask[..., 1].all()
+    assert collection.rollout.preferred_action_mask[..., 3].all()
+    assert collection.style_training_counts == {
+        "opportunity_tokens": 5,
+        "phase:test_opportunity": 5,
+    }
     assert collection.rollout.masks.tolist() == [[0.0, 1.0, 0.0, 1.0, 0.0]]
     assert [item.assignment.case.learner_side for item in created] == [
         "host",

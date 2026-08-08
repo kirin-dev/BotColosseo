@@ -32,6 +32,8 @@ class PPOBatch:
     teacher_actions: torch.Tensor | None = None
     teacher_mask: torch.Tensor | None = None
     route_modes: torch.Tensor | None = None
+    opportunity_mask: torch.Tensor | None = None
+    preferred_action_mask: torch.Tensor | None = None
 
 
 class PPOLoss(NamedTuple):

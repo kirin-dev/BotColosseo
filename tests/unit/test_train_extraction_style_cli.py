@@ -10,6 +10,7 @@ from botcolosseo.agents.checkpoint import (
 )
 from botcolosseo.cli.train_extraction_style import (
     _initialize_style_weights,
+    _resolved_opportunity_config,
     _resolved_style_reward_config,
     build_parser,
 )
@@ -142,3 +143,21 @@ def test_defensive_reward_overrides_are_targeted_and_auditable() -> None:
 def test_style_reward_overrides_fail_closed(overrides: dict[str, object]) -> None:
     with pytest.raises(ValueError, match="override"):
         _resolved_style_reward_config("defensive", overrides)
+
+
+def test_opportunity_overrides_are_style_specific_and_validated() -> None:
+    aggressive = _resolved_opportunity_config(
+        "aggressive",
+        {"completion_utility": 0.4, "maximum_carried_value": 50},
+    )
+
+    assert aggressive.completion_utility == pytest.approx(0.4)
+    assert aggressive.maximum_carried_value == 50
+    assert aggressive.attack_distance == pytest.approx(512)
+
+    with pytest.raises(ValueError, match="override"):
+        _resolved_opportunity_config("aggressive", {"risk_distance": 512})
+    with pytest.raises(ValueError, match="configuration"):
+        _resolved_opportunity_config(
+            "aggressive", {"attack_distance": 900, "engagement_distance": 700}
+        )

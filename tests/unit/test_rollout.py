@@ -151,6 +151,57 @@ def test_rollout_rejects_partial_style_supervision() -> None:
         RolloutBuffer(capacity=1, environments=2).append(invalid)
 
 
+def test_recurrent_sequences_preserve_opportunity_supervision() -> None:
+    buffer = RolloutBuffer(capacity=3, environments=1)
+    for index in range(3):
+        current = step(index, environments=1)
+        active = index != 1
+        current.opportunity_mask = torch.tensor([active])
+        current.preferred_action_mask = torch.zeros(1, 13, dtype=torch.bool)
+        if active:
+            current.preferred_action_mask[0, index + 2] = True
+        buffer.append(current)
+
+    rollout = buffer.finalize(gamma=0.9, gae_lambda=0.8)
+    batches = list(
+        rollout.sequence_minibatches(
+            sequence_length=2,
+            burn_in=0,
+            minibatch_sequences=1,
+            seed=1,
+            epoch=0,
+            shuffle=False,
+        )
+    )
+
+    assert batches[0].opportunity_mask.tolist() == [[True, False]]
+    assert batches[0].preferred_action_mask[0, 0, 2]
+    assert not batches[0].preferred_action_mask[0, 1].any()
+    assert batches[1].opportunity_mask.tolist() == [[True, False]]
+    assert batches[1].preferred_action_mask[0, 0, 4]
+    assert not batches[1].preferred_action_mask[0, 1].any()
+
+
+def test_rollout_rejects_invalid_opportunity_supervision() -> None:
+    partial = step(0)
+    partial.opportunity_mask = torch.ones(2, dtype=torch.bool)
+    with pytest.raises(ValueError, match="opportunity supervision"):
+        RolloutBuffer(capacity=1, environments=2).append(partial)
+
+    empty = step(0)
+    empty.opportunity_mask = torch.ones(2, dtype=torch.bool)
+    empty.preferred_action_mask = torch.zeros(2, 13, dtype=torch.bool)
+    with pytest.raises(ValueError, match="preferred action"):
+        RolloutBuffer(capacity=1, environments=2).append(empty)
+
+    inactive = step(0)
+    inactive.opportunity_mask = torch.zeros(2, dtype=torch.bool)
+    inactive.preferred_action_mask = torch.zeros(2, 13, dtype=torch.bool)
+    inactive.preferred_action_mask[0, 4] = True
+    with pytest.raises(ValueError, match="Inactive opportunities"):
+        RolloutBuffer(capacity=1, environments=2).append(inactive)
+
+
 def test_rollout_supports_extraction_actor_and_critic_dimensions() -> None:
     buffer = RolloutBuffer(
         capacity=1,
