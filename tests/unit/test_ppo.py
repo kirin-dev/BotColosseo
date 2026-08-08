@@ -172,3 +172,28 @@ def test_synthetic_update_lowers_loss_and_resumes_exactly(tmp_path: Path) -> Non
         torch.equal(value, baseline_state[name])
         for name, value in resumed.model.state_dict().items()
     )
+
+
+def test_optional_replay_keeps_one_argument_loss_subclasses_compatible() -> None:
+    class OneArgumentLossTrainer(PPOTrainer):
+        def _loss(self, batch: PPOBatch):
+            return super()._loss(batch)
+
+    model = AsymmetricActorCritic()
+    trainer = OneArgumentLossTrainer.create(
+        model,
+        learning_rate=1e-4,
+        total_updates=2,
+        gradient_clip=0.5,
+        policy_clip=0.2,
+        value_clip=0.2,
+        value_coefficient=0.5,
+        entropy_coefficient=0.0,
+        max_kl=1.0,
+    )
+    batch = synthetic_batch(model)
+
+    trainer.evaluate(batch)
+    trainer.train_step(batch)
+
+    assert trainer.updates == 1

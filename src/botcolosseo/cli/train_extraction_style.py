@@ -252,10 +252,16 @@ def main(argv: list[str] | None = None) -> int:
     metrics_path = output_dir / "metrics.jsonl"
     if metrics_path.exists() and args.resume is None:
         raise FileExistsError(f"Style PPO output already exists: {metrics_path}")
+    scenario_manifest = root / config.get(
+        "scenario_manifest",
+        "assets/scenarios/crystal_run_extraction/manifest.json",
+    )
+    scenario_config = root / config.get(
+        "scenario_config",
+        "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg",
+    )
     scenario_hash = json.loads(
-        (
-            root / "assets/scenarios/crystal_run_extraction/manifest.json"
-        ).read_text(encoding="utf-8")
+        scenario_manifest.read_text(encoding="utf-8")
     )["wad_sha256"]
     target_steps = args.environment_steps or int(config["environment_steps"])
     stop_after = args.stop_after_steps or target_steps
@@ -380,8 +386,7 @@ def main(argv: list[str] | None = None) -> int:
         model,
         schedule=schedule,
         device=device,
-        config_path=root
-        / "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg",
+        config_path=scenario_config,
         max_decisions=int(config["max_episode_decisions"]),
         episode_index=episode_index,
         gamma=float(config["gamma"]),

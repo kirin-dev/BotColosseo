@@ -315,7 +315,13 @@ class PPOTrainer:
             if replay_batch is None
             else {name: tensor.to(self.device) for name, tensor in replay_batch.items()}
         )
-        return self._metrics(self._loss(self._move(batch), moved_replay))
+        moved = self._move(batch)
+        loss = (
+            self._loss(moved)
+            if moved_replay is None
+            else self._loss(moved, moved_replay)
+        )
+        return self._metrics(loss)
 
     def train_step(
         self,
@@ -330,7 +336,11 @@ class PPOTrainer:
             else {name: tensor.to(self.device) for name, tensor in replay_batch.items()}
         )
         self.optimizer.zero_grad(set_to_none=True)
-        loss = self._loss(moved, moved_replay)
+        loss = (
+            self._loss(moved)
+            if moved_replay is None
+            else self._loss(moved, moved_replay)
+        )
         loss.total_loss.backward()
         pre_clip = float(
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.gradient_clip)
