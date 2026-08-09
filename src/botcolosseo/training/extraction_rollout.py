@@ -286,7 +286,8 @@ class ExtractionRolloutCollector:
         schedule: ExtractionSchedule,
         device: torch.device,
         config_path: Path = Path(
-            "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg"
+            "assets/scenarios/crystal_run_extraction_randomized/"
+            "crystal_run_extraction_randomized.cfg"
         ),
         max_decisions: int = 700,
         episode_index: int = 0,

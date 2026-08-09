@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from botcolosseo.envs.actions import MacroAction
+from botcolosseo.envs.extraction_layouts import randomized_layout_variant
 from botcolosseo.envs.synchronous_extraction import SynchronousExtractionEnv
 
 
@@ -14,7 +15,7 @@ def repository_root() -> Path:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Run a real synchronous Crystal Run Extraction v2 smoke"
+        description="Run a real synchronous randomized Extraction smoke"
     )
     parser.add_argument("--seed", type=int, default=20260726)
     parser.add_argument("--decisions", type=int, default=10)
@@ -34,8 +35,10 @@ def main(argv: list[str] | None = None) -> int:
     root = repository_root()
     env = SynchronousExtractionEnv(
         config_path=root
-        / "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg",
+        / "assets/scenarios/crystal_run_extraction_randomized/"
+        "crystal_run_extraction_randomized.cfg",
         seed=args.seed,
+        layout_variant=randomized_layout_variant(args.seed),
     )
     try:
         observations, info = env.reset()

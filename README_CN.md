@@ -33,13 +33,13 @@
 | **Defensive** | 风险下保护携带价值 | 停止追击 → 脱离 → 保值撤离 |
 | **Explorer** | 有效路线和物资多样性 | 多区域搜索 → 背包升级 → 撤离 |
 
-Strong CNN-GRU Actor 依次经过脚本 Teacher 数据、行为克隆、循环 PPO、历史对手
-和轻量 PFSP 训练。三个风格是绑定同一个冻结 Strong Actor 哈希的有界残差
-logit adapter。风格奖励由仅训练期使用的机会检测器按状态激活；部署策略仍然
-只使用相同的公开观测。
+Strong CNN-GRU Actor 先学习 mask-aware 特权 Teacher 数据，再经过行为克隆与
+保守型循环 PPO。1M-step 训练每 50k 做一次筛选，最终选择 950k checkpoint，
+而非默认使用末尾模型。三个风格是绑定同一个冻结 Strong Actor 哈希的有界残差
+logit adapter；仅训练期使用机会检测器激活塑形，部署策略仍只使用相同公开观测。
 
-历史对手采样和轻量 PFSP 是训练流程的一部分，但当前发布不对 PFSP 的独立因果
-增益作出结论。
+代码支持历史对手和 PFSP，但当前发布的 Strong 配置明确设为
+`history_probability: 0.0`，因此不声称本次结果使用了 PFSP，也不声称其因果增益。
 
 ### 实现入口
 
@@ -84,12 +84,14 @@ domain randomization，不代表连续坐标泛化。20 个 checkpoint 先各做
 
 | Bot | 公开证据层 | 选中视频实际证明的行为 |
 |---|---|---|
-| Aggressive | 代表性案例 | 5 次命中 → 击杀 → 尸体缓存 → 带出 85 价值 |
+| Aggressive | 代表性案例 | 5 次命中 → 击杀 → 尸体缓存 → 带出 100 价值 |
 | Defensive | 代表性案例 | 携带价值时脱战 → 撤离，0 击杀 |
-| Explorer | 代表性案例 | 搜索 4 个物资区域 → 背包升级 → 带出 85 价值 |
+| Explorer | 代表性案例 | 搜索 4 个物资区域 → 背包升级 → 带出 70 价值 |
 
 这些是从 validation 选择的产品演示，不代表所有风格在完整分布上均有提升。
-每段视频均明确限定为代表性案例，并包含由引擎事件记录的完整行为因果链。
+每段视频都是按选定 protocol、seed、side、opponent、layout 与 policy 重新进行的
+确定性渲染，不声称与历史评测 episode 逐帧一致；案例包含由引擎事件记录的完整
+行为因果链。
 完整案例、checkpoint/视频哈希、证据层级与研究检查见
 [机器可读审计](reports/extraction/showcase/audit.json)。
 

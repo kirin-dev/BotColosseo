@@ -27,7 +27,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--validation-protocol",
         type=Path,
-        default=Path("configs/extraction/evaluation.yaml"),
+        default=Path("configs/extraction/randomized/evaluation.yaml"),
     )
     parser.add_argument(
         "--output",
@@ -53,7 +53,8 @@ def main(argv: list[str] | None = None) -> int:
     protocol = load_extraction_evaluation_protocol(protocol_path)
     scenario_hash = json.loads(
         (
-            root / "assets/scenarios/crystal_run_extraction/manifest.json"
+            root
+            / "assets/scenarios/crystal_run_extraction_randomized/manifest.json"
         ).read_text(encoding="utf-8")
     )["wad_sha256"]
     generator = secrets.SystemRandom()
@@ -67,8 +68,8 @@ def main(argv: list[str] | None = None) -> int:
             used_seeds.add(seed)
             cases.extend(
                 (
-                    ExtractionCase("test", seed, "host", style, "heldout-a"),
-                    ExtractionCase("test", seed, "opponent", style, "heldout-a"),
+                    ExtractionCase("test", seed, "host", style, "randomized"),
+                    ExtractionCase("test", seed, "opponent", style, "randomized"),
                 )
             )
     payload = {

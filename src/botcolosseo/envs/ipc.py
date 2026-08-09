@@ -2,10 +2,17 @@ from __future__ import annotations
 
 import multiprocessing as mp
 import queue
+import socket
 import traceback
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
+
+
+def allocate_loopback_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
+        probe.bind(("127.0.0.1", 0))
+        return int(probe.getsockname()[1])
 
 
 class WorkerTimeout(TimeoutError):

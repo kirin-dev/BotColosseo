@@ -34,7 +34,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--protocol",
         type=Path,
-        default=Path("configs/extraction/evaluation.yaml"),
+        default=Path("configs/extraction/randomized/evaluation.yaml"),
     )
     parser.add_argument("--output", type=Path, required=True)
     return parser

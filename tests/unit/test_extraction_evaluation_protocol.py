@@ -8,10 +8,10 @@ from botcolosseo.evaluation.extraction_protocol import (
 )
 
 
-def test_v3_evaluation_protocol_freezes_budgets_and_side_swaps() -> None:
+def test_evaluation_protocol_freezes_budgets_and_side_swaps() -> None:
     root = Path(__file__).resolve().parents[2]
     protocol = load_extraction_evaluation_protocol(
-        root / "configs/extraction/evaluation.yaml"
+        root / "configs/extraction/randomized/evaluation.yaml"
     )
 
     assert len(protocol.cases("validation")) == 240

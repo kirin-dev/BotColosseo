@@ -24,7 +24,7 @@ from botcolosseo.training.extraction_checkpoint import (
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Evaluate a v3 Extraction candidate without test access"
+        description="Evaluate a randomized Extraction candidate without test access"
     )
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument(
@@ -36,7 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--protocol",
         type=Path,
-        default=Path("configs/extraction/evaluation.yaml"),
+        default=Path("configs/extraction/randomized/evaluation.yaml"),
     )
     parser.add_argument(
         "--split",
@@ -48,8 +48,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument(
         "--scenario-directory",
-        choices=("crystal_run_extraction", "crystal_run_extraction_randomized"),
-        default="crystal_run_extraction",
+        choices=("crystal_run_extraction_randomized",),
+        default="crystal_run_extraction_randomized",
     )
     parser.add_argument("--output", type=Path, required=True)
     return parser

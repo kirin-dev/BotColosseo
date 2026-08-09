@@ -64,16 +64,6 @@ if __name__ == "__main__":
         split="validation",
         seeds=range(61000, 61032),
     )
-    for name, layout in (
-        ("base", "base"),
-        ("heldout", "heldout-a"),
-        ("unseen-random", "randomized"),
-    ):
-        write_evaluation(
-            Path(f"configs/extraction/randomized/evaluation-{name}.json"),
-            layout_id=layout,
-            seeds=range(62000, 62016),
-        )
     write_evaluation(
         Path("configs/extraction/randomized/aligned-v2/validation-120.json"),
         layout_id="randomized",

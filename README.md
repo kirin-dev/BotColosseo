@@ -34,14 +34,16 @@ search for loot → fight or disengage → manage inventory → extract → bank
 | **Defensive** | preserve carried value under risk | stop pursuit → disengage → extract |
 | **Explorer** | useful route and loot diversity | search regions → upgrade backpack → extract |
 
-The Strong CNN-GRU Actor is trained through scripted Teacher data, behavioral
-cloning, recurrent PPO, historical opponents, and lightweight PFSP. The three
-styles are bounded residual logit adapters over the same frozen Strong Actor hash.
-Their reward shaping is activated by training-only opportunity detectors; the
-deployed policies remain learned residual adapters with the same public inputs.
+The Strong CNN-GRU Actor is trained from a mask-aware privileged Teacher through
+behavioral cloning and conservative recurrent PPO. The 1M-step run is screened
+at 50k intervals and selects the 950k checkpoint rather than the final one. The
+three styles are bounded residual logit adapters over that same frozen Strong
+Actor hash. Training-only opportunity detectors activate their shaping; deployed
+policies remain learned adapters with the same public inputs.
 
-Historical-opponent sampling and lightweight PFSP are part of the training
-pipeline, but this release does not isolate or claim a causal PFSP gain.
+The codebase supports historical opponents and PFSP, but the released Strong run
+sets `history_probability: 0.0`. This release therefore makes no PFSP-training or
+causal PFSP-gain claim.
 
 ### Implementation map
 
@@ -91,13 +93,15 @@ See the [derived curve data](reports/extraction/training-curve.json).
 
 | Bot | Public evidence | What the selected video proves |
 |---|---|---|
-| Aggressive | Representative case | 5 hits → kill → corpse cache → 85-value extraction |
+| Aggressive | Representative case | 5 hits → kill → corpse cache → 100-value extraction |
 | Defensive | Representative case | carried-value disengagement → extraction, 0 kills |
-| Explorer | Representative case | 4 loot regions → backpack upgrade → 85-value extraction |
+| Explorer | Representative case | 4 loot regions → backpack upgrade → 70-value extraction |
 
 These are validation-selected product demonstrations, not proof that every
-style improves on the full distribution. Each video is explicitly scoped as a
-representative case study with a complete, engine-recorded causal chain. See the
+style improves on the full distribution. Each video is a fresh deterministic
+render bound to the selected protocol, seed, side, opponent, layout, and policy;
+it is not claimed to be frame-identical replay of the historical evaluation
+episode. Each case contains a complete, engine-recorded causal chain. See the
 [machine-readable audit](reports/extraction/showcase/audit.json) for cases,
 checkpoint/media hashes, evidence tiers, and every disclosed failed check.
 

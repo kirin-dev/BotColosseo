@@ -132,7 +132,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     scenario_manifest = root / config.get(
         "scenario_manifest",
-        "assets/scenarios/crystal_run_extraction/manifest.json",
+        "assets/scenarios/crystal_run_extraction_randomized/manifest.json",
     )
     scenario_hash = json.loads(scenario_manifest.read_text(encoding="utf-8"))[
         "wad_sha256"

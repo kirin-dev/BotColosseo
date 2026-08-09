@@ -42,7 +42,7 @@ def episode() -> ExtractionDemonstrationBuffer:
 
 
 def root(tmp_path: Path) -> tuple[Path, Path]:
-    scenario = tmp_path / "assets/scenarios/crystal_run_extraction"
+    scenario = tmp_path / "assets/scenarios/crystal_run_extraction_randomized"
     scenario.mkdir(parents=True)
     (scenario / "manifest.json").write_text(
         json.dumps({"wad_sha256": "scenario"}),
@@ -60,12 +60,14 @@ def root(tmp_path: Path) -> tuple[Path, Path]:
                         "seed": 1,
                         "learner_side": "host",
                         "opponent_style": "strong",
+                        "layout_id": "randomized",
                     },
                     {
                         "split": "train",
                         "seed": 1,
                         "learner_side": "opponent",
                         "opponent_style": "strong",
+                        "layout_id": "randomized",
                     },
                 ],
             }

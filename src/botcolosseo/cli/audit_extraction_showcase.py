@@ -6,6 +6,9 @@ from pathlib import Path
 
 from botcolosseo.cli.render_extraction_v3 import _representative_claims
 from botcolosseo.data.demonstrations import sha256_file
+from botcolosseo.evaluation.extraction_identity import (
+    validate_experiment_identity,
+)
 
 POLICIES = ("strong", "aggressive", "defensive", "explorer")
 EVIDENCE_TIERS = {
@@ -27,6 +30,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--method",
         type=Path,
         default=Path("docs/assets/extraction/method.svg"),
+    )
+    parser.add_argument(
+        "--experiment-identity",
+        type=Path,
+        default=Path("reports/extraction/showcase/experiment-identity.json"),
     )
     parser.add_argument("--output", type=Path, required=True)
     return parser
@@ -109,6 +117,7 @@ def audit_extraction_showcase(
     selection_path: Path,
     board_manifest_path: Path,
     method_path: Path,
+    experiment_identity_path: Path,
 ) -> dict[str, object]:
     selection = json.loads(selection_path.read_text(encoding="utf-8"))
     board = json.loads(board_manifest_path.read_text(encoding="utf-8"))
@@ -141,6 +150,12 @@ def audit_extraction_showcase(
         raise ValueError("Showcase board drifted")
     if not method_path.is_file():
         raise ValueError("Showcase method diagram is missing")
+    identity = json.loads(experiment_identity_path.read_text(encoding="utf-8"))
+    validate_experiment_identity(root=root, payload=identity)
+    if selection["protocol_sha256"] != identity["components"][
+        "evaluation_protocol"
+    ]["sha256"]:
+        raise ValueError("Showcase protocol is outside the experiment identity")
 
     audited: dict[str, object] = {}
     tiers: dict[str, str] = {}
@@ -190,6 +205,8 @@ def audit_extraction_showcase(
             or evidence.get("test_cases_accessed") is not False
         ):
             raise ValueError(f"{policy} Showcase replay identity does not match")
+        if evidence.get("scenario_hash") != identity.get("scenario_hash"):
+            raise ValueError(f"{policy} Showcase scenario is outside the experiment identity")
         selected_episode = selected.get("episode")
         rendered_case = evidence.get("case")
         if (
@@ -310,6 +327,9 @@ def audit_extraction_showcase(
         "board_manifest_sha256": sha256_file(board_manifest_path),
         "method": str(method_path.relative_to(root)),
         "method_sha256": sha256_file(method_path),
+        "experiment_identity": str(experiment_identity_path.relative_to(root)),
+        "experiment_identity_file_sha256": sha256_file(experiment_identity_path),
+        "experiment_identity_sha256": identity["experiment_identity_sha256"],
         "policies": audited,
         "evidence_tiers": tiers,
         "source_split": "validation",
@@ -329,6 +349,7 @@ def main(argv: list[str] | None = None) -> int:
         selection_path=_resolve(root, args.selection),
         board_manifest_path=_resolve(root, args.board_manifest),
         method_path=_resolve(root, args.method),
+        experiment_identity_path=_resolve(root, args.experiment_identity),
     )
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = output.with_name(f".{output.name}.tmp")

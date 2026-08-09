@@ -291,24 +291,21 @@ def _collect_episode_once(
     max_decisions: int,
     rollout_controller: ExtractionRolloutController | None = None,
 ) -> tuple[ExtractionDemonstrationBuffer, dict[str, int]]:
-    randomized = case.layout_id == "randomized"
+    if case.layout_id != "randomized":
+        raise ValueError("The current release supports randomized layouts only")
+    layout_variant = randomized_layout_variant(case.seed)
     env = SynchronousExtractionEnv(
-        config_path=(
-            root
-            / "assets/scenarios/crystal_run_extraction_randomized/"
-            "crystal_run_extraction_randomized.cfg"
-            if randomized
-            else root
-            / "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg"
-        ),
+        config_path=root
+        / "assets/scenarios/crystal_run_extraction_randomized/"
+        "crystal_run_extraction_randomized.cfg",
         seed=case.seed,
         max_decisions=max_decisions,
-        layout_variant=(randomized_layout_variant(case.seed) if randomized else None),
+        layout_variant=layout_variant,
     )
     learner = privileged_extraction_teacher(
         side=case.learner_side,
         style=style,
-        layout_variant=(randomized_layout_variant(case.seed) if randomized else None),
+        layout_variant=layout_variant,
     )
     opponent_side = "opponent" if case.learner_side == "host" else "host"
     opponent = (
@@ -440,17 +437,9 @@ def generate_extraction_demonstrations(
     if output_dir.exists() and any(output_dir.iterdir()) and not resume:
         raise FileExistsError(f"Extraction data output is not empty: {output_dir}")
     output_dir.mkdir(parents=True, exist_ok=True)
-    scenario_directories = {
-        (
-            "crystal_run_extraction_randomized"
-            if case.layout_id == "randomized"
-            else "crystal_run_extraction"
-        )
-        for case in cases
-    }
-    if len(scenario_directories) != 1:
-        raise ValueError("One demonstration run cannot mix scenario binaries")
-    scenario_directory = next(iter(scenario_directories))
+    if any(case.layout_id != "randomized" for case in cases):
+        raise ValueError("The current release supports randomized layouts only")
+    scenario_directory = "crystal_run_extraction_randomized"
     scenario_manifest = json.loads(
         (root / "assets/scenarios" / scenario_directory / "manifest.json").read_text(
             encoding="utf-8"

@@ -10,6 +10,10 @@ from botcolosseo.cli.audit_extraction_showcase import (
     audit_extraction_showcase,
 )
 from botcolosseo.data.demonstrations import sha256_file
+from botcolosseo.evaluation.extraction_identity import (
+    IDENTITY_COMPONENTS,
+    build_experiment_identity,
+)
 
 POLICIES = ("strong", "aggressive", "defensive", "explorer")
 
@@ -54,6 +58,18 @@ def _claims(policy: str) -> dict[str, object]:
 
 
 def _artifacts(tmp_path: Path) -> tuple[Path, Path, Path]:
+    for name, relative in IDENTITY_COMPONENTS.items():
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(name.encode())
+    wad_path = tmp_path / IDENTITY_COMPONENTS["scenario_wad"]
+    manifest_path = tmp_path / IDENTITY_COMPONENTS["scenario_manifest"]
+    _write_json(manifest_path, {"wad_sha256": sha256_file(wad_path)})
+    identity = build_experiment_identity(root=tmp_path, git_commit="1" * 40)
+    identity_path = tmp_path / "experiment-identity.json"
+    _write_json(identity_path, identity)
+    protocol_sha256 = identity["components"]["evaluation_protocol"]["sha256"]
+    scenario_hash = identity["scenario_hash"]
     selections = {}
     board_artifacts = {}
     for index, policy in enumerate(POLICIES):
@@ -75,7 +91,8 @@ def _artifacts(tmp_path: Path) -> tuple[Path, Path, Path]:
             "case_index": index,
             "checkpoint_sha256": checkpoint_sha256,
             "protocol": "protocol.yaml",
-            "protocol_sha256": "a" * 64,
+            "protocol_sha256": protocol_sha256,
+            "scenario_hash": scenario_hash,
             "case": {
                 "split": "validation",
                 "seed": 100 + index,
@@ -120,7 +137,7 @@ def _artifacts(tmp_path: Path) -> tuple[Path, Path, Path]:
             "schema_version": 2,
             "selection_split": "validation",
             "protocol": "protocol.yaml",
-            "protocol_sha256": "a" * 64,
+            "protocol_sha256": protocol_sha256,
             "selections": selections,
             "test_cases_accessed": False,
         },
@@ -156,6 +173,7 @@ def test_product_showcase_audit_accepts_bound_representative_media(
         selection_path=selection,
         board_manifest_path=board,
         method_path=method,
+        experiment_identity_path=tmp_path / "experiment-identity.json",
     )
 
     assert result["passed"] is True
@@ -182,6 +200,7 @@ def test_product_showcase_audit_rejects_claim_drift(tmp_path: Path) -> None:
             selection_path=selection,
             board_manifest_path=board,
             method_path=method,
+            experiment_identity_path=tmp_path / "experiment-identity.json",
         )
 
 
@@ -205,6 +224,7 @@ def test_product_showcase_audit_rejects_case_identity_drift(
             selection_path=selection,
             board_manifest_path=board,
             method_path=method,
+            experiment_identity_path=tmp_path / "experiment-identity.json",
         )
 
 

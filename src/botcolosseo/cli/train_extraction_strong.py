@@ -214,7 +214,7 @@ def main(argv: list[str] | None = None) -> int:
         raise FileExistsError(f"Strong PPO output already exists: {metrics_path}")
     scenario_manifest = root / config.get(
         "scenario_manifest",
-        "assets/scenarios/crystal_run_extraction/manifest.json",
+        "assets/scenarios/crystal_run_extraction_randomized/manifest.json",
     )
     scenario_hash = json.loads(scenario_manifest.read_text(encoding="utf-8"))[
         "wad_sha256"
@@ -402,7 +402,8 @@ def main(argv: list[str] | None = None) -> int:
         config_path=root
         / config.get(
             "scenario_config",
-            "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg",
+            "assets/scenarios/crystal_run_extraction_randomized/"
+            "crystal_run_extraction_randomized.cfg",
         ),
         max_decisions=int(config["max_episode_decisions"]),
         episode_index=episode_index,

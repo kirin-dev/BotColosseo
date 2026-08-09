@@ -29,7 +29,7 @@ from botcolosseo.envs.extraction_types import (
     normalized_extraction_progress,
     observation_health,
 )
-from botcolosseo.envs.synchronous_duel import allocate_loopback_port
+from botcolosseo.envs.ipc import allocate_loopback_port
 
 
 class SynchronousExtractionEnv:

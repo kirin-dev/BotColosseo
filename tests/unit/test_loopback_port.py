@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import socket
 
-from botcolosseo.envs.synchronous_duel import allocate_loopback_port
+from botcolosseo.envs.ipc import allocate_loopback_port
 
 
 def test_loopback_port_is_available_for_vizdoom_udp_host() -> None:

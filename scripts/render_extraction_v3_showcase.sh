@@ -11,6 +11,7 @@ cd "$ROOT"
 MEDIA="${BOTCOLOSSEO_SHOWCASE_MEDIA:-docs/assets/extraction}"
 REPORTS="${BOTCOLOSSEO_SHOWCASE_REPORTS:-reports/extraction/showcase}"
 METHOD="${BOTCOLOSSEO_SHOWCASE_METHOD:-docs/assets/extraction/method.svg}"
+IDENTITY="${BOTCOLOSSEO_EXPERIMENT_IDENTITY:-$REPORTS/experiment-identity.json}"
 PROTOCOL="${BOTCOLOSSEO_SHOWCASE_PROTOCOL:-configs/extraction/randomized/evaluation.yaml}"
 BASE="${BOTCOLOSSEO_STRONG_CHECKPOINT:-runs/extraction-randomized/strong-ppo-conservative-v2/candidate-0950000.pt}"
 STRONG_MANIFEST="${BOTCOLOSSEO_STRONG_MANIFEST:-reports/extraction/showcase/manifests/strong.json}"
@@ -95,11 +96,17 @@ if [[ ! -f "$MEDIA/showcase-board.png" ]]; then
     --manifest "$REPORTS/manifest.json"
 fi
 
+if [[ ! -f "$IDENTITY" ]]; then
+  "$PYTHON" -u -m botcolosseo.cli.build_extraction_experiment_identity \
+    --output "$IDENTITY"
+fi
+
 if [[ ! -f "$REPORTS/audit.json" ]]; then
   "$PYTHON" -u -m botcolosseo.cli.audit_extraction_showcase \
     --selection "$selection" \
     --board-manifest "$REPORTS/manifest.json" \
     --method "$METHOD" \
+    --experiment-identity "$IDENTITY" \
     --output "$REPORTS/audit.json"
 fi
 

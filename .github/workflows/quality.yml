@@ -18,10 +18,10 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.10"
           cache: pip
@@ -39,3 +39,17 @@ jobs:
 
       - name: Run unit tests
         run: python -m pytest -q tests/unit
+
+      - name: Run portable ViZDoom integration
+        run: python -m pytest -q tests/integration
+
+      - name: Audit committed Showcase evidence and media hashes
+        run: |
+          python -m botcolosseo.cli.audit_extraction_showcase \
+            --selection reports/extraction/showcase/selection.json \
+            --board-manifest reports/extraction/showcase/manifest.json \
+            --method docs/assets/extraction/method.svg \
+            --experiment-identity reports/extraction/showcase/experiment-identity.json \
+            --output /tmp/botcolosseo-showcase-audit.json
+          cmp reports/extraction/showcase/audit.json \
+            /tmp/botcolosseo-showcase-audit.json

@@ -21,7 +21,7 @@ from botcolosseo.training.extraction_checkpoint import (
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Render one learned v3 Extraction validation replay"
+        description="Render one learned randomized Extraction validation replay"
     )
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument(
@@ -33,13 +33,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--protocol",
         type=Path,
-        default=Path("configs/extraction/evaluation.yaml"),
+        default=Path("configs/extraction/randomized/evaluation.yaml"),
     )
     parser.add_argument("--case-index", type=int, required=True)
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument(
         "--scenario-directory",
-        choices=("crystal_run_extraction", "crystal_run_extraction_randomized"),
+        choices=("crystal_run_extraction_randomized",),
         default="crystal_run_extraction_randomized",
     )
     parser.add_argument("--frame-stride", type=int, default=1)
