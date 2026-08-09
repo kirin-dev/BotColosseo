@@ -15,8 +15,9 @@ complete notices.
 
 Freedoom game data is Copyright 2001-2024 Contributors to the Freedoom project
 and is distributed under the BSD 3-Clause License. Bot Colosseo does not embed
-Freedoom textures, sprites, sounds, or IWAD data in `crystal_run.wad`; the map
-refers to names supplied by a separately installed Freedoom IWAD. Tracked
+Freedoom textures, sprites, sounds, or IWAD data in
+`crystal_run_extraction_randomized.wad`; the map refers to names supplied by a
+separately installed Freedoom IWAD. Tracked
 screenshots and videos contain rendered output produced with that game data.
 The required copyright notice, conditions, and disclaimer are reproduced in
 [`licenses/FREEDOOM-BSD-3-CLAUSE.txt`](licenses/FREEDOOM-BSD-3-CLAUSE.txt).

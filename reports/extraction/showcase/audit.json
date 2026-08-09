@@ -7,6 +7,9 @@
     "explorer": "representative_case_demonstration",
     "strong": "product_showcase"
   },
+  "experiment_identity": "reports/extraction/showcase/experiment-identity.json",
+  "experiment_identity_file_sha256": "1929ff86a34e525718ea07ee8f12ef9ba3f0de2ca5c63beef1d3fbebf70640f2",
+  "experiment_identity_sha256": "b9fa94c3d12e60d0580f6edf330a28d96dc3a45a4716e77e0b269023ffbbb6e1",
   "method": "docs/assets/extraction/method.svg",
   "method_sha256": "870835b7bb7e90ad7b5ed670e3a7e5038c27fc19b8bfd5069bdf02f4e0da2b68",
   "official_test_eligible": false,

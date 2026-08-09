@@ -1,0 +1,46 @@
+{
+  "components": {
+    "evaluation_protocol": {
+      "path": "configs/extraction/randomized/evaluation.yaml",
+      "sha256": "42ce1fbafe4bae9c748c44a713640bfd9d7384eecfb9643a4ea7df6c6e1c369a"
+    },
+    "game_rules": {
+      "path": "src/botcolosseo/envs/extraction_rules.py",
+      "sha256": "f4175b63ba2338343f7c82e9cea3f9e2cb8783f0786e88ff9c43861e3ca42e2c"
+    },
+    "gate_implementation": {
+      "path": "src/botcolosseo/evaluation/extraction_gates.py",
+      "sha256": "296eaf2c0a63594dfd46a3fbef610b111321556a7a9a2ff4d1b88a76da7a8c79"
+    },
+    "layout_generator": {
+      "path": "src/botcolosseo/envs/extraction_layouts.py",
+      "sha256": "7b5c0b21eb91fa4c18ef7e578ff99521efbb7b68c5e7b302d2b135350e6f26da"
+    },
+    "metric_implementation": {
+      "path": "src/botcolosseo/evaluation/extraction.py",
+      "sha256": "fc0b75fa10a9f04e7c9405682a04d232c2e7a3fe3a8c466b1583a25ea89c94e0"
+    },
+    "scenario_config": {
+      "path": "assets/scenarios/crystal_run_extraction_randomized/crystal_run_extraction_randomized.cfg",
+      "sha256": "e846d326deeda5d735c41de6fe12f99c88a62c8e9ab3a8d003234effd7d7b4f1"
+    },
+    "scenario_manifest": {
+      "path": "assets/scenarios/crystal_run_extraction_randomized/manifest.json",
+      "sha256": "cbaa69a607504e5b16509c25e99176cb07360f921edc51248ea115cfc7547437"
+    },
+    "scenario_wad": {
+      "path": "assets/scenarios/crystal_run_extraction_randomized/crystal_run_extraction_randomized.wad",
+      "sha256": "3f928c6606eaffae8a4a9ea829f9bea1b82d4f0b622db2acdcff6149d4c15024"
+    },
+    "teacher": {
+      "path": "src/botcolosseo/agents/extraction_teachers.py",
+      "sha256": "2d6035fb7d5f5d4c264fdeec17479ffc28dca73a20a798c852a613f2ca62ec75"
+    }
+  },
+  "experiment_identity_sha256": "b9fa94c3d12e60d0580f6edf330a28d96dc3a45a4716e77e0b269023ffbbb6e1",
+  "git_commit": "322ee61cfeffbca06866beb47bcb62c4913700e8",
+  "identity_scope": "scenario_rules_teacher_protocol_metrics_and_code",
+  "metric_schema_version": 2,
+  "scenario_hash": "3f928c6606eaffae8a4a9ea829f9bea1b82d4f0b622db2acdcff6149d4c15024",
+  "schema_version": 1
+}
