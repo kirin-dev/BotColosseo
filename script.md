@@ -114,6 +114,39 @@ do not relax thresholds.
 
 ## Current randomized style repair: opportunity-conditioned PBRS
 
+### Aligned completion-semantics v2
+
+Defensive completion now requires a real disengagement before extraction;
+Explorer completion requires both distinct-region exploration and a real
+backpack upgrade before extraction. Retrain only these two adapters to 51.2k
+steps under the original 100k learning-rate schedule. The two GPU lanes are
+independent and preserve all v1 artifacts:
+
+```bash
+mkdir -p runs/extraction-randomized/styles-opportunity-pbrs-aligned-v2/control
+nohup env \
+  BOTCOLOSSEO_PYTHON="$CONDA_PREFIX/bin/python" \
+  bash scripts/run_extraction_randomized_aligned_opportunity_styles.sh \
+  > runs/extraction-randomized/styles-opportunity-pbrs-aligned-v2/control/pipeline.log \
+  2>&1 &
+echo $! \
+  > runs/extraction-randomized/styles-opportunity-pbrs-aligned-v2/control/pipeline.pid
+```
+
+Inspect without restarting anything:
+
+```bash
+pid="$(cat runs/extraction-randomized/styles-opportunity-pbrs-aligned-v2/control/pipeline.pid)"
+ps -p "$pid" -o pid,etime,%cpu,%mem,stat,cmd
+tail -n 12 runs/extraction-randomized/styles-opportunity-pbrs-aligned-v2/control/*.log
+nvidia-smi --query-gpu=index,utilization.gpu,memory.used,memory.total \
+  --format=csv,noheader
+```
+
+Screen both 51.2k candidates on 32 paired randomized cases before any 240-case
+validation. Do not extend or tune coefficients unless that screen confirms the
+intended directional shift.
+
 The frozen Strong Base is
 `runs/extraction-randomized/strong-ppo-conservative-v2/candidate-0950000.pt`
 (SHA-256 `d05fa0cbcdf9d0aa3df363e66f6aa8957a35c76d9d3fb936b15d6fe5b5f22484`).

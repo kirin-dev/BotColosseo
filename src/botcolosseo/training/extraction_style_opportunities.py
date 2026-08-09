@@ -329,12 +329,12 @@ class DefensiveOpportunityLedger(_OpportunityLedger):
         if phase_after >= 1 and after_distance >= self.config.disengaged_distance:
             phase_after = max(phase_after, 2)
         learner_events = tuple(event for event in events if event.side == self.learner_side)
-        if phase_after >= 1 and any(
+        if phase_after >= 2 and any(
             event.type is ExtractionEventType.EXTRACTION_STARTED for event in learner_events
         ):
             phase_after = 3
         completed = (
-            phase_after >= 1
+            phase_after >= 2
             and observation_before.carried_value >= self.config.meaningful_value
             and any(event.type is ExtractionEventType.EXTRACTED for event in learner_events)
         )
@@ -460,7 +460,8 @@ class ExplorerOpportunityLedger(_OpportunityLedger):
         ):
             phase_after = 3
         completed = (
-            len(self._visited_cells) >= self.config.required_novel_regions
+            self._upgraded
+            and len(self._visited_cells) >= self.config.required_novel_regions
             and any(event.type is ExtractionEventType.EXTRACTED for event in learner_events)
         )
         if observation_before.carried_value == 0 and MacroAction(action) is MacroAction.IDLE:

@@ -194,6 +194,39 @@ def test_defensive_opportunity_is_risk_conditioned_and_reaches_value_conversion(
     assert "completion_utility" not in unconditioned.components
 
 
+def test_defensive_completion_requires_actual_disengagement() -> None:
+    ledger = DefensiveOpportunityLedger(
+        DefensiveOpportunityConfig(), learner_side="host", scale=1
+    )
+    opportunity = ledger.opportunity(
+        observation_before=observation(carried=25),
+        state_before=state(host_slots=(25, 0, 0)),
+    )
+    ledger.apply(
+        next(iter(opportunity.preferred_actions)),
+        (),
+        observation_before=observation(carried=25),
+        state_before=state(host_slots=(25, 0, 0)),
+        state_after=state(host_slots=(25, 0, 0)),
+    )
+    ledger.apply(
+        MacroAction.IDLE,
+        (event(ExtractionEventType.EXTRACTION_STARTED),),
+        observation_before=observation(carried=25),
+        state_before=state(host_slots=(25, 0, 0)),
+        state_after=state(host_slots=(25, 0, 0)),
+    )
+    extracted = ledger.apply(
+        MacroAction.IDLE,
+        (event(ExtractionEventType.EXTRACTED),),
+        observation_before=observation(carried=25),
+        state_before=state(host_slots=(25, 0, 0)),
+        state_after=state(host_slots=(25, 0, 0)),
+    )
+
+    assert "completion_utility" not in extracted.components
+
+
 def test_explorer_opportunity_targets_available_loot_then_stops_to_extract() -> None:
     ledger = ExplorerOpportunityLedger(
         ExplorerOpportunityConfig(),
@@ -244,6 +277,38 @@ def test_explorer_opportunity_targets_available_loot_then_stops_to_extract() -> 
     assert upgrade.components["pbrs_progress"] > 0
     assert convert.phase == "convert_exploration"
     assert extracted.components["completion_utility"] > 0
+
+
+def test_explorer_completion_requires_real_backpack_upgrade() -> None:
+    ledger = ExplorerOpportunityLedger(
+        ExplorerOpportunityConfig(),
+        learner_side="host",
+        scale=1,
+        layout_variant=0,
+    )
+    ledger.apply(
+        MacroAction.MOVE_FORWARD,
+        (event(ExtractionEventType.LOOT_PICKUP),),
+        observation_before=observation(),
+        state_before=state(),
+        state_after=state(host_x=-192, host_y=96, world_loot_mask=63),
+    )
+    ledger.apply(
+        MacroAction.MOVE_FORWARD,
+        (event(ExtractionEventType.LOOT_PICKUP),),
+        observation_before=observation(carried=25),
+        state_before=state(host_x=-192, host_y=96, world_loot_mask=63),
+        state_after=state(host_x=384, host_y=-224, world_loot_mask=31),
+    )
+    extracted = ledger.apply(
+        MacroAction.IDLE,
+        (event(ExtractionEventType.EXTRACTED),),
+        observation_before=observation(carried=50),
+        state_before=state(host_slots=(25, 25, 0)),
+        state_after=state(),
+    )
+
+    assert "completion_utility" not in extracted.components
 
 
 def test_terminal_potential_is_cleared_even_when_chain_fails() -> None:
