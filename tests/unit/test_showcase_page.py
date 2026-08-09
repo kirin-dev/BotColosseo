@@ -174,7 +174,8 @@ def test_showcase_covers_scenario_method_styles_and_results() -> None:
 
     assert {"bots", "scenario", "method", "styles", "results"} <= parser.ids
     assert "assets/extraction/map.svg" in parser.images
-    assert "assets/extraction/method.svg?v=1200x600-1" in parser.images
+    assert "assets/extraction/method.svg?v=aligned-2" in parser.images
+    assert "assets/extraction/training-curve.svg?v=axes-2" in parser.images
     assert all(
         text in source
         for text in (
@@ -197,7 +198,9 @@ def test_showcase_covers_scenario_method_styles_and_results() -> None:
     assert "partitioned KL" in method_svg
     assert "training-only" in method_svg
     assert 'width="1200" height="600"' in method_svg
-    assert 'd="M857 198 V246 H606 V269"' in method_svg
+    assert 'd="M1008 198 V246 H606 V309"' in method_svg
+    assert 'x="898" y="112" width="220"' in method_svg
+    assert method_svg.count('x="818"') == 3
     assert 'width="1400" height="520"' not in method_svg
     public_copy = (source + map_svg + method_svg).lower()
     assert "crystal run" not in public_copy

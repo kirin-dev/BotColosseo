@@ -133,10 +133,11 @@ def _points(
     width: float,
     height: float,
     maximum: float,
+    minimum: float = 0.0,
 ) -> str:
     return " ".join(
         f"{left + width * float(item['environment_steps']) / 1_000_000:.1f},"
-        f"{top + height * (1 - float(item[key]) / maximum):.1f}"
+        f"{top + height * (1 - (float(item[key]) - minimum) / (maximum - minimum)):.1f}"
         for item in items
     )
 
@@ -145,14 +146,15 @@ def render_svg(data: dict[str, object]) -> str:
     screening = data["screening"]
     diagnostics = data["training_diagnostics"]
     confirmation = data["confirmation"]
-    left_a, left_b, top, width, height = 66, 664, 70, 468, 270
+    left_a, left_b, top, width, height = 66, 664, 75, 468, 315
+    capability_minimum = 0.25
     extraction = _points(
         screening, "extraction_rate", left=left_a, top=top, width=width,
-        height=height, maximum=1.0
+        height=height, maximum=1.0, minimum=capability_minimum
     )
     wins = _points(
         screening, "win_rate", left=left_a, top=top, width=width,
-        height=height, maximum=1.0
+        height=height, maximum=1.0, minimum=capability_minimum
     )
     agreement = _points(
         diagnostics, "replay_agreement", left=left_b, top=top, width=width,
@@ -164,29 +166,42 @@ def render_svg(data: dict[str, object]) -> str:
         height=height, maximum=max_kl
     )
     confirm_x = left_a + width * float(confirmation["environment_steps"]) / 1e6
-    confirm_y = top + height * (1 - float(confirmation["extraction_rate"]))
+    confirm_y = top + height * (
+        1
+        - (float(confirmation["extraction_rate"]) - capability_minimum)
+        / (1.0 - capability_minimum)
+    )
     selected = next(item for item in screening if item["selected"])
-    selected_y = top + height * (1 - float(selected["extraction_rate"]))
+    selected_y = top + height * (
+        1
+        - (float(selected["extraction_rate"]) - capability_minimum)
+        / (1.0 - capability_minimum)
+    )
     grid = []
+    for rate in (0.25, 0.5, 0.75, 1.0):
+        y = top + height * (1 - (rate - capability_minimum) / (1.0 - capability_minimum))
+        grid.append(
+            f'<path d="M{left_a} {y:.1f}H{left_a + width}" class="grid"/>'
+        )
+        grid.append(f'<text x="18" y="{y + 4:.1f}">{rate:.0%}</text>')
     for rate in (0.0, 0.25, 0.5, 0.75, 1.0):
         y = top + height * (1 - rate)
         grid.append(
-            f'<path d="M{left_a} {y:.1f}H{left_a + width} M{left_b} {y:.1f}H{left_b + width}" class="grid"/>'
+            f'<path d="M{left_b} {y:.1f}H{left_b + width}" class="grid"/>'
         )
-        grid.append(f'<text x="18" y="{y + 4:.1f}">{rate:.0%}</text>')
         grid.append(f'<text x="616" y="{y + 4:.1f}">{rate:.0%}</text>')
     ticks = []
     for step in (0, 250_000, 500_000, 750_000, 1_000_000):
         label = "0" if step == 0 else f"{step // 1000}k"
         for left in (left_a, left_b):
             x = left + width * step / 1_000_000
-            ticks.append(f'<text x="{x:.1f}" y="366" text-anchor="middle">{label}</text>')
-    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-labelledby="title desc">
+            ticks.append(f'<text x="{x:.1f}" y="416" text-anchor="middle">{label}</text>')
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" role="img" aria-labelledby="title desc">
 <title id="title">Randomized Strong training and selection</title>
-<desc id="desc">Twenty 32-episode validation screens select the 950k checkpoint, confirmed on 240 episodes. Training diagnostics show BC replay agreement and frozen-reference KL.</desc>
-<style>text{{font:13px Arial,sans-serif;fill:#586171}}.title{{font-size:18px;font-weight:700;fill:#111827}}.label{{font-size:12px;font-weight:700}}.grid{{stroke:#e7eaf0;stroke-width:1}}.axis{{stroke:#9aa3b2}}.extract{{fill:none;stroke:#2878c8;stroke-width:3}}.win{{fill:none;stroke:#8eb9df;stroke-width:2}}.agree{{fill:none;stroke:#288f67;stroke-width:3}}.kl{{fill:none;stroke:#bd7c16;stroke-width:2;stroke-dasharray:6 4}}</style>
-<rect width="1200" height="430" rx="18" fill="#fff" stroke="#dfe3e8"/>
-<text x="66" y="35" class="title">A · Capability selection</text><text x="664" y="35" class="title">B · Skill-retention diagnostics</text>
+<desc id="desc">Twenty 32-episode validation screens select the 950k checkpoint, confirmed on 240 episodes. Strong PPO diagnostics show BC replay agreement and KL to the frozen BC reference.</desc>
+<style>text{{font:13px Arial,sans-serif;fill:#586171}}.title{{font-size:18px;font-weight:700;fill:#111827}}.label{{font-size:12px;font-weight:700}}.grid{{stroke:#e7eaf0;stroke-width:1}}.axis{{stroke:#9aa3b2}}.extract{{fill:none;stroke:#2878c8;stroke-width:3}}.win{{fill:none;stroke:#6aa8dc;stroke-width:2.5;stroke-dasharray:7 5}}.agree{{fill:none;stroke:#288f67;stroke-width:3}}.kl{{fill:none;stroke:#bd7c16;stroke-width:2.5;stroke-dasharray:7 5}}</style>
+<rect width="1200" height="500" rx="18" fill="#fff" stroke="#dfe3e8"/>
+<text x="66" y="35" class="title">A · Capability selection</text><text x="664" y="35" class="title">B · Strong PPO diagnostics</text>
 {''.join(grid)}
 <path d="M{left_a} {top}V{top+height}H{left_a+width} M{left_b} {top}V{top+height}H{left_b+width}" class="axis" fill="none"/>
 <polyline points="{extraction}" class="extract"/><polyline points="{wins}" class="win"/>
@@ -195,9 +210,11 @@ def render_svg(data: dict[str, object]) -> str:
 <circle cx="{confirm_x:.1f}" cy="{selected_y:.1f}" r="5" fill="#2878c8"/><circle cx="{confirm_x:.1f}" cy="{confirm_y:.1f}" r="7" fill="#fff" stroke="#df3152" stroke-width="3"/>
 <text x="{confirm_x-8:.1f}" y="{confirm_y-14:.1f}" text-anchor="end" class="label">950k · 240-episode confirmation</text>
 {''.join(ticks)}
-<text x="66" y="398" class="label" fill="#2878c8">— extraction</text><text x="174" y="398" class="label" fill="#8eb9df">— win rate · 32-episode screens</text>
-<text x="664" y="398" class="label" fill="#288f67">— BC replay agreement</text><text x="844" y="398" class="label" fill="#bd7c16">-- frozen-reference KL · right axis</text>
-<text x="1132" y="366" text-anchor="end">environment steps</text>
+<line x1="66" y1="466" x2="96" y2="466" class="extract"/><text x="104" y="470" class="label">extraction</text>
+<line x1="190" y1="466" x2="220" y2="466" class="win"/><text x="228" y="470" class="label">win rate · 32-episode screens</text>
+<line x1="664" y1="466" x2="694" y2="466" class="agree"/><text x="702" y="470" class="label">BC replay agreement</text>
+<line x1="850" y1="466" x2="880" y2="466" class="kl"/><text x="888" y="470" class="label">KL to frozen BC reference · right axis</text>
+<text x="1132" y="438" text-anchor="end">environment steps</text>
 </svg>'''
 
 

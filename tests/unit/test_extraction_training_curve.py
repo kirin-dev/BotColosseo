@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from botcolosseo.cli.build_extraction_training_curve import (
@@ -82,4 +83,14 @@ def test_training_curve_binds_screening_confirmation_and_diagnostics(
     assert len(data["screening"]) == 20
     assert len(data["training_diagnostics"]) == 20
     assert data["confirmation"]["episodes"] == 240
-    assert "950k · 240-episode confirmation" in render_svg(data)
+    svg = render_svg(data)
+    assert "950k · 240-episode confirmation" in svg
+    assert 'width="1200" height="500"' in svg
+    assert 'd="M66 75V390H534 M664 75V390H1132"' in svg
+    assert re.search(r'<text x="18"[^>]*>0%</text>', svg) is None
+    assert '<line x1="66" y1="466" x2="96" y2="466" class="extract"/>' in svg
+    assert '<line x1="190" y1="466" x2="220" y2="466" class="win"/>' in svg
+    assert '<line x1="664" y1="466" x2="694" y2="466" class="agree"/>' in svg
+    assert '<line x1="850" y1="466" x2="880" y2="466" class="kl"/>' in svg
+    assert ".win{fill:none;stroke:#6aa8dc;stroke-width:2.5;stroke-dasharray:7 5}" in svg
+    assert ".kl{fill:none;stroke:#bd7c16;stroke-width:2.5;stroke-dasharray:7 5}" in svg
