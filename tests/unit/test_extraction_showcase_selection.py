@@ -4,6 +4,7 @@ from botcolosseo.cli.select_extraction_showcases import (
     _evidence_tier,
     _representative,
     _score,
+    build_parser,
 )
 from botcolosseo.evaluation.extraction import ExtractionEpisodeMetrics
 
@@ -152,3 +153,26 @@ def test_showcase_selection_accepts_representative_case_manifest() -> None:
         _evidence_tier("explorer", report, manifest)
         == "representative_case_demonstration"
     )
+
+
+def test_showcase_selection_accepts_verified_case_indices() -> None:
+    args = build_parser().parse_args(
+        [
+            *[
+                value
+                for policy in ("strong", "aggressive", "defensive", "explorer")
+                for value in (
+                    f"--{policy}-report",
+                    f"{policy}.json",
+                    f"--{policy}-manifest",
+                    f"{policy}-manifest.json",
+                    f"--{policy}-case-index",
+                    "20",
+                )
+            ],
+            "--output",
+            "selection.json",
+        ]
+    )
+
+    assert args.defensive_case_index == 20

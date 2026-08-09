@@ -16,13 +16,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Adopt a verified existing validation Showcase capture"
     )
-    parser.add_argument("--policy", choices=("defensive",), required=True)
+    parser.add_argument(
+        "--policy",
+        choices=("strong", "aggressive", "defensive", "explorer"),
+        required=True,
+    )
     parser.add_argument("--selection", type=Path, required=True)
     parser.add_argument("--source-video", type=Path, required=True)
     parser.add_argument("--source-evidence", type=Path, required=True)
     parser.add_argument("--checkpoint", type=Path, required=True)
-    parser.add_argument("--base-checkpoint", type=Path, required=True)
-    parser.add_argument("--failed-preselected-attempts", type=int, required=True)
+    parser.add_argument("--base-checkpoint", type=Path)
+    parser.add_argument("--failed-preselected-attempts", type=int, default=0)
     parser.add_argument("--output-video", type=Path, required=True)
     parser.add_argument("--output-evidence", type=Path, required=True)
     return parser
@@ -50,13 +54,19 @@ def main(argv: list[str] | None = None) -> int:
     source_video = _resolve(root, args.source_video)
     source_evidence_path = _resolve(root, args.source_evidence)
     checkpoint = _resolve(root, args.checkpoint)
-    base_checkpoint = _resolve(root, args.base_checkpoint)
+    base_checkpoint = (
+        _resolve(root, args.base_checkpoint)
+        if args.base_checkpoint is not None
+        else None
+    )
     output_video = _resolve(root, args.output_video)
     output_evidence = _resolve(root, args.output_evidence)
     if output_video.exists() or output_evidence.exists():
         raise FileExistsError("Refusing to overwrite final Showcase capture")
-    if args.failed_preselected_attempts < 1:
-        raise ValueError("Capture fallback requires failed preselected attempts")
+    if args.failed_preselected_attempts < 0:
+        raise ValueError("Failed preselected attempts cannot be negative")
+    if args.policy != "strong" and base_checkpoint is None:
+        raise ValueError("Styled capture adoption requires a Strong Base")
 
     selection = json.loads(selection_path.read_text(encoding="utf-8"))
     source = json.loads(source_evidence_path.read_text(encoding="utf-8"))
@@ -70,7 +80,15 @@ def main(argv: list[str] | None = None) -> int:
         or source.get("case", {}).get("split") != "validation"
         or source.get("checkpoint_sha256") != selected.get("checkpoint_sha256")
         or sha256_file(checkpoint) != selected.get("checkpoint_sha256")
-        or source.get("base_checkpoint_sha256") != sha256_file(base_checkpoint)
+        or (
+            args.policy == "strong"
+            and source.get("base_checkpoint_sha256") is not None
+        )
+        or (
+            args.policy != "strong"
+            and source.get("base_checkpoint_sha256")
+            != sha256_file(base_checkpoint)
+        )
         or source.get("media_sha256") != sha256_file(source_video)
     ):
         raise ValueError("Existing Showcase capture identity does not match")
@@ -126,7 +144,11 @@ def main(argv: list[str] | None = None) -> int:
     evidence = {
         **source,
         "checkpoint": str(checkpoint.relative_to(root)),
-        "base_checkpoint": str(base_checkpoint.relative_to(root)),
+        "base_checkpoint": (
+            str(base_checkpoint.relative_to(root))
+            if base_checkpoint is not None
+            else None
+        ),
         "media": str(output_video.relative_to(root)),
         "media_sha256": sha256_file(output_video),
         "showcase_claims": claims,
@@ -161,26 +183,28 @@ def main(argv: list[str] | None = None) -> int:
     _atomic_json(output_evidence, evidence)
 
     previous_case_index = selected["case_index"]
-    selected.update(
-        {
-            "case_index": case_index,
-            "episode": vars(episode),
-            "paired_strong_episode": vars(paired_strong),
-            "paired_style_difference": _style_score(
-                args.policy, episode
-            )
-            - _style_score(args.policy, paired_strong),
-            "score": list(_score(args.policy, episode, paired_strong)),
-            "case_selection_mode": "verified_existing_capture_fallback",
-            "failed_preselected_case_indices": [previous_case_index],
-            "failed_preselected_attempts": args.failed_preselected_attempts,
-            "adopted_source_media_sha256": source_video_sha256,
-            "adopted_source_evidence_sha256": source_evidence_sha256,
-        }
-    )
-    selection["selection_revision"] = 1
-    selection["previous_selection_sha256"] = sha256_file(selection_path)
-    _atomic_json(selection_path, selection)
+    if args.failed_preselected_attempts == 0:
+        if case_index != previous_case_index:
+            raise ValueError("Verified capture does not match the selected case")
+    else:
+        selected.update(
+            {
+                "case_index": case_index,
+                "episode": vars(episode),
+                "paired_strong_episode": vars(paired_strong),
+                "paired_style_difference": _style_score(args.policy, episode)
+                - _style_score(args.policy, paired_strong),
+                "score": list(_score(args.policy, episode, paired_strong)),
+                "case_selection_mode": "verified_existing_capture_fallback",
+                "failed_preselected_case_indices": [previous_case_index],
+                "failed_preselected_attempts": args.failed_preselected_attempts,
+                "adopted_source_media_sha256": source_video_sha256,
+                "adopted_source_evidence_sha256": source_evidence_sha256,
+            }
+        )
+        selection["selection_revision"] = 1
+        selection["previous_selection_sha256"] = sha256_file(selection_path)
+        _atomic_json(selection_path, selection)
     print(json.dumps(evidence, indent=2, sort_keys=True))
     return 0
 

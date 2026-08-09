@@ -21,6 +21,11 @@ def build_parser() -> argparse.ArgumentParser:
     for policy in POLICIES:
         parser.add_argument(f"--{policy}-report", type=Path, required=True)
         parser.add_argument(f"--{policy}-manifest", type=Path, required=True)
+        parser.add_argument(
+            f"--{policy}-case-index",
+            type=int,
+            help="Bind a validation case whose live replay has already been verified",
+        )
     parser.add_argument(
         "--protocol",
         type=Path,
@@ -267,16 +272,32 @@ def main(argv: list[str] | None = None) -> int:
         ]
         if not eligible:
             raise ValueError(f"{policy} has no complete representative replay")
-        selected = max(
-            eligible,
-            key=lambda item: _score(
-                policy,
-                item,
-                strong_by_case[
-                    (item.seed, item.learner_side, item.opponent_style)
-                ],
-            ),
-        )
+        requested_index = getattr(args, f"{policy}_case_index")
+        if requested_index is None:
+            selected = max(
+                eligible,
+                key=lambda item: _score(
+                    policy,
+                    item,
+                    strong_by_case[
+                        (item.seed, item.learner_side, item.opponent_style)
+                    ],
+                ),
+            )
+        else:
+            if not 0 <= requested_index < len(cases):
+                raise ValueError(f"{policy} Showcase case index is out of range")
+            selected = by_case[
+                (
+                    cases[requested_index].seed,
+                    cases[requested_index].learner_side,
+                    cases[requested_index].opponent_style,
+                )
+            ]
+            if selected not in eligible:
+                raise ValueError(
+                    f"{policy} requested Showcase case is not representative"
+                )
         identity = (
             selected.seed,
             selected.learner_side,

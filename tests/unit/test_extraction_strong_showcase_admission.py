@@ -10,6 +10,9 @@ import pytest
 from botcolosseo.cli.admit_extraction_strong_showcase import (
     build_strong_showcase_admission,
 )
+from botcolosseo.cli.create_extraction_strong_demonstration import (
+    build_strong_demonstration,
+)
 from botcolosseo.cli.resolve_extraction_strong_artifact import (
     resolve_strong_artifact,
 )
@@ -148,3 +151,23 @@ def test_strong_product_admission_rejects_excessive_heldout_gap(
             ranking_path=ranking,
             evaluation_root=evaluation,
         )
+
+
+def test_direct_strong_demonstration_discloses_research_failures(
+    tmp_path: Path,
+) -> None:
+    _, evaluation = _evidence(tmp_path)
+    checkpoint = evaluation.parent / "candidate-0400000.pt"
+
+    result = build_strong_demonstration(
+        root=tmp_path,
+        checkpoint=checkpoint,
+        validation_path=evaluation / "candidate-0400000-validation.json",
+        heldout_path=evaluation / "candidate-0400000-heldout.json",
+        solo_path=evaluation / "candidate-0400000-solo.json",
+    )
+
+    assert result["product_showcase_eligible"] is True
+    assert result["research_gate_passed"] is False
+    assert result["research_failed_checks"] == ["heldout_extraction"]
+    assert result["claim_scope"] == "product_showcase_capability_only"
