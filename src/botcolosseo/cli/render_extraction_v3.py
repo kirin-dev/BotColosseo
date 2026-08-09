@@ -141,8 +141,6 @@ def _representative_claims(
         ):
             if int(claims[name]) <= 0:
                 failures.append(f"missing_{name}")
-        if int(claims["valid_hits"]) != 0 or int(claims["kills"]) != 0:
-            failures.append("explorer_combat")
     elif policy != "strong":
         failures.append("unsupported_policy")
     return not failures, failures

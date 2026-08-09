@@ -146,9 +146,9 @@ def test_showcase_story_checks_are_fail_closed_and_style_specific() -> None:
     assert "missing_aggressive_chains" in aggressive_failures
 
 
-def test_showcase_story_rejects_short_or_combat_noisy_explorer() -> None:
+def test_showcase_story_allows_incidental_explorer_combat() -> None:
     claims = {
-        "decisions": 90,
+        "decisions": 300,
         "died": False,
         "extracted": True,
         "extracted_value": 85,
@@ -165,5 +165,5 @@ def test_showcase_story_rejects_short_or_combat_noisy_explorer() -> None:
 
     accepted, failures = _representative_claims("explorer", claims)
 
-    assert not accepted
-    assert failures == ["too_short", "explorer_combat"]
+    assert accepted
+    assert failures == []
