@@ -147,6 +147,25 @@ Screen both 51.2k candidates on 32 paired randomized cases before any 240-case
 validation. Do not extend or tune coefficients unless that screen confirms the
 intended directional shift.
 
+### Defensive disengagement-action v3
+
+If the v2 Defensive 32-case screen is direction-negative, use the v3
+disengagement labeler. It steers away from the opponent until the measured
+640-unit safe distance is reached, then converts that safety into extraction:
+
+```bash
+mkdir -p runs/extraction-randomized/styles-opportunity-pbrs-disengagement-v3/control
+BOTCOLOSSEO_PYTHON="$CONDA_PREFIX/bin/python" \
+BOTCOLOSSEO_GPU=0 \
+  bash scripts/run_extraction_randomized_disengagement_style.sh \
+  > runs/extraction-randomized/styles-opportunity-pbrs-disengagement-v3/control/defensive.log \
+  2>&1
+```
+
+Run the same 32-case paired screen before full validation. This v3 is a
+Defensive-only repair; keep the accepted Aggressive and Explorer checkpoints
+frozen.
+
 The frozen Strong Base is
 `runs/extraction-randomized/strong-ppo-conservative-v2/candidate-0950000.pt`
 (SHA-256 `d05fa0cbcdf9d0aa3df363e66f6aa8957a35c76d9d3fb936b15d6fe5b5f22484`).

@@ -227,6 +227,48 @@ def test_defensive_completion_requires_actual_disengagement() -> None:
     assert "completion_utility" not in extracted.components
 
 
+def test_defensive_opportunity_steers_away_until_safe_then_converts() -> None:
+    ledger = DefensiveOpportunityLedger(
+        DefensiveOpportunityConfig(), learner_side="host", scale=1
+    )
+    initial = ledger.opportunity(
+        observation_before=observation(carried=25),
+        state_before=state(host_slots=(25, 0, 0)),
+    )
+
+    assert initial.preferred_actions == frozenset({MacroAction.TURN_RIGHT})
+
+    ledger.apply(
+        MacroAction.TURN_RIGHT,
+        (),
+        observation_before=observation(carried=25),
+        state_before=state(host_slots=(25, 0, 0)),
+        state_after=state(opponent_x=550, host_slots=(25, 0, 0)),
+    )
+    continuing = ledger.opportunity(
+        observation_before=observation(carried=25),
+        state_before=state(opponent_x=550, host_slots=(25, 0, 0)),
+    )
+
+    assert continuing.active
+    assert continuing.phase == "disengage_from_risk"
+
+    ledger.apply(
+        next(iter(continuing.preferred_actions)),
+        (),
+        observation_before=observation(carried=25),
+        state_before=state(opponent_x=550, host_slots=(25, 0, 0)),
+        state_after=state(opponent_x=700, host_slots=(25, 0, 0)),
+    )
+    conversion = ledger.opportunity(
+        observation_before=observation(carried=25),
+        state_before=state(opponent_x=700, host_slots=(25, 0, 0)),
+    )
+
+    assert conversion.active
+    assert conversion.phase == "convert_safety"
+
+
 def test_explorer_opportunity_targets_available_loot_then_stops_to_extract() -> None:
     ledger = ExplorerOpportunityLedger(
         ExplorerOpportunityConfig(),

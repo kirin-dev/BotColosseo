@@ -291,19 +291,38 @@ class DefensiveOpportunityLedger(_OpportunityLedger):
             or observation_before.ammo <= self.config.risk_ammo
             or observation_before.carried_value >= self.config.meaningful_value
         )
+        if (
+            player_health(state_before, self.learner_side) > 0
+            and self._phase >= 2
+            and observation_before.carried_value >= self.config.meaningful_value
+        ):
+            extraction = (0.0, 400.0 if self.learner_side == "host" else -400.0)
+            preferred = steer_toward(state_before, self.learner_side, extraction)
+            return StyleOpportunity(
+                True, frozenset({preferred}), "convert_safety"
+            )
         active = (
             player_health(state_before, self.learner_side) > 0
             and opponent_health(state_before, self.learner_side) > 0
-            and distance <= self.config.risk_distance
+            and (
+                distance <= self.config.risk_distance
+                or (self._phase >= 1 and distance < self.config.disengaged_distance)
+            )
             and resource_risk
         )
         if not active:
             return StyleOpportunity(False, frozenset(), "no_material_risk")
-        extraction = (0.0, 400.0 if self.learner_side == "host" else -400.0)
-        preferred = {steer_toward(state_before, self.learner_side, extraction)}
-        if distance <= 256.0:
-            preferred.add(MacroAction.MOVE_BACKWARD)
-        return StyleOpportunity(True, frozenset(preferred), "material_risk")
+        if distance <= 1e-6:
+            preferred = MacroAction.MOVE_BACKWARD
+        else:
+            away = (
+                own_x + (own_x - enemy[0]) * 512.0 / distance,
+                own_y + (own_y - enemy[1]) * 512.0 / distance,
+            )
+            preferred = steer_toward(state_before, self.learner_side, away)
+        return StyleOpportunity(
+            True, frozenset({preferred}), "disengage_from_risk"
+        )
 
     def apply(
         self,
