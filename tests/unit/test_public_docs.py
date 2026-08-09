@@ -96,3 +96,14 @@ def test_chinese_readme_preserves_pending_and_test_boundaries() -> None:
     assert "不会进入" in readme
     assert "部署 Actor" in readme
     assert "official test 总计 1,600 局" in readme
+
+
+def test_pages_scopes_metrics_and_matches_showcase_evidence() -> None:
+    page = Path("docs/index.html").read_text(encoding="utf-8")
+
+    assert "four scripted opponent styles × paired learner sides" in page
+    assert "240 validation episodes and 120 heldout episodes" in page
+    assert "same finite randomized-layout family" in page
+    assert "corpse cache → 100 value" in page
+    assert "backpack upgrade → 70 value" in page
+    assert "corpse cache → 85 value" not in page
