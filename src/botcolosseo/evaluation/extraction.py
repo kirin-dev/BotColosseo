@@ -16,7 +16,7 @@ from botcolosseo.agents.extraction_teachers import (
 )
 from botcolosseo.data.extraction_demonstrations import ExtractionCase
 from botcolosseo.envs.actions import MacroAction
-from botcolosseo.envs.extraction_layouts import randomized_layout_variant
+from botcolosseo.envs.extraction_layouts import extraction_layout_settings
 from botcolosseo.envs.extraction_protocol import ExtractionEventType
 from botcolosseo.envs.ipc import WorkerTimeout
 from botcolosseo.envs.synchronous_extraction import SynchronousExtractionEnv
@@ -164,27 +164,16 @@ def evaluate_extraction_episode(
     else:
         model = policy_model
     scenario_root = root / "assets/scenarios" / scenario_directory
-    if scenario_directory == "crystal_run_extraction_randomized":
-        config_name = {
-            "base": "crystal_run_extraction_base.cfg",
-            "heldout-a": "crystal_run_extraction_heldout.cfg",
-            "randomized": "crystal_run_extraction_randomized.cfg",
-        }[case.layout_id]
-    else:
-        config_name = (
-            "crystal_run_extraction.cfg"
-            if case.layout_id == "base"
-            else "crystal_run_extraction_heldout.cfg"
-        )
+    config_name, layout_variant = extraction_layout_settings(
+        scenario_directory=scenario_directory,
+        layout_id=case.layout_id,
+        seed=case.seed,
+    )
     env = SynchronousExtractionEnv(
         config_path=scenario_root / config_name,
         seed=case.seed,
         max_decisions=max_decisions,
-        layout_variant=(
-            randomized_layout_variant(case.seed)
-            if case.layout_id == "randomized"
-            else None
-        ),
+        layout_variant=layout_variant,
     )
     opponent_side = "opponent" if case.learner_side == "host" else "host"
     opponent = (

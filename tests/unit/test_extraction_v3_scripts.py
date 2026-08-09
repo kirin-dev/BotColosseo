@@ -142,6 +142,11 @@ def test_showcase_runner_binds_manifests_retries_and_product_audits() -> None:
     assert "--defensive-manifest" in source
     assert "--explorer-manifest" in source
     assert "--max-attempts 5" in source
+    assert (
+        'PROTOCOL="${BOTCOLOSSEO_SHOWCASE_PROTOCOL:-configs/extraction/randomized/'
+        'evaluation.yaml}"' in source
+    )
+    assert source.count('--protocol "$PROTOCOL"') == 2
     assert "--scenario-directory crystal_run_extraction_randomized" in source
     assert "botcolosseo.cli.audit_extraction_showcase" in source
     assert "reports/extraction/showcase/manifests/strong.json" in source

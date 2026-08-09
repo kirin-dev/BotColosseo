@@ -74,6 +74,15 @@ def _artifacts(tmp_path: Path) -> tuple[Path, Path, Path]:
             "policy": policy,
             "case_index": index,
             "checkpoint_sha256": checkpoint_sha256,
+            "protocol": "protocol.yaml",
+            "protocol_sha256": "a" * 64,
+            "case": {
+                "split": "validation",
+                "seed": 100 + index,
+                "learner_side": "host",
+                "opponent_style": "strong",
+                "layout_id": "randomized",
+            },
             "media": video.name,
             "media_sha256": sha256_file(video),
             "showcase_claims": _claims(policy),
@@ -87,6 +96,11 @@ def _artifacts(tmp_path: Path) -> tuple[Path, Path, Path]:
         selections[policy] = {
             "case_index": index,
             "checkpoint_sha256": checkpoint_sha256,
+            "episode": {
+                "seed": 100 + index,
+                "learner_side": "host",
+                "opponent_style": "strong",
+            },
             "paired_style_difference": 0 if policy == "strong" else 1,
             "artifact_manifest": manifest_path.name,
             "artifact_manifest_sha256": sha256_file(manifest_path),
@@ -105,6 +119,8 @@ def _artifacts(tmp_path: Path) -> tuple[Path, Path, Path]:
         {
             "schema_version": 2,
             "selection_split": "validation",
+            "protocol": "protocol.yaml",
+            "protocol_sha256": "a" * 64,
             "selections": selections,
             "test_cases_accessed": False,
         },
@@ -161,6 +177,29 @@ def test_product_showcase_audit_rejects_claim_drift(tmp_path: Path) -> None:
     _write_json(board, board_payload)
 
     with pytest.raises(ValueError, match="story is incomplete"):
+        audit_extraction_showcase(
+            root=tmp_path,
+            selection_path=selection,
+            board_manifest_path=board,
+            method_path=method,
+        )
+
+
+def test_product_showcase_audit_rejects_case_identity_drift(
+    tmp_path: Path,
+) -> None:
+    selection, board, method = _artifacts(tmp_path)
+    board_payload = json.loads(board.read_text(encoding="utf-8"))
+    evidence_path = tmp_path / board_payload["artifacts"]["strong"]["evidence"]
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    evidence["case"]["seed"] += 1
+    _write_json(evidence_path, evidence)
+    board_payload["artifacts"]["strong"]["evidence_sha256"] = sha256_file(
+        evidence_path
+    )
+    _write_json(board, board_payload)
+
+    with pytest.raises(ValueError, match="case identity does not match"):
         audit_extraction_showcase(
             root=tmp_path,
             selection_path=selection,

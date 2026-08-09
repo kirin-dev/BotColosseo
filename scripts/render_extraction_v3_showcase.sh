@@ -11,6 +11,7 @@ cd "$ROOT"
 MEDIA="${BOTCOLOSSEO_SHOWCASE_MEDIA:-docs/assets/extraction}"
 REPORTS="${BOTCOLOSSEO_SHOWCASE_REPORTS:-reports/extraction/showcase}"
 METHOD="${BOTCOLOSSEO_SHOWCASE_METHOD:-docs/assets/extraction/method.svg}"
+PROTOCOL="${BOTCOLOSSEO_SHOWCASE_PROTOCOL:-configs/extraction/randomized/evaluation.yaml}"
 BASE="${BOTCOLOSSEO_STRONG_CHECKPOINT:-runs/extraction-randomized/strong-ppo-conservative-v2/candidate-0950000.pt}"
 STRONG_MANIFEST="${BOTCOLOSSEO_STRONG_MANIFEST:-reports/extraction/showcase/manifests/strong.json}"
 strong_report="${BOTCOLOSSEO_STRONG_REPORT:-runs/extraction-randomized/strong-ppo-conservative-v2/evaluation-randomized-paired-style/candidate-0950000-validation.json}"
@@ -46,7 +47,7 @@ if [[ ! -f "$selection" ]]; then
     --explorer-report "$explorer_report" \
     --explorer-manifest "${style_manifest[explorer]}" \
     --explorer-case-index 20 \
-    --protocol configs/extraction/randomized/evaluation.yaml \
+    --protocol "$PROTOCOL" \
     --output "$selection"
 fi
 
@@ -69,6 +70,7 @@ PY
       --checkpoint "$checkpoint" \
       "${base_args[@]}" \
       --policy "$policy" \
+      --protocol "$PROTOCOL" \
       --case-index "$case_index" \
       --scenario-directory crystal_run_extraction_randomized \
       --device cuda:0 \

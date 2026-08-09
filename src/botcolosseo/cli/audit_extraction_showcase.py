@@ -116,6 +116,8 @@ def audit_extraction_showcase(
         selection.get("schema_version") != 2
         or selection.get("selection_split") != "validation"
         or selection.get("test_cases_accessed") is not False
+        or not isinstance(selection.get("protocol"), str)
+        or not isinstance(selection.get("protocol_sha256"), str)
         or set(selection.get("selections", {})) != set(POLICIES)
     ):
         raise ValueError("Showcase selection identity does not match")
@@ -182,9 +184,25 @@ def audit_extraction_showcase(
             or evidence.get("case_index") != selected.get("case_index")
             or evidence.get("checkpoint_sha256")
             != selected.get("checkpoint_sha256")
+            or evidence.get("protocol") != selection.get("protocol")
+            or evidence.get("protocol_sha256")
+            != selection.get("protocol_sha256")
             or evidence.get("test_cases_accessed") is not False
         ):
             raise ValueError(f"{policy} Showcase replay identity does not match")
+        selected_episode = selected.get("episode")
+        rendered_case = evidence.get("case")
+        if (
+            not isinstance(selected_episode, dict)
+            or not isinstance(rendered_case, dict)
+            or rendered_case.get("split") != "validation"
+            or rendered_case.get("seed") != selected_episode.get("seed")
+            or rendered_case.get("learner_side")
+            != selected_episode.get("learner_side")
+            or rendered_case.get("opponent_style")
+            != selected_episode.get("opponent_style")
+        ):
+            raise ValueError(f"{policy} Showcase case identity does not match")
         capture_mode = evidence.get("capture_mode", "live_render")
         if capture_mode == "verified_existing_live_capture":
             source_evidence_sha256 = evidence.get("source_evidence_sha256")

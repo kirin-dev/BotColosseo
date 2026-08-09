@@ -15,6 +15,7 @@ from botcolosseo.agents.extraction_model import load_extraction_policy
 from botcolosseo.agents.extraction_teachers import StyledExtractionTeacher
 from botcolosseo.data.extraction_demonstrations import ExtractionCase
 from botcolosseo.envs.actions import MacroAction
+from botcolosseo.envs.extraction_layouts import extraction_layout_settings
 from botcolosseo.envs.extraction_protocol import (
     ExtractionEvent,
     ExtractionEventType,
@@ -400,10 +401,16 @@ def record_extraction_showcase(
     else:
         model = policy_model
     _warm_extraction_policy(model, device=device)
+    config_name, layout_variant = extraction_layout_settings(
+        scenario_directory=scenario_directory,
+        layout_id=case.layout_id,
+        seed=case.seed,
+    )
     env = SynchronousExtractionEnv(
-        config_path=scenario_root / f"{scenario_directory}.cfg",
+        config_path=scenario_root / config_name,
         seed=case.seed,
         max_decisions=max_decisions,
+        layout_variant=layout_variant,
     )
     opponent_side = "opponent" if case.learner_side == "host" else "host"
     opponent = StyledExtractionTeacher(

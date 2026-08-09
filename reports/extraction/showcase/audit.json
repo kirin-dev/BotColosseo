@@ -1,6 +1,6 @@
 {
   "board_manifest": "reports/extraction/showcase/manifest.json",
-  "board_manifest_sha256": "881efa40f2f15d6e5e30cf9d83b13dfb4687564e9fda2f470b806d65991b7233",
+  "board_manifest_sha256": "b8af629e0fc3d7df52942c27e9bb66141ba7af9b53651db0707771b7c4fa44cc",
   "evidence_tiers": {
     "aggressive": "representative_case_demonstration",
     "defensive": "representative_case_demonstration",
@@ -8,7 +8,7 @@
     "strong": "product_showcase"
   },
   "method": "docs/assets/extraction/method.svg",
-  "method_sha256": "920473bf41b5a7074727784142e8e840e66fa4739dfc820d29b336dbde71db62",
+  "method_sha256": "870835b7bb7e90ad7b5ed670e3a7e5038c27fc19b8bfd5069bdf02f4e0da2b68",
   "official_test_eligible": false,
   "passed": true,
   "policies": {
@@ -142,7 +142,7 @@
         "style_ci_lower",
         "heldout_worst_opponent_retention"
       ],
-      "duration_seconds": 37.4,
+      "duration_seconds": 31.3,
       "evidence_tier": "representative_case_demonstration",
       "heldout_checks": [
         {
@@ -164,7 +164,7 @@
           "value": 0.0
         }
       ],
-      "render_attempt_count": 1,
+      "render_attempt_count": 2,
       "research_gate_passed": false,
       "story_checks_passed": true,
       "validation_checks": [
@@ -255,7 +255,7 @@
         "style_ci_lower",
         "heldout_worst_opponent_retention"
       ],
-      "duration_seconds": 35.5,
+      "duration_seconds": 28.7,
       "evidence_tier": "representative_case_demonstration",
       "heldout_checks": [
         {
@@ -277,7 +277,7 @@
           "value": 0.0
         }
       ],
-      "render_attempt_count": 2,
+      "render_attempt_count": 1,
       "research_gate_passed": false,
       "story_checks_passed": true,
       "validation_checks": [
@@ -361,7 +361,7 @@
         "script_average_win",
         "script_worst_case_win"
       ],
-      "duration_seconds": 33.7,
+      "duration_seconds": 38.5,
       "evidence_tier": "product_showcase",
       "heldout_checks": [],
       "render_attempt_count": 1,

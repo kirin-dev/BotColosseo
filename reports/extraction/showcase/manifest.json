@@ -2,35 +2,35 @@
   "artifacts": {
     "aggressive": {
       "evidence": "reports/extraction/showcase/aggressive.json",
-      "evidence_sha256": "0518a73476bdf149178d9cf69b77f921a1f06f7ae3332213c89ab035ff37fcf1",
+      "evidence_sha256": "9d5febedc319f7af0f0596e41b00da4e739e15dcc29fdd8b8f91c6a30406ce7f",
       "evidence_tier": "representative_case_demonstration",
       "video": "docs/assets/extraction/aggressive.mp4",
-      "video_sha256": "ffa13990dc503b752f68f815baf8e8a9aae53756e1bf1be754fee6b0bdd40938"
+      "video_sha256": "55b05741ffa0151a485557bdf9e21de10cb5f7fca58de0e2c62de781d9131da1"
     },
     "defensive": {
       "evidence": "reports/extraction/showcase/defensive.json",
-      "evidence_sha256": "f6dba9b0c2f44046886d1a1b28bc3669f9150a7ddb182a84f46859c0fd3d118d",
+      "evidence_sha256": "3109bd97d08b69d02083097aedeb72893b80e07b2e1587cf455fcbddb75de270",
       "evidence_tier": "representative_case_demonstration",
       "video": "docs/assets/extraction/defensive.mp4",
-      "video_sha256": "53a9b017d52e97e6f54788b28371ce1254d9597d16f7a596e4984caba45d873b"
+      "video_sha256": "2aa1a98195e8cfa08e946bb30ea1a7b80db9dc565b1205b67856aafcf4c74e0a"
     },
     "explorer": {
       "evidence": "reports/extraction/showcase/explorer.json",
-      "evidence_sha256": "c4de640adcf5d2c0bfeacfd4b941071ea9bd7bf94acd77d473a5f9102889e4d9",
+      "evidence_sha256": "35021e1270795ac7ea7019339d202ed80c31dbea8af33119eed40ea80543e146",
       "evidence_tier": "representative_case_demonstration",
       "video": "docs/assets/extraction/explorer.mp4",
-      "video_sha256": "bb1b34cd6302c8aa97d439f537e978dbaa09e551dda98a82733f97ca7be66031"
+      "video_sha256": "68a3de57cb37c4ec8056a9ee33ae25236e749cab1a186f1655bda976af0399af"
     },
     "strong": {
       "evidence": "reports/extraction/showcase/strong.json",
-      "evidence_sha256": "8b060df6fc98a3e86deded9b6d4513e8485fb3d5c1c933df19446d60cbc963c3",
+      "evidence_sha256": "be14e0f0305a80d064b6b95f74c91c340abddbbcf0a8b6f4c1d5d2c146a1e4f8",
       "evidence_tier": "product_showcase",
       "video": "docs/assets/extraction/strong.mp4",
-      "video_sha256": "50081d3f533bd09516b002407b5e519133b8fd39330483dfa07974fcb56f2cf5"
+      "video_sha256": "0d463e0a19dd7919083597c868d833d1cf5d2ac98541ef550d1a8ca35be79639"
     }
   },
   "board": "docs/assets/extraction/showcase-board.png",
-  "board_sha256": "c3ef137202bb3044edfc3eda20942671dab91f044ffc2a1dc4ed52c88c956484",
+  "board_sha256": "ee5a9c97a04960efcd30da87c1727a7733d1423941de4bf5d84420bc6715898d",
   "schema_version": 1,
   "selection": "reports/extraction/showcase/selection.json",
   "selection_sha256": "6f8752e1fbf6f322ea922e5cac264172433e2f68de3e2d3b148587f887c679c9",

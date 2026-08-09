@@ -31,6 +31,31 @@ def randomized_layout_variant(seed: int) -> int:
     return seed % RANDOMIZED_LAYOUT_COUNT
 
 
+def extraction_layout_settings(
+    *, scenario_directory: str, layout_id: str, seed: int
+) -> tuple[str, int | None]:
+    if layout_id not in {"base", "heldout-a", "randomized"}:
+        raise ValueError(f"Invalid extraction layout: {layout_id}")
+    if scenario_directory == "crystal_run_extraction_randomized":
+        config_name = {
+            "base": "crystal_run_extraction_base.cfg",
+            "heldout-a": "crystal_run_extraction_heldout.cfg",
+            "randomized": "crystal_run_extraction_randomized.cfg",
+        }[layout_id]
+    elif scenario_directory == "crystal_run_extraction":
+        config_name = (
+            "crystal_run_extraction.cfg"
+            if layout_id == "base"
+            else "crystal_run_extraction_heldout.cfg"
+        )
+    else:
+        raise ValueError(f"Unsupported Extraction scenario: {scenario_directory}")
+    return (
+        config_name,
+        randomized_layout_variant(seed) if layout_id == "randomized" else None,
+    )
+
+
 def randomized_loot_layout(
     variant: int,
 ) -> tuple[tuple[int, float, float], ...]:
