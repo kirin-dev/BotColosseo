@@ -166,6 +166,27 @@ Run the same 32-case paired screen before full validation. This v3 is a
 Defensive-only repair; keep the accepted Aggressive and Explorer checkpoints
 frozen.
 
+If the v3 full validation remains behaviorally indistinguishable from Strong,
+run one bounded preference-strength calibration. It changes only
+`eta_preference` from 0.08 to 0.20 and the probability-lift margin from 0.15 to
+0.30:
+
+```bash
+mkdir -p runs/extraction-randomized/styles-opportunity-pbrs-defensive-v4/control
+CUDA_VISIBLE_DEVICES=0 "$CONDA_PREFIX/bin/python" -u \
+  -m botcolosseo.cli.train_extraction_style \
+  --config configs/extraction/randomized/styles-opportunity-pbrs-defensive-v4.yaml \
+  --style defensive \
+  --device cuda:0 \
+  --output-dir runs/extraction-randomized/styles-opportunity-pbrs-defensive-v4/defensive \
+  --stop-after-steps 51200 \
+  > runs/extraction-randomized/styles-opportunity-pbrs-defensive-v4/control/defensive.log \
+  2>&1
+```
+
+Do not increase residual capacity or relax the outside-opportunity KL in this
+calibration.
+
 The frozen Strong Base is
 `runs/extraction-randomized/strong-ppo-conservative-v2/candidate-0950000.pt`
 (SHA-256 `d05fa0cbcdf9d0aa3df363e66f6aa8957a35c76d9d3fb936b15d6fe5b5f22484`).
