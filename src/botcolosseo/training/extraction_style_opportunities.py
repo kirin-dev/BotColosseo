@@ -286,10 +286,17 @@ class DefensiveOpportunityLedger(_OpportunityLedger):
         own_x, own_y, _ = player_pose(state_before, self.learner_side)
         enemy = opponent_position(state_before, self.learner_side)
         distance = math.hypot(enemy[0] - own_x, enemy[1] - own_y)
-        resource_risk = (
+        urgent = (
             observation_before.health <= self.config.risk_health
             or observation_before.ammo <= self.config.risk_ammo
-            or observation_before.carried_value >= self.config.meaningful_value
+        )
+        risk_limit = (
+            self.config.disengaged_distance
+            if urgent
+            else self.config.risk_distance
+        )
+        material_value = (
+            observation_before.carried_value >= self.config.meaningful_value
         )
         if (
             player_health(state_before, self.learner_side) > 0
@@ -304,11 +311,11 @@ class DefensiveOpportunityLedger(_OpportunityLedger):
         active = (
             player_health(state_before, self.learner_side) > 0
             and opponent_health(state_before, self.learner_side) > 0
+            and material_value
             and (
-                distance <= self.config.risk_distance
+                distance <= risk_limit
                 or (self._phase >= 1 and distance < self.config.disengaged_distance)
             )
-            and resource_risk
         )
         if not active:
             return StyleOpportunity(False, frozenset(), "no_material_risk")

@@ -641,7 +641,7 @@ def main(argv: list[str] | None = None) -> int:
                 "style": args.style,
                 "style_training_counts": dict(sorted(style_training_counts.items())),
                 "style_reward_schema_version": (
-                    7
+                    8
                     if opportunity_enabled
                     else (4 if args.style == "defensive" else 1)
                 ),

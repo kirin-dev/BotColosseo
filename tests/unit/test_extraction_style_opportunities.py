@@ -149,6 +149,10 @@ def test_defensive_opportunity_is_risk_conditioned_and_reaches_value_conversion(
     assert not ledger.opportunity(
         observation_before=observation(), state_before=state()
     ).active
+    assert not ledger.opportunity(
+        observation_before=observation(health=30),
+        state_before=state(host_health=30),
+    ).active
     opportunity = ledger.opportunity(
         observation_before=observation(carried=25),
         state_before=state(host_slots=(25, 0, 0)),

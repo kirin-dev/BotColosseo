@@ -187,6 +187,27 @@ CUDA_VISIBLE_DEVICES=0 "$CONDA_PREFIX/bin/python" -u \
 Do not increase residual capacity or relax the outside-opportunity KL in this
 calibration.
 
+If v4 over-converts low-value states, use the final value-conditioned v5. It
+retains the v4 preference strength but triggers Defensive supervision only
+when carried value is at least 25; low health or low ammo expands the threat
+radius but cannot trigger value preservation by itself:
+
+```bash
+mkdir -p runs/extraction-randomized/styles-opportunity-pbrs-defensive-v5/control
+CUDA_VISIBLE_DEVICES=0 "$CONDA_PREFIX/bin/python" -u \
+  -m botcolosseo.cli.train_extraction_style \
+  --config configs/extraction/randomized/styles-opportunity-pbrs-defensive-v5.yaml \
+  --style defensive \
+  --device cuda:0 \
+  --output-dir runs/extraction-randomized/styles-opportunity-pbrs-defensive-v5/defensive \
+  --stop-after-steps 51200 \
+  > runs/extraction-randomized/styles-opportunity-pbrs-defensive-v5/control/defensive.log \
+  2>&1
+```
+
+Stop calibration after this candidate and select the best complete-chain
+product evidence rather than expanding the training search.
+
 The frozen Strong Base is
 `runs/extraction-randomized/strong-ppo-conservative-v2/candidate-0950000.pt`
 (SHA-256 `d05fa0cbcdf9d0aa3df363e66f6aa8957a35c76d9d3fb936b15d6fe5b5f22484`).
