@@ -202,6 +202,24 @@ def test_showcase_covers_scenario_method_styles_and_results() -> None:
     assert re.search(r"\bv3\b", public_copy) is None
 
 
+def test_styles_and_results_describe_the_current_randomized_pipeline() -> None:
+    source, _ = _parse_showcase()
+    training_curve = Path("docs/assets/extraction/training-curve.svg").read_text(
+        encoding="utf-8"
+    )
+
+    assert "Three bounded adapters share the same frozen Strong Actor" in source
+    assert "Training-only opportunity-conditioned PBRS" in source
+    assert "Randomized-loot capability and representative style evidence" in source
+    assert "Candidate selection never accesses the test split" in source
+    assert "the style adapters' partitioned KL is not plotted here" in source
+    assert "B · Strong PPO diagnostics" in training_curve
+    assert "KL to frozen BC reference" in training_curve
+    assert "randomized-lineage" not in source
+    assert "Skill-retention diagnostics" not in training_curve
+    assert "frozen-reference KL" not in training_curve
+
+
 def test_showcase_is_dependency_free_and_all_local_assets_resolve() -> None:
     _, parser = _parse_showcase()
 
