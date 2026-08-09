@@ -142,6 +142,7 @@ def test_showcase_runner_binds_manifests_retries_and_product_audits() -> None:
     assert "--defensive-manifest" in source
     assert "--explorer-manifest" in source
     assert "--max-attempts 5" in source
+    assert "--scenario-directory crystal_run_extraction_randomized" in source
     assert "botcolosseo.cli.audit_extraction_showcase" in source
     assert source.count("botcolosseo.cli.resolve_extraction_strong_artifact") == 3
     assert "--strong-manifest \"$STRONG_MANIFEST\"" in source

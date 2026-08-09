@@ -78,6 +78,7 @@ PY
       "${base_args[@]}" \
       --policy "$policy" \
       --case-index "$case_index" \
+      --scenario-directory crystal_run_extraction_randomized \
       --device cuda:0 \
       --max-attempts 5 \
       --output "$MEDIA/$policy.mp4" \

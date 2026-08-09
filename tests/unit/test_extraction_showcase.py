@@ -6,7 +6,10 @@ import numpy as np
 import torch
 
 from botcolosseo.agents.extraction_model import create_extraction_actor
-from botcolosseo.cli.render_extraction_v3 import _representative_claims
+from botcolosseo.cli.render_extraction_v3 import (
+    _representative_claims,
+    build_parser,
+)
 from botcolosseo.demo.extraction_showcase import (
     _warm_extraction_policy,
     compose_extraction_showcase_frame,
@@ -29,6 +32,25 @@ def test_extraction_showcase_warms_policy_before_starting_live_game() -> None:
     _warm_extraction_policy(model, device=torch.device("cpu"))
 
     assert calls == [torch.Size((1, 1, 13))]
+
+
+def test_extraction_showcase_defaults_to_randomized_scenario() -> None:
+    args = build_parser().parse_args(
+        [
+            "--checkpoint",
+            "candidate.pt",
+            "--policy",
+            "strong",
+            "--case-index",
+            "0",
+            "--output",
+            "showcase.mp4",
+            "--evidence",
+            "showcase.json",
+        ]
+    )
+
+    assert args.scenario_directory == "crystal_run_extraction_randomized"
 
 
 def test_extraction_showcase_frame_has_viewer_overlay_geometry() -> None:

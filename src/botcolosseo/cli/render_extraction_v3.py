@@ -15,6 +15,7 @@ from botcolosseo.evaluation.extraction_protocol import (
 from botcolosseo.training.extraction_checkpoint import (
     load_extraction_strong_actor,
     load_extraction_style_actor,
+    resolve_extraction_style_runtime_spec,
 )
 
 
@@ -36,6 +37,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--case-index", type=int, required=True)
     parser.add_argument("--device", default="cuda:0")
+    parser.add_argument(
+        "--scenario-directory",
+        choices=("crystal_run_extraction", "crystal_run_extraction_randomized"),
+        default="crystal_run_extraction_randomized",
+    )
     parser.add_argument("--frame-stride", type=int, default=1)
     parser.add_argument("--fps", type=int, default=10)
     parser.add_argument("--max-attempts", type=int, default=5)
@@ -58,6 +64,16 @@ def _atomic_json(payload: object, path: Path) -> None:
         encoding="utf-8",
     )
     temporary.replace(path)
+
+
+def _training_summary(checkpoint: Path) -> dict[str, object]:
+    path = checkpoint.parent / "summary.json"
+    if not path.is_file():
+        raise FileNotFoundError("Candidate training summary is missing")
+    summary = json.loads(path.read_text(encoding="utf-8"))
+    if summary.get("test_cases_accessed") is not False:
+        raise ValueError("Candidate training summary accessed test cases")
+    return summary
 
 
 def _showcase_claims(
@@ -149,15 +165,18 @@ def main(argv: list[str] | None = None) -> int:
     cases = protocol.cases("validation")
     if not 0 <= args.case_index < len(cases):
         raise IndexError("Extraction showcase case index is outside protocol")
+    scenario_manifest = (
+        root / "assets/scenarios" / args.scenario_directory / "manifest.json"
+    )
     scenario_hash = json.loads(
-        (
-            root / "assets/scenarios/crystal_run_extraction/manifest.json"
-        ).read_text(encoding="utf-8")
+        scenario_manifest.read_text(encoding="utf-8")
     )["wad_sha256"]
     device = torch.device(args.device)
     if device.type == "cuda" and not torch.cuda.is_available():
         raise RuntimeError("CUDA was requested but is unavailable")
     checkpoint_sha256 = sha256_file(checkpoint)
+    training_summary = _training_summary(checkpoint)
+    runtime_spec = None
     if args.policy == "strong":
         if args.base_checkpoint is not None:
             raise ValueError("Strong showcase does not accept --base-checkpoint")
@@ -174,16 +193,27 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError("Style showcase requires --base-checkpoint")
         base_checkpoint = _resolve(root, args.base_checkpoint)
         base_sha256 = sha256_file(base_checkpoint)
+        if (
+            training_summary.get("style") != args.policy
+            or training_summary.get("base_checkpoint_sha256") != base_sha256
+            or training_summary.get("frozen_strong_actor") is not True
+            or training_summary.get("frozen_strong_base") is not True
+            or training_summary.get("learned_residual_adapter") is not True
+        ):
+            raise ValueError("Style training summary identity does not match")
+        runtime_spec = resolve_extraction_style_runtime_spec(
+            training_summary, root=root
+        )
         model, _ = load_extraction_style_actor(
             checkpoint,
             base_checkpoint=base_checkpoint,
             expected_scenario_hash=scenario_hash,
             expected_base_sha256=base_sha256,
-            bottleneck=32,
-            max_delta=2.0,
+            bottleneck=runtime_spec.bottleneck,
+            max_delta=runtime_spec.max_delta,
             expected_sha256=checkpoint_sha256,
             device=device,
-            defensive_guardrail=args.policy == "defensive",
+            defensive_guardrail=runtime_spec.defensive_guardrail,
         )
     attempts = []
     episode = None
@@ -197,6 +227,7 @@ def main(argv: list[str] | None = None) -> int:
             device=device,
             frame_stride=args.frame_stride,
             policy_model=model,
+            scenario_directory=args.scenario_directory,
         )
         candidate_claims = _showcase_claims(args.policy, candidate)
         accepted, failures = _representative_claims(
@@ -242,19 +273,28 @@ def main(argv: list[str] | None = None) -> int:
             "strong-recurrent-ppo"
             if args.policy == "strong"
             else (
-                "learned-bounded-residual-with-risk-guardrail"
-                if args.policy == "defensive"
-                else "learned-bounded-residual"
+                "learned-opportunity-conditioned-bounded-residual"
+                if runtime_spec is not None and runtime_spec.opportunity_conditioned
+                else (
+                    "learned-bounded-residual-with-risk-guardrail"
+                    if runtime_spec is not None and runtime_spec.defensive_guardrail
+                    else "learned-bounded-residual"
+                )
             )
         ),
         "inference_guardrail": (
             "block_attack_when_low_health_and_carried_value_ge_25"
-            if args.policy == "defensive"
+            if runtime_spec is not None and runtime_spec.defensive_guardrail
             else None
         ),
+        "adapter_bottleneck": (
+            None if runtime_spec is None else runtime_spec.bottleneck
+        ),
+        "max_delta": None if runtime_spec is None else runtime_spec.max_delta,
         "case_index": args.case_index,
         "protocol": str(protocol_path.relative_to(root)),
         "protocol_sha256": protocol.sha256,
+        "scenario_directory": args.scenario_directory,
         "checkpoint": str(checkpoint.relative_to(root)),
         "checkpoint_sha256": checkpoint_sha256,
         "base_checkpoint": (

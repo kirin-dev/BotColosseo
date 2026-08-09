@@ -375,15 +375,20 @@ def record_extraction_showcase(
     frame_stride: int = 2,
     max_decisions: int = 700,
     policy_model: torch.nn.Module | None = None,
+    scenario_directory: str = "crystal_run_extraction",
 ) -> RecordedExtractionShowcase:
     if case.split != "validation":
         raise ValueError("Extraction showcase must use validation cases")
     if frame_stride <= 0:
         raise ValueError("Extraction showcase frame stride must be positive")
+    if scenario_directory not in {
+        "crystal_run_extraction",
+        "crystal_run_extraction_randomized",
+    }:
+        raise ValueError("Unsupported Extraction showcase scenario")
+    scenario_root = root / "assets/scenarios" / scenario_directory
     scenario_hash = json.loads(
-        (
-            root / "assets/scenarios/crystal_run_extraction/manifest.json"
-        ).read_text(encoding="utf-8")
+        (scenario_root / "manifest.json").read_text(encoding="utf-8")
     )["wad_sha256"]
     if policy_model is None:
         model, _ = load_extraction_policy(
@@ -396,8 +401,7 @@ def record_extraction_showcase(
         model = policy_model
     _warm_extraction_policy(model, device=device)
     env = SynchronousExtractionEnv(
-        config_path=root
-        / "assets/scenarios/crystal_run_extraction/crystal_run_extraction.cfg",
+        config_path=scenario_root / f"{scenario_directory}.cfg",
         seed=case.seed,
         max_decisions=max_decisions,
     )
