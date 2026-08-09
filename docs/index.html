@@ -175,8 +175,9 @@
         <div class="section-heading">
           <p class="eyebrow">01 · SCENARIO</p>
           <p class="section-copy">
-            The rules create a real choice: contest valuable loot, fight for an
-            opponent's carried value, or leave safely with what you have.
+            Each raid samples seven loot items from sixteen safe anchors, so
+            the Bot must search before deciding whether to fight, disengage,
+            or extract.
           </p>
         </div>
 
@@ -184,9 +185,9 @@
           <figure class="map-card">
             <img
               src="assets/extraction/map.svg"
-              alt="Top-down extraction arena with two extraction zones, two spawns, loot regions, and a contested center."
+              alt="Top-down extraction arena with two extraction zones, two spawns, and sixteen candidate anchors from which seven loot items are sampled each raid."
             >
-            <figcaption>Training and validation base layout</figcaption>
+            <figcaption>Randomized loot · 16 safe anchors · 7 items per raid</figcaption>
           </figure>
           <div class="rules-card">
             <dl class="rules">
@@ -205,14 +206,15 @@
         <div class="section-heading">
           <p class="eyebrow">02 · METHOD</p>
           <p class="section-copy">
-            Capability is learned once. Style is added with small bounded
-            residual adapters over the same frozen Strong Actor.
+            Capability is learned once under randomized loot. Training-only
+            opportunity signals shape bounded adapters while deployment keeps
+            the same fair Actor inputs.
           </p>
         </div>
         <figure class="method-card">
           <img
             src="assets/extraction/method.svg"
-            alt="First-person observation flows into a CNN-GRU Strong policy, then branches into three bounded learned style adapters."
+            alt="A scripted Teacher, behavioral cloning, and recurrent PPO train the Strong policy; opportunity-conditioned shaping and partitioned KL train three bounded residual style adapters over the frozen Actor."
           >
         </figure>
         <div class="method-steps" aria-label="Training flow">
@@ -220,7 +222,8 @@
           <span>Behavioral Cloning</span><b>→</b>
           <span>Recurrent PPO</span><b>→</b>
           <span>Frozen Strong Actor</span><b>→</b>
-          <span>Residual Style Adapter</span>
+          <span>Opportunity-conditioned Shaping</span><b>→</b>
+          <span>Residual Style Adapters</span>
         </div>
         <p class="fairness-note">
           <strong>Fair observation.</strong> Public inference uses only

@@ -50,7 +50,7 @@ def test_public_documentation_local_links_resolve() -> None:
     assert broken == []
 
 
-def test_readme_publishes_clean_v3_product_and_evidence_boundary() -> None:
+def test_readme_publishes_clean_product_and_evidence_boundary() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
 
     assert "# BotColosseo" in readme
@@ -62,6 +62,10 @@ def test_readme_publishes_clean_v3_product_and_evidence_boundary() -> None:
     assert "no benchmark-success claim" in readme
     assert "Previous Crystal Run" not in readme
     assert "Extraction v2" not in readme
+    assert "v3" not in readme.lower()
+    assert "## Technical evolution" in readme
+    assert "Fixed loot → randomized loot" in readme
+    assert "Global style rewards → opportunity-conditioned shaping" in readme
 
 
 def test_readme_preserves_fair_actor_and_learned_style_boundary() -> None:
@@ -75,7 +79,7 @@ def test_readme_preserves_fair_actor_and_learned_style_boundary() -> None:
     assert "same frozen Strong Actor hash" in readme
     assert "training-only opportunity detectors" in readme
     assert "deployed policies remain learned residual adapters" in readme
-    assert "does not claim a causal PFSP gain" in readme
+    assert "does not isolate or claim a causal PFSP gain" in readme
     assert "one frozen 400-episode official test per policy" in readme
 
 
@@ -87,7 +91,10 @@ def test_chinese_readme_preserves_pending_and_test_boundaries() -> None:
     assert "同一个冻结 Strong Actor 哈希" in readme
     assert "仅训练期使用的机会检测器" in readme
     assert "部署策略仍然" in readme
-    assert "不声称 PFSP 带来了确定因果增益" in readme
+    assert "不对 PFSP 的独立因果" in readme
+    assert "## 技术路线演进" in readme
+    assert "固定物资 → 随机物资" in readme
+    assert "全局风格奖励 → 机会条件化塑形" in readme
     assert "不会进入" in readme
     assert "部署 Actor" in readme
     assert "official test 总计 1,600 局" in readme

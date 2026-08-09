@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="480" viewBox="0 0 1200 480" role="img" aria-labelledby="title desc">
-  <title id="title">Crystal Run: Extraction policy architecture</title>
-  <desc id="desc">A fair first-person observation feeds one shared CNN-GRU Strong policy. Three small bounded residual adapters derive Aggressive, Defensive, and Explorer policies from the frozen Strong base.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">BotColosseo capability and style training pipeline</title>
+  <desc id="desc">A scripted Teacher initializes a recurrent Strong policy through behavioral cloning and PPO. Training-only opportunity-conditioned PBRS and partitioned KL train three bounded residual style adapters over the frozen Strong Actor.</desc>
   <defs>
     <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#0b1220"/>
@@ -9,49 +9,61 @@
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
       <path d="M0,0 L0,6 L9,3 z" fill="#8fa8c7"/>
     </marker>
+    <marker id="train-arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#d2a84b"/>
+    </marker>
     <style>
-      .heading { font: 700 28px Inter, Arial, sans-serif; fill: #f4f7fb; }
-      .label { font: 700 20px Inter, Arial, sans-serif; fill: #f4f7fb; }
-      .body { font: 400 15px Inter, Arial, sans-serif; fill: #bdcbe0; }
+      .heading { font: 700 27px Inter, Arial, sans-serif; fill: #f4f7fb; }
+      .label { font: 700 18px Inter, Arial, sans-serif; fill: #f4f7fb; }
+      .body { font: 400 14px Inter, Arial, sans-serif; fill: #bdcbe0; }
       .small { font: 500 13px Inter, Arial, sans-serif; fill: #8fa8c7; }
       .edge { fill: none; stroke: #8fa8c7; stroke-width: 2.2; marker-end: url(#arrow); }
-      .card { stroke-width: 1.5; rx: 16; }
+      .train-edge { fill: none; stroke: #d2a84b; stroke-width: 2; stroke-dasharray: 7 6; marker-end: url(#train-arrow); }
+      .card { stroke-width: 1.5; rx: 14; }
     </style>
   </defs>
 
-  <rect width="1200" height="480" rx="24" fill="url(#background)"/>
-  <text x="48" y="54" class="heading">One capable Bot, three learned play styles</text>
-  <text x="48" y="82" class="body">The deployed Actor uses only first-person pixels and the player's own public state.</text>
+  <rect width="1200" height="520" rx="24" fill="url(#background)"/>
+  <text x="48" y="52" class="heading">Learn capability once, shape style without replacing it</text>
+  <text x="48" y="79" class="body">Randomized loot trains the Strong Bot; opportunity signals supervise style only during training.</text>
 
-  <rect x="48" y="156" width="220" height="152" class="card" fill="#15263b" stroke="#3d6286"/>
-  <text x="72" y="194" class="label">Fair observation</text>
-  <text x="72" y="227" class="body">84×84 visual frame</text>
-  <text x="72" y="251" class="body">own HP, ammo, backpack</text>
-  <text x="72" y="275" class="body">timer + previous action</text>
+  <rect x="48" y="112" width="190" height="86" class="card" fill="#15263b" stroke="#3d6286"/>
+  <text x="70" y="146" class="label">Scripted Teacher</text>
+  <text x="70" y="172" class="body">privileged demonstrations</text>
+  <rect x="286" y="112" width="190" height="86" class="card" fill="#15263b" stroke="#3d6286"/>
+  <text x="308" y="146" class="label">Behavioral Cloning</text>
+  <text x="308" y="172" class="body">recurrent warm start</text>
+  <rect x="524" y="112" width="190" height="86" class="card" fill="#14334a" stroke="#3c88a7"/>
+  <text x="546" y="146" class="label">Recurrent PPO</text>
+  <text x="546" y="172" class="body">randomized-loot capability</text>
+  <rect x="762" y="112" width="190" height="86" class="card" fill="#14334a" stroke="#3c88a7"/>
+  <text x="784" y="146" class="label">Frozen Strong Actor</text>
+  <text x="784" y="172" class="body">shared CNN-GRU reference</text>
+  <path d="M238 155 H274" class="edge"/><path d="M476 155 H512" class="edge"/><path d="M714 155 H750" class="edge"/>
 
-  <rect x="354" y="156" width="252" height="152" class="card" fill="#14334a" stroke="#3c88a7"/>
-  <text x="378" y="194" class="label">Strong Base</text>
-  <text x="378" y="227" class="body">visual CNN + GRU</text>
-  <text x="378" y="251" class="body">BC → recurrent PPO</text>
-  <text x="378" y="275" class="body">frozen shared Actor hash</text>
+  <rect x="48" y="251" width="342" height="134" class="card" fill="#342b16" stroke="#c99b3f"/>
+  <text x="72" y="286" class="label">Training-only style supervision</text>
+  <text x="72" y="315" class="body">opportunity-conditioned PBRS</text>
+  <text x="72" y="340" class="body">preferred-action-set margin</text>
+  <text x="72" y="365" class="body">partitioned KL: preserve outside opportunities</text>
 
-  <path d="M268 232 H342" class="edge"/>
-  <path d="M606 232 H664 V142 H700" class="edge"/>
-  <path d="M606 232 H700" class="edge"/>
-  <path d="M606 232 H664 V322 H700" class="edge"/>
+  <rect x="477" y="251" width="258" height="134" class="card" fill="#1b2b40" stroke="#5c7698"/>
+  <text x="501" y="286" class="label">Bounded residual adapter</text>
+  <text x="501" y="315" class="body">small logit correction</text>
+  <text x="501" y="340" class="body">same frozen Strong hash</text>
+  <text x="501" y="365" class="body">same public Actor inputs</text>
+  <path d="M857 198 V222 H606 V239" class="edge"/>
+  <path d="M390 318 H465" class="train-edge"/>
 
-  <rect x="700" y="102" width="446" height="80" class="card" fill="#3c2024" stroke="#d15b64"/>
-  <text x="724" y="134" class="label">Aggressive</text>
-  <text x="724" y="159" class="body">bounded residual → hit, kill, loot cache, extract</text>
+  <path d="M735 318 H780 V254 H809" class="edge"/>
+  <path d="M735 318 H809" class="edge"/>
+  <path d="M735 318 H780 V382 H809" class="edge"/>
+  <rect x="809" y="221" width="337" height="66" class="card" fill="#3c2024" stroke="#d15b64"/>
+  <text x="831" y="249" class="label">Aggressive</text><text x="831" y="271" class="body">convert useful fights into extracted value</text>
+  <rect x="809" y="297" width="337" height="66" class="card" fill="#17382f" stroke="#50a987"/>
+  <text x="831" y="325" class="label">Defensive</text><text x="831" y="347" class="body">disengage to protect carried value</text>
+  <rect x="809" y="373" width="337" height="66" class="card" fill="#342b16" stroke="#c99b3f"/>
+  <text x="831" y="401" class="label">Explorer</text><text x="831" y="423" class="body">seek useful route and loot diversity</text>
 
-  <rect x="700" y="192" width="446" height="80" class="card" fill="#17382f" stroke="#50a987"/>
-  <text x="724" y="224" class="label">Defensive</text>
-  <text x="724" y="249" class="body">bounded residual → disengage, protect value, extract</text>
-
-  <rect x="700" y="282" width="446" height="80" class="card" fill="#342b16" stroke="#c99b3f"/>
-  <text x="724" y="314" class="label">Explorer</text>
-  <text x="724" y="339" class="body">bounded residual → search, upgrade backpack, extract</text>
-
-  <text x="48" y="422" class="small">Training may use privileged Critic and reward ledgers. Public inference exports the Actor only.</text>
-  <text x="1146" y="422" class="small" text-anchor="end">Crystal Run: Extraction</text>
+  <text x="48" y="480" class="small">Public inference: first-person pixels + own state only · opportunity labels, reward ledgers, and privileged Critic are training-only.</text>
 </svg>

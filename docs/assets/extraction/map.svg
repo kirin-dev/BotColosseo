@@ -1,13 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="920" height="560" viewBox="0 0 920 560" role="img" aria-labelledby="title desc">
-  <title id="title">Crystal Run base layout</title>
-  <desc id="desc">A symmetric extraction arena with two spawn areas, north and south extraction zones, low and medium value loot, and a contested high value center.</desc>
+  <title id="title">BotColosseo randomized-loot arena</title>
+  <desc id="desc">A 1v1 extraction arena with two spawns, two extraction zones, and sixteen safe loot anchors. Seven items are assigned to anchors each raid.</desc>
   <defs>
     <style>
       .label { font: 700 15px Inter, Arial, sans-serif; fill: #e9eef5; letter-spacing: .04em; }
       .small { font: 600 12px Inter, Arial, sans-serif; fill: #9eabba; }
+      .note { font: 700 13px Inter, Arial, sans-serif; fill: #c8d5e5; text-anchor: middle; }
       .value { font: 800 13px Inter, Arial, sans-serif; fill: #091016; text-anchor: middle; dominant-baseline: central; }
       .zone { fill: #143c37; stroke: #77e6c4; stroke-width: 2; }
       .wall { fill: #171e28; stroke: #3a4554; stroke-width: 2; }
+      .anchor { fill: #27384c; stroke: #72a7ff; stroke-width: 2; }
     </style>
   </defs>
   <rect width="920" height="560" rx="20" fill="#0c1118"/>
@@ -18,7 +20,10 @@
   <text x="460" y="439" class="label" text-anchor="middle">SOUTH EXTRACTION</text>
 
   <rect x="326" y="140" width="268" height="246" rx="12" fill="#202a37" stroke="#4b5868" stroke-width="2"/>
-  <text x="460" y="180" class="small" text-anchor="middle">CONTESTED CENTER</text>
+  <text x="460" y="176" class="small" text-anchor="middle">CONTESTED CENTER</text>
+  <text x="460" y="248" class="note">16 SAFE LOOT ANCHORS</text>
+  <text x="460" y="273" class="label" text-anchor="middle">7 ITEMS SAMPLED PER RAID</text>
+  <text x="460" y="298" class="small" text-anchor="middle">values 10 / 25 / 50</text>
 
   <circle cx="270" cy="151" r="20" fill="#e7edf5"/>
   <text x="270" y="151" class="value">A</text>
@@ -27,23 +32,20 @@
   <text x="650" y="375" class="value">B</text>
   <text x="650" y="408" class="small" text-anchor="middle">SPAWN</text>
 
-  <g>
-    <circle cx="160" cy="159" r="18" fill="#72a7ff"/><text x="160" y="159" class="value">10</text>
-    <circle cx="160" cy="367" r="18" fill="#72a7ff"/><text x="160" y="367" class="value">10</text>
-    <circle cx="760" cy="159" r="18" fill="#72a7ff"/><text x="760" y="159" class="value">10</text>
-    <circle cx="760" cy="367" r="18" fill="#72a7ff"/><text x="760" y="367" class="value">10</text>
+  <g aria-label="Sixteen safe candidate loot anchors">
+    <circle cx="145" cy="145" r="10" class="anchor"/><circle cx="210" cy="225" r="10" class="anchor"/>
+    <circle cx="145" cy="305" r="10" class="anchor"/><circle cx="230" cy="385" r="10" class="anchor"/>
+    <circle cx="320" cy="215" r="10" class="anchor"/><circle cx="320" cy="315" r="10" class="anchor"/>
+    <circle cx="390" cy="205" r="10" class="anchor"/><circle cx="390" cy="325" r="10" class="anchor"/>
+    <circle cx="530" cy="205" r="10" class="anchor"/><circle cx="530" cy="325" r="10" class="anchor"/>
+    <circle cx="600" cy="215" r="10" class="anchor"/><circle cx="600" cy="315" r="10" class="anchor"/>
+    <circle cx="690" cy="145" r="10" class="anchor"/><circle cx="775" cy="225" r="10" class="anchor"/>
+    <circle cx="775" cy="305" r="10" class="anchor"/><circle cx="710" cy="385" r="10" class="anchor"/>
   </g>
-  <g>
-    <circle cx="350" cy="263" r="22" fill="#e6bc62"/><text x="350" y="263" class="value">25</text>
-    <circle cx="570" cy="263" r="22" fill="#e6bc62"/><text x="570" y="263" class="value">25</text>
-  </g>
-  <circle cx="460" cy="263" r="28" fill="#ff707b"/>
-  <text x="460" y="263" class="value">50</text>
 
-  <g transform="translate(78 512)">
-    <circle cx="8" cy="0" r="8" fill="#72a7ff"/><text x="24" y="4" class="small">low-value loot</text>
-    <circle cx="165" cy="0" r="8" fill="#e6bc62"/><text x="181" y="4" class="small">medium-value loot</text>
-    <circle cx="358" cy="0" r="8" fill="#ff707b"/><text x="374" y="4" class="small">high-value objective</text>
-    <rect x="594" y="-8" width="16" height="16" rx="3" class="zone"/><text x="620" y="4" class="small">extraction zone</text>
+  <g transform="translate(145 512)">
+    <circle cx="8" cy="0" r="8" class="anchor"/><text x="26" y="4" class="small">candidate loot anchor</text>
+    <path d="M263 -7 L275 7 M275 -7 L263 7" stroke="#e6bc62" stroke-width="2"/><text x="287" y="4" class="small">random assignment each raid</text>
+    <rect x="573" y="-8" width="16" height="16" rx="3" class="zone"/><text x="599" y="4" class="small">extraction zone</text>
   </g>
 </svg>

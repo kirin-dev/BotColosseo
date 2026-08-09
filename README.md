@@ -40,11 +40,10 @@ styles are bounded residual logit adapters over the same frozen Strong Actor has
 Their reward shaping is activated by training-only opportunity detectors; the
 deployed policies remain learned residual adapters with the same public inputs.
 
-Closeout auditing fixed PFSP draw bookkeeping after the frozen Strong checkpoint
-was trained. Its closed-loop evaluation below is unchanged, but this release
-does not claim a causal PFSP gain; retraining is deferred.
+Historical-opponent sampling and lightweight PFSP are part of the training
+pipeline, but this release does not isolate or claim a causal PFSP gain.
 
-### Current v3 code path
+### Implementation map
 
 | Layer | Entry point |
 |---|---|
@@ -54,6 +53,22 @@ does not claim a causal PFSP gain; retraining is deferred.
 | BC, recurrent PPO, PFSP, and style shaping | `src/botcolosseo/training/extraction_*.py` |
 | Frozen evaluation and evidence tiers | `src/botcolosseo/evaluation/extraction_*.py` |
 | Reproducible commands | `script.md` |
+
+## Technical evolution
+
+The project made two deliberate changes while keeping the same search-fight-
+extract objective:
+
+1. **Fixed loot → randomized loot.** Fixed placements made route memorization
+   too easy. The released arena assigns seven items to sixteen safe anchors per
+   raid while preserving the combat, inventory, and extraction rules.
+2. **Global style rewards → opportunity-conditioned shaping.** Style rewards are
+   activated only when the corresponding decision is meaningful. PBRS provides
+   causal-chain credit, partitioned KL preserves the frozen Strong policy outside
+   those opportunities, and bounded residual adapters keep style changes small.
+
+Opportunity labels and privileged Critic features remain training-only; the
+deployed Actor still receives only fair first-person observations.
 
 ## Results
 
