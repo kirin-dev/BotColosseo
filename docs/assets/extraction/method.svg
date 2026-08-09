@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="520" viewBox="0 0 1400 520" role="img" aria-labelledby="title desc">
   <title id="title">BotColosseo capability and style training pipeline</title>
   <desc id="desc">A scripted Teacher initializes a recurrent Strong policy through behavioral cloning and PPO. Training-only opportunity-conditioned PBRS and partitioned KL train three bounded residual style adapters over the frozen Strong Actor.</desc>
   <defs>
@@ -23,47 +23,47 @@
     </style>
   </defs>
 
-  <rect width="1200" height="520" rx="24" fill="url(#background)"/>
+  <rect width="1400" height="520" rx="24" fill="url(#background)"/>
   <text x="48" y="52" class="heading">Learn capability once, shape style without replacing it</text>
   <text x="48" y="79" class="body">Randomized loot trains the Strong Bot; opportunity signals supervise style only during training.</text>
 
-  <rect x="48" y="112" width="190" height="86" class="card" fill="#15263b" stroke="#3d6286"/>
+  <rect x="48" y="112" width="210" height="86" class="card" fill="#15263b" stroke="#3d6286"/>
   <text x="70" y="146" class="label">Scripted Teacher</text>
   <text x="70" y="172" class="body">privileged demonstrations</text>
-  <rect x="286" y="112" width="190" height="86" class="card" fill="#15263b" stroke="#3d6286"/>
-  <text x="308" y="146" class="label">Behavioral Cloning</text>
-  <text x="308" y="172" class="body">recurrent warm start</text>
-  <rect x="524" y="112" width="190" height="86" class="card" fill="#14334a" stroke="#3c88a7"/>
-  <text x="546" y="146" class="label">Recurrent PPO</text>
-  <text x="546" y="172" class="body">randomized-loot capability</text>
-  <rect x="762" y="112" width="190" height="86" class="card" fill="#14334a" stroke="#3c88a7"/>
-  <text x="784" y="146" class="label">Frozen Strong Actor</text>
-  <text x="784" y="172" class="body">shared CNN-GRU reference</text>
-  <path d="M238 155 H274" class="edge"/><path d="M476 155 H512" class="edge"/><path d="M714 155 H750" class="edge"/>
+  <rect x="302" y="112" width="210" height="86" class="card" fill="#15263b" stroke="#3d6286"/>
+  <text x="324" y="146" class="label">Behavioral Cloning</text>
+  <text x="324" y="172" class="body">recurrent warm start</text>
+  <rect x="556" y="112" width="210" height="86" class="card" fill="#14334a" stroke="#3c88a7"/>
+  <text x="578" y="146" class="label">Recurrent PPO</text>
+  <text x="578" y="172" class="body">randomized-loot capability</text>
+  <rect x="810" y="112" width="250" height="86" class="card" fill="#14334a" stroke="#3c88a7"/>
+  <text x="832" y="146" class="label">Frozen Strong Actor</text>
+  <text x="832" y="172" class="body">shared CNN-GRU reference</text>
+  <path d="M258 155 H290" class="edge"/><path d="M512 155 H544" class="edge"/><path d="M766 155 H798" class="edge"/>
 
-  <rect x="48" y="251" width="342" height="134" class="card" fill="#342b16" stroke="#c99b3f"/>
+  <rect x="48" y="251" width="390" height="134" class="card" fill="#342b16" stroke="#c99b3f"/>
   <text x="72" y="286" class="label">Training-only style supervision</text>
   <text x="72" y="315" class="body">opportunity-conditioned PBRS</text>
   <text x="72" y="340" class="body">preferred-action-set margin</text>
   <text x="72" y="365" class="body">partitioned KL: preserve outside opportunities</text>
 
-  <rect x="477" y="251" width="258" height="134" class="card" fill="#1b2b40" stroke="#5c7698"/>
-  <text x="501" y="286" class="label">Bounded residual adapter</text>
-  <text x="501" y="315" class="body">small logit correction</text>
-  <text x="501" y="340" class="body">same frozen Strong hash</text>
-  <text x="501" y="365" class="body">same public Actor inputs</text>
-  <path d="M857 198 V222 H606 V239" class="edge"/>
-  <path d="M390 318 H465" class="train-edge"/>
+  <rect x="800" y="251" width="270" height="134" class="card" fill="#1b2b40" stroke="#5c7698"/>
+  <text x="824" y="286" class="label">Bounded residual adapter</text>
+  <text x="824" y="315" class="body">small logit correction</text>
+  <text x="824" y="340" class="body">same frozen Strong hash</text>
+  <text x="824" y="365" class="body">same public Actor inputs</text>
+  <path d="M935 198 V239" class="edge"/>
+  <path d="M438 318 H788" class="train-edge"/>
 
-  <path d="M735 318 H780 V254 H809" class="edge"/>
-  <path d="M735 318 H809" class="edge"/>
-  <path d="M735 318 H780 V382 H809" class="edge"/>
-  <rect x="809" y="221" width="337" height="66" class="card" fill="#3c2024" stroke="#d15b64"/>
-  <text x="831" y="249" class="label">Aggressive</text><text x="831" y="271" class="body">convert useful fights into extracted value</text>
-  <rect x="809" y="297" width="337" height="66" class="card" fill="#17382f" stroke="#50a987"/>
-  <text x="831" y="325" class="label">Defensive</text><text x="831" y="347" class="body">disengage to protect carried value</text>
-  <rect x="809" y="373" width="337" height="66" class="card" fill="#342b16" stroke="#c99b3f"/>
-  <text x="831" y="401" class="label">Explorer</text><text x="831" y="423" class="body">seek useful route and loot diversity</text>
+  <path d="M1070 318 H1080 V248 H1088" class="edge"/>
+  <path d="M1070 318 H1088" class="edge"/>
+  <path d="M1070 318 H1080 V388 H1088" class="edge"/>
+  <rect x="1100" y="215" width="252" height="66" class="card" fill="#3c2024" stroke="#d15b64"/>
+  <text x="1122" y="243" class="label">Aggressive</text><text x="1122" y="265" class="body">fight → kill → bank value</text>
+  <rect x="1100" y="285" width="252" height="66" class="card" fill="#17382f" stroke="#50a987"/>
+  <text x="1122" y="313" class="label">Defensive</text><text x="1122" y="335" class="body">disengage → protect value</text>
+  <rect x="1100" y="355" width="252" height="66" class="card" fill="#342b16" stroke="#c99b3f"/>
+  <text x="1122" y="383" class="label">Explorer</text><text x="1122" y="405" class="body">search → upgrade → extract</text>
 
   <text x="48" y="480" class="small">Public inference: first-person pixels + own state only · opportunity labels, reward ledgers, and privileged Critic are training-only.</text>
 </svg>

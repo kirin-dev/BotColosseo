@@ -196,6 +196,9 @@ def test_showcase_covers_scenario_method_styles_and_results() -> None:
     assert "opportunity-conditioned PBRS" in method_svg
     assert "partitioned KL" in method_svg
     assert "training-only" in method_svg
+    assert 'width="1400" height="520"' in method_svg
+    assert 'd="M935 198 V239"' in method_svg
+    assert 'd="M857 198 V222 H606 V239"' not in method_svg
     public_copy = (source + map_svg + method_svg).lower()
     assert "crystal run" not in public_copy
     assert "base layout" not in public_copy
