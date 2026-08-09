@@ -68,7 +68,7 @@ def test_showcase_has_four_playable_style_videos_and_matching_emotes() -> None:
         "assets/extraction/explorer-poster.jpg",
     ]
     for asset in parser.sources + parser.images + parser.posters:
-        assert (Path("docs") / asset).is_file()
+        assert (Path("docs") / asset.split("?", 1)[0]).is_file()
     assert source.count('width="80"') == 4
     assert source.count('height="80"') == 4
 
@@ -174,7 +174,7 @@ def test_showcase_covers_scenario_method_styles_and_results() -> None:
 
     assert {"bots", "scenario", "method", "styles", "results"} <= parser.ids
     assert "assets/extraction/map.svg" in parser.images
-    assert "assets/extraction/method.svg" in parser.images
+    assert "assets/extraction/method.svg?v=1200x600-1" in parser.images
     assert all(
         text in source
         for text in (
@@ -228,7 +228,7 @@ def test_showcase_is_dependency_free_and_all_local_assets_resolve() -> None:
 
     assert parser.script_count == 0
     local_targets = [
-        target
+        target.split("?", 1)[0]
         for target in parser.images + parser.sources + parser.posters
         if "://" not in target
     ]
