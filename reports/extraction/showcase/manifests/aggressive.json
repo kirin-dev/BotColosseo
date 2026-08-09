@@ -1,0 +1,140 @@
+{
+  "actor_privilege_violations": 0,
+  "admission_rule_timing": "post_validation_product_case_review",
+  "aggregate_style_gate_passed": false,
+  "base_checkpoint_sha256": "d05fa0cbcdf9d0aa3df363e66f6aa8957a35c76d9d3fb936b15d6fe5b5f22484",
+  "candidate_checkpoint": "runs/extraction-randomized/styles-opportunity-pbrs-v1/aggressive/candidate-0051200.pt",
+  "candidate_checkpoint_sha256": "f9312051c1244c91d7850cc9883fe61e4cad6d9758d9f7b5d15d981b1c7b3b7b",
+  "claim_scope": "representative_validation_cases_only",
+  "demonstration_schema_version": 1,
+  "direction_counts": {
+    "lost_complete_chains": 7,
+    "negative_pairs": 76,
+    "new_complete_chains": 20,
+    "positive_pairs": 79,
+    "unchanged_pairs": 85
+  },
+  "evidence": [
+    "runs/extraction-randomized/styles-opportunity-pbrs-v1/aggressive/evaluation-randomized/candidate-0051200-validation.json",
+    "runs/extraction-randomized/strong-ppo-conservative-v2/evaluation-randomized-paired-style/candidate-0950000-validation.json",
+    "runs/extraction-randomized/styles-opportunity-pbrs-v1/aggressive/evaluation-randomized/candidate-0051200-heldout.json",
+    "runs/extraction-randomized/strong-ppo-conservative-v2/evaluation-randomized-paired-style/candidate-0950000-heldout.json"
+  ],
+  "evidence_sha256": {
+    "runs/extraction-randomized/strong-ppo-conservative-v2/evaluation-randomized-paired-style/candidate-0950000-heldout.json": "8476d1e117e8b21c7e9426d7ea4668d9fa5ca65a87491996d758a89649656156",
+    "runs/extraction-randomized/strong-ppo-conservative-v2/evaluation-randomized-paired-style/candidate-0950000-validation.json": "fe99b6032b573d8c2aa6dd08fbf2db4ccdb54fa003049f2b3b16f15b34468fd6",
+    "runs/extraction-randomized/styles-opportunity-pbrs-v1/aggressive/evaluation-randomized/candidate-0051200-heldout.json": "f0e6c05b229a15a39f640805b912679ccc7afb9c9d1d96bdd291b1eb843234b3",
+    "runs/extraction-randomized/styles-opportunity-pbrs-v1/aggressive/evaluation-randomized/candidate-0051200-validation.json": "6bcdca42e313cc8c8af3046b76ffbcdea6dad7ec824eced4e1833d5a9abc93ef"
+  },
+  "evidence_tier": "representative_case_demonstration",
+  "heldout_checks": [
+    {
+      "name": "heldout_extraction_delta",
+      "passed": true,
+      "threshold": ">=-0.10",
+      "value": 0.008333333333333415
+    },
+    {
+      "name": "heldout_worst_opponent_retention",
+      "passed": false,
+      "threshold": ">=0.00",
+      "value": -0.10000000000000003
+    },
+    {
+      "name": "heldout_protocol_integrity",
+      "passed": true,
+      "threshold": "==0",
+      "value": 0.0
+    }
+  ],
+  "heldout_failed_checks": [
+    "heldout_worst_opponent_retention"
+  ],
+  "heldout_gate_passed": false,
+  "official_test_eligible": false,
+  "policy": "aggressive",
+  "product_demo_eligible": true,
+  "protocol_sha256": "42ce1fbafe4bae9c748c44a713640bfd9d7384eecfb9643a4ea7df6c6e1c369a",
+  "representative_case_count": 30,
+  "research_failed_checks": [
+    "paired_task_retention",
+    "heldout_worst_opponent_retention"
+  ],
+  "research_gate_passed": false,
+  "scenario_hash": "3f928c6606eaffae8a4a9ea829f9bea1b82d4f0b622db2acdcff6149d4c15024",
+  "schema_version": 1,
+  "showcase_checkpoint": "runs/extraction-randomized/showcase-final/aggressive/showcase.pt",
+  "showcase_checkpoint_sha256": "f9312051c1244c91d7850cc9883fe61e4cad6d9758d9f7b5d15d981b1c7b3b7b",
+  "test_cases_accessed": false,
+  "validation_checks": [
+    {
+      "name": "paired_task_retention",
+      "passed": false,
+      "threshold": ">=0.85",
+      "value": 0.7941176470588235
+    },
+    {
+      "name": "extraction_rate_delta",
+      "passed": true,
+      "threshold": ">=-0.10",
+      "value": -0.008333333333333415
+    },
+    {
+      "name": "mean_value_ratio",
+      "passed": true,
+      "threshold": ">=0.85",
+      "value": 1.0223761321257325
+    },
+    {
+      "name": "worst_opponent_retention",
+      "passed": true,
+      "threshold": ">=0.00",
+      "value": 0.0
+    },
+    {
+      "name": "style_paired_difference",
+      "passed": true,
+      "threshold": ">0",
+      "value": 0.13879176387577033
+    },
+    {
+      "name": "style_ci_lower",
+      "passed": true,
+      "threshold": ">0",
+      "value": 0.029704102484465988
+    },
+    {
+      "name": "style_ci_upper",
+      "passed": true,
+      "threshold": ">0",
+      "value": 0.25271028459665645
+    },
+    {
+      "name": "anti_hack_complete_combat_chain",
+      "passed": true,
+      "threshold": ">0",
+      "value": 0.05416666666666667
+    },
+    {
+      "name": "anti_hack_no_empty_fire_regression",
+      "passed": true,
+      "threshold": ">=-0.05",
+      "value": 0.001493307795865012
+    },
+    {
+      "name": "reward_hacking_counterexamples",
+      "passed": true,
+      "threshold": "==0",
+      "value": 0.0
+    },
+    {
+      "name": "protocol_integrity",
+      "passed": true,
+      "threshold": "==0",
+      "value": 0.0
+    }
+  ],
+  "validation_failed_checks": [
+    "paired_task_retention"
+  ]
+}

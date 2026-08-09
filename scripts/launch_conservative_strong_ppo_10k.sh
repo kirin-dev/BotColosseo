@@ -6,7 +6,7 @@ run_dir="${repo_root}/runs/extraction-randomized/strong-ppo-conservative-v2"
 log_dir="${repo_root}/runs/extraction-randomized/logs"
 pid_file="${run_dir}/train.pid"
 log_file="${log_dir}/strong-ppo-conservative-v2.log"
-python_bin="/home/wencong/miniconda3/envs/botcolosseo/bin/python"
+python_bin="${BOTCOLOSSEO_PYTHON:-python}"
 
 if [[ -e "${run_dir}/metrics.jsonl" || -e "${pid_file}" ]]; then
   echo "Refusing to overwrite or duplicate Conservative PPO v2: ${run_dir}" >&2

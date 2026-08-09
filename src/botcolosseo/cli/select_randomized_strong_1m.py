@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import subprocess
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -295,9 +296,7 @@ def _audit_candidates(run_dir: Path) -> list[Path]:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     root = Path(__file__).resolve().parents[3]
-    python = args.python or Path(
-        "/home/wencong/miniconda3/envs/botcolosseo/bin/python"
-    )
+    python = args.python or Path(sys.executable)
     run_dir = args.run_dir if args.run_dir.is_absolute() else root / args.run_dir
     output_root = (
         args.output_root

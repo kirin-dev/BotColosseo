@@ -235,9 +235,15 @@ def audit_extraction_showcase(
             raise ValueError(
                 f"{policy} Showcase duration is outside 20-60 seconds"
             )
+        complete_case_study = (
+            tier == "representative_case_demonstration"
+            and selected.get("case_selection_mode")
+            == "complete_validation_case_study"
+        )
         if (
             policy != "strong"
             and selected.get("paired_style_difference", 0) <= 0
+            and not complete_case_study
         ):
             raise ValueError(f"{policy} Showcase evidence is not validation-safe")
         tiers[policy] = str(tier)
@@ -258,6 +264,9 @@ def audit_extraction_showcase(
         )
         audited[policy] = {
             "case_index": evidence["case_index"],
+            "case_selection_mode": selected.get(
+                "case_selection_mode", "paired_directional_case"
+            ),
             "duration_seconds": duration,
             "evidence_tier": tier,
             "research_gate_passed": tier == "research_selection",

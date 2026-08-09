@@ -12,6 +12,7 @@ class _ShowcaseParser(HTMLParser):
         self.images: list[str] = []
         self.links: list[str] = []
         self.video_count = 0
+        self.posters: list[str] = []
         self.script_count = 0
 
     def handle_starttag(
@@ -24,6 +25,8 @@ class _ShowcaseParser(HTMLParser):
             self.ids.add(identifier)
         if tag == "video":
             self.video_count += 1
+            if poster := attributes.get("poster"):
+                self.posters.append(poster)
         elif tag == "source" and (source := attributes.get("src")):
             self.sources.append(source)
         elif tag == "img" and (source := attributes.get("src")):
@@ -57,7 +60,13 @@ def test_showcase_has_four_playable_style_videos_and_matching_emotes() -> None:
         "assets/extraction/emotes/Defensive.jpg",
         "assets/extraction/emotes/Explorer.jpg",
     ]
-    for asset in parser.sources + parser.images:
+    assert parser.posters == [
+        "assets/extraction/strong-poster.jpg",
+        "assets/extraction/aggressive-poster.jpg",
+        "assets/extraction/defensive-poster.jpg",
+        "assets/extraction/explorer-poster.jpg",
+    ]
+    for asset in parser.sources + parser.images + parser.posters:
         assert (Path("docs") / asset).is_file()
     assert source.count('width="80"') == 4
     assert source.count('height="80"') == 4
@@ -67,7 +76,7 @@ def test_showcase_opens_with_compact_botcolosseo_identity_and_video_grid() -> No
     source, _ = _parse_showcase()
 
     assert "<title>BotColosseo · Controllable Game Bots for SFE</title>" in source
-    assert 'href="showcase.css?v=ablation-1"' in source
+    assert 'href="showcase.css?v=randomized-1"' in source
     assert "<h1>BotColosseo Controllable Game Bots for SFE</h1>" in source
     assert 'class="github-link"' in source
     assert '<header class="site-header">' in source
@@ -186,7 +195,7 @@ def test_showcase_is_dependency_free_and_all_local_assets_resolve() -> None:
     assert parser.script_count == 0
     local_targets = [
         target
-        for target in parser.images + parser.sources
+        for target in parser.images + parser.sources + parser.posters
         if "://" not in target
     ]
     assert all((Path("docs") / target).is_file() for target in local_targets)

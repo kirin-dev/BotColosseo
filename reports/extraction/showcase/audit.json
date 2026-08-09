@@ -1,8 +1,8 @@
 {
   "board_manifest": "reports/extraction/showcase/manifest.json",
-  "board_manifest_sha256": "b25e308649fa28a4fab4707d920babcf6dd8aab33789198dc466848b63c65b58",
+  "board_manifest_sha256": "881efa40f2f15d6e5e30cf9d83b13dfb4687564e9fda2f470b806d65991b7233",
   "evidence_tiers": {
-    "aggressive": "directional_showcase",
+    "aggressive": "representative_case_demonstration",
     "defensive": "representative_case_demonstration",
     "explorer": "representative_case_demonstration",
     "strong": "product_showcase"
@@ -15,32 +15,33 @@
     "aggressive": {
       "artifact_official_test_eligible": false,
       "capture_mode": "live_render",
-      "case_index": 23,
+      "case_index": 107,
+      "case_selection_mode": "paired_directional_case",
       "direction_counts": {
-        "lost_complete_chains": 19,
-        "negative_pairs": 55,
-        "new_complete_chains": 24,
-        "positive_pairs": 66,
-        "unchanged_pairs": 119
+        "lost_complete_chains": 7,
+        "negative_pairs": 76,
+        "new_complete_chains": 20,
+        "positive_pairs": 79,
+        "unchanged_pairs": 85
       },
       "disclosed_failed_checks": [
-        "style_ci_lower",
+        "paired_task_retention",
         "heldout_worst_opponent_retention"
       ],
-      "duration_seconds": 41.6,
-      "evidence_tier": "directional_showcase",
+      "duration_seconds": 28.7,
+      "evidence_tier": "representative_case_demonstration",
       "heldout_checks": [
         {
           "name": "heldout_extraction_delta",
           "passed": true,
           "threshold": ">=-0.10",
-          "value": -0.033333333333333326
+          "value": 0.008333333333333415
         },
         {
           "name": "heldout_worst_opponent_retention",
           "passed": false,
           "threshold": ">=0.00",
-          "value": -0.16666666666666669
+          "value": -0.10000000000000003
         },
         {
           "name": "heldout_protocol_integrity",
@@ -55,57 +56,57 @@
       "validation_checks": [
         {
           "name": "paired_task_retention",
-          "passed": true,
+          "passed": false,
           "threshold": ">=0.85",
-          "value": 0.8957345971563981
+          "value": 0.7941176470588235
         },
         {
           "name": "extraction_rate_delta",
           "passed": true,
           "threshold": ">=-0.10",
-          "value": 0.02083333333333337
+          "value": -0.008333333333333415
         },
         {
           "name": "mean_value_ratio",
           "passed": true,
           "threshold": ">=0.85",
-          "value": 1.0088197146562905
+          "value": 1.0223761321257325
         },
         {
           "name": "worst_opponent_retention",
           "passed": true,
           "threshold": ">=0.00",
-          "value": 0.16666666666666674
+          "value": 0.0
         },
         {
           "name": "style_paired_difference",
           "passed": true,
           "threshold": ">0",
-          "value": 0.049384916564670325
+          "value": 0.13879176387577033
         },
         {
           "name": "style_ci_lower",
-          "passed": false,
+          "passed": true,
           "threshold": ">0",
-          "value": -0.08700833270780246
+          "value": 0.029704102484465988
         },
         {
           "name": "style_ci_upper",
           "passed": true,
           "threshold": ">0",
-          "value": 0.18924805960436047
+          "value": 0.25271028459665645
         },
         {
           "name": "anti_hack_complete_combat_chain",
           "passed": true,
           "threshold": ">0",
-          "value": 0.02083333333333337
+          "value": 0.05416666666666667
         },
         {
           "name": "anti_hack_no_empty_fire_regression",
           "passed": true,
           "threshold": ">=-0.05",
-          "value": 0.008296799109554553
+          "value": 0.001493307795865012
         },
         {
           "name": "reward_hacking_counterexamples",
@@ -120,45 +121,154 @@
           "value": 0.0
         }
       ],
-      "validation_style_paired_difference": 0.049384916564670325
+      "validation_style_paired_difference": 0.13879176387577033
     },
     "defensive": {
       "artifact_official_test_eligible": false,
       "capture_mode": "live_render",
-      "case_index": 20,
+      "case_index": 189,
+      "case_selection_mode": "complete_validation_case_study",
       "direction_counts": {
-        "lost_showcase_chains": 65,
-        "negative_pairs": 100,
-        "new_showcase_chains": 22,
-        "positive_pairs": 44,
+        "lost_showcase_chains": 16,
+        "negative_pairs": 56,
+        "new_showcase_chains": 15,
+        "positive_pairs": 47,
         "showcase_chain_kind": "disengagement_to_meaningful_extraction",
-        "unchanged_pairs": 96
+        "unchanged_pairs": 137
       },
       "disclosed_failed_checks": [
         "paired_task_retention",
-        "mean_value_ratio",
-        "worst_opponent_retention",
         "style_paired_difference",
         "style_ci_lower",
-        "style_ci_upper",
-        "anti_hack_no_timeout_value_loss",
-        "reward_hacking_counterexamples",
         "heldout_worst_opponent_retention"
       ],
-      "duration_seconds": 39.4,
+      "duration_seconds": 37.4,
       "evidence_tier": "representative_case_demonstration",
       "heldout_checks": [
         {
           "name": "heldout_extraction_delta",
           "passed": true,
           "threshold": ">=-0.10",
-          "value": -0.08333333333333337
+          "value": -0.016666666666666607
         },
         {
           "name": "heldout_worst_opponent_retention",
           "passed": false,
           "threshold": ">=0.00",
-          "value": -0.23333333333333336
+          "value": -0.13333333333333336
+        },
+        {
+          "name": "heldout_protocol_integrity",
+          "passed": true,
+          "threshold": "==0",
+          "value": 0.0
+        }
+      ],
+      "render_attempt_count": 1,
+      "research_gate_passed": false,
+      "story_checks_passed": true,
+      "validation_checks": [
+        {
+          "name": "paired_task_retention",
+          "passed": false,
+          "threshold": ">=0.85",
+          "value": 0.7867647058823529
+        },
+        {
+          "name": "extraction_rate_delta",
+          "passed": true,
+          "threshold": ">=-0.10",
+          "value": -0.012500000000000067
+        },
+        {
+          "name": "mean_value_ratio",
+          "passed": true,
+          "threshold": ">=0.85",
+          "value": 0.9904102290889718
+        },
+        {
+          "name": "worst_opponent_retention",
+          "passed": true,
+          "threshold": ">=0.00",
+          "value": 0.0
+        },
+        {
+          "name": "style_paired_difference",
+          "passed": false,
+          "threshold": ">0",
+          "value": -0.010043479935273743
+        },
+        {
+          "name": "style_ci_lower",
+          "passed": false,
+          "threshold": ">0",
+          "value": -0.08517158499783742
+        },
+        {
+          "name": "style_ci_upper",
+          "passed": true,
+          "threshold": ">0",
+          "value": 0.06669078477740145
+        },
+        {
+          "name": "anti_hack_not_inactive",
+          "passed": true,
+          "threshold": ">=0.85",
+          "value": 1.006711409395973
+        },
+        {
+          "name": "anti_hack_no_timeout_value_loss",
+          "passed": true,
+          "threshold": "<=0.02",
+          "value": -0.008333333333333335
+        },
+        {
+          "name": "reward_hacking_counterexamples",
+          "passed": true,
+          "threshold": "==0",
+          "value": 0.0
+        },
+        {
+          "name": "protocol_integrity",
+          "passed": true,
+          "threshold": "==0",
+          "value": 0.0
+        }
+      ],
+      "validation_style_paired_difference": -0.010043479935273743
+    },
+    "explorer": {
+      "artifact_official_test_eligible": false,
+      "capture_mode": "live_render",
+      "case_index": 20,
+      "case_selection_mode": "paired_directional_case",
+      "direction_counts": {
+        "lost_showcase_chains": 8,
+        "negative_pairs": 59,
+        "new_showcase_chains": 17,
+        "positive_pairs": 62,
+        "showcase_chain_kind": "upgrade_to_extraction",
+        "unchanged_pairs": 119
+      },
+      "disclosed_failed_checks": [
+        "paired_task_retention",
+        "style_ci_lower",
+        "heldout_worst_opponent_retention"
+      ],
+      "duration_seconds": 35.5,
+      "evidence_tier": "representative_case_demonstration",
+      "heldout_checks": [
+        {
+          "name": "heldout_extraction_delta",
+          "passed": true,
+          "threshold": ">=-0.10",
+          "value": 0.008333333333333415
+        },
+        {
+          "name": "heldout_worst_opponent_retention",
+          "passed": false,
+          "threshold": ">=0.00",
+          "value": -0.13333333333333336
         },
         {
           "name": "heldout_protocol_integrity",
@@ -175,177 +285,61 @@
           "name": "paired_task_retention",
           "passed": false,
           "threshold": ">=0.85",
-          "value": 0.6398104265402843
+          "value": 0.7941176470588235
         },
         {
           "name": "extraction_rate_delta",
           "passed": true,
           "threshold": ">=-0.10",
-          "value": -0.08333333333333326
-        },
-        {
-          "name": "mean_value_ratio",
-          "passed": false,
-          "threshold": ">=0.85",
-          "value": 0.8238651102464333
-        },
-        {
-          "name": "worst_opponent_retention",
-          "passed": false,
-          "threshold": ">=0.00",
-          "value": -0.55
-        },
-        {
-          "name": "style_paired_difference",
-          "passed": false,
-          "threshold": ">0",
-          "value": -0.2874040950226167
-        },
-        {
-          "name": "style_ci_lower",
-          "passed": false,
-          "threshold": ">0",
-          "value": -0.38789649567759404
-        },
-        {
-          "name": "style_ci_upper",
-          "passed": false,
-          "threshold": ">0",
-          "value": -0.1863562703704959
-        },
-        {
-          "name": "anti_hack_not_inactive",
-          "passed": true,
-          "threshold": ">=0.85",
-          "value": 0.9118942731277534
-        },
-        {
-          "name": "anti_hack_no_timeout_value_loss",
-          "passed": false,
-          "threshold": "<=0.02",
-          "value": 0.0375
-        },
-        {
-          "name": "reward_hacking_counterexamples",
-          "passed": false,
-          "threshold": "==0",
-          "value": 1.0
-        },
-        {
-          "name": "protocol_integrity",
-          "passed": true,
-          "threshold": "==0",
-          "value": 0.0
-        }
-      ],
-      "validation_style_paired_difference": -0.2874040950226167
-    },
-    "explorer": {
-      "artifact_official_test_eligible": false,
-      "capture_mode": "live_render",
-      "case_index": 122,
-      "direction_counts": {
-        "lost_showcase_chains": 46,
-        "negative_pairs": 58,
-        "new_showcase_chains": 24,
-        "positive_pairs": 41,
-        "showcase_chain_kind": "upgrade_to_extraction",
-        "unchanged_pairs": 141
-      },
-      "disclosed_failed_checks": [
-        "paired_task_retention",
-        "style_paired_difference",
-        "style_ci_lower",
-        "style_ci_upper",
-        "anti_hack_real_upgrade_conversion",
-        "reward_hacking_counterexamples",
-        "heldout_worst_opponent_retention"
-      ],
-      "duration_seconds": 31.6,
-      "evidence_tier": "representative_case_demonstration",
-      "heldout_checks": [
-        {
-          "name": "heldout_extraction_delta",
-          "passed": true,
-          "threshold": ">=-0.10",
-          "value": 0.04166666666666663
-        },
-        {
-          "name": "heldout_worst_opponent_retention",
-          "passed": false,
-          "threshold": ">=0.00",
-          "value": -0.06666666666666671
-        },
-        {
-          "name": "heldout_protocol_integrity",
-          "passed": true,
-          "threshold": "==0",
-          "value": 0.0
-        }
-      ],
-      "render_attempt_count": 3,
-      "research_gate_passed": false,
-      "story_checks_passed": true,
-      "validation_checks": [
-        {
-          "name": "paired_task_retention",
-          "passed": false,
-          "threshold": ">=0.85",
-          "value": 0.8009478672985783
-        },
-        {
-          "name": "extraction_rate_delta",
-          "passed": true,
-          "threshold": ">=-0.10",
-          "value": -0.0625
+          "value": 0.008333333333333304
         },
         {
           "name": "mean_value_ratio",
           "passed": true,
           "threshold": ">=0.85",
-          "value": 0.9198443579766536
+          "value": 1.0756526371870005
         },
         {
           "name": "worst_opponent_retention",
           "passed": true,
           "threshold": ">=0.00",
-          "value": 0.03333333333333344
+          "value": 0.016666666666666663
         },
         {
           "name": "style_paired_difference",
-          "passed": false,
+          "passed": true,
           "threshold": ">0",
-          "value": -0.1151785714285714
+          "value": 0.05178571428571429
         },
         {
           "name": "style_ci_lower",
           "passed": false,
           "threshold": ">0",
-          "value": -0.2050595238095239
+          "value": -0.007142857142857136
         },
         {
           "name": "style_ci_upper",
-          "passed": false,
+          "passed": true,
           "threshold": ">0",
-          "value": -0.025744047619047604
+          "value": 0.11175595238095234
         },
         {
           "name": "anti_hack_real_upgrade_conversion",
-          "passed": false,
+          "passed": true,
           "threshold": ">0",
-          "value": -0.09166666666666667
+          "value": 0.0375
         },
         {
           "name": "anti_hack_no_high_value_wandering",
           "passed": true,
           "threshold": "<=0.02",
-          "value": 0.012499999999999997
+          "value": 0.0
         },
         {
           "name": "reward_hacking_counterexamples",
-          "passed": false,
+          "passed": true,
           "threshold": "==0",
-          "value": 1.0
+          "value": 0.0
         },
         {
           "name": "protocol_integrity",
@@ -354,17 +348,20 @@
           "value": 0.0
         }
       ],
-      "validation_style_paired_difference": -0.1151785714285714
+      "validation_style_paired_difference": 0.05178571428571429
     },
     "strong": {
       "artifact_official_test_eligible": false,
       "capture_mode": "live_render",
-      "case_index": 0,
+      "case_index": 201,
+      "case_selection_mode": "paired_directional_case",
       "direction_counts": null,
       "disclosed_failed_checks": [
-        "heldout_extraction"
+        "solo_extraction",
+        "script_average_win",
+        "script_worst_case_win"
       ],
-      "duration_seconds": 35.7,
+      "duration_seconds": 33.7,
       "evidence_tier": "product_showcase",
       "heldout_checks": [],
       "render_attempt_count": 1,
@@ -376,7 +373,7 @@
   },
   "schema_version": 1,
   "selection": "reports/extraction/showcase/selection.json",
-  "selection_sha256": "f4d39c1c4e3dee50bdcf0d7703e606bcffe8c4e4236502aa038f10d8f3fe9b54",
+  "selection_sha256": "6f8752e1fbf6f322ea922e5cac264172433e2f68de3e2d3b148587f887c679c9",
   "source_split": "validation",
   "test_cases_accessed": false
 }

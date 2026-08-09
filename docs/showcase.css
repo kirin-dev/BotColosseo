@@ -413,6 +413,28 @@ h1 {
   font-size: 0.76rem;
 }
 
+.training-curve {
+  overflow-x: auto;
+  margin: 18px 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 5px 18px rgba(20, 28, 38, 0.04);
+}
+
+.training-curve img {
+  width: 100%;
+  min-width: 900px;
+}
+
+.training-curve figcaption {
+  padding: 10px 6px 2px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  text-align: center;
+}
+
 .table-wrap {
   overflow-x: auto;
   border: 1px solid var(--border);

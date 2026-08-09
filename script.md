@@ -456,7 +456,23 @@ actual replay completes its advertised causal chain. The script finishes with
 a separate product Showcase audit; it does not run or claim the strict
 research release audit.
 
-## Run the matched 200k style ablations
+The public Strong selection curve is a deterministic derived artifact:
+
+```bash
+python -m botcolosseo.cli.build_extraction_training_curve \
+  --metrics runs/extraction-randomized/strong-ppo-conservative-v2/metrics.jsonl \
+  --screening-root reports/extraction/conservative-strong-1m-selection/screening-32 \
+  --confirmation-report runs/extraction-randomized/strong-ppo-conservative-v2/evaluation-randomized-paired-style/candidate-0950000-validation.json \
+  --selected-checkpoint runs/extraction-randomized/strong-ppo-conservative-v2/candidate-0950000.pt \
+  --output-data reports/extraction/training-curve.json \
+  --output-svg docs/assets/extraction/training-curve.svg
+```
+
+## Deferred: matched 200k style ablations
+
+These jobs were not run for the current randomized product release. Keep them
+as a future research protocol; do not cite ablation results for the released
+opportunity-conditioned styles.
 
 The frozen ablation compares the existing Full method against Reward+KL and
 Reward-only variants for all three styles. It reuses the Full 200k reports and

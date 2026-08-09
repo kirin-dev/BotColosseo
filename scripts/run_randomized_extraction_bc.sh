@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PYTHON=/home/wencong/miniconda3/envs/botcolosseo/bin/python
+PYTHON="${BOTCOLOSSEO_PYTHON:-python}"
 CONFIG=configs/extraction/randomized/demonstrations.yaml
 
 "$PYTHON" -m botcolosseo.cli.generate_extraction_demonstrations --config "$CONFIG" --split train --style strong

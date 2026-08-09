@@ -35,8 +35,8 @@
 
 Strong CNN-GRU Actor 依次经过脚本 Teacher 数据、行为克隆、循环 PPO、历史对手
 和轻量 PFSP 训练。三个风格是绑定同一个冻结 Strong Actor 哈希的有界残差
-logit adapter；Defensive 额外使用公平观测风险护栏，仅在低血量且携带物资时
-屏蔽进攻动作。
+logit adapter。风格奖励由仅训练期使用的机会检测器按状态激活；部署策略仍然
+只使用相同的公开观测。
 
 收尾审查在冻结 Strong checkpoint 训练完成后修复了 PFSP 平局记账。下方闭环
 评测结果不受影响，但本版本不声称 PFSP 带来了确定因果增益；重训练留待后续。
@@ -45,7 +45,7 @@ logit adapter；Defensive 额外使用公平观测风险护栏，仅在低血量
 
 | 层级 | 入口 |
 |---|---|
-| 游戏规则与 ACS 地图 | `assets/scenarios/crystal_run_extraction/` |
+| 游戏规则与 ACS 地图 | `assets/scenarios/crystal_run_extraction_randomized/` |
 | 同步环境与公开协议 | `src/botcolosseo/envs/synchronous_extraction.py` |
 | CNN-GRU Actor 与非对称 Critic | `src/botcolosseo/agents/extraction_model.py` |
 | BC、循环 PPO、PFSP 与风格塑形 | `src/botcolosseo/training/extraction_*.py` |
@@ -56,29 +56,29 @@ logit adapter；Defensive 额外使用公平观测风险护栏，仅在低血量
 
 | Strong 能力 | 结果 |
 |---|---:|
-| Validation 撤离率 | **94.6%** |
-| Validation 胜率 | **87.9%** |
-| Validation 平均带出价值 | **80.31** |
-| Heldout-layout 撤离率 | **68.3%**（研究门未通过） |
+| 随机布局 Validation 撤离率 | **83.3%** |
+| 随机布局 Validation 胜率 | **56.7%** |
+| 随机布局 Validation 平均带出价值 | **39.10** |
+| 随机布局 Heldout 撤离率 | **85.8%** |
 
-### 随机布局泛化实验
+### 随机布局发布版本
 
-独立的 Strong 分支将 7 件物资随机排列在 16 个安全点位上，共形成 128 种
-确定性、无碰撞布局。在同一组 32 局未见随机 seed 评测中，相比固定布局
-Strong，撤离率由 **50.0% 提升至 65.6%**，死亡率由 37.5% 降至 31.3%。
-这是有限域随机化结果，不代表连续坐标随机化或充分收敛；该分支尚未替换风格
-展示使用的 Strong Actor。详见[机器可读对照](reports/extraction/randomized-generalization.json)。
+当前 Strong 与三个风格 adapter 共享同一个随机物资场景和冻结 Strong
+checkpoint。7 件物资在 16 个安全点位间按无碰撞排列生成；这是有限布局族上的
+domain randomization，不代表连续坐标泛化。20 个 checkpoint 先各做 32 局冻结
+筛选，再对选中的 950k checkpoint 做独立 240 局确认。详见
+[派生曲线数据](reports/extraction/training-curve.json)。
 
 | Bot | 公开证据层 | 选中视频实际证明的行为 |
 |---|---|---|
-| Aggressive | 方向性展示 | 5 次命中 → 击杀 → 尸体缓存 → 带出 60 价值 |
-| Defensive | 代表性案例 | 低血量脱战 → 带出 45 价值，0 击杀 |
+| Aggressive | 代表性案例 | 5 次命中 → 击杀 → 尸体缓存 → 带出 85 价值 |
+| Defensive | 代表性案例 | 携带价值时脱战 → 撤离，0 击杀 |
 | Explorer | 代表性案例 | 搜索 4 个物资区域 → 背包升级 → 带出 85 价值 |
 
 这些是从 validation 选择的产品演示，不代表所有风格在完整分布上均有提升。
-Aggressive 的平均成对方向为正，但置信区间跨零；Defensive 和 Explorer 明确
-属于案例证据，聚合风格门未通过。完整案例、checkpoint/视频哈希、证据层级与
-全部失败项见[机器可读审计](reports/extraction/showcase/audit.json)。
+每段视频均明确限定为代表性案例，并包含由引擎事件记录的完整行为因果链。
+完整案例、checkpoint/视频哈希、证据层级与研究检查见
+[机器可读审计](reports/extraction/showcase/audit.json)。
 
 ## 证据边界
 
@@ -87,8 +87,8 @@ Aggressive 的平均成对方向为正，但置信区间跨零；Defensive 和 E
 非对称训练 Critic、训练 reward shaping，以及离线评测与观众遥测，不会进入
 部署 Actor。
 
-在冻结研究门通过前，不声称取得了全风格 benchmark 成功、聚合能力保持成功
-或 official-test 结果。
+当前公开结论限定为产品 Showcase，不声称全风格 benchmark 成功、聚合能力保持
+成功或 official-test 结果。
 候选选择阶段禁止访问 test。冻结协议规定每个策略仅测试一次 400 局，
 official test 总计 1,600 局；当前尚未运行。
 

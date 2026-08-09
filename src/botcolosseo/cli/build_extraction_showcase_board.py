@@ -81,10 +81,10 @@ def main(argv: list[str] | None = None) -> int:
         raise ValueError("Showcase selection identity does not match")
     cv2.putText(
         canvas,
-        "CRYSTAL RUN: EXTRACTION",
+        "BOTCOLOSSEO: SEARCH-FIGHT-EXTRACT",
         (30, 38),
         cv2.FONT_HERSHEY_SIMPLEX,
-        0.92,
+        0.78,
         (245, 245, 245),
         2,
         cv2.LINE_AA,

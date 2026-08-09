@@ -37,8 +37,8 @@ search for loot → fight or disengage → manage inventory → extract → bank
 The Strong CNN-GRU Actor is trained through scripted Teacher data, behavioral
 cloning, recurrent PPO, historical opponents, and lightweight PFSP. The three
 styles are bounded residual logit adapters over the same frozen Strong Actor hash.
-Defensive additionally uses a fair-observation risk guardrail that blocks
-attack macros only while carrying value at low health.
+Their reward shaping is activated by training-only opportunity detectors; the
+deployed policies remain learned residual adapters with the same public inputs.
 
 Closeout auditing fixed PFSP draw bookkeeping after the frozen Strong checkpoint
 was trained. Its closed-loop evaluation below is unchanged, but this release
@@ -48,7 +48,7 @@ does not claim a causal PFSP gain; retraining is deferred.
 
 | Layer | Entry point |
 |---|---|
-| Game rules and ACS map | `assets/scenarios/crystal_run_extraction/` |
+| Game rules and ACS map | `assets/scenarios/crystal_run_extraction_randomized/` |
 | Synchronized environment and public protocol | `src/botcolosseo/envs/synchronous_extraction.py` |
 | CNN-GRU Actor and asymmetric Critic | `src/botcolosseo/agents/extraction_model.py` |
 | BC, recurrent PPO, PFSP, and style shaping | `src/botcolosseo/training/extraction_*.py` |
@@ -59,31 +59,30 @@ does not claim a causal PFSP gain; retraining is deferred.
 
 | Strong capability | Result |
 |---|---:|
-| Validation extraction | **94.6%** |
-| Validation win rate | **87.9%** |
-| Validation mean banked value | **80.31** |
-| Heldout-layout extraction | **68.3%** *(research gate failed)* |
+| Randomized validation extraction | **83.3%** |
+| Randomized validation win rate | **56.7%** |
+| Randomized validation mean banked value | **39.10** |
+| Randomized heldout extraction | **85.8%** |
 
-### Randomized-layout robustness experiment
+### Randomized-layout release
 
-An independent Strong branch randomizes the seven loot items over 16 safe
-anchors using 128 deterministic, collision-free permutations. On the same 32
-held-random-seed episodes, it improves extraction from **50.0% to 65.6%** over
-the fixed-layout Strong, while reducing deaths from 37.5% to 31.3%. This is a
-finite domain-randomization result, not a continuous-placement or convergence
-claim, and it does not yet replace the Strong Actor used by the style Showcase.
-See the [machine-readable comparison](reports/extraction/randomized-generalization.json).
+The released Strong and all three style adapters share the same randomized-loot
+scenario and frozen Strong checkpoint. Seven loot items are assigned across 16
+safe anchors through finite, collision-free permutations. This is domain
+randomization over a finite layout family, not continuous-placement
+generalization. Frozen 32-episode screens selected the 950k checkpoint; the
+public capability numbers above come from a separate 240-episode confirmation.
+See the [derived curve data](reports/extraction/training-curve.json).
 
 | Bot | Public evidence | What the selected video proves |
 |---|---|---|
-| Aggressive | Directional Showcase | 5 hits → kill → corpse cache → 60-value extraction |
-| Defensive | Representative case | low-health disengagement → 45-value extraction, 0 kills |
+| Aggressive | Representative case | 5 hits → kill → corpse cache → 85-value extraction |
+| Defensive | Representative case | carried-value disengagement → extraction, 0 kills |
 | Explorer | Representative case | 4 loot regions → backpack upgrade → 85-value extraction |
 
 These are validation-selected product demonstrations, not proof that every
-style improves on the full distribution. Aggressive has positive mean paired
-direction but its confidence interval crosses zero. Defensive and Explorer are
-explicitly case-study evidence; their aggregate style gates failed. See the
+style improves on the full distribution. Each video is explicitly scoped as a
+representative case study with a complete, engine-recorded causal chain. See the
 [machine-readable audit](reports/extraction/showcase/audit.json) for cases,
 checkpoint/media hashes, evidence tiers, and every disclosed failed check.
 

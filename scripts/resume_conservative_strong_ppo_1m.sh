@@ -8,7 +8,7 @@ checkpoint="${run_dir}/latest.pt"
 summary="${run_dir}/summary.json"
 pid_file="${run_dir}/train.pid"
 log_file="${log_dir}/strong-ppo-conservative-v2-resume-1m.log"
-python_bin="/home/wencong/miniconda3/envs/botcolosseo/bin/python"
+python_bin="${BOTCOLOSSEO_PYTHON:-python}"
 
 if [[ ! -f "${checkpoint}" || ! -f "${summary}" ]]; then
   echo "Conservative PPO v2 10k checkpoint is incomplete: ${run_dir}" >&2

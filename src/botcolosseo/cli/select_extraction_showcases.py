@@ -26,6 +26,11 @@ def build_parser() -> argparse.ArgumentParser:
             type=int,
             help="Bind a validation case whose live replay has already been verified",
         )
+        parser.add_argument(
+            f"--{policy}-case-study",
+            action="store_true",
+            help="Allow a complete product case without a paired superiority claim",
+        )
     parser.add_argument(
         "--protocol",
         type=Path,
@@ -109,35 +114,41 @@ def _score(
     raise ValueError("Unknown Extraction showcase policy")
 
 
-def _representative(
-    policy: str,
-    episode: ExtractionEpisodeMetrics,
-    strong: ExtractionEpisodeMetrics,
-) -> bool:
+def _complete_story(policy: str, episode: ExtractionEpisodeMetrics) -> bool:
     if not episode.extracted or episode.decisions < 240 or episode.truncated:
         return False
     if policy == "aggressive":
-        complete = (
+        return (
             episode.aggressive_chains > 0
             and episode.valid_hits > 0
             and episode.kills > 0
             and episode.cache_looted > 0
         )
-    elif policy == "defensive":
-        complete = (
+    if policy == "defensive":
+        return (
             episode.successful_disengagements > 0
             and episode.meaningful_extractions > 0
             and not episode.died
         )
-    elif policy == "explorer":
-        complete = (
+    if policy == "explorer":
+        return (
             episode.backpack_upgrades > 0
             and episode.upgrade_to_extraction_conversions > 0
             and episode.meaningful_loot_regions > 0
         )
-    else:
-        return policy == "strong"
-    return complete and _style_score(policy, episode) > _style_score(policy, strong)
+    return policy == "strong"
+
+
+def _representative(
+    policy: str,
+    episode: ExtractionEpisodeMetrics,
+    strong: ExtractionEpisodeMetrics,
+) -> bool:
+    if policy == "strong":
+        return _complete_story(policy, episode)
+    return _complete_story(policy, episode) and _style_score(
+        policy, episode
+    ) > _style_score(policy, strong)
 
 
 def _evidence_tier(
@@ -294,7 +305,12 @@ def main(argv: list[str] | None = None) -> int:
                     cases[requested_index].opponent_style,
                 )
             ]
-            if selected not in eligible:
+            case_study = getattr(args, f"{policy}_case_study")
+            if selected not in eligible and not (
+                case_study
+                and evidence_tier == "representative_case_demonstration"
+                and _complete_story(policy, selected)
+            ):
                 raise ValueError(
                     f"{policy} requested Showcase case is not representative"
                 )
@@ -322,6 +338,10 @@ def main(argv: list[str] | None = None) -> int:
             "artifact_manifest_sha256": sha256_file(manifest_path),
             "evidence_tier": evidence_tier,
         }
+        if requested_index is not None and getattr(args, f"{policy}_case_study"):
+            selections[policy]["case_selection_mode"] = (
+                "complete_validation_case_study"
+            )
     payload = {
         "schema_version": 2,
         "protocol": str(protocol_path.relative_to(root)),

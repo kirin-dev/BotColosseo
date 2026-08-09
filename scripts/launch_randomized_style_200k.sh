@@ -15,7 +15,7 @@ output_dir="${repo_root}/runs/extraction-randomized/styles-conservative-v2/${sty
 log_dir="${repo_root}/runs/extraction-randomized/logs"
 pid_file="${output_dir}/train.pid"
 log_file="${log_dir}/style-conservative-v2-${style}-200k.log"
-python_bin="/home/wencong/miniconda3/envs/botcolosseo/bin/python"
+python_bin="${BOTCOLOSSEO_PYTHON:-python}"
 
 if [[ ! -f "${selection}" ]]; then
   echo "Conservative Strong selection has not completed: ${selection}" >&2

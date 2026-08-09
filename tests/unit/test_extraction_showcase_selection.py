@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from botcolosseo.cli.select_extraction_showcases import (
+    _complete_story,
     _evidence_tier,
     _representative,
     _score,
@@ -115,6 +116,18 @@ def test_defensive_requires_disengagement_to_meaningful_extraction() -> None:
 
     assert not _representative("defensive", merely_passive, strong)
     assert _representative("defensive", complete, strong)
+
+
+def test_complete_defensive_case_study_does_not_claim_paired_superiority() -> None:
+    strong = episode(successful_disengagements=3, meaningful_extractions=1)
+    case_study = episode(
+        decisions=300,
+        successful_disengagements=1,
+        meaningful_extractions=1,
+    )
+
+    assert _complete_story("defensive", case_study)
+    assert not _representative("defensive", case_study, strong)
 
 
 def test_showcase_selection_accepts_product_only_strong_manifest() -> None:

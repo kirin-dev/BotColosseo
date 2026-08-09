@@ -144,7 +144,9 @@ def test_showcase_runner_binds_manifests_retries_and_product_audits() -> None:
     assert "--max-attempts 5" in source
     assert "--scenario-directory crystal_run_extraction_randomized" in source
     assert "botcolosseo.cli.audit_extraction_showcase" in source
-    assert source.count("botcolosseo.cli.resolve_extraction_strong_artifact") == 3
+    assert "reports/extraction/showcase/manifests/strong.json" in source
+    assert "strong-ppo-conservative-v2/candidate-0950000.pt" in source
+    assert "--defensive-case-study" in source
     assert "--strong-manifest \"$STRONG_MANIFEST\"" in source
     assert 'BASE="runs/extraction/strong-ppo/selected.pt"' not in source
     assert "BOTCOLOSSEO_SHOWCASE_MEDIA" in source

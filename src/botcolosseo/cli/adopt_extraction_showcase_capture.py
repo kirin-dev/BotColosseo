@@ -6,7 +6,11 @@ import shutil
 from pathlib import Path
 
 from botcolosseo.cli.render_extraction_v3 import _representative_claims
-from botcolosseo.cli.select_extraction_showcases import _representative, _score
+from botcolosseo.cli.select_extraction_showcases import (
+    _complete_story,
+    _representative,
+    _score,
+)
 from botcolosseo.data.demonstrations import sha256_file
 from botcolosseo.evaluation.extraction import ExtractionEpisodeMetrics
 from botcolosseo.evaluation.extraction_gates import _style_score
@@ -27,6 +31,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--base-checkpoint", type=Path)
     parser.add_argument("--failed-preselected-attempts", type=int, default=0)
+    parser.add_argument(
+        "--preserve-live-render",
+        action="store_true",
+        help="Relocate a selected live capture without changing its provenance mode",
+    )
     parser.add_argument("--output-video", type=Path, required=True)
     parser.add_argument("--output-evidence", type=Path, required=True)
     return parser
@@ -120,10 +129,15 @@ def main(argv: list[str] | None = None) -> int:
         source["case"]["learner_side"],
         source["case"]["opponent_style"],
     )
-    if (
-        identity != source_identity
-        or not _representative(args.policy, episode, paired_strong)
-    ):
+    case_study = selected.get("case_selection_mode") == (
+        "complete_validation_case_study"
+    )
+    representative = (
+        _complete_story(args.policy, episode)
+        if case_study
+        else _representative(args.policy, episode, paired_strong)
+    )
+    if identity != source_identity or not representative:
         raise ValueError("Existing Showcase capture is not validation representative")
 
     claims = dict(source["showcase_claims"])
@@ -152,34 +166,39 @@ def main(argv: list[str] | None = None) -> int:
         "media": str(output_video.relative_to(root)),
         "media_sha256": sha256_file(output_video),
         "showcase_claims": claims,
-        "capture_mode": "verified_existing_live_capture",
-        "source_media": str(source_video.relative_to(root)),
-        "source_media_sha256": source_video_sha256,
-        "source_evidence": str(source_evidence_path.relative_to(root)),
-        "source_evidence_sha256": source_evidence_sha256,
-        "render_attempt_count": 1,
-        "render_attempts": [
+    }
+    if not args.preserve_live_render:
+        evidence.update(
             {
-                "attempt": 1,
-                "accepted": True,
-                "failed_checks": [],
-                "decisions": source["decisions"],
-                "extracted": source["extracted"],
-                "died": source["died"],
-                "extracted_value": source["extracted_value"],
-                "valid_hits": claims["valid_hits"],
-                "kills": claims["kills"],
-                "aggressive_chains": claims["aggressive_chains"],
-                "successful_disengagements": claims[
-                    "successful_disengagements"
-                ],
-                "backpack_upgrades": claims["backpack_upgrades"],
-                "upgrade_to_extraction_conversions": claims[
-                    "upgrade_to_extraction_conversions"
+                "capture_mode": "verified_existing_live_capture",
+                "source_media": str(source_video.relative_to(root)),
+                "source_media_sha256": source_video_sha256,
+                "source_evidence": str(source_evidence_path.relative_to(root)),
+                "source_evidence_sha256": source_evidence_sha256,
+                "render_attempt_count": 1,
+                "render_attempts": [
+                    {
+                        "attempt": 1,
+                        "accepted": True,
+                        "failed_checks": [],
+                        "decisions": source["decisions"],
+                        "extracted": source["extracted"],
+                        "died": source["died"],
+                        "extracted_value": source["extracted_value"],
+                        "valid_hits": claims["valid_hits"],
+                        "kills": claims["kills"],
+                        "aggressive_chains": claims["aggressive_chains"],
+                        "successful_disengagements": claims[
+                            "successful_disengagements"
+                        ],
+                        "backpack_upgrades": claims["backpack_upgrades"],
+                        "upgrade_to_extraction_conversions": claims[
+                            "upgrade_to_extraction_conversions"
+                        ],
+                    }
                 ],
             }
-        ],
-    }
+        )
     _atomic_json(output_evidence, evidence)
 
     previous_case_index = selected["case_index"]

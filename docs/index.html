@@ -25,7 +25,7 @@
       sizes="180x180"
       href="assets/apple-touch-icon.png"
     >
-    <link rel="stylesheet" href="showcase.css?v=ablation-1">
+    <link rel="stylesheet" href="showcase.css?v=randomized-1">
   </head>
   <body>
     <header class="site-header">
@@ -67,6 +67,7 @@
               muted
               playsinline
               preload="metadata"
+              poster="assets/extraction/strong-poster.jpg"
               aria-label="Strong Bot representative validation video"
             >
               <source src="assets/extraction/strong.mp4" type="video/mp4">
@@ -96,6 +97,7 @@
               muted
               playsinline
               preload="metadata"
+              poster="assets/extraction/aggressive-poster.jpg"
               aria-label="Aggressive Bot representative validation video"
             >
               <source src="assets/extraction/aggressive.mp4" type="video/mp4">
@@ -125,13 +127,14 @@
               muted
               playsinline
               preload="metadata"
+              poster="assets/extraction/defensive-poster.jpg"
               aria-label="Defensive Bot representative validation video"
             >
               <source src="assets/extraction/defensive.mp4" type="video/mp4">
               Your browser does not support HTML video.
             </video>
             <p class="causal-chain">
-              <span>Low HP + loot</span><b>→</b><span>stop pursuit</span><b>→</b>
+              <span>Carrying value</span><b>→</b><span>encounter risk</span><b>→</b>
               <span>disengage</span><b>→</b><span>preserve value</span>
             </p>
           </article>
@@ -154,6 +157,7 @@
               muted
               playsinline
               preload="metadata"
+              poster="assets/extraction/explorer-poster.jpg"
               aria-label="Explorer Bot representative validation video"
             >
               <source src="assets/extraction/explorer.mp4" type="video/mp4">
@@ -250,7 +254,7 @@
           <article class="style-card defensive">
             <h3>Defensive</h3>
             <p class="style-priority">Priority · protect carried value</p>
-            <p>Uses a learned residual plus a low-health carried-value guardrail.</p>
+            <p>Uses opportunity-conditioned shaping to learn disengagement before extraction.</p>
             <small>Watch: stops chasing, creates distance, leaves alive.</small>
           </article>
           <article class="style-card explorer">
@@ -266,17 +270,29 @@
         <div class="section-heading">
           <p class="eyebrow">04 · RESULTS</p>
           <p class="section-copy">
-            Current-run evidence with failed research gates disclosed. Selection
-            never accesses the test split.
+            Current randomized-lineage evidence. Selection never accesses the
+            test split.
           </p>
         </div>
 
         <div class="metric-grid" aria-label="Strong Bot capability">
-          <article><strong>94.6%</strong><span>validation extraction</span></article>
-          <article><strong>87.9%</strong><span>validation win rate</span></article>
-          <article><strong>80.31</strong><span>validation mean banked value</span></article>
-          <article><strong>68.3%</strong><span>heldout extraction · gate failed</span></article>
+          <article><strong>83.3%</strong><span>randomized validation extraction</span></article>
+          <article><strong>56.7%</strong><span>randomized validation win rate</span></article>
+          <article><strong>39.10</strong><span>validation mean banked value</span></article>
+          <article><strong>85.8%</strong><span>randomized heldout extraction</span></article>
         </div>
+
+        <figure class="training-curve">
+          <img
+            src="assets/extraction/training-curve.svg"
+            alt="Randomized Strong checkpoint screening and 240-episode confirmation, alongside BC replay agreement and frozen-reference KL training diagnostics."
+          >
+          <figcaption>
+            Frozen validation selected 950k instead of assuming the terminal
+            checkpoint was best. Screening and training diagnostics use
+            different evidence budgets and are labeled separately.
+          </figcaption>
+        </figure>
 
         <div class="table-wrap">
           <table>
@@ -290,13 +306,13 @@
             <tbody>
               <tr>
                 <th>Aggressive</th>
-                <td>Directional Showcase</td>
-                <td>5 hits → kill → corpse cache → 60 value</td>
+                <td>Representative case</td>
+                <td>5 hits → kill → corpse cache → 85 value</td>
               </tr>
               <tr>
                 <th>Defensive</th>
                 <td>Representative case</td>
-                <td>low-health disengagement → 45 value · 0 kills</td>
+                <td>carried-value disengagement → extraction · 0 kills</td>
               </tr>
               <tr>
                 <th>Explorer</th>
@@ -307,11 +323,9 @@
           </table>
         </div>
         <p class="result-note">
-          Aggressive has positive mean paired direction, but its confidence
-          interval crosses zero. Defensive and Explorer are explicitly selected
-          case studies because their aggregate style gates failed. These videos
-          demonstrate real causal chains, not distribution-level superiority or
-          official-test results.
+          The three style videos are representative validation case studies.
+          They demonstrate complete engine-recorded causal chains, not
+          distribution-level superiority or official-test results.
           <a href="https://github.com/kirin-dev/BotColosseo/blob/main/reports/extraction/showcase/audit.json">
             Inspect the machine-readable audit ↗
           </a>

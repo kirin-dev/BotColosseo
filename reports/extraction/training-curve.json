@@ -1,0 +1,327 @@
+{
+  "confirmation": {
+    "environment_steps": 950000,
+    "episodes": 240,
+    "extraction_rate": 0.8333333333333334,
+    "win_rate": 0.5666666666666667
+  },
+  "diagnostic_window_steps": 50000,
+  "metric_definitions": {
+    "confirmation": "frozen 240-episode randomized validation",
+    "reference_kl": "training-time KL to frozen BC reference policy",
+    "replay_agreement": "training-time action agreement on fixed BC replay",
+    "screening": "frozen 32-episode randomized validation"
+  },
+  "schema_version": 1,
+  "screening": [
+    {
+      "checkpoint_sha256": "771b1ffb9c30429be6052a43d5f6cd7c63e92406c7f67f1b0288eb4b007891ce",
+      "environment_steps": 50000,
+      "episodes": 32,
+      "extraction_rate": 0.71875,
+      "selected": false,
+      "win_rate": 0.5
+    },
+    {
+      "checkpoint_sha256": "6072a6787928bc52c3910c2b065608bf0cb0657aace93b629e0a430baf9653ad",
+      "environment_steps": 100000,
+      "episodes": 32,
+      "extraction_rate": 0.71875,
+      "selected": false,
+      "win_rate": 0.5
+    },
+    {
+      "checkpoint_sha256": "d13598a0dbe74819db662cf9b0617b4f0429de01a25f96a27cd85084c0bad057",
+      "environment_steps": 150000,
+      "episodes": 32,
+      "extraction_rate": 0.65625,
+      "selected": false,
+      "win_rate": 0.4375
+    },
+    {
+      "checkpoint_sha256": "df6e514d761fd84691fc6cb9665884ac69d2c9cb812ac5aac56a04c31f0fdb6b",
+      "environment_steps": 200000,
+      "episodes": 32,
+      "extraction_rate": 0.75,
+      "selected": false,
+      "win_rate": 0.5
+    },
+    {
+      "checkpoint_sha256": "fbe98385a948393f98ae0f7f24a511dd46faaa693573b733e8bf51d14309c13c",
+      "environment_steps": 250000,
+      "episodes": 32,
+      "extraction_rate": 0.75,
+      "selected": false,
+      "win_rate": 0.46875
+    },
+    {
+      "checkpoint_sha256": "2ef67ed8c4da4a860869dd92a206568e213eee25d9dafc3cc045b35bf6c753c7",
+      "environment_steps": 300000,
+      "episodes": 32,
+      "extraction_rate": 0.625,
+      "selected": false,
+      "win_rate": 0.3125
+    },
+    {
+      "checkpoint_sha256": "9826afe71bf9dae3cffaff3f158538bd1c3d3fc71659e682b30479d8eadbbd60",
+      "environment_steps": 350000,
+      "episodes": 32,
+      "extraction_rate": 0.6875,
+      "selected": false,
+      "win_rate": 0.40625
+    },
+    {
+      "checkpoint_sha256": "43c747862db97878f84f0723d581279c251e797929c4d49bd006e5ae8f87f012",
+      "environment_steps": 400000,
+      "episodes": 32,
+      "extraction_rate": 0.6875,
+      "selected": false,
+      "win_rate": 0.375
+    },
+    {
+      "checkpoint_sha256": "b1fb6f4bdbb6c0774a496d76aaf119b3a38f2277b810b680a1732f1964620259",
+      "environment_steps": 450000,
+      "episodes": 32,
+      "extraction_rate": 0.6875,
+      "selected": false,
+      "win_rate": 0.375
+    },
+    {
+      "checkpoint_sha256": "51a7361ecd4283c55583cc7a0578ae2727413ea47d00a8a24206fb6537222453",
+      "environment_steps": 500000,
+      "episodes": 32,
+      "extraction_rate": 0.75,
+      "selected": false,
+      "win_rate": 0.375
+    },
+    {
+      "checkpoint_sha256": "78624e50303e8e0a7d3c4ba708bcf1ac82b485e5b1b0c206412f6f1417cb4f73",
+      "environment_steps": 550000,
+      "episodes": 32,
+      "extraction_rate": 0.78125,
+      "selected": false,
+      "win_rate": 0.34375
+    },
+    {
+      "checkpoint_sha256": "2cff0f698a04c08f9e978628a91d842108b24768b9a9a616eb92df687d0aa793",
+      "environment_steps": 600000,
+      "episodes": 32,
+      "extraction_rate": 0.8125,
+      "selected": false,
+      "win_rate": 0.53125
+    },
+    {
+      "checkpoint_sha256": "83d08360a2aa20e7bbc5c74acf5cab8f6ea2f45776c22c4ce7ea879ea2842a1f",
+      "environment_steps": 650000,
+      "episodes": 32,
+      "extraction_rate": 0.8125,
+      "selected": false,
+      "win_rate": 0.46875
+    },
+    {
+      "checkpoint_sha256": "9097f5ca3072b447f598e67c9a9c8ccec9b375a0dfa234cd21fb327f44c8cfbf",
+      "environment_steps": 700000,
+      "episodes": 32,
+      "extraction_rate": 0.8125,
+      "selected": false,
+      "win_rate": 0.40625
+    },
+    {
+      "checkpoint_sha256": "c6a97f6f81fb7ea963b25aa0fa538dcbe790d95190d65c779c758f3ed9e5ac44",
+      "environment_steps": 750000,
+      "episodes": 32,
+      "extraction_rate": 0.8125,
+      "selected": false,
+      "win_rate": 0.46875
+    },
+    {
+      "checkpoint_sha256": "d90967a21eb433f111407ad605456f593ae1452f0efccddfc129cfa54198251d",
+      "environment_steps": 800000,
+      "episodes": 32,
+      "extraction_rate": 0.6875,
+      "selected": false,
+      "win_rate": 0.5
+    },
+    {
+      "checkpoint_sha256": "58adee557cf8ffe590a8c1f1aa821c134b10536650bdbaa4dcf66dda0ccca2d8",
+      "environment_steps": 850000,
+      "episodes": 32,
+      "extraction_rate": 0.78125,
+      "selected": false,
+      "win_rate": 0.5
+    },
+    {
+      "checkpoint_sha256": "cd2021fdc4a5dbedea1ab1076050ce6ccba04d6b8f2e3390dfafd914ab2eb942",
+      "environment_steps": 900000,
+      "episodes": 32,
+      "extraction_rate": 0.75,
+      "selected": false,
+      "win_rate": 0.4375
+    },
+    {
+      "checkpoint_sha256": "d05fa0cbcdf9d0aa3df363e66f6aa8957a35c76d9d3fb936b15d6fe5b5f22484",
+      "environment_steps": 950000,
+      "episodes": 32,
+      "extraction_rate": 0.84375,
+      "selected": true,
+      "win_rate": 0.5625
+    },
+    {
+      "checkpoint_sha256": "239ff161a0cb3ea6fce9ec478f564a7e52028d994a8137659899198a9f4fdbc5",
+      "environment_steps": 1000000,
+      "episodes": 32,
+      "extraction_rate": 0.8125,
+      "selected": false,
+      "win_rate": 0.46875
+    }
+  ],
+  "selected_checkpoint": "runs/extraction-randomized/strong-ppo-conservative-v2/candidate-0950000.pt",
+  "selected_checkpoint_sha256": "d05fa0cbcdf9d0aa3df363e66f6aa8957a35c76d9d3fb936b15d6fe5b5f22484",
+  "sources_sha256": {
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0050000.json": "a8c8174e094f383ff5ac6c87c872d37021bc7cb052d34c3b3768df86df5cc75e",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0100000.json": "5f27c6894bd3864124cd67b911ba635ca2cf696f8137314b61730c28e1bf5b8c",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0150000.json": "3abc3df82e8f031bef7af8fd6966199aa4b326c929d65276b762343d8ecd3b65",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0200000.json": "e7cfb35a269642ec66eab963e00a510e081726ef168c6f8b77091aa31f41bc77",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0250000.json": "15c77e1fbc2fe96fc1d66d12cbc961b8c9ac29c3c86cd60986ab62a3e5b6a939",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0300000.json": "110fd65b4aba5406d942b5d800ef8828d0ca01ff334fdc6190dd01837f7ec44c",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0350000.json": "9ab2eab11c2ff19243c46f4ebdf6e372e094f5072f4172cf40dd418929cb60fa",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0400000.json": "d366386450f64a7b461405edf81eebcfd49884aece2b67dc7b54fe4cade7604f",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0450000.json": "14461985babbb295bc7f0895fe233160e380c070199657378f339136ceffb20e",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0500000.json": "61846db8302c458a1457e1a0539cd227575dd7fb54c053e5bb4da6223758850f",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0550000.json": "f7894d1b032b950009de5671b0caf9d1100d19b264d8dd1bc88faf6547d98326",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0600000.json": "c8eda0377f2a8d83b499d7a364bb4fe85c678b6170ebb7763d512a3811f0cde7",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0650000.json": "e4896e8d262de1dae4ed58c451540e9302bbf79128387883417d3d1424ff967e",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0700000.json": "05374d351d169a0d75396b97804f679557f183d5e18bb5576164ed1fa53d65c8",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0750000.json": "e11b900dfc6f6b563d5c2cded647005f2da9bf3a5539e1c1331a22394265e585",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0800000.json": "2841e28926f143f9d9175819bad979d7131a61dfef2c376d594fd54f6bb2da65",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0850000.json": "10d73392c7324c4755b78dc651cc8cb187f930a568c9c0665a06c2de67e57abe",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0900000.json": "df56c9bcca7860b0d58fc7b5e5ad81fa8cbf4553ca17ae9626be7f59189e9c32",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-0950000.json": "13326a58b6965c38a799d3c37998103f030fda04f38f4300c11ca48b346cdf86",
+    "reports/extraction/conservative-strong-1m-selection/screening-32/candidate-1000000.json": "864a35c41814a8b4dad129f39af9e418af602a51d706505b11fe6daa9514e93d",
+    "runs/extraction-randomized/strong-ppo-conservative-v2/evaluation-randomized-paired-style/candidate-0950000-validation.json": "fe99b6032b573d8c2aa6dd08fbf2db4ccdb54fa003049f2b3b16f15b34468fd6",
+    "runs/extraction-randomized/strong-ppo-conservative-v2/metrics.jsonl": "2593ef0344894fc146c190126e11ef86088f28f3f4d0334c3dae223dcaa1a0ff"
+  },
+  "test_cases_accessed": false,
+  "training_diagnostics": [
+    {
+      "environment_steps": 50000,
+      "reference_kl": 0.0011602764042573234,
+      "replay_agreement": 0.966870241056239,
+      "updates": 197
+    },
+    {
+      "environment_steps": 100000,
+      "reference_kl": 0.003961130399175647,
+      "replay_agreement": 0.9666254784987898,
+      "updates": 196
+    },
+    {
+      "environment_steps": 150000,
+      "reference_kl": 0.004802503074772956,
+      "replay_agreement": 0.9668865593112245,
+      "updates": 196
+    },
+    {
+      "environment_steps": 200000,
+      "reference_kl": 0.0060078273954972325,
+      "replay_agreement": 0.9669323980200047,
+      "updates": 196
+    },
+    {
+      "environment_steps": 250000,
+      "reference_kl": 0.006671545620241775,
+      "replay_agreement": 0.9670220823312292,
+      "updates": 196
+    },
+    {
+      "environment_steps": 300000,
+      "reference_kl": 0.008833863987018383,
+      "replay_agreement": 0.9671456473214286,
+      "updates": 196
+    },
+    {
+      "environment_steps": 350000,
+      "reference_kl": 0.00735916197062375,
+      "replay_agreement": 0.967221380800617,
+      "updates": 196
+    },
+    {
+      "environment_steps": 400000,
+      "reference_kl": 0.0072679904884093306,
+      "replay_agreement": 0.9673389667759136,
+      "updates": 196
+    },
+    {
+      "environment_steps": 450000,
+      "reference_kl": 0.008125152124082479,
+      "replay_agreement": 0.967414700255102,
+      "updates": 196
+    },
+    {
+      "environment_steps": 500000,
+      "reference_kl": 0.008036634074916055,
+      "replay_agreement": 0.9676777741738728,
+      "updates": 196
+    },
+    {
+      "environment_steps": 550000,
+      "reference_kl": 0.008852670208418496,
+      "replay_agreement": 0.9676080197095871,
+      "updates": 196
+    },
+    {
+      "environment_steps": 600000,
+      "reference_kl": 0.005471529888010843,
+      "replay_agreement": 0.9676658164481727,
+      "updates": 196
+    },
+    {
+      "environment_steps": 650000,
+      "reference_kl": 0.0045162134094567236,
+      "replay_agreement": 0.9677634725765306,
+      "updates": 196
+    },
+    {
+      "environment_steps": 700000,
+      "reference_kl": 0.0065255292665453305,
+      "replay_agreement": 0.9677654656828666,
+      "updates": 196
+    },
+    {
+      "environment_steps": 750000,
+      "reference_kl": 0.004655227099869897,
+      "replay_agreement": 0.9677634725765306,
+      "updates": 196
+    },
+    {
+      "environment_steps": 800000,
+      "reference_kl": 0.004574864628642788,
+      "replay_agreement": 0.9679408483967489,
+      "updates": 196
+    },
+    {
+      "environment_steps": 850000,
+      "reference_kl": 0.005066739420503929,
+      "replay_agreement": 0.9678830516581632,
+      "updates": 196
+    },
+    {
+      "environment_steps": 900000,
+      "reference_kl": 0.005104420312688619,
+      "replay_agreement": 0.9677275987912197,
+      "updates": 196
+    },
+    {
+      "environment_steps": 950000,
+      "reference_kl": 0.00454267488117805,
+      "replay_agreement": 0.9680763711126483,
+      "updates": 196
+    },
+    {
+      "environment_steps": 1000000,
+      "reference_kl": 0.004134297276601613,
+      "replay_agreement": 0.9678511640855244,
+      "updates": 196
+    }
+  ]
+}
