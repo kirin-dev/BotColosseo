@@ -12,6 +12,10 @@ One capable first-person ViZDoom Bot, three learned play styles, and one compact
 Watch four directly playable videos, inspect the arena, understand the training
 flow, compare the styles, and read the most relevant capability evidence.
 
+For the separate hierarchical-policy research route, see the
+[runtime-control preview](https://kirin-dev.github.io/BotColosseo/hierarchical.html)
+and [architecture / code guide](docs/hierarchical-research.md).
+
 ## What is the task?
 
 ```text
