@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="BotColosseo: hierarchical visual game bots with real-time style control.">
+  <title>BotColosseo · Hierarchical Game Bots for SFE</title>
+  <link rel="icon" href="assets/favicon-32x32.png" type="image/png">
+  <link rel="stylesheet" href="showcase.css?v=randomized-1">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-brand" href="#top">BotColosseo</a>
+    <nav aria-label="Primary navigation">
+      <a href="#scenario">01 Scenario</a><a href="#method">02 Method</a>
+      <a href="#styles">03 Styles</a><a href="#results">04 Results</a>
+    </nav>
+    <a class="github-link" href="https://github.com/kirin-dev/BotColosseo">GitHub ↗</a>
+  </header>
+  <main id="top">
+    <section class="hero shell"><h1>BotColosseo Controllable Game Bots for SFE</h1></section>
+    <section class="bot-showcase shell" aria-label="Same-model control and style case studies">
+      <div class="video-grid">
+        <article class="video-card strong">
+          <div class="bot-heading"><img src="assets/extraction/emotes/Strong.jpg" alt="" width="80" height="80"><div><h3>Live controls</h3><p>One checkpoint, changing style inputs</p></div></div>
+          <video controls muted playsinline preload="metadata" poster="assets/hierarchical/live.jpg" aria-label="Same-model style switching"><source src="assets/hierarchical/live.mp4" type="video/mp4"></video>
+          <p class="causal-chain"><span>Change preference</span><b>→</b><span>replan</span><b>→</b><span>retain memory</span></p>
+        </article>
+        <article class="video-card aggressive">
+          <div class="bot-heading"><img src="assets/extraction/emotes/Aggressive.jpg" alt="" width="80" height="80"><div><h3>Aggressive</h3><p>Combat conversion · scripted pursuit opponent</p></div></div>
+          <video controls muted playsinline preload="metadata" poster="assets/hierarchical/aggressive.jpg" aria-label="Aggressive case against scripted pursuit"><source src="assets/hierarchical/aggressive.mp4" type="video/mp4"></video>
+          <p class="causal-chain"><span>Engage</span><b>→</b><span>kill</span><b>→</b><span>loot cache</span><b>→</b><span>extract</span></p>
+        </article>
+        <article class="video-card defensive">
+          <div class="bot-heading"><img src="assets/extraction/emotes/Defensive.jpg" alt="" width="80" height="80"><div><h3>Defensive</h3><p>Prefer extraction after acquiring value</p></div></div>
+          <video controls muted playsinline preload="metadata" poster="assets/hierarchical/defensive.jpg" aria-label="Defensive extraction case"><source src="assets/hierarchical/defensive.mp4" type="video/mp4"></video>
+          <p class="causal-chain"><span>Acquire loot</span><b>→</b><span>seek extraction</span><b>→</b><span>bank value</span></p>
+        </article>
+        <article class="video-card explorer">
+          <div class="bot-heading"><img src="assets/extraction/emotes/Explorer.jpg" alt="" width="80" height="80"><div><h3>Explorer</h3><p>Continue useful search before extraction</p></div></div>
+          <video controls muted playsinline preload="metadata" poster="assets/hierarchical/explorer.jpg" aria-label="Explorer multiple-pickup case"><source src="assets/hierarchical/explorer.mp4" type="video/mp4"></video>
+          <p class="causal-chain"><span>Search</span><b>→</b><span>three pickups</span><b>→</b><span>extract</span></p>
+        </article>
+      </div>
+      <p class="fairness-note">Selected first-person case studies, not average-performance samples. All four clips use the same high-level and executor checkpoints at Hard. Only the Aggressive clip uses a scripted pursuit opponent; the others face a frozen search-oriented policy. Viewer-only enemy telemetry is not an Actor input.</p>
+    </section>
+    <section class="section shell" id="scenario">
+      <div class="section-heading"><p class="eyebrow">01 · SCENARIO</p><p class="section-copy">Search for randomized loot, choose whether to fight, and extract your own value. Killing the opponent is never required to leave.</p></div>
+      <div class="scenario-layout">
+        <figure class="map-card"><img src="assets/extraction/map.svg" alt="Fixed arena geometry with randomized loot anchors and two extraction zones"><figcaption>Fixed geometry · randomized loot placement</figcaption></figure>
+        <div class="rules-card"><dl class="rules">
+          <div><dt>Raid</dt><dd>1v1 · 75 seconds</dd></div>
+          <div><dt>Combat</dt><dd>100 HP · 20 damage per hit</dd></div>
+          <div><dt>Inventory</dt><dd>3 slots · loot worth 10 / 25 / 50</dd></div>
+          <div><dt>Extraction</dt><dd>2 zones · opens at 30s · hold for 3s</dd></div>
+          <div><dt>Death</dt><dd>Unbanked loot becomes a collectible cache</dd></div>
+          <div><dt>Objective</dt><dd>Own extracted value / 150</dd></div>
+        </dl></div>
+      </div>
+    </section>
+    <section class="section shell" id="method">
+      <div class="section-heading"><p class="eyebrow">02 · METHOD</p><p class="section-copy">A low-frequency strategic Actor chooses goals. A shared visual CNN–GRU executor translates them into movement and combat actions.</p></div>
+      <figure class="method-card"><img src="assets/hierarchical/method.svg" alt="Hierarchical visual policy: style conditions the strategic Actor; difficulty conditions both layers; controls change without swapping weights"><figcaption>Fair-observation runtime · shared executor · persistent recurrent memory</figcaption></figure>
+      <div class="method-steps" aria-label="Training route"><span>Command Teacher + BC</span><b>→</b><span>Conservative executor PPO</span><b>→</b><span>Frozen-executor cross-play</span><b>→</b><span>Strategic responses</span><b>→</b><span>Conditional distillation</span></div>
+      <p class="fairness-note">The high Actor chooses search regions, engage/disengage, or either exit. It replans every eight low decisions, with earlier public-event replanning; the executor acts every four engine tics. Style is injected through bounded FiLM. Switching style preserves recurrent memory and does not swap checkpoints.</p>
+      <p class="fairness-note">Privileged state supplies training supervision and Critic targets only. Deployment uses first-person pixels, public own state and recurrent history. The showcased conditional high Actor is distilled from strategic policies and explicit preference priors; it is not evidence of an unconstrained best response.</p>
+    </section>
+    <section class="section shell" id="styles">
+      <div class="section-heading"><p class="eyebrow">03 · STYLES</p><p class="section-copy">Watch the first-person policy, not the opponent. Read applied preference, selected command and observed outcome as separate signals.</p></div>
+      <p class="fairness-note">Aggressive receives proactive combat demonstrations; Defensive favors securing carried value; Explorer favors continued search. Static cases illustrate these preferences, while the live-control clip shows one running policy receiving new inputs. Difficulty remains Hard in these examples; learned difficulty calibration is not yet demonstrated.</p>
+      <article class="video-card strong" style="max-width: 760px; margin: 28px auto 0;">
+        <div class="bot-heading"><div><h3>Live style + difficulty inputs</h3><p>Request → apply → act → extract</p></div></div>
+        <video controls muted playsinline preload="metadata" poster="assets/hierarchical/joint-controls.jpg" aria-label="Joint style and difficulty switching in one continuous episode"><source src="assets/hierarchical/joint-controls.mp4" type="video/mp4"></video>
+        <p class="causal-chain"><span>Acquire 50 value</span><b>→</b><span>change controls</span><b>→</b><span>extract</span></p>
+      </article>
+      <p class="fairness-note">This additional clip uses the same high-level weights with a new Hard-anchored difficulty executor; neither checkpoint is swapped during play. Requested and applied controls are shown separately. In 12 switching diagnostics, changed styles applied within 0.8s and low difficulty applied at the next decision. This demonstrates runtime control, not a benefit from switching: the difficulty response is not yet reliably monotonic.</p>
+    </section>
+    <section class="section shell" id="results">
+      <div class="section-heading"><p class="eyebrow">04 · RESULTS</p><p class="section-copy">Two strategic-response rounds and a shared-executor training window, evaluated as a general-sum empirical game.</p></div>
+      <figure class="method-card"><img src="assets/hierarchical/payoffs.png" alt="Two five-by-five matrices showing each role's own extracted payoff"><figcaption>48 games per role cell · Neutral / Hard · both roles scored after global settlement</figcaption></figure>
+      <div class="rules-card"><dl class="rules" aria-label="Independent deployment comparison">
+        <div><dt>Fixed strategy</dt><dd>Mean banked value 28.6 · positive banked 78.1%</dd></div>
+        <div><dt>Uniform population</dt><dd>Mean banked value 35.9 · positive banked 75.0%</dd></div>
+        <div><dt>Meta-strategy</dt><dd>Mean banked value 32.7 · positive banked 81.3%</dd></div>
+      </dl></div>
+      <p class="fairness-note">32 games per method across eight separate layouts, both roles and two repeats; each method faces the same sampled uniform-population opponents. All paired 95% layout-bootstrap payoff-difference intervals include zero. This comparison does not establish a reliable gain from meta-strategy selection.</p>
+      <p class="fairness-note">Changing the shared executor changes the game: all payoff cells were recomputed. The resulting restricted-game solution mixes strategies, with measured matrix regret zero. Across 200 layout-cluster bootstrap resamples, mixture weights vary substantially; the point solution is not a stable population ranking. Independent response validation did not establish a gain, and this is not a claim of global Nash convergence. Executor command-retention checks were mixed, so the new version remains a research candidate.</p>
+      <p class="fairness-note">Videos are selected explanatory cases. Their opponent protocols differ and they are not a controlled comparison of aggregate style performance.</p>
+    </section>
+  </main>
+  <footer class="site-footer"><span>BotColosseo · Research preview</span><a href="#top">Back to top ↑</a></footer>
+</body>
+</html>

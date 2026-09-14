@@ -1,0 +1,143 @@
+{
+  "status": "research preview, not a completed research-gate claim",
+  "clips": {
+    "aggressive": {
+      "video_sha256": "528cb046395f731bb228b858589a5aeeb76ba406009145b5e2c9fe4752ca0d5d",
+      "executor_sha256": "f0cf081d8dd606231f2cca23caa96a966d52d1aa2cc074786755cb37546007bb",
+      "strategy_sha256": "ca970ce043cb44f63b8ad7e46c13fa70c9b26e5b0c404ec60aefa58da70f1e24",
+      "report_sha256": "d368ff014d7049014b23700b521e6e8110b5f57fb004727fab9ebd8024fdf10f",
+      "seed": 97,
+      "role": "host",
+      "duration_seconds": 32.8,
+      "role_payoffs": [
+        0.5,
+        0.0
+      ],
+      "scope": "selected explanatory case, not an aggregate-performance sample"
+    },
+    "defensive": {
+      "video_sha256": "6ea18f01e6d569d4ee47047abf0ca6bd87ce2b78423394195d023fcb8de215c0",
+      "executor_sha256": "f0cf081d8dd606231f2cca23caa96a966d52d1aa2cc074786755cb37546007bb",
+      "strategy_sha256": "ca970ce043cb44f63b8ad7e46c13fa70c9b26e5b0c404ec60aefa58da70f1e24",
+      "report_sha256": "5152a378b0f90327160d5995f462c398c53b608bd8a27bf98794076f0d69054e",
+      "seed": 96,
+      "role": "host",
+      "duration_seconds": 37.6,
+      "role_payoffs": [
+        0.3333333333333333,
+        0.4
+      ],
+      "scope": "selected explanatory case, not an aggregate-performance sample"
+    },
+    "explorer": {
+      "video_sha256": "ad3895d197b4a9112a11b285a7c8c221994f51fc4ea4892c88e50c01b9884e77",
+      "executor_sha256": "f0cf081d8dd606231f2cca23caa96a966d52d1aa2cc074786755cb37546007bb",
+      "strategy_sha256": "ca970ce043cb44f63b8ad7e46c13fa70c9b26e5b0c404ec60aefa58da70f1e24",
+      "report_sha256": "fedd015391b200b5fdecfe46b7e8a27a79548268c874c21cb122c7eee9ee6e74",
+      "seed": 92,
+      "role": "opponent",
+      "duration_seconds": 32.8,
+      "role_payoffs": [
+        0.06666666666666667,
+        0.4
+      ],
+      "scope": "selected explanatory case, not an aggregate-performance sample"
+    },
+    "live": {
+      "video_sha256": "fafa6b9ad6184493a8de3438483183fb5b498698f0baf9e67c2f3ab4c7966e12",
+      "executor_sha256": "f0cf081d8dd606231f2cca23caa96a966d52d1aa2cc074786755cb37546007bb",
+      "strategy_sha256": "ca970ce043cb44f63b8ad7e46c13fa70c9b26e5b0c404ec60aefa58da70f1e24",
+      "report_sha256": "f3088a343d7054874c2669b12a317ee963fcfbfbfadcbba1b3bb100d737d99f9",
+      "seed": 96,
+      "role": "host",
+      "duration_seconds": 32.8,
+      "role_payoffs": [
+        0.3333333333333333,
+        0.06666666666666667
+      ],
+      "scope": "selected explanatory case, not an aggregate-performance sample"
+    },
+    "joint-controls": {
+      "video_sha256": "488ccc0284736d63afeb73289249246c3111c67eee0aef2088082ffc58683df2",
+      "executor_sha256": "f0431e2d958e350c1b509160b2e7f8a48a9893fb76fe58139eff42187bcd2445",
+      "strategy_sha256": "89e9b7f21b13a4cd6fb256d57e4ac1cba446ad195bf2409b9a4742c7061f2dfe",
+      "report_sha256": "0ba6e44398a9664d7a5d0f52880262481f5a70e735c2bb442c67893a7d68c345",
+      "seed": 96,
+      "role": "host",
+      "duration_seconds": 32.8,
+      "role_payoffs": [
+        0.3333333333333333,
+        0.06666666666666667
+      ],
+      "scope": "selected explanatory case, not an aggregate-performance sample"
+    }
+  },
+  "comparison": {
+    "methods": {
+      "fixed": {
+        "games": 32,
+        "mean_payoff": 0.190625,
+        "mean_banked": 28.59375,
+        "positive_banked_rate": 0.78125,
+        "role_mean_payoff": {
+          "host": 0.18333333333333332,
+          "opponent": 0.19791666666666669
+        }
+      },
+      "uniform": {
+        "games": 32,
+        "mean_payoff": 0.23958333333333331,
+        "mean_banked": 35.9375,
+        "positive_banked_rate": 0.75,
+        "role_mean_payoff": {
+          "host": 0.17708333333333334,
+          "opponent": 0.30208333333333337
+        }
+      },
+      "meta": {
+        "games": 32,
+        "mean_payoff": 0.21770833333333334,
+        "mean_banked": 32.65625,
+        "positive_banked_rate": 0.8125,
+        "role_mean_payoff": {
+          "host": 0.15000000000000002,
+          "opponent": 0.28541666666666665
+        }
+      }
+    },
+    "paired_differences": {
+      "uniform_minus_fixed": {
+        "mean_payoff_delta": 0.048958333333333326,
+        "layout_bootstrap_95_interval": [
+          -0.0072916666666666755,
+          0.10104166666666664
+        ]
+      },
+      "meta_minus_fixed": {
+        "mean_payoff_delta": 0.027083333333333324,
+        "layout_bootstrap_95_interval": [
+          -0.03437500000000001,
+          0.084375
+        ]
+      },
+      "meta_minus_uniform": {
+        "mean_payoff_delta": -0.021875000000000002,
+        "layout_bootstrap_95_interval": [
+          -0.06044270833333334,
+          0.02187499999999999
+        ]
+      }
+    },
+    "layout_clusters": 8,
+    "draws": 2000,
+    "scope": "Neutral/Hard vs common uniform opponents; not global exploitability",
+    "report_sha256": "15a99a65f26a0564f277789899d6f36f14ddb6a6479fbbcc2fd97366d921a1a8"
+  },
+  "runtime_controls": {
+    "games": 12,
+    "positive_banked_games": 10,
+    "style_delay_game_seconds": 0.8,
+    "low_difficulty_delay_decisions": 0,
+    "scope": "control application, not behavioral benefit or monotonic difficulty calibration"
+  }
+}
