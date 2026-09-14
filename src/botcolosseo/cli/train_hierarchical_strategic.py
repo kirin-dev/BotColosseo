@@ -19,6 +19,7 @@ from botcolosseo.agents.hierarchical_model import CommandExecutor, StrategicActo
 from botcolosseo.data.hierarchical_demonstrations import load_command_episode
 from botcolosseo.envs.synchronous_extraction import SynchronousExtractionEnv
 from botcolosseo.training.hierarchical_collection import collect_strategic_episode
+from botcolosseo.training.hierarchical_conditional_population import conditional_marginals
 from botcolosseo.training.hierarchical_protocol import (
     COMMAND_SCHEMA,
     ControlCondition,
@@ -38,6 +39,7 @@ def main():
     parser.add_argument("--opponent", type=Path)
     parser.add_argument("--population", type=Path, nargs="+")
     parser.add_argument("--solution", type=Path)
+    parser.add_argument("--condition-solutions", type=Path, nargs="+")
     parser.add_argument("--initial", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--steps", type=int, default=25000)
@@ -46,12 +48,25 @@ def main():
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--conditioned", action="store_true")
     args = parser.parse_args()
-    if args.conditioned and (not args.initial or not args.opponent or args.population):
+    conditional_population = bool(args.condition_solutions)
+    if conditional_population and (
+        not args.conditioned
+        or not args.population
+        or not args.initial
+        or args.solution
+        or args.opponent
+    ):
+        raise ValueError("Condition solutions require conditioned population and initial Actor")
+    if args.conditioned and (
+        not args.initial or (not args.opponent and not conditional_population)
+    ):
         raise ValueError(
             "Conditioned fine-tuning needs distilled initial and fixed opponent; "
             "no neutral meta-strategy reuse"
         )
-    if bool(args.population) != bool(args.solution) or (args.population and args.opponent):
+    if bool(args.population) != bool(args.solution or args.condition_solutions) or (
+        args.population and args.opponent
+    ):
         raise ValueError("Population needs a solution and excludes single-opponent mode")
     if args.steps <= 0:
         raise ValueError("Positive learner decision budget required")
@@ -104,9 +119,21 @@ def main():
     opponent.requires_grad_(False)
     opponents = [opponent]
     sigma = np.ones(1)
+    condition_targets = None
     if args.population:
-        solution = json.loads(args.solution.read_text())
-        require_neutral_matrix(solution["identity"])
+        solution_paths = args.condition_solutions or [args.solution]
+        solutions = [json.loads(path.read_text()) for path in solution_paths]
+        solution = solutions[0]
+        if conditional_population:
+            condition_targets = conditional_marginals(
+                solutions,
+                conditions,
+                executor=digest(args.executor),
+                population=[digest(path) for path in args.population],
+                learner_role=args.role,
+            )
+        else:
+            require_neutral_matrix(solution["identity"])
         if solution["identity"]["executor"] != digest(args.executor):
             raise ValueError("Solution belongs to another executor")
         opponent_role = "opponent" if args.role == "host" else "host"
@@ -128,6 +155,8 @@ def main():
             actor.requires_grad_(False)
             opponents.append(actor)
     wins, draws, games = (np.zeros(len(opponents)) for _ in range(3))
+    if conditional_population:
+        wins, draws, games = (np.zeros((len(conditions), len(opponents))) for _ in range(3))
     source_root = Path(__file__).parents[1]
     sources = [
         Path(__file__),
@@ -159,13 +188,21 @@ def main():
     if args.population:
         identity.update(
             {
-                "solution": digest(args.solution),
-                "sigma": sigma.tolist(),
+                "solution": [digest(p) for p in args.condition_solutions]
+                if conditional_population
+                else digest(args.solution),
+                "sigma": condition_targets.tolist() if conditional_population else sigma.tolist(),
                 "population": [digest(path) for path in args.population],
                 "response_budget": args.steps,
                 "curriculum": "0.7sigma-0.3pfsp-final25pure",
             }
         )
+        if conditional_population:
+            identity.update(
+                scope="conditional approximate population response; improvement unverified",
+                opponent="condition-indexed frozen population",
+                protocol="conditional-population-own-bank150-reference-v1",
+            )
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     steps = episode = 0
     if args.resume:
@@ -186,9 +223,20 @@ def main():
         # each layout a permanent style label. Existing neutral sequence is unchanged.
         layout = layouts[(episode // len(conditions)) % len(layouts)]
         condition = conditions[episode % len(conditions)]
+        condition_index = episode % len(conditions)
+        active_wins, active_draws, active_games = (
+            (array[condition_index] if conditional_population else array)
+            for array in (wins, draws, games)
+        )
+        active_sigma = condition_targets[condition_index] if conditional_population else sigma
         probabilities = (
             response_distribution(
-                sigma, wins, draws, games, completed_steps=steps, budget_steps=args.steps
+                active_sigma,
+                active_wins,
+                active_draws,
+                active_games,
+                completed_steps=steps,
+                budget_steps=args.steps,
             )
             if args.population
             else sigma
@@ -231,9 +279,9 @@ def main():
             reference_weight=0.1 if args.conditioned else 0,
         )
         own, other = report["payoffs"] if args.role == "host" else report["payoffs"][::-1]
-        games[selected] += 1
-        wins[selected] += own > other
-        draws[selected] += own == other
+        active_games[selected] += 1
+        active_wins[selected] += own > other
+        active_draws[selected] += own == other
         previous_steps = steps
         steps += report["learner_decisions"]
         episode += 1
