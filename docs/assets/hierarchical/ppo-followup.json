@@ -1,0 +1,42 @@
+{
+  "scope": "paired development diagnostic, not formal generalization or PSRO response improvement",
+  "training_decisions": 25241,
+  "training": "fixed-opponent conditional task PPO, frozen executor, reference KL weight 0.1",
+  "executor_sha256": "f0cf081d8dd606231f2cca23caa96a966d52d1aa2cc074786755cb37546007bb",
+  "before_strategy_sha256": "ca970ce043cb44f63b8ad7e46c13fa70c9b26e5b0c404ec60aefa58da70f1e24",
+  "after_strategy_sha256": "94acf7fe5526d3dd8c2c1f13244477b0d85784629971be4290b04486d6946522",
+  "opponent_sha256": "c19bf955d4649d815039975f4cf4a348e26d25c5b07c6270e1a3618c49660d15",
+  "paired_screen": {
+    "seeds": [96, 97, 98, 99],
+    "roles": ["host", "opponent"],
+    "styles": ["neutral", "aggressive", "defensive", "explorer"],
+    "difficulty": 1.0,
+    "opponent_condition": "Neutral/Hard",
+    "cases_per_model": 32,
+    "mean_bank_before": 29.21875,
+    "mean_bank_after": 38.4375,
+    "positive_bank_before": 29,
+    "positive_bank_after": 31,
+    "summary_sha256": "fac610317aaf407edacd12bb502e04fd709ec099e7a81a34b670bf6e8f55e48b"
+  },
+  "switching": {
+    "episodes": 4,
+    "positive_bank_episodes": 4,
+    "style_changes": 12,
+    "delay_game_seconds": 0.8,
+    "scope": "input application timing, not causal benefit from switching",
+    "report_sha256": "37620532e463d62bd3a5a93ed8961ab4ed615739187f44fb5a3de207c8096af5"
+  },
+  "video": {
+    "file": "ppo-live-style.mp4",
+    "sha256": "88f2b1a76e945b2185f22aad933d9aed55dd3a342f12b98624f59c698e4ee8b5",
+    "report_sha256": "0dbc2091aa94fc89a5ad631fad4bc602a3665daca7f2f0d1a61824a7c6603b3b",
+    "seed": 96,
+    "role": "host",
+    "duration_seconds": 32.8,
+    "banked_value": 75,
+    "pickup_seconds": [1.6, 20.114285714285714],
+    "extraction_start_seconds": 29.82857142857143,
+    "scope": "selected complete causal example, distinct from the original distilled-high clips"
+  }
+}
