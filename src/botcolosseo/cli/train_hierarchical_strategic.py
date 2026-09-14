@@ -19,7 +19,11 @@ from botcolosseo.agents.hierarchical_model import CommandExecutor, StrategicActo
 from botcolosseo.data.hierarchical_demonstrations import load_command_episode
 from botcolosseo.envs.synchronous_extraction import SynchronousExtractionEnv
 from botcolosseo.training.hierarchical_collection import collect_strategic_episode
-from botcolosseo.training.hierarchical_protocol import COMMAND_SCHEMA, ControlCondition
+from botcolosseo.training.hierarchical_protocol import (
+    COMMAND_SCHEMA,
+    ControlCondition,
+    require_neutral_matrix,
+)
 from botcolosseo.training.hierarchical_sampling import response_distribution
 from botcolosseo.training.hierarchical_strategic_ppo import update_strategic_ppo
 
@@ -102,6 +106,7 @@ def main():
     sigma = np.ones(1)
     if args.population:
         solution = json.loads(args.solution.read_text())
+        require_neutral_matrix(solution["identity"])
         if solution["identity"]["executor"] != digest(args.executor):
             raise ValueError("Solution belongs to another executor")
         opponent_role = "opponent" if args.role == "host" else "host"

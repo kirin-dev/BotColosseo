@@ -9,6 +9,7 @@ import numpy as np
 
 from botcolosseo.cli.train_hierarchical_strategic import digest
 from botcolosseo.training.hierarchical_game import solve_bimatrix
+from botcolosseo.training.hierarchical_protocol import matrix_condition
 
 
 def solve_report(report):
@@ -18,6 +19,7 @@ def solve_report(report):
         raise ValueError("Explicit canonical role axes required")
     a, b, counts = (np.asarray(report[key], dtype=float) for key in ("A", "B", "counts"))
     identity = report["identity"]
+    matrix_condition(identity)
     shape = tuple(
         len(identity.get(f"{role}_strategies", identity["strategies"]))
         for role in ("host", "opponent")

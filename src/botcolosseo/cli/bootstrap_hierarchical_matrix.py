@@ -9,6 +9,7 @@ import numpy as np
 from botcolosseo.cli.solve_hierarchical_matrix import solve_report
 from botcolosseo.cli.train_hierarchical_strategic import digest
 from botcolosseo.training.hierarchical_game import solve_bimatrix
+from botcolosseo.training.hierarchical_protocol import matrix_condition
 
 
 def cluster_cube(directory):
@@ -42,6 +43,7 @@ def cluster_cube(directory):
             or set(observed) != expected
             or len(observed) != len(expected)
             or ident["executor"] != identity["executor"]
+            or matrix_condition(ident) != matrix_condition(identity)
             or ident["first"] != strategies[i]
             or ident["second"] != strategies[j]
             or ident["seeds"] != seeds

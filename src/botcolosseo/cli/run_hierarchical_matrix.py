@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from botcolosseo.cli.train_hierarchical_strategic import digest
+from botcolosseo.training.hierarchical_protocol import ControlCondition
 
 
 def main():
@@ -22,7 +23,10 @@ def main():
     parser.add_argument("--host-indices", type=int, nargs="+")
     parser.add_argument("--opponent-indices", type=int, nargs="+")
     parser.add_argument("--reuse-directory", type=Path)
+    parser.add_argument("--condition", type=float, nargs=4, default=[0, 0, 0, 1],
+                        metavar=("A", "D", "E", "DIFFICULTY"))
     args = parser.parse_args()
+    condition = ControlCondition(*args.condition)
     if len(args.strategies) < 2 or len(set(args.strategies)) != len(args.strategies):
         raise ValueError("Need distinct strategy paths")
     rows = args.host_indices or list(range(len(args.strategies)))
@@ -39,6 +43,7 @@ def main():
         "strategies": [digest(path) for path in args.strategies],
         "seeds": args.seeds,
         "repeats": args.repeats,
+        "condition": list(condition.as_tuple()),
         "runner_source": digest(Path(__file__)),
         "pair_source": digest(Path(__file__).with_name("evaluate_hierarchical_pair.py")),
     }
@@ -78,6 +83,8 @@ def main():
                 args.devices[worker_index],
                 "--repeats",
                 str(args.repeats),
+                "--condition",
+                *map(str, condition.as_tuple()),
                 "--seeds",
                 *map(str, args.seeds),
             ]

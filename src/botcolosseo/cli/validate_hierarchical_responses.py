@@ -12,6 +12,7 @@ from pathlib import Path
 from botcolosseo.cli.train_hierarchical_strategic import digest
 from botcolosseo.evaluation.hierarchical_role_paths import role_paths
 from botcolosseo.evaluation.hierarchical_selection import screen_value
+from botcolosseo.training.hierarchical_protocol import require_neutral_matrix
 
 
 def main():
@@ -23,6 +24,7 @@ def main():
     parser.add_argument("--seeds", type=int, nargs="+", default=list(range(112, 120)))
     args = parser.parse_args()
     solution = json.loads((args.responses / "solution.json").read_text())
+    require_neutral_matrix(solution["identity"])
     populations = role_paths(solution["identity"], args.population)
     if solution["identity"]["strategies"] != [digest(path) for path in args.population]:
         raise ValueError("Population differs from solved game")
