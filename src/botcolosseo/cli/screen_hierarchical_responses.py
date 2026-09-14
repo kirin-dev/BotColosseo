@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 
 from botcolosseo.evaluation.hierarchical_role_paths import role_paths
+from botcolosseo.training.hierarchical_protocol import require_neutral_matrix
 
 
 def main():
@@ -21,6 +22,7 @@ def main():
     parser.add_argument("--seeds", type=int, nargs="+", default=[108, 109, 110, 111])
     args = parser.parse_args()
     solution = json.loads((args.responses / "solution.json").read_text())
+    require_neutral_matrix(solution["identity"])
     populations = role_paths(solution["identity"], args.population)
     if set(args.seeds) & set(solution["identity"]["seeds"]):
         raise ValueError("Screen layouts must be independent of initial matrix")

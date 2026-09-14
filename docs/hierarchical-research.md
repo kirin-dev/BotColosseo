@@ -55,6 +55,17 @@ are sampled before episodes; shared-executor changes require a new game identity
 Independent comparisons and layout-cluster bootstrap prevent a small matrix's
 zero regret from being mistaken for global convergence or reliable improvement.
 
+Cross-play accepts `--condition A D E DIFFICULTY` (default `0 0 0 1`). Both
+players use that fixed condition; it is bound into pair, matrix and solution
+identities. Different conditions cannot share resumed games or bootstrap cells.
+Existing Neutral-only orchestration/upgrade/comparison tools reject non-Neutral
+games. The strategic trainer additionally accepts `--conditioned
+--condition-solutions ... --population ... --initial ...`: supply one solved game
+for each of Neutral, A, D, E, AD, AE and DE. It trains one high Actor, uses the
+corresponding role marginal and separate per-condition opponent statistics, and
+retains the initial Actor with reference KL. This is a constrained approximate
+response; independent improvement still requires validation.
+
 Two response rounds and an executor-update experiment are implemented, but their
 independent results do not establish a reliable response/meta-strategy gain.
 Runtime style/difficulty inputs work in continuous episodes; a consistently

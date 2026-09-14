@@ -46,6 +46,19 @@ class ControlCondition:
         return self.aggressive, self.defensive, self.explorer, self.difficulty
 
 
+def matrix_condition(identity: dict) -> ControlCondition:
+    """Legacy empirical games were always Neutral/Hard, never unspecified."""
+    values = identity.get("condition", (0.0, 0.0, 0.0, 1.0))
+    if not isinstance(values, (tuple, list)) or len(values) != 4:
+        raise ValueError("Matrix condition requires A/D/E/difficulty")
+    return ControlCondition(*values)
+
+
+def require_neutral_matrix(identity: dict) -> None:
+    if matrix_condition(identity) != ControlCondition():
+        raise ValueError("This consumer requires a Neutral/Hard matrix")
+
+
 def should_replan(elapsed: int, *, public_event: bool = False) -> bool:
     """Called before a low-level action; episode termination is handled separately."""
     if elapsed < 0:

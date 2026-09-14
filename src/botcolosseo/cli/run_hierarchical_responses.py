@@ -13,6 +13,7 @@ import numpy as np
 
 from botcolosseo.cli.solve_hierarchical_matrix import solve_report
 from botcolosseo.cli.train_hierarchical_strategic import digest
+from botcolosseo.training.hierarchical_protocol import require_neutral_matrix
 
 
 def main():
@@ -34,6 +35,7 @@ def main():
         os.kill(args.wait_pid, 0)  # Missing producer is a failure, never fabricate a matrix.
         time.sleep(30)
     matrix = json.loads(args.matrix.read_text())
+    require_neutral_matrix(matrix["identity"])
     if matrix["identity"]["executor"] != digest(args.executor):
         raise ValueError("Matrix executor mismatch")
     if matrix["identity"]["strategies"] != [digest(path) for path in args.population]:

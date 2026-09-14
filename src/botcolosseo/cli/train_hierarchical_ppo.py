@@ -28,6 +28,7 @@ from botcolosseo.training.hierarchical_executor_population import (
     upgrade_pair,
 )
 from botcolosseo.training.hierarchical_ppo import update_command_ppo
+from botcolosseo.training.hierarchical_protocol import require_neutral_matrix
 from botcolosseo.training.hierarchical_rollout import collect_command_episode
 from botcolosseo.training.hierarchical_schedule import replay_index, training_context
 
@@ -66,6 +67,7 @@ def main() -> None:
     solution = None
     if args.population:
         solution = json.loads(args.solution.read_text())
+        require_neutral_matrix(solution["identity"])
         if solution["identity"]["executor"] != identity["ppo_initial"]:
             raise ValueError("Upgrade must start from the matrix executor")
         if not 0 <= solution["maximum_regret"] <= 1e-3:

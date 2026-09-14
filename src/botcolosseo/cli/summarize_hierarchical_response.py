@@ -9,6 +9,7 @@ import numpy as np
 from botcolosseo.cli.train_hierarchical_strategic import digest
 from botcolosseo.evaluation.hierarchical_response import response_gain
 from botcolosseo.evaluation.hierarchical_selection import screen_value
+from botcolosseo.training.hierarchical_protocol import require_neutral_matrix
 
 
 def main():
@@ -20,6 +21,7 @@ def main():
     if args.output.exists():
         raise FileExistsError("Preserve existing validation summary")
     solution = json.loads(args.solution.read_text())
+    require_neutral_matrix(solution["identity"])
     selection = json.loads((args.validation / "selection.json").read_text())
     results, hashes = {}, {}
     for role in ("host", "opponent"):

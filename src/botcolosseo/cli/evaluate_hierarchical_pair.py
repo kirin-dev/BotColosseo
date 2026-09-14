@@ -13,6 +13,7 @@ from botcolosseo.cli.train_hierarchical_strategic import digest
 from botcolosseo.data.hierarchical_demonstrations import load_command_episode
 from botcolosseo.envs.synchronous_extraction import SynchronousExtractionEnv
 from botcolosseo.training.hierarchical_collection import collect_strategic_episode
+from botcolosseo.training.hierarchical_protocol import ControlCondition
 
 
 def main():
@@ -23,7 +24,10 @@ def main():
     parser.add_argument("--repeats", type=int, default=2)
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--condition", type=float, nargs=4, default=[0, 0, 0, 1],
+                        metavar=("A", "D", "E", "DIFFICULTY"))
     args = parser.parse_args()
+    condition = ControlCondition(*args.condition)
     if args.repeats <= 0 or len(set(args.seeds)) != len(args.seeds):
         raise ValueError("Positive repeats and unique seeds required")
     torch.set_num_threads(2)
@@ -60,6 +64,9 @@ def main():
             )
         },
     }
+    identity["condition"] = list(condition.as_tuple())
+    if condition != ControlCondition():
+        identity["protocol"] = "fixed-condition-high-sample-low-argmax-own-bank150-v1"
     result = {"identity": identity, "complete": False, "cases": []}
     if args.output.exists():
         if not args.resume:
@@ -89,11 +96,19 @@ def main():
                 )
                 try:
                     _, report = collect_strategic_episode(
-                        env, controllers, model, learner_side=first_side, expected_scenario=scenario
+                        env, controllers, model, learner_side=first_side,
+                        expected_scenario=scenario, condition=condition
                     )
                 finally:
                     env.close()
                 payoffs = report["payoffs"]
+                observed = {
+                    (*step["style"], step["difficulty"], step["high_difficulty"])
+                    for step in report["timeline"]
+                }
+                expected = (*condition.as_tuple(), condition.difficulty)
+                if observed != {expected}:
+                    raise RuntimeError("Applied rollout condition differs from the matrix")
                 row = {
                     "seed": seed, "layout": seed % 128, "repeat": repeat,
                     "first_side": first_side, "host_payoff": payoffs[0],
@@ -101,6 +116,7 @@ def main():
                     "first_payoff": payoffs[0 if first_side == "host" else 1],
                     "second_payoff": payoffs[1 if first_side == "host" else 0],
                     "global_decisions": report["global_decisions"],
+                    "applied_condition": list(condition.as_tuple()),
                 }
                 result["cases"].append(row)
                 temporary = args.output.with_suffix(".tmp")

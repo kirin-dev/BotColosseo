@@ -15,6 +15,7 @@ from botcolosseo.data.hierarchical_demonstrations import load_command_episode
 from botcolosseo.envs.synchronous_extraction import SynchronousExtractionEnv
 from botcolosseo.evaluation.hierarchical_role_paths import role_paths
 from botcolosseo.training.hierarchical_collection import collect_strategic_episode
+from botcolosseo.training.hierarchical_protocol import require_neutral_matrix
 
 
 def sample_indices(seed, repeat, role, method, sizes, meta):
@@ -43,6 +44,7 @@ def main():
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
     solution = json.loads(args.solution.read_text())
+    require_neutral_matrix(solution["identity"])
     if args.repeats <= 0 or len(set(args.seeds)) != len(args.seeds):
         raise ValueError("Positive repeats and unique seeds required")
     if {s % 128 for s in args.seeds} & {s % 128 for s in solution["identity"]["seeds"]}:
