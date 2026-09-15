@@ -17,7 +17,9 @@ from botcolosseo.agents.hierarchical_controller import HierarchicalController
 from botcolosseo.agents.hierarchical_critic import StrategicActorCritic
 from botcolosseo.agents.hierarchical_model import CommandExecutor, StrategicActor
 from botcolosseo.data.hierarchical_demonstrations import load_command_episode
+from botcolosseo.demo.hierarchical_controls import ScheduledController
 from botcolosseo.envs.synchronous_extraction import SynchronousExtractionEnv
+from botcolosseo.evaluation.hierarchical_controls import summarize_control_trace
 from botcolosseo.training.hierarchical_collection import collect_strategic_episode
 from botcolosseo.training.hierarchical_conditional_population import conditional_marginals
 from botcolosseo.training.hierarchical_protocol import (
@@ -27,6 +29,7 @@ from botcolosseo.training.hierarchical_protocol import (
 )
 from botcolosseo.training.hierarchical_sampling import response_distribution
 from botcolosseo.training.hierarchical_strategic_ppo import update_strategic_ppo
+from botcolosseo.training.hierarchical_switch_curriculum import random_control_schedule
 
 
 def digest(path):
@@ -47,7 +50,10 @@ def main():
     parser.add_argument("--device", default="cuda:1")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--conditioned", action="store_true")
+    parser.add_argument("--switch-mode", choices=("style", "difficulty", "joint"))
     args = parser.parse_args()
+    if args.switch_mode and (not args.conditioned or not args.opponent or args.population):
+        raise ValueError("Switch training requires conditioned fixed-opponent mode")
     conditional_population = bool(args.condition_solutions)
     if conditional_population and (
         not args.conditioned
@@ -162,6 +168,8 @@ def main():
         Path(__file__),
         *source_root.glob("training/hierarchical_*.py"),
         *source_root.glob("agents/hierarchical_*.py"),
+        source_root / "demo/hierarchical_controls.py",
+        source_root / "evaluation/hierarchical_controls.py",
     ]
     identity = {
         "executor": digest(args.executor),
@@ -203,6 +211,13 @@ def main():
                 opponent="condition-indexed frozen population",
                 protocol="conditional-population-own-bank150-reference-v1",
             )
+    if args.switch_mode:
+        identity.update(
+            protocol="conditional-random-segments-own-bank150-reference-v1",
+            condition_scope="learner random segments; opponent fixed Neutral/Hard",
+            switch_mode=args.switch_mode,
+            switch_schedule=dict(seed_base=3701, min_segment=40, max_segment=100, horizon=657),
+        )
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     steps = episode = 0
     if args.resume:
@@ -253,6 +268,17 @@ def main():
             )
             for index, side in enumerate(("host", "opponent"))
         }
+        schedule = None
+        if args.switch_mode:
+            schedule = random_control_schedule(
+                seed=3701 + episode, mode=args.switch_mode, initial=condition
+            )
+            for index, side in enumerate(("host", "opponent")):
+                controllers[side] = ScheduledController(
+                    executor, model.actor if side == args.role else opponent,
+                    seed=1701 + 2 * episode + index,
+                    schedule=schedule if side == args.role else [(0, ControlCondition())],
+                )
         env = SynchronousExtractionEnv(
             config_path=Path(
                 "assets/scenarios/crystal_run_extraction_randomized/crystal_run_extraction_randomized.cfg"
@@ -271,6 +297,10 @@ def main():
             )
         finally:
             env.close()
+        if schedule is not None:
+            report["control_application"] = summarize_control_trace(
+                report["timeline"], [(time, value.as_tuple()) for time, value in schedule]
+            )
         update = update_strategic_ppo(
             model,
             optimizer,
@@ -312,6 +342,10 @@ def main():
             "session_steps": steps - initial_steps,
             "layout": layout,
             "condition": condition.as_tuple(),
+            "control_schedule": (
+                [(time, value.as_tuple()) for time, value in schedule]
+                if schedule is not None else None
+            ),
             "last_episode": {key: value for key, value in report.items() if key != "timeline"},
             "update": update,
             "complete": steps >= args.steps,

@@ -66,6 +66,16 @@ corresponding role marginal and separate per-condition opponent statistics, and
 retains the initial Actor with reference KL. This is a constrained approximate
 response; independent improvement still requires validation.
 
+For runtime-control fine-tuning, use `--conditioned --opponent ... --initial ...`
+with `--switch-mode style`, `difficulty`, or `joint`. The learner receives
+reproducible random 40–100-decision condition segments; the opponent remains
+Neutral/Hard. Both recurrent memories persist, and PPO uses the applied conditions
+saved during collection. Logs distinguish requested controls, application latency,
+and events not reached before termination. This fixed-opponent curriculum is
+separate from condition-indexed population response training; the CLI rejects
+combining the two. Interface correctness does not establish calibrated difficulty
+or better task performance.
+
 `evaluate_hierarchical_conditional_response` compares a candidate with the solved
 meta-policy using common sampled opponents, one learner role per run. It excludes
 training and matrix layouts; pass selection layouts through `--exclude-seeds`
