@@ -73,9 +73,14 @@ when running independent validation. `summarize_hierarchical_conditional_respons
 reports per-condition and equally weighted overall gains with paired layout-cluster
 intervals. These are sampled-mixture comparisons, not full-game exploitability.
 
-Two response rounds and an executor-update experiment are implemented, but their
-independent results do not establish a reliable response/meta-strategy gain.
+The Neutral reference route includes two response rounds and an executor-update
+experiment. A subsequent conditional window evaluated three shared-executor
+policies across seven conditions, trained one 100k-step response per role, and
+completed checkpoint selection followed by separate-layout validation. Neither
+conditional response established an independent gain over its target meta-policy;
+these candidates were not promoted to the showcase.
+
 Runtime style/difficulty inputs work in continuous episodes; a consistently
-monotonic difficulty ladder and population-wide conditional-response validation
-remain open. The style showcase is conditional distillation, not a claim that
-named styles emerged spontaneously from PSRO.
+monotonic difficulty ladder remains unverified. The first four showcase clips
+use conditional distillation, with a separately labeled task-PPO follow-up.
+Named styles are not claimed to emerge spontaneously from PSRO.
