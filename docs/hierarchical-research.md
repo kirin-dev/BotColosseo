@@ -66,6 +66,13 @@ corresponding role marginal and separate per-condition opponent statistics, and
 retains the initial Actor with reference KL. This is a constrained approximate
 response; independent improvement still requires validation.
 
+`evaluate_hierarchical_conditional_response` compares a candidate with the solved
+meta-policy using common sampled opponents, one learner role per run. It excludes
+training and matrix layouts; pass selection layouts through `--exclude-seeds`
+when running independent validation. `summarize_hierarchical_conditional_response`
+reports per-condition and equally weighted overall gains with paired layout-cluster
+intervals. These are sampled-mixture comparisons, not full-game exploitability.
+
 Two response rounds and an executor-update experiment are implemented, but their
 independent results do not establish a reliable response/meta-strategy gain.
 Runtime style/difficulty inputs work in continuous episodes; a consistently
