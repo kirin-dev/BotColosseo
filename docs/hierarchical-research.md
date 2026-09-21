@@ -94,3 +94,15 @@ Runtime style/difficulty inputs work in continuous episodes; a consistently
 monotonic difficulty ladder remains unverified. The first four showcase clips
 use conditional distillation, with a separately labeled task-PPO follow-up.
 Named styles are not claimed to emerge spontaneously from PSRO.
+
+### Local difficulty response
+
+A common-start search screen of the same frozen, Hard-anchored executor produced
+10/22, 14/22 and 16/22 applicable command successes at difficulty 0, 0.5 and 1.
+Each level schedules three search commands on four development layouts with both
+roles; all 24 corresponding initial frames and public scalar vectors match.
+Deaths remain failures, and the forced command runs for at most 120 decisions.
+This is a descriptive search-skill gradient, not evidence that full-game extraction
+or survival is monotonically ordered. No new model was trained for this screen.
+The [aggregate and source hashes](assets/hierarchical/search-difficulty.json)
+record per-command denominators and failure counts.
