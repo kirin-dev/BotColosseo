@@ -1,0 +1,34 @@
+{
+  "scope": "selected explanatory episode and small development screen; not calibrated difficulty or causal switching benefit",
+  "training": "Frozen executor; high-level PPO with reference KL; random-length style then difficulty segments",
+  "style_stage_decisions": 10040,
+  "difficulty_stage_decisions": 10078,
+  "executor_sha256": "f0431e2d958e350c1b509160b2e7f8a48a9893fb76fe58139eff42187bcd2445",
+  "strategy_sha256": "60a405859c282fdf34b7795ba3eae549bd55e5dbb69a89eea3c54708f5154754",
+  "opponent_sha256": "7c52eb008817986cc806d2373e81e5cb0681eb9c93e28b73ac76e08ba44209d9",
+  "selection": {
+    "cases_per_candidate": 8,
+    "layouts": [96, 97, 98, 99],
+    "roles": ["host", "opponent"],
+    "protocol": "fixed joint switching schedule; opponent Neutral/Hard",
+    "before_joint_mean_bank": 45.625,
+    "after_joint_mean_bank": 28.125,
+    "positive_bank_before": 8,
+    "positive_bank_after": 8,
+    "decision": "retain pre-joint candidate; no reliable improvement claim",
+    "before_report_sha256": "bdd71cf79bd4dda0141590084adcb4d9886a03594b554c8fbb420cee92f0c57c",
+    "after_report_sha256": "b4ef0ab3153299bf2d3c3f2c1a7be6dc1d5abe476e744df790264109590ac013"
+  },
+  "video": {
+    "file": "curriculum-joint-controls.mp4",
+    "sha256": "44b26ea623909423032d8ae9ed5d0b6f685d5dcfccbc081348111c3931d057a1",
+    "report_sha256": "8fb9fff19d36c05f9bba82d9b49f858788bb2a958bb00d8880557564555d43ef",
+    "seed": 96,
+    "role": "host",
+    "duration_seconds": 32.8,
+    "banked_value": 50,
+    "pickup_seconds": [1.6],
+    "extraction_start_seconds": 29.82857142857143,
+    "scope": "actual recorded outcome; screening trajectory is not an exact replay"
+  }
+}
