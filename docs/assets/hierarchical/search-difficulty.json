@@ -1,0 +1,24 @@
+{
+  "scope": "Descriptive common-start search skill screen; not full-task difficulty calibration or independent confirmation",
+  "protocol": "reset-single-search120-v1",
+  "executor_sha256": "f0431e2d958e350c1b509160b2e7f8a48a9893fb76fe58139eff42187bcd2445",
+  "scenario_sha256": "3f928c6606eaffae8a4a9ea829f9bea1b82d4f0b622db2acdcff6149d4c15024",
+  "layouts": [96, 97, 98, 99],
+  "roles": ["host", "opponent"],
+  "commands": ["SEARCH_NORTH", "SEARCH_CENTER", "SEARCH_SOUTH"],
+  "scheduled_trials_per_level": 24,
+  "applicable_trials_per_level": 22,
+  "matched_initial_frame_and_public_scalars": 24,
+  "inference": "same frozen executor; argmax actions; only difficulty input varies",
+  "levels": [
+    {"difficulty": 0, "successes": 10, "successes_by_command": [2, 7, 1], "applicable_by_command": [6, 8, 8], "deaths": 6, "budget_exhausted": 5, "source_sha256": "6559bdf48ece6df5aadb1e066570c9ba87b4b781bd792247c85aca1d59072218"},
+    {"difficulty": 0.5, "successes": 14, "successes_by_command": [3, 8, 3], "applicable_by_command": [6, 8, 8], "deaths": 1, "budget_exhausted": 6, "source_sha256": "c5ac6ddd1ccc8e02f4a65b2d1fea43588380edf0d5279444b016bcf25e37efb0"},
+    {"difficulty": 1, "successes": 16, "successes_by_command": [3, 8, 5], "applicable_by_command": [6, 8, 8], "deaths": 3, "budget_exhausted": 3, "source_sha256": "8d7e0e5e43680a3bc667eef5042ec578ad7817420c03e71352307d6c67e004ce"}
+  ],
+  "limitations": [
+    "Four development layouts; repeated roles and commands are not independent maps",
+    "A forced search command suppresses strategic replanning; this is not whole-policy performance",
+    "Deaths remain failures; deaths and timeouts are not ordered across difficulty",
+    "Matched initial observations do not guarantee identical multiplayer trajectories"
+  ]
+}
