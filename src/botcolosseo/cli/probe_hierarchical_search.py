@@ -29,7 +29,10 @@ def trial(
     oracle=False,
     corrections=None,
     teacher_demonstrations=False,
+    difficulty=1.0,
 ):
+    if not 0.0 <= difficulty <= 1.0:
+        raise ValueError("Difficulty must be finite and within [0,1]")
     if teacher_demonstrations and not oracle:
         raise ValueError("Teacher demonstrations require explicit oracle mode")
     if corrections is not None and (
@@ -39,6 +42,14 @@ def trial(
     rows = []
 
     def finish(result):
+        own = getattr(observations, side)
+        result.update(
+            final_health=float(own.health),
+            final_banked=float(own.banked_value),
+            terminated=bool(getattr(observations, "terminated", False)),
+            truncated=bool(getattr(observations, "truncated", False)),
+            difficulty=difficulty,
+        )
         if corrections is not None and rows:
             count = len(rows)
             arrays = {
@@ -50,7 +61,7 @@ def trial(
                 "valid": np.ones(count, dtype=np.bool_),
                 "episode_start": np.arange(count) == 0,
                 "command_start": np.arange(count) == 0,
-                "difficulty": np.ones(count, dtype=np.float32),
+                "difficulty": np.full(count, difficulty, dtype=np.float32),
                 "seed": np.asarray(seed),
                 "side": np.asarray(side),
                 "scenario_hash": np.asarray(scenario),
@@ -99,7 +110,7 @@ def trial(
         scorer.begin(command, env.privileged_state())
         result["applicable"] = scorer.act(env.privileged_state()).status == "executing"
         if not result["applicable"]:
-            return result
+            return finish(result)
         for t in range(120):
             obs = getattr(observations, side)
             if corrections is not None:
@@ -118,7 +129,7 @@ def trial(
                     torch.tensor([[obs.previous_action]], device=device),
                     torch.tensor([[float(t > 0)]], device=device),
                     torch.tensor([[int(command)]], device=device),
-                    torch.ones(1, 1, 1, device=device),
+                    torch.full((1, 1, 1), difficulty, device=device),
                     hidden,
                 )
                 hidden = output.hidden
@@ -142,12 +153,15 @@ def main():
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--device", default="cuda:0")
+    parser.add_argument("--difficulty", type=float, default=1.0)
     parser.add_argument("--oracle", action="store_true")
     parser.add_argument("--seeds", type=int, nargs="+", default=[96, 97, 98, 99])
     destinations = parser.add_mutually_exclusive_group()
     destinations.add_argument("--corrections-dir", type=Path)
     destinations.add_argument("--teacher-demonstrations-dir", type=Path)
     args = parser.parse_args()
+    if not 0.0 <= args.difficulty <= 1.0:
+        raise ValueError("Difficulty must be finite and within [0,1]")
     if args.output.exists():
         raise FileExistsError("Preserving existing search probe")
     torch.set_num_threads(2)
@@ -176,6 +190,7 @@ def main():
         checkpoint_sha256=hashlib.sha256(args.checkpoint.read_bytes()).hexdigest(),
         scenario_hash=scenario,
         protocol="reset-single-search120-v1",
+        difficulty=args.difficulty,
         cases=[],
         scope="skill trial, not full-episode task or payoff evidence",
     )
@@ -191,6 +206,7 @@ def main():
                     scenario=scenario,
                     device=args.device,
                     oracle=args.oracle,
+                    difficulty=args.difficulty,
                     corrections=None
                     if destination is None
                     else destination / f"{command.name}-{seed}-{side}.npz",
