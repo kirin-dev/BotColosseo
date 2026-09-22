@@ -76,7 +76,18 @@
       <p class="fairness-note">This additional clip uses the same high-level weights with a new Hard-anchored difficulty executor; neither checkpoint is swapped during play. Requested and applied controls are shown separately. In 12 switching diagnostics, changed styles applied within 0.8s and low difficulty applied at the next decision. This demonstrates runtime control, not a benefit from switching: the difficulty response is not yet reliably monotonic.</p>
     </section>
     <section class="section shell" id="results">
-      <div class="section-heading"><p class="eyebrow">04 · RESULTS</p><p class="section-copy">Two strategic-response rounds and a shared-executor training window, evaluated as a general-sum empirical game.</p></div>
+      <div class="section-heading"><p class="eyebrow">04 · RESULTS</p><p class="section-copy">Real-time controls, distinct learned preferences, and a measured task-value gradient.</p></div>
+      <p class="fairness-note"><strong>Same-model difficulty: full-task validation.</strong> One frozen hierarchical policy, three difficulty inputs, 64 games per level across eight development layouts, both roles and Neutral/Aggressive/Defensive/Explorer.</p>
+      <div class="rules-card"><dl class="rules" aria-label="Full-task difficulty development validation">
+        <div><dt>Easy · d = 0</dt><dd>Mean banked value 21.33 · positive banked 67.19%</dd></div>
+        <div><dt>Normal · d = 0.5</dt><dd>Mean banked value 32.34 · positive banked 81.25%</dd></div>
+        <div><dt>Hard · d = 1</dt><dd>Mean banked value 38.20 · positive banked 85.94%</dd></div>
+      </dl></div>
+      <p class="fairness-note">Aggregate banked value increases, with positive adjacent-level differences under paired layout bootstrap. Named-style command tendencies remain distinct. This is development evidence, not universal calibration: per-style returns are not all ordered, and extraction including empty-handed exits is 90.63% / 90.63% / 87.50%. <a href="assets/hierarchical/task-difficulty.json">Full counts, style breakdowns and intervals</a>.</p>
+      <p class="fairness-note"><strong>Controls in action.</strong> <a href="assets/hierarchical/curriculum-joint-controls.mp4">Pickup → change style and difficulty → extract 50 value (32.8s)</a>. Random-segment PPO keeps the executor frozen and recurrent memory intact. This is the selected candidate after style and difficulty training; the later joint-trained candidate was not selected. <a href="assets/hierarchical/runtime-followup.json">Model identities and selection evidence</a>.</p>
+      <p class="fairness-note">Videos are selected explanatory cases with different opponent protocols, not matched performance comparisons or proof that switching improves outcomes. PSRO response training and executor-update experiments are implemented; reliable response gains and formal executor promotion were not established.</p>
+      <details class="rules-card">
+        <summary>Population learning: results and limitations</summary>
       <figure class="method-card"><img src="assets/hierarchical/payoffs.png" alt="Two five-by-five matrices showing each role's own extracted payoff"><figcaption>48 games per role cell · Neutral / Hard · both roles scored after global settlement</figcaption></figure>
       <div class="rules-card"><dl class="rules" aria-label="Independent deployment comparison">
         <div><dt>Fixed strategy</dt><dd>Mean banked value 28.6 · positive banked 78.1%</dd></div>
@@ -85,17 +96,12 @@
       </dl></div>
       <p class="fairness-note">32 games per method across eight separate layouts, both roles and two repeats; each method faces the same sampled uniform-population opponents. All paired 95% layout-bootstrap payoff-difference intervals include zero. This comparison does not establish a reliable gain from meta-strategy selection.</p>
       <p class="fairness-note">Changing the shared executor changes the game: all payoff cells were recomputed. The resulting restricted-game solution mixes strategies, with measured matrix regret zero. Across 200 layout-cluster bootstrap resamples, mixture weights vary substantially; the point solution is not a stable population ranking. Independent response validation did not establish a gain, and this is not a claim of global Nash convergence. Executor command-retention checks were mixed, so the new version remains a research candidate.</p>
-      <p class="fairness-note">Videos are selected explanatory cases. Their opponent protocols differ and they are not a controlled comparison of aggregate style performance.</p>
-      <p class="fairness-note"><strong>Conditional PPO follow-up.</strong> A 25k-decision task fine-tune retained the observed style tendencies: in a paired 32-game development screen, mean banked value changed from 29.22 to 38.44 and positive-bank episodes from 29 to 31. This is a four-layout diagnostic, not a generalization claim. The executor stayed frozen and the distilled high Actor supplied a KL reference.</p>
-      <p class="fairness-note"><a href="assets/hierarchical/ppo-live-style.mp4">Watch the complete post-PPO control episode (32.8s)</a>: two pickups → live preference changes → extraction, banking 75 value. This is a newer high Actor than the first four videos, with the original Hard executor. Four switching diagnostics completed extraction and all 12 style changes applied within 0.8s; input timing does not prove that switching improved outcomes. <a href="assets/hierarchical/ppo-followup.json">Follow-up evidence</a>.</p>
-      <p class="fairness-note"><strong>Runtime-control curriculum.</strong> Short high-level PPO stages train on random-length style and difficulty segments while retaining recurrent memory and a frozen executor. <a href="assets/hierarchical/curriculum-joint-controls.mp4">Watch the complete control episode (32.8s)</a>: pickup → change style and difficulty → extract 50 value. This selected clip uses the candidate after the style and difficulty stages; the later joint-trained candidate was not selected because its development-screen mean payoff fell. It demonstrates continuous control, not calibrated difficulty or a proven benefit from switching. <a href="assets/hierarchical/runtime-followup.json">Episode and selection evidence</a>.</p>
-      <p class="fairness-note"><strong>Same-model difficulty: full-task validation.</strong> One frozen hierarchical policy, three difficulty inputs, 64 games per level across eight development layouts, both roles and Neutral/Aggressive/Defensive/Explorer.</p>
-      <div class="rules-card"><dl class="rules" aria-label="Full-task difficulty development validation">
-        <div><dt>Easy · d = 0</dt><dd>Mean banked value 21.33 · positive banked 67.19%</dd></div>
-        <div><dt>Normal · d = 0.5</dt><dd>Mean banked value 32.34 · positive banked 81.25%</dd></div>
-        <div><dt>Hard · d = 1</dt><dd>Mean banked value 38.20 · positive banked 85.94%</dd></div>
-      </dl></div>
-      <p class="fairness-note">Aggregate banked value increases, with positive adjacent-level differences under paired layout bootstrap. Named-style command tendencies remain distinct. This is development evidence, not universal calibration: per-style returns are not all ordered, and extraction including empty-handed exits is 90.63% / 90.63% / 87.50%. <a href="assets/hierarchical/task-difficulty.json">Full counts, style breakdowns and intervals</a>.</p>
+      </details>
+      <details class="rules-card">
+        <summary>Earlier conditional PPO follow-up</summary>
+        <p class="fairness-note">A 25k-decision task fine-tune changed mean banked value from 29.22 to 38.44 and positive-bank episodes from 29 to 31 in a paired 32-game, four-layout development screen. The executor stayed frozen with a distilled high-Actor KL reference; this is not generalization evidence.</p>
+        <p class="fairness-note"><a href="assets/hierarchical/ppo-live-style.mp4">Two pickups → live preference changes → extract 75 value (32.8s)</a>. This earlier candidate uses a different high Actor from the first four clips and the original Hard executor. Four switching diagnostics completed extraction; 12 style changes applied within 0.8s. <a href="assets/hierarchical/ppo-followup.json">Evidence and identities</a>.</p>
+      </details>
     </section>
   </main>
   <footer class="site-footer"><span>BotColosseo · Research preview</span><a href="#top">Back to top ↑</a></footer>
