@@ -1,0 +1,294 @@
+{
+  "scope": "Fixed development validation; not independent generalization or causal switching benefit",
+  "source_sha256": {
+    "reports/hierarchical/full-task-difficulty-0.json": "c939de8ec7ed75136406dbe48b7d8fb73c7336a3ea8988bc37a245a343a4519a",
+    "reports/hierarchical/full-task-difficulty-0.5.json": "5a4a5d3c07d27b082d9b2cfcb190cdf35ade52e2fc86c2abcecf92e135a52b97",
+    "reports/hierarchical/full-task-difficulty-1.json": "58895a4545f20be631a9a6c2b2c5dd3b239b62803361da6c95aef5c71e7087ca"
+  },
+  "identities": {
+    "executor": "f0431e2d958e350c1b509160b2e7f8a48a9893fb76fe58139eff42187bcd2445",
+    "strategy": "60a405859c282fdf34b7795ba3eae549bd55e5dbb69a89eea3c54708f5154754",
+    "opponent": "7c52eb008817986cc806d2373e81e5cb0681eb9c93e28b73ac76e08ba44209d9"
+  },
+  "layout_clusters": [
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111
+  ],
+  "levels": [
+    {
+      "difficulty": 0,
+      "overall": {
+        "cases": 64,
+        "mean_bank": 21.328125,
+        "positive_bank_rate": 0.671875,
+        "extracted_event_rate": 0.90625,
+        "mean_case_command_share": [
+          0.19057026664937446,
+          0.1738838571516684,
+          0.2064249779820624,
+          0.12258507848807909,
+          0.005345951897018971,
+          0.23840065222245904,
+          0.06278921560933753
+        ]
+      },
+      "styles": {
+        "aggressive": {
+          "cases": 16,
+          "mean_bank": 18.125,
+          "positive_bank_rate": 0.5625,
+          "extracted_event_rate": 0.9375,
+          "mean_case_command_share": [
+            0.08041158536585366,
+            0.12652439024390244,
+            0.20075372628726287,
+            0.4494834010840108,
+            0.01617547425474255,
+            0.022569444444444444,
+            0.10408197831978322
+          ]
+        },
+        "defensive": {
+          "cases": 16,
+          "mean_bank": 10,
+          "positive_bank_rate": 0.5625,
+          "extracted_event_rate": 0.8125,
+          "mean_case_command_share": [
+            0.09674728081740278,
+            0.0420386087306819,
+            0.06343157181571817,
+            0.007659717644473742,
+            0.001736111111111111,
+            0.7638270892844063,
+            0.024559620596205964
+          ]
+        },
+        "explorer": {
+          "cases": 16,
+          "mean_bank": 29.0625,
+          "positive_bank_rate": 0.75,
+          "extracted_event_rate": 0.875,
+          "mean_case_command_share": [
+            0.31884993947734647,
+            0.27210889885392453,
+            0.2929739150254234,
+            0.007615265297389815,
+            0,
+            0.06289422847108983,
+            0.04555775287482605
+          ]
+        },
+        "neutral": {
+          "cases": 16,
+          "mean_bank": 28.125,
+          "positive_bank_rate": 0.8125,
+          "extracted_event_rate": 1,
+          "mean_case_command_share": [
+            0.26627226093689516,
+            0.2548635307781649,
+            0.26854069879984516,
+            0.02558192992644212,
+            0.003472222222222222,
+            0.10431184668989543,
+            0.07695751064653503
+          ]
+        }
+      }
+    },
+    {
+      "difficulty": 0.5,
+      "overall": {
+        "cases": 64,
+        "mean_bank": 32.34375,
+        "positive_bank_rate": 0.8125,
+        "extracted_event_rate": 0.90625,
+        "mean_case_command_share": [
+          0.2278616910487555,
+          0.16922020622859038,
+          0.18447837075395876,
+          0.1154364986300962,
+          0.006482804119999242,
+          0.23119935594892047,
+          0.06532107326967954
+        ]
+      },
+      "styles": {
+        "aggressive": {
+          "cases": 16,
+          "mean_bank": 27.8125,
+          "positive_bank_rate": 0.75,
+          "extracted_event_rate": 0.8125,
+          "mean_case_command_share": [
+            0.08926359040688309,
+            0.13934934476093014,
+            0.1906547889779597,
+            0.42434399103606424,
+            0.02093460401387231,
+            0.01880466247844297,
+            0.1166490183258476
+          ]
+        },
+        "defensive": {
+          "cases": 16,
+          "mean_bank": 36.875,
+          "positive_bank_rate": 0.9375,
+          "extracted_event_rate": 0.9375,
+          "mean_case_command_share": [
+            0.12485678934285205,
+            0.023121612466124663,
+            0.035850374702726624,
+            0.006521002710027099,
+            0.00326050135501355,
+            0.7877107539346215,
+            0.01867896548863448
+          ]
+        },
+        "explorer": {
+          "cases": 16,
+          "mean_bank": 28.125,
+          "positive_bank_rate": 0.8125,
+          "extracted_event_rate": 1,
+          "mean_case_command_share": [
+            0.3733264514514514,
+            0.2725850850850851,
+            0.26800237737737737,
+            0.005208333333333333,
+            0,
+            0.025369119119119116,
+            0.05550863363363365
+          ]
+        },
+        "neutral": {
+          "cases": 16,
+          "mean_bank": 36.5625,
+          "positive_bank_rate": 0.75,
+          "extracted_event_rate": 0.875,
+          "mean_case_command_share": [
+            0.3239999329938354,
+            0.2418247826022216,
+            0.24340594195777127,
+            0.025672667440960126,
+            0.001736111111111111,
+            0.09291288826349801,
+            0.07044767563060246
+          ]
+        }
+      }
+    },
+    {
+      "difficulty": 1,
+      "overall": {
+        "cases": 64,
+        "mean_bank": 38.203125,
+        "positive_bank_rate": 0.859375,
+        "extracted_event_rate": 0.875,
+        "mean_case_command_share": [
+          0.24763044283408658,
+          0.1784430237122898,
+          0.1877352974089051,
+          0.11561961779234414,
+          0.0034744187190733243,
+          0.20835352404138596,
+          0.058743675491915025
+        ]
+      },
+      "styles": {
+        "aggressive": {
+          "cases": 16,
+          "mean_bank": 37.5,
+          "positive_bank_rate": 0.75,
+          "extracted_event_rate": 0.8125,
+          "mean_case_command_share": [
+            0.0998116884319147,
+            0.13573891954127032,
+            0.21040421199378997,
+            0.4316013452075311,
+            0.013897674876293297,
+            0.028245663750918887,
+            0.08030049619828182
+          ]
+        },
+        "defensive": {
+          "cases": 16,
+          "mean_bank": 30.3125,
+          "positive_bank_rate": 0.875,
+          "extracted_event_rate": 0.875,
+          "mean_case_command_share": [
+            0.161098175198785,
+            0.07300740418118468,
+            0.05665650406504065,
+            0.003224206349206349,
+            0,
+            0.6788287508561898,
+            0.027184959349593495
+          ]
+        },
+        "explorer": {
+          "cases": 16,
+          "mean_bank": 36.5625,
+          "positive_bank_rate": 0.875,
+          "extracted_event_rate": 0.875,
+          "mean_case_command_share": [
+            0.3936737804878049,
+            0.255420054200542,
+            0.24119241192411925,
+            0.005208333333333333,
+            0,
+            0.048907520325203256,
+            0.05559789972899729
+          ]
+        },
+        "neutral": {
+          "cases": 16,
+          "mean_bank": 48.4375,
+          "positive_bank_rate": 0.9375,
+          "extracted_event_rate": 0.9375,
+          "mean_case_command_share": [
+            0.3359381272178422,
+            0.24960571692616199,
+            0.2426880616526705,
+            0.02244458627930585,
+            0,
+            0.07743216123323182,
+            0.07189134669078752
+          ]
+        }
+      }
+    }
+  ],
+  "paired_bank_differences": [
+    {
+      "higher": 0.5,
+      "lower": 0,
+      "mean": 11.015625,
+      "layout_bootstrap_95_interval": [
+        2.10546875,
+        18.671875
+      ]
+    },
+    {
+      "higher": 1,
+      "lower": 0.5,
+      "mean": 5.859375,
+      "layout_bootstrap_95_interval": [
+        2.4218750000000004,
+        9.140625
+      ]
+    },
+    {
+      "higher": 1,
+      "lower": 0,
+      "mean": 16.875,
+      "layout_bootstrap_95_interval": [
+        6.796875,
+        25.00195312499999
+      ]
+    }
+  ]
+}
