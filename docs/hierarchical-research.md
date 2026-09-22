@@ -98,11 +98,13 @@ Named styles are not claimed to emerge spontaneously from PSRO.
 ### Local difficulty response
 
 A common-start search screen of the same frozen, Hard-anchored executor produced
-10/22, 14/22 and 16/22 applicable command successes at difficulty 0, 0.5 and 1.
+10/22, 12/22, 14/22, 17/22 and 16/22 applicable command successes at difficulty
+0, 0.25, 0.5, 0.75 and 1, including a follow-up of the two interpolation values.
 Each level schedules three search commands on four development layouts with both
 roles; all 24 corresponding initial frames and public scalar vectors match.
 Deaths remain failures, and the forced command runs for at most 120 decisions.
-This is a descriptive search-skill gradient, not evidence that full-game extraction
-or survival is monotonically ordered. No new model was trained for this screen.
+This is a descriptive search-skill trend, not strict monotonicity: difficulty 0.75
+exceeds 1 by one trial. It does not establish ordered full-game extraction or
+survival. No new model was trained or selected for this screen.
 The [aggregate and source hashes](assets/hierarchical/search-difficulty.json)
 record per-command denominators and failure counts.
