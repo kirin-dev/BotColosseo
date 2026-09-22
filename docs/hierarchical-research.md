@@ -97,6 +97,16 @@ Named styles are not claimed to emerge spontaneously from PSRO.
 
 ### Local difficulty response
 
+A separate full-task development validation keeps the same curriculum high Actor
+and Hard-anchored executor fixed: eight layouts, both roles and four styles yield
+64 games per difficulty. Mean banked value is 21.33 / 32.34 / 38.20 and positive-bank
+rate is 67.19% / 81.25% / 85.94% at 0 / 0.5 / 1. Paired layout-bootstrap intervals
+for adjacent-level banked-value differences are positive. Per-style returns and
+extraction-event rates are not all ordered; this does not establish universal or
+independently confirmed calibration. The [full-task summary](assets/hierarchical/task-difficulty.json)
+retains all style breakdowns, source hashes and intervals. No checkpoint was selected
+or trained using this follow-up.
+
 A common-start search screen of the same frozen, Hard-anchored executor produced
 10/22, 12/22, 14/22, 17/22 and 16/22 applicable command successes at difficulty
 0, 0.25, 0.5, 0.75 and 1, including a follow-up of the two interpolation values.
