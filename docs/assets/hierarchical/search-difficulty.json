@@ -12,10 +12,13 @@
   "inference": "same frozen executor; argmax actions; only difficulty input varies",
   "levels": [
     {"difficulty": 0, "successes": 10, "successes_by_command": [2, 7, 1], "applicable_by_command": [6, 8, 8], "deaths": 6, "budget_exhausted": 5, "source_sha256": "6559bdf48ece6df5aadb1e066570c9ba87b4b781bd792247c85aca1d59072218"},
+    {"difficulty": 0.25, "successes": 12, "successes_by_command": [2, 8, 2], "applicable_by_command": [6, 8, 8], "deaths": 2, "budget_exhausted": 7, "source_sha256": "3eb2ace680d61bf9c9b07ac77bf313d4b402540470c0865ced34aca8683c65fb"},
     {"difficulty": 0.5, "successes": 14, "successes_by_command": [3, 8, 3], "applicable_by_command": [6, 8, 8], "deaths": 1, "budget_exhausted": 6, "source_sha256": "c5ac6ddd1ccc8e02f4a65b2d1fea43588380edf0d5279444b016bcf25e37efb0"},
+    {"difficulty": 0.75, "successes": 17, "successes_by_command": [3, 8, 6], "applicable_by_command": [6, 8, 8], "deaths": 3, "budget_exhausted": 2, "source_sha256": "6a108d23f8e2d28905e9babbda741425897210676801215bbcbdf670f3a00623"},
     {"difficulty": 1, "successes": 16, "successes_by_command": [3, 8, 5], "applicable_by_command": [6, 8, 8], "deaths": 3, "budget_exhausted": 3, "source_sha256": "8d7e0e5e43680a3bc667eef5042ec578ad7817420c03e71352307d6c67e004ce"}
   ],
   "limitations": [
+    "Success is not strictly monotonic: difficulty 0.75 exceeds 1 by one trial",
     "Four development layouts; repeated roles and commands are not independent maps",
     "A forced search command suppresses strategic replanning; this is not whole-policy performance",
     "Deaths remain failures; deaths and timeouts are not ordered across difficulty",
