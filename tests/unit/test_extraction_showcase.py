@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import fields
+from unittest.mock import patch
 
+import cv2
 import numpy as np
+import pytest
 import torch
 
 from botcolosseo.agents.extraction_model import create_extraction_actor
@@ -53,11 +56,12 @@ def test_extraction_showcase_defaults_to_randomized_scenario() -> None:
     assert args.scenario_directory == "crystal_run_extraction_randomized"
 
 
-def test_extraction_showcase_frame_has_viewer_overlay_geometry() -> None:
+@pytest.mark.parametrize("ammo", [20, 40])
+def test_extraction_showcase_frame_has_viewer_overlay_geometry(ammo: int) -> None:
     observation = ExtractionActorObservation(
         frame=np.zeros((84, 84), dtype=np.uint8),
         health=80,
-        ammo=20,
+        ammo=ammo,
         carried_value=85,
         free_slots=0,
         minimum_slot_value=10,
@@ -104,15 +108,22 @@ def test_extraction_showcase_frame_has_viewer_overlay_geometry() -> None:
         engine_tic=1200,
     )
 
-    frame = compose_extraction_showcase_frame(
-        observation,
-        privileged=privileged,
-        protocol=protocol,
-        learner_side="host",
-        style="aggressive",
-        action=MacroAction.FORWARD_ATTACK,
-        event_label="HIT CONFIRMED -20 HP",
-    )
+    with patch.object(cv2, "putText", wraps=cv2.putText) as draw_text:
+        frame = compose_extraction_showcase_frame(
+            observation,
+            privileged=privileged,
+            protocol=protocol,
+            learner_side="host",
+            style="aggressive",
+            action=MacroAction.FORWARD_ATTACK,
+            event_label="HIT CONFIRMED -20 HP",
+        )
+
+    ammo_labels = [
+        call.args[1] for call in draw_text.call_args_list
+        if call.args[1].startswith("AMMO")
+    ]
+    assert ammo_labels == [f"AMMO LEFT  {ammo}"]
 
     assert frame.shape == (360, 640, 3)
     assert frame.dtype == np.uint8
