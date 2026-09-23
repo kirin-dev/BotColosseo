@@ -241,7 +241,7 @@ def compose_extraction_showcase_frame(
     )
     cv2.putText(
         canvas,
-        f"AMMO  {observation.ammo:.0f} / 30",
+        f"AMMO LEFT  {observation.ammo:.0f}",
         (490, 120),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.40,
