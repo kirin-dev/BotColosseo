@@ -92,7 +92,10 @@ these candidates were not promoted to the showcase.
 
 Runtime style/difficulty inputs work in continuous episodes; a consistently
 monotonic difficulty ladder remains unverified. The first four showcase clips
-use conditional distillation, with a separately labeled task-PPO follow-up.
+share the selected runtime-curriculum high Actor, anchored executor and frozen
+opponent. Static styles use Hard; the live clip varies both style and difficulty.
+They are selected cases, not matched performance comparisons. Earlier diagnostic
+clips remain separately labeled.
 Named styles are not claimed to emerge spontaneously from PSRO.
 
 ### Local difficulty response
