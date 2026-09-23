@@ -12,10 +12,19 @@ from botcolosseo.agents.hierarchical_critic import StrategicActorCritic
 from botcolosseo.agents.hierarchical_model import CommandExecutor, StrategicActor
 from botcolosseo.cli.train_hierarchical_strategic import digest
 from botcolosseo.data.hierarchical_demonstrations import load_command_episode
+from botcolosseo.demo.control_trace_audit import audit_control_report
 from botcolosseo.demo.hierarchical_controls import ScheduledController, control_schedule
 from botcolosseo.envs.synchronous_extraction import SynchronousExtractionEnv
 from botcolosseo.training.hierarchical_collection import collect_strategic_episode
 from botcolosseo.training.hierarchical_protocol import ControlCondition
+
+
+def finalize_report(result):
+    """Do not promote a runtime report to complete before its audit succeeds."""
+    candidate = dict(result, complete=True)
+    if "switch_mode" in result:
+        candidate["control_audit"] = audit_control_report(candidate)
+    result.update(candidate)
 
 
 class NeutralOpponent(HierarchicalController):
@@ -180,7 +189,7 @@ def main():
                 temporary.write_text(json.dumps(result, indent=2))
                 temporary.replace(args.output)
                 print(json.dumps(row), flush=True)
-    result["complete"] = True
+    finalize_report(result)
     temporary = args.output.with_suffix(".tmp")
     temporary.write_text(json.dumps(result, indent=2))
     temporary.replace(args.output)
