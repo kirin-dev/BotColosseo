@@ -1,0 +1,226 @@
+{
+  "scope": "Selected explanatory episodes, not representative performance samples",
+  "clips": {
+    "aggressive": {
+      "video": "curriculum-aggressive.mp4",
+      "video_sha256": "f48839ba24927b1a24e47ce1a9aded9ab49fc3aa400b975063cc9bbfc7def720",
+      "report_sha256": "258dc0e76434f3e371c3bec54b157d7489aac4e588411f8ae130acabaed19196",
+      "strategy": "60a405859c282fdf34b7795ba3eae549bd55e5dbb69a89eea3c54708f5154754",
+      "executor": "f0431e2d958e350c1b509160b2e7f8a48a9893fb76fe58139eff42187bcd2445",
+      "opponent": "7c52eb008817986cc806d2373e81e5cb0681eb9c93e28b73ac76e08ba44209d9",
+      "seed": 105,
+      "role": "opponent",
+      "seconds": 35.65714285714286,
+      "banked_value": 85,
+      "events": [
+        {
+          "seconds": 3.4285714285714284,
+          "text": "LOOT PICKED UP"
+        },
+        {
+          "seconds": 3.5428571428571427,
+          "text": "HIT CONFIRMED"
+        },
+        {
+          "seconds": 5.6,
+          "text": "HIT CONFIRMED"
+        },
+        {
+          "seconds": 5.828571428571428,
+          "text": "HIT CONFIRMED"
+        },
+        {
+          "seconds": 6.057142857142857,
+          "text": "HIT CONFIRMED"
+        },
+        {
+          "seconds": 6.285714285714286,
+          "text": "HIT CONFIRMED | ENEMY DOWN - CACHE"
+        },
+        {
+          "seconds": 14.4,
+          "text": "LOOT PICKED UP"
+        },
+        {
+          "seconds": 18.514285714285716,
+          "text": "LOOT PICKED UP"
+        },
+        {
+          "seconds": 32.68571428571428,
+          "text": "EXTRACTION STARTED - HOLD 3s"
+        },
+        {
+          "seconds": 35.65714285714286,
+          "text": "VALUE BANKED - EXTRACTION COMPLETE"
+        }
+      ],
+      "control_schedule": [
+        {
+          "decision": 0,
+          "condition": [
+            1,
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "display_edit": "Static HUD clarification: 30 = initial ammo; original gameplay and timing unchanged",
+      "original_video_sha256": "6a6dd77440c3960f37d3e8f4d261a81f30df9b6437d2bc82a4f40a8ecb80db03"
+    },
+    "defensive": {
+      "video": "curriculum-defensive.mp4",
+      "video_sha256": "9639d396d1ecb20cfc61234224fae74bf94099ab4d283207626281a6ed4f8b0e",
+      "report_sha256": "ab1291658fd38c9f9797143cfb04b875867c80aa629ccda54c53872fb9ece06c",
+      "strategy": "60a405859c282fdf34b7795ba3eae549bd55e5dbb69a89eea3c54708f5154754",
+      "executor": "f0431e2d958e350c1b509160b2e7f8a48a9893fb76fe58139eff42187bcd2445",
+      "opponent": "7c52eb008817986cc806d2373e81e5cb0681eb9c93e28b73ac76e08ba44209d9",
+      "seed": 111,
+      "role": "host",
+      "seconds": 34.51428571428571,
+      "banked_value": 50,
+      "events": [
+        {
+          "seconds": 19.085714285714285,
+          "text": "LOOT PICKED UP"
+        },
+        {
+          "seconds": 21.6,
+          "text": "LOOT PICKED UP"
+        },
+        {
+          "seconds": 31.542857142857144,
+          "text": "EXTRACTION STARTED - HOLD 3s"
+        },
+        {
+          "seconds": 34.51428571428571,
+          "text": "VALUE BANKED - EXTRACTION COMPLETE"
+        }
+      ],
+      "control_schedule": [
+        {
+          "decision": 0,
+          "condition": [
+            0,
+            1,
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    "explorer": {
+      "video": "curriculum-explorer.mp4",
+      "video_sha256": "f57bab55f630f5c9b8c36691bd93ad84e843d0cf7ee689c42dd38cd431bab902",
+      "report_sha256": "43204e3cae15d8fa1d0d9bb840006a1b86aea322a90cc1d530bb63130ded0670",
+      "strategy": "60a405859c282fdf34b7795ba3eae549bd55e5dbb69a89eea3c54708f5154754",
+      "executor": "f0431e2d958e350c1b509160b2e7f8a48a9893fb76fe58139eff42187bcd2445",
+      "opponent": "7c52eb008817986cc806d2373e81e5cb0681eb9c93e28b73ac76e08ba44209d9",
+      "seed": 107,
+      "role": "opponent",
+      "seconds": 32.8,
+      "banked_value": 85,
+      "events": [
+        {
+          "seconds": 1.7142857142857142,
+          "text": "LOOT PICKED UP"
+        },
+        {
+          "seconds": 4.8,
+          "text": "LOOT PICKED UP"
+        },
+        {
+          "seconds": 14.514285714285714,
+          "text": "LOOT PICKED UP"
+        },
+        {
+          "seconds": 29.82857142857143,
+          "text": "EXTRACTION STARTED - HOLD 3s"
+        },
+        {
+          "seconds": 32.8,
+          "text": "VALUE BANKED - EXTRACTION COMPLETE"
+        }
+      ],
+      "control_schedule": [
+        {
+          "decision": 0,
+          "condition": [
+            0,
+            0,
+            1,
+            1
+          ]
+        }
+      ]
+    },
+    "live": {
+      "video": "curriculum-live.mp4",
+      "video_sha256": "514e3f2babaabdd14e0c3e166af08490698dc0113ab2124029034a197a084f1f",
+      "report_sha256": "a4ced28c179aff91510a52a44d6283782f4fa33fd7d183b74e90b303a1de5b24",
+      "strategy": "60a405859c282fdf34b7795ba3eae549bd55e5dbb69a89eea3c54708f5154754",
+      "executor": "f0431e2d958e350c1b509160b2e7f8a48a9893fb76fe58139eff42187bcd2445",
+      "opponent": "7c52eb008817986cc806d2373e81e5cb0681eb9c93e28b73ac76e08ba44209d9",
+      "seed": 96,
+      "role": "host",
+      "seconds": 32.8,
+      "banked_value": 60,
+      "events": [
+        {
+          "seconds": 1.6,
+          "text": "LOOT PICKED UP"
+        },
+        {
+          "seconds": 17.02857142857143,
+          "text": "LOOT PICKED UP"
+        },
+        {
+          "seconds": 29.82857142857143,
+          "text": "EXTRACTION STARTED - HOLD 3s"
+        },
+        {
+          "seconds": 32.8,
+          "text": "VALUE BANKED - EXTRACTION COMPLETE"
+        }
+      ],
+      "control_schedule": [
+        {
+          "decision": 0,
+          "condition": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "decision": 81,
+          "condition": [
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "decision": 161,
+          "condition": [
+            0,
+            1,
+            0,
+            0.5
+          ]
+        },
+        {
+          "decision": 241,
+          "condition": [
+            0,
+            0,
+            1,
+            1
+          ]
+        }
+      ]
+    }
+  }
+}

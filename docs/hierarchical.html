@@ -22,27 +22,27 @@
     <section class="bot-showcase shell" aria-label="Same-model control and style case studies">
       <div class="video-grid">
         <article class="video-card strong">
-          <div class="bot-heading"><img src="assets/extraction/emotes/Strong.jpg" alt="" width="80" height="80"><div><h3>Live controls</h3><p>One checkpoint, changing style inputs</p></div></div>
-          <video controls muted playsinline preload="metadata" poster="assets/hierarchical/live.jpg" aria-label="Same-model style switching"><source src="assets/hierarchical/live.mp4" type="video/mp4"></video>
+          <div class="bot-heading"><img src="assets/extraction/emotes/Strong.jpg" alt="" width="80" height="80"><div><h3>Live controls</h3><p>One policy, changing style and difficulty</p></div></div>
+          <video controls muted playsinline preload="metadata" poster="assets/hierarchical/curriculum-live.jpg" aria-label="Same-model style and difficulty switching"><source src="assets/hierarchical/curriculum-live.mp4" type="video/mp4"></video>
           <p class="causal-chain"><span>Change preference</span><b>→</b><span>replan</span><b>→</b><span>retain memory</span></p>
         </article>
         <article class="video-card aggressive">
-          <div class="bot-heading"><img src="assets/extraction/emotes/Aggressive.jpg" alt="" width="80" height="80"><div><h3>Aggressive</h3><p>Combat conversion · scripted pursuit opponent</p></div></div>
-          <video controls muted playsinline preload="metadata" poster="assets/hierarchical/aggressive.jpg" aria-label="Aggressive case against scripted pursuit"><source src="assets/hierarchical/aggressive.mp4" type="video/mp4"></video>
-          <p class="causal-chain"><span>Engage</span><b>→</b><span>kill</span><b>→</b><span>loot cache</span><b>→</b><span>extract</span></p>
+          <div class="bot-heading"><img src="assets/extraction/emotes/Aggressive.jpg" alt="" width="80" height="80"><div><h3>Aggressive</h3><p>Engage, eliminate threat, continue looting</p></div></div>
+          <video controls muted playsinline preload="metadata" poster="assets/hierarchical/curriculum-aggressive.jpg" aria-label="Aggressive case against the shared frozen opponent"><source src="assets/hierarchical/curriculum-aggressive.mp4" type="video/mp4"></video>
+          <p class="causal-chain"><span>Engage</span><b>→</b><span>kill</span><b>→</b><span>search loot</span><b>→</b><span>extract</span></p>
         </article>
         <article class="video-card defensive">
           <div class="bot-heading"><img src="assets/extraction/emotes/Defensive.jpg" alt="" width="80" height="80"><div><h3>Defensive</h3><p>Prefer extraction after acquiring value</p></div></div>
-          <video controls muted playsinline preload="metadata" poster="assets/hierarchical/defensive.jpg" aria-label="Defensive extraction case"><source src="assets/hierarchical/defensive.mp4" type="video/mp4"></video>
+          <video controls muted playsinline preload="metadata" poster="assets/hierarchical/curriculum-defensive.jpg" aria-label="Defensive extraction case"><source src="assets/hierarchical/curriculum-defensive.mp4" type="video/mp4"></video>
           <p class="causal-chain"><span>Acquire loot</span><b>→</b><span>seek extraction</span><b>→</b><span>bank value</span></p>
         </article>
         <article class="video-card explorer">
           <div class="bot-heading"><img src="assets/extraction/emotes/Explorer.jpg" alt="" width="80" height="80"><div><h3>Explorer</h3><p>Continue useful search before extraction</p></div></div>
-          <video controls muted playsinline preload="metadata" poster="assets/hierarchical/explorer.jpg" aria-label="Explorer multiple-pickup case"><source src="assets/hierarchical/explorer.mp4" type="video/mp4"></video>
+          <video controls muted playsinline preload="metadata" poster="assets/hierarchical/curriculum-explorer.jpg" aria-label="Explorer multiple-pickup case"><source src="assets/hierarchical/curriculum-explorer.mp4" type="video/mp4"></video>
           <p class="causal-chain"><span>Search</span><b>→</b><span>three pickups</span><b>→</b><span>extract</span></p>
         </article>
       </div>
-      <p class="fairness-note">Selected first-person case studies, not average-performance samples. All four clips use the same high-level and executor checkpoints at Hard. Only the Aggressive clip uses a scripted pursuit opponent; the others face a frozen search-oriented policy. Viewer-only enemy telemetry is not an Actor input.</p>
+      <p class="fairness-note">Selected first-person case studies, not average-performance samples. All four clips use the same curriculum high Actor, anchored executor and frozen opponent. Static styles use Hard; Live controls changes both inputs without swapping weights. The Aggressive clip clarifies that 30 is initial ammunition, not capacity. Viewer-only enemy telemetry is not an Actor input. <a href="assets/hierarchical/curriculum-showcase.json">Clip identities and actual events</a>.</p>
     </section>
     <section class="section shell" id="scenario">
       <div class="section-heading"><p class="eyebrow">01 · SCENARIO</p><p class="section-copy">Search for randomized loot, choose whether to fight, and extract your own value. Killing the opponent is never required to leave.</p></div>
@@ -67,13 +67,13 @@
     </section>
     <section class="section shell" id="styles">
       <div class="section-heading"><p class="eyebrow">03 · STYLES</p><p class="section-copy">Watch the first-person policy, not the opponent. Read applied preference, selected command and observed outcome as separate signals.</p></div>
-      <p class="fairness-note">Aggressive receives proactive combat demonstrations; Defensive favors securing carried value; Explorer favors continued search. Static cases illustrate these preferences, while the live-control clip shows one running policy receiving new inputs. Difficulty remains Hard in these examples; learned difficulty calibration is not yet demonstrated.</p>
+      <p class="fairness-note">Aggressive receives proactive combat demonstrations; Defensive favors securing carried value; Explorer favors continued search. Static cases illustrate these preferences, while the live-control clip shows one running policy receiving new inputs. The three static styles use Hard. The live clip changes both controls; aggregate difficulty evidence and its limits appear below.</p>
       <article class="video-card strong" style="max-width: 760px; margin: 28px auto 0;">
         <div class="bot-heading"><div><h3>Live style + difficulty inputs</h3><p>Request → apply → act → extract</p></div></div>
         <video controls muted playsinline preload="metadata" poster="assets/hierarchical/joint-controls.jpg" aria-label="Joint style and difficulty switching in one continuous episode"><source src="assets/hierarchical/joint-controls.mp4" type="video/mp4"></video>
         <p class="causal-chain"><span>Acquire 50 value</span><b>→</b><span>change controls</span><b>→</b><span>extract</span></p>
       </article>
-      <p class="fairness-note">This additional clip uses the same high-level weights with a new Hard-anchored difficulty executor; neither checkpoint is swapped during play. Requested and applied controls are shown separately. In 12 switching diagnostics, changed styles applied within 0.8s and low difficulty applied at the next decision. This demonstrates runtime control, not a benefit from switching: the difficulty response is not yet reliably monotonic.</p>
+      <p class="fairness-note">This earlier diagnostic uses a previous high Actor with a Hard-anchored executor; it is not the four-grid candidate. Neither checkpoint is swapped during play. Requested and applied controls are shown separately. In 12 switching diagnostics, changed styles applied within 0.8s and low difficulty applied at the next decision. This demonstrates runtime control, not a benefit from switching: the difficulty response is not yet reliably monotonic.</p>
     </section>
     <section class="section shell" id="results">
       <div class="section-heading"><p class="eyebrow">04 · RESULTS</p><p class="section-copy">Real-time controls, distinct learned preferences, and a measured task-value gradient.</p></div>
@@ -84,8 +84,8 @@
         <div><dt>Hard · d = 1</dt><dd>Mean banked value 38.20 · positive banked 85.94%</dd></div>
       </dl></div>
       <p class="fairness-note">Aggregate banked value increases, with positive adjacent-level differences under paired layout bootstrap. Named-style command tendencies remain distinct. This is development evidence, not universal calibration: per-style returns are not all ordered, and extraction including empty-handed exits is 90.63% / 90.63% / 87.50%. <a href="assets/hierarchical/task-difficulty.json">Full counts, style breakdowns and intervals</a>.</p>
-      <p class="fairness-note"><strong>Controls in action.</strong> <a href="assets/hierarchical/curriculum-joint-controls.mp4">Pickup → change style and difficulty → extract 50 value (32.8s)</a>. Random-segment PPO keeps the executor frozen and recurrent memory intact. This is the selected candidate after style and difficulty training; the later joint-trained candidate was not selected. <a href="assets/hierarchical/runtime-followup.json">Model identities and selection evidence</a>.</p>
-      <p class="fairness-note">Videos are selected explanatory cases with different opponent protocols, not matched performance comparisons or proof that switching improves outcomes. PSRO response training and executor-update experiments are implemented; reliable response gains and formal executor promotion were not established.</p>
+      <p class="fairness-note"><strong>Controls in action.</strong> <a href="assets/hierarchical/curriculum-live.mp4">Pickup → change style and difficulty → extract 60 value (32.8s)</a>. Random-segment PPO keeps the executor frozen and recurrent memory intact. This is the selected candidate after style and difficulty training; the later joint-trained candidate was not selected. <a href="assets/hierarchical/curriculum-showcase.json">Recorded identities and events</a> · <a href="assets/hierarchical/runtime-followup.json">Training-stage selection evidence</a>.</p>
+      <p class="fairness-note">The four-grid videos share an opponent protocol, but are selected cases with different seeds and roles—not matched performance comparisons or proof that switching improves outcomes. PSRO response training and executor-update experiments are implemented; reliable response gains and formal executor promotion were not established.</p>
       <details class="rules-card">
         <summary>Population learning: results and limitations</summary>
       <figure class="method-card"><img src="assets/hierarchical/payoffs.png" alt="Two five-by-five matrices showing each role's own extracted payoff"><figcaption>48 games per role cell · Neutral / Hard · both roles scored after global settlement</figcaption></figure>
