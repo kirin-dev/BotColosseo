@@ -44,10 +44,10 @@
         </article>
       </div>
       <div class="capability-strip"><span>One shared policy</span><span>Real-time style + difficulty</span><span>No model swapping</span></div>
-      <p class="fairness-note">Watch the first-person bot. Selected cases share the same model weights and opponent; static styles use Hard. Enemy telemetry is viewer-only. <a href="assets/hierarchical/curriculum-showcase.json">Video evidence</a></p>
+      <p class="fairness-note">Selected first-person cases · enemy telemetry is viewer-only. <a href="assets/hierarchical/curriculum-showcase.json">Video evidence</a></p>
     </section>
     <section class="section shell" id="scenario">
-      <div class="section-heading"><p class="eyebrow">01 · SCENARIO</p><p class="section-copy">Search for randomized loot, choose whether to fight, and extract your own value. Killing the opponent is never required to leave.</p></div>
+      <div class="section-heading"><p class="eyebrow">01 · SCENARIO</p><p class="section-copy">Search for loot. Fight by choice. Extract your value.</p></div>
       <div class="scenario-layout">
         <figure class="map-card"><img src="assets/extraction/map.svg" alt="Fixed arena geometry with randomized loot anchors and two extraction zones"><figcaption>Fixed geometry · randomized loot placement</figcaption></figure>
         <div class="rules-card"><dl class="rules">
@@ -61,28 +61,27 @@
       </div>
     </section>
     <section class="section shell" id="method">
-      <div class="section-heading"><p class="eyebrow">02 · METHOD</p><p class="section-copy">A low-frequency strategic Actor chooses goals. A shared visual CNN–GRU executor translates them into movement and combat actions.</p></div>
-      <figure class="method-card"><img src="assets/hierarchical/method.svg" alt="Hierarchical visual policy: style conditions the strategic Actor; difficulty conditions both layers; controls change without swapping weights"><figcaption>Fair-observation runtime · shared executor · persistent recurrent memory</figcaption></figure>
+      <div class="section-heading"><p class="eyebrow">02 · METHOD</p><p class="section-copy">One policy: choose a goal, then execute it.</p></div>
+      <figure class="method-card"><img src="assets/hierarchical/method.svg" alt="Hierarchical visual policy: style conditions the strategic Actor; difficulty conditions both layers; controls change without swapping weights"></figure>
       <div class="explain-grid"><article><span class="mini-label">Observe</span><h3>First-person information</h3><p>Pixels, own public state and action history. No hidden enemy state.</p></article><article><span class="mini-label">Decide</span><h3>Choose a goal</h3><p>Style conditions the strategic Actor: search, engage, disengage or extract.</p></article><article><span class="mini-label">Act</span><h3>Execute with shared skills</h3><p>Difficulty conditions both layers. Control changes preserve recurrent memory.</p></article></div>
       <details class="evidence-panel"><summary>Training route &amp; observation boundary</summary><p>Command Teacher + BC → conservative executor PPO → frozen-executor cross-play and strategic responses → conditional distillation → random-segment style/difficulty PPO. The later joint-trained candidate was not selected.</p><p>The high Actor normally replans every eight low decisions; public events can trigger earlier replanning. The executor acts every four engine tics. Privileged state is used for training supervision and Critic targets, not deployment. Distillation includes explicit preference priors; this is not proof of an unconstrained best response.</p><a href="assets/hierarchical/runtime-followup.json">Training-stage evidence</a></details>
     </section>
     <section class="section shell" id="styles">
-      <div class="section-heading"><p class="eyebrow">03 · STYLES</p><p class="section-copy">Watch the first-person policy, not the opponent. Read applied preference, selected command and observed outcome as separate signals.</p></div>
+      <div class="section-heading"><p class="eyebrow">03 · STYLES</p><p class="section-copy">Change preferences during play, without changing models.</p></div>
       <div class="timeline-heading"><h3>One uninterrupted episode</h3><a href="assets/hierarchical/curriculum-live.mp4">Watch the 32.8s clip ↗</a></div>
       <ol class="control-timeline"><li><time>0.0s</time><strong>Neutral · Hard</strong><p>Search begins. First pickup at 1.6s.</p></li><li class="aggressive"><time>9.3s</time><strong>Aggressive · Easy</strong><p>New input requested. Engage command at 11.0s.</p></li><li class="defensive"><time>18.4s</time><strong>Defensive · Normal</strong><p>New input requested. Extract command at 26.5s.</p></li><li class="explorer"><time>27.5s</time><strong>Explorer · Hard</strong><p>New input requested. Extraction starts at 29.8s.</p></li></ol>
       <div class="episode-outcome"><strong>60 value banked</strong><span>Extraction complete at 32.8s · same weights throughout</span></div>
-      <p class="fairness-note">Times label requested inputs and subsequently recorded commands—not instant reactions or proof of causality. Both style and difficulty change in this clip; Explorer can still finish an extraction.</p>
+      <p class="fairness-note">Both controls change; the timeline shows sequence, not causality.</p>
     </section>
     <section class="section shell" id="results">
-      <div class="section-heading"><p class="eyebrow">04 · RESULTS</p><p class="section-copy">Real-time controls, distinct learned preferences, and a measured task-value gradient.</p></div>
+      <div class="section-heading"><p class="eyebrow">04 · RESULTS</p><p class="section-copy">One model. Distinct preferences. Adjustable difficulty.</p></div>
       <div class="result-charts">
         <figure class="result-chart"><span class="mini-label">01 / Difficulty</span><h3>Higher difficulty, more value</h3><p class="chart-subtitle">Mean banked value · 64 games per level</p>
           <div class="chart-scale"><span>0</span><span>25</span><span>50 value</span></div>
           <div class="bar-row"><span>Easy</span><span class="bar-track"><span class="bar-fill" style="--value:42.66%"></span></span><b>21.33</b></div>
           <div class="bar-row"><span>Normal</span><span class="bar-track"><span class="bar-fill" style="--value:64.68%"></span></span><b>32.34</b></div>
           <div class="bar-row"><span>Hard</span><span class="bar-track"><span class="bar-fill" style="--value:76.40%"></span></span><b>38.20</b></div>
-          <p class="chart-note">Positive-value episodes: 67.19% / 81.25% / 85.94%. Same frozen policy, eight development layouts, both roles and four style inputs.</p>
-          <figcaption>Aggregate trend only: individual styles are not uniformly ordered. <a href="assets/hierarchical/task-difficulty.json">Counts &amp; intervals ↗</a></figcaption>
+          <figcaption>Aggregate trend; not every style is monotonic. <a href="assets/hierarchical/task-difficulty.json">Counts &amp; intervals ↗</a></figcaption>
         </figure>
         <figure class="result-chart"><span class="mini-label">02 / Style</span><h3>Different behavioral preferences</h3><p class="chart-subtitle">Same early window · Hard · six switch orders</p>
           <div class="chart-legend"><span style="--tone:#ce4758">Aggressive</span><span style="--tone:#23816b">Defensive</span><span style="--tone:#a87419">Explorer</span></div>
@@ -96,13 +95,13 @@
 <div class="metric-group"><h4>Extraction commands</h4><div class="bar-row a"><span>Aggressive</span><span class="bar-track"><span class="bar-fill" style="--value:4.11%"></span></span><b>4.11%</b></div>
 <div class="bar-row d"><span>Defensive</span><span class="bar-track"><span class="bar-fill" style="--value:47.77%"></span></span><b>47.77%</b></div>
 <div class="bar-row e"><span>Explorer</span><span class="bar-track"><span class="bar-fill" style="--value:4.79%"></span></span><b>4.79%</b></div></div>
-          <figcaption>Decision-step occupancy, not kill or extraction success rates. <a href="assets/hierarchical/counterbalanced-styles.json">All phases &amp; outcomes ↗</a></figcaption>
+          <figcaption>Behavior occupancy, not success rates. <a href="assets/hierarchical/counterbalanced-styles.json">All phases &amp; outcomes ↗</a></figcaption>
         </figure>
       </div>
-      <p class="fairness-note">Development evidence, not independent generalization. The 96 switching episodes reuse 16 layout/role cases; matched seeds do not reproduce identical histories. Neither these charts nor the selected videos establish that switching improves returns.</p>
+      <p class="fairness-note">Development results; not proof of generalization or switching benefits.</p>
       <details class="evidence-panel"><summary>Evaluation protocol &amp; limitations</summary>
-        <p>Style bars use decisions 88–160 after the first switch. Repeated orders are averaged within a case, then across cases. Later phases include carryover and early-ending effects. The policy, executor, opponent and Hard difficulty are fixed across all six orders.</p>
-        <p>Difficulty results use 192 full games. Adjacent aggregate banked-value differences are positive under paired layout bootstrap; extraction including empty-handed exits is 90.63% / 90.63% / 87.50%. This is not universal difficulty calibration.</p>
+        <p>The 96 switching episodes reuse 16 layout/role cases; matched seeds do not reproduce identical histories. Style bars use decisions 88–160 after the first switch. Repeated orders are averaged within a case, then across cases. Later phases include carryover and early-ending effects. The policy, executor, opponent and Hard difficulty are fixed across all six orders.</p>
+        <p>Difficulty results use 192 full games over eight layouts, both roles and four styles with one frozen policy. Positive-value episodes: 67.19% / 81.25% / 85.94%. Adjacent aggregate banked-value differences are positive under paired layout bootstrap; extraction including empty-handed exits is 90.63% / 90.63% / 87.50%. This is not universal difficulty calibration.</p>
         <p>All four videos use one selected deployment combination, but different seeds and roles. The live clip changes both style and difficulty. Reliable PSRO response gains and formal executor promotion were not established. <a href="assets/hierarchical/curriculum-showcase.json">Clip identities</a> · <a href="assets/hierarchical/runtime-followup.json">Candidate selection</a></p>
       </details>
       <details class="rules-card">
