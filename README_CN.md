@@ -4,13 +4,25 @@
 
 [English](README.md)
 
-在一个紧凑型 1v1 搜打撤任务中，先训练具备任务能力的第一视角 ViZDoom Bot，
-再派生三种可辨识的学习型风格。
+在紧凑型 1v1 搜打撤任务中，以公平第一视角决策，通过同一套层级策略实时控制风格与难度。
 
-## [打开可交互展示页 →](https://kirin-dev.github.io/BotColosseo/)
+## [打开当前展示页 →](https://kirin-dev.github.io/BotColosseo/hierarchical.html)
 
-展示页包含四段可直接播放的视频、场景平面图、训练方法、风格判别方式和最相关
-的量化结果。
+四段视频展示同模型局内控制与三种风格，配套架构图和开发验证结果。
+
+### 当前发布：层级实时条件控制
+
+- 高层 GRU 选择七类目标，共享 CNN–GRU 执行器输出动作。
+- FiLM 注入风格和难度；局内切换不换权重、不重置记忆。
+- 192 局开发验证的 Easy / Normal / Hard 平均带出价值为 **21.33 / 32.34 / 38.20**，
+  不代表每种风格都严格单调。
+- 六种切换顺序共 96 局支持行为偏好差异，但复用 16 个布局/角色案例，不是独立泛化实验。
+
+本次发布代码与展示证据，不包含预训练权重，也不代表全部研究门通过。
+见[发布范围](docs/hierarchical-release.md)与[架构及代码入口](docs/hierarchical-research.md)。
+
+[原残差 Adapter 展示](https://kirin-dev.github.io/BotColosseo/)保留为早期基线。
+**下文 Strong/Adapter 指标属于该基线，不能混报为当前层级模型的结果。**
 
 ## 任务是什么？
 
