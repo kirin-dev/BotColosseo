@@ -101,3 +101,50 @@ def compare_executors(baseline: dict, candidate: dict) -> dict:
         "commands": commands,
         "scope": "paired descriptive screen; opportunities are policy-dependent; not promotion",
     }
+
+
+def decide_executor_promotion(comparison: dict, *, weak_commands: tuple[str, ...]) -> dict:
+    """Apply the specification's regression barrier to a paired comparison.
+
+    This is deliberately separate from ``compare_executors``: a descriptive
+    screen must not silently become a promotion decision. Every named weak
+    command must have a measurable baseline and candidate rate, while at least
+    one of them must improve. Extraction retention uses the same 5pp barrier.
+    """
+    if not weak_commands:
+        raise ValueError("At least one pre-specified weak command is required")
+    commands = comparison.get("commands", {})
+    missing = [
+        name for name in weak_commands
+        if name not in commands
+        or commands[name]["baseline_rate"] is None
+        or commands[name]["candidate_rate"] is None
+    ]
+    if missing:
+        return {"promote": False, "reason": "missing_comparable_weak_command", "commands": missing}
+    regressions = [
+        name for name, row in commands.items()
+        if row["baseline_rate"] is not None
+        and row["candidate_rate"] is not None
+        and row["rate_delta"] < -0.05 - 1e-9
+    ]
+    weak_improvements = [
+        name for name in weak_commands
+        if commands[name]["rate_delta"] > 0.0
+    ]
+    extraction_delta = comparison.get("extraction_rate_delta")
+    if extraction_delta is None or extraction_delta < -0.05 - 1e-9:
+        return {"promote": False, "reason": "extraction_regression", "regressions": regressions}
+    if regressions:
+        return {"promote": False, "reason": "command_regression", "regressions": regressions}
+    if not weak_improvements:
+        return {
+            "promote": False,
+            "reason": "no_weak_skill_improvement",
+            "weak_commands": list(weak_commands),
+        }
+    return {
+        "promote": True,
+        "reason": "regression_barrier_and_weak_skill_improvement",
+        "improved_weak_commands": weak_improvements,
+    }
