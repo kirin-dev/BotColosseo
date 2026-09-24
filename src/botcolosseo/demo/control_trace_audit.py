@@ -7,9 +7,10 @@ def audit_control_report(report):
     if not report.get("complete") or not report.get("cases"):
         raise ValueError("Complete nonempty report required")
     schedule = [(t, list(c.as_tuple())) for t, c in control_schedule(
-        report["switch_mode"], difficulty=report["difficulty"]
+        report["switch_mode"], difficulty=report["difficulty"],
+        style_order=report.get("style_order"),
     )]
-    if report["control_schedule"] != [[t, c] for t, c in schedule]:
+    if [[t, list(c)] for t, c in report["control_schedule"]] != [[t, c] for t, c in schedule]:
         raise ValueError("Schedule differs from declared protocol")
     seen = set()
     reached = applied = pending = 0

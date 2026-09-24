@@ -1,0 +1,1121 @@
+{
+  "identity": {
+    "executor": "f0431e2d958e350c1b509160b2e7f8a48a9893fb76fe58139eff42187bcd2445",
+    "strategy": "60a405859c282fdf34b7795ba3eae549bd55e5dbb69a89eea3c54708f5154754",
+    "opponent": "7c52eb008817986cc806d2373e81e5cb0681eb9c93e28b73ac76e08ba44209d9"
+  },
+  "episodes": 96,
+  "unique_cases": 16,
+  "unique_layouts": 8,
+  "pre_switch_prefix_identical": false,
+  "prefix_comparisons": [
+    {
+      "seed": 104,
+      "role": "host",
+      "order": [
+        "aggressive",
+        "explorer",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": true
+    },
+    {
+      "seed": 104,
+      "role": "opponent",
+      "order": [
+        "aggressive",
+        "explorer",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 105,
+      "role": "host",
+      "order": [
+        "aggressive",
+        "explorer",
+        "defensive"
+      ],
+      "action_differences": 3,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 105,
+      "role": "opponent",
+      "order": [
+        "aggressive",
+        "explorer",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 106,
+      "role": "host",
+      "order": [
+        "aggressive",
+        "explorer",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 106,
+      "role": "opponent",
+      "order": [
+        "aggressive",
+        "explorer",
+        "defensive"
+      ],
+      "action_differences": 34,
+      "command_differences": 9,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 107,
+      "role": "host",
+      "order": [
+        "aggressive",
+        "explorer",
+        "defensive"
+      ],
+      "action_differences": 2,
+      "command_differences": 8,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 107,
+      "role": "opponent",
+      "order": [
+        "aggressive",
+        "explorer",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 108,
+      "role": "host",
+      "order": [
+        "aggressive",
+        "explorer",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": true
+    },
+    {
+      "seed": 108,
+      "role": "opponent",
+      "order": [
+        "aggressive",
+        "explorer",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 109,
+      "role": "host",
+      "order": [
+        "aggressive",
+        "explorer",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 109,
+      "role": "opponent",
+      "order": [
+        "aggressive",
+        "explorer",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 110,
+      "role": "host",
+      "order": [
+        "aggressive",
+        "explorer",
+        "defensive"
+      ],
+      "action_differences": 26,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 110,
+      "role": "opponent",
+      "order": [
+        "aggressive",
+        "explorer",
+        "defensive"
+      ],
+      "action_differences": 55,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 111,
+      "role": "host",
+      "order": [
+        "aggressive",
+        "explorer",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": true
+    },
+    {
+      "seed": 111,
+      "role": "opponent",
+      "order": [
+        "aggressive",
+        "explorer",
+        "defensive"
+      ],
+      "action_differences": 55,
+      "command_differences": 16,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 104,
+      "role": "host",
+      "order": [
+        "defensive",
+        "aggressive",
+        "explorer"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 104,
+      "role": "opponent",
+      "order": [
+        "defensive",
+        "aggressive",
+        "explorer"
+      ],
+      "action_differences": 2,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 105,
+      "role": "host",
+      "order": [
+        "defensive",
+        "aggressive",
+        "explorer"
+      ],
+      "action_differences": 3,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 105,
+      "role": "opponent",
+      "order": [
+        "defensive",
+        "aggressive",
+        "explorer"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 106,
+      "role": "host",
+      "order": [
+        "defensive",
+        "aggressive",
+        "explorer"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 106,
+      "role": "opponent",
+      "order": [
+        "defensive",
+        "aggressive",
+        "explorer"
+      ],
+      "action_differences": 50,
+      "command_differences": 25,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 107,
+      "role": "host",
+      "order": [
+        "defensive",
+        "aggressive",
+        "explorer"
+      ],
+      "action_differences": 2,
+      "command_differences": 8,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 107,
+      "role": "opponent",
+      "order": [
+        "defensive",
+        "aggressive",
+        "explorer"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 108,
+      "role": "host",
+      "order": [
+        "defensive",
+        "aggressive",
+        "explorer"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": true
+    },
+    {
+      "seed": 108,
+      "role": "opponent",
+      "order": [
+        "defensive",
+        "aggressive",
+        "explorer"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 109,
+      "role": "host",
+      "order": [
+        "defensive",
+        "aggressive",
+        "explorer"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": true
+    },
+    {
+      "seed": 109,
+      "role": "opponent",
+      "order": [
+        "defensive",
+        "aggressive",
+        "explorer"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 110,
+      "role": "host",
+      "order": [
+        "defensive",
+        "aggressive",
+        "explorer"
+      ],
+      "action_differences": 26,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 110,
+      "role": "opponent",
+      "order": [
+        "defensive",
+        "aggressive",
+        "explorer"
+      ],
+      "action_differences": 55,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 111,
+      "role": "host",
+      "order": [
+        "defensive",
+        "aggressive",
+        "explorer"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": true
+    },
+    {
+      "seed": 111,
+      "role": "opponent",
+      "order": [
+        "defensive",
+        "aggressive",
+        "explorer"
+      ],
+      "action_differences": 55,
+      "command_differences": 16,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 104,
+      "role": "host",
+      "order": [
+        "defensive",
+        "explorer",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 104,
+      "role": "opponent",
+      "order": [
+        "defensive",
+        "explorer",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 105,
+      "role": "host",
+      "order": [
+        "defensive",
+        "explorer",
+        "aggressive"
+      ],
+      "action_differences": 35,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 105,
+      "role": "opponent",
+      "order": [
+        "defensive",
+        "explorer",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 106,
+      "role": "host",
+      "order": [
+        "defensive",
+        "explorer",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 106,
+      "role": "opponent",
+      "order": [
+        "defensive",
+        "explorer",
+        "aggressive"
+      ],
+      "action_differences": 34,
+      "command_differences": 9,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 107,
+      "role": "host",
+      "order": [
+        "defensive",
+        "explorer",
+        "aggressive"
+      ],
+      "action_differences": 2,
+      "command_differences": 8,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 107,
+      "role": "opponent",
+      "order": [
+        "defensive",
+        "explorer",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 108,
+      "role": "host",
+      "order": [
+        "defensive",
+        "explorer",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": true
+    },
+    {
+      "seed": 108,
+      "role": "opponent",
+      "order": [
+        "defensive",
+        "explorer",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 109,
+      "role": "host",
+      "order": [
+        "defensive",
+        "explorer",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": true
+    },
+    {
+      "seed": 109,
+      "role": "opponent",
+      "order": [
+        "defensive",
+        "explorer",
+        "aggressive"
+      ],
+      "action_differences": 8,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 110,
+      "role": "host",
+      "order": [
+        "defensive",
+        "explorer",
+        "aggressive"
+      ],
+      "action_differences": 26,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 110,
+      "role": "opponent",
+      "order": [
+        "defensive",
+        "explorer",
+        "aggressive"
+      ],
+      "action_differences": 66,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 111,
+      "role": "host",
+      "order": [
+        "defensive",
+        "explorer",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": true
+    },
+    {
+      "seed": 111,
+      "role": "opponent",
+      "order": [
+        "defensive",
+        "explorer",
+        "aggressive"
+      ],
+      "action_differences": 55,
+      "command_differences": 16,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 104,
+      "role": "host",
+      "order": [
+        "explorer",
+        "aggressive",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": true
+    },
+    {
+      "seed": 104,
+      "role": "opponent",
+      "order": [
+        "explorer",
+        "aggressive",
+        "defensive"
+      ],
+      "action_differences": 3,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 105,
+      "role": "host",
+      "order": [
+        "explorer",
+        "aggressive",
+        "defensive"
+      ],
+      "action_differences": 3,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 105,
+      "role": "opponent",
+      "order": [
+        "explorer",
+        "aggressive",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 106,
+      "role": "host",
+      "order": [
+        "explorer",
+        "aggressive",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 106,
+      "role": "opponent",
+      "order": [
+        "explorer",
+        "aggressive",
+        "defensive"
+      ],
+      "action_differences": 23,
+      "command_differences": 1,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 107,
+      "role": "host",
+      "order": [
+        "explorer",
+        "aggressive",
+        "defensive"
+      ],
+      "action_differences": 2,
+      "command_differences": 8,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 107,
+      "role": "opponent",
+      "order": [
+        "explorer",
+        "aggressive",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 108,
+      "role": "host",
+      "order": [
+        "explorer",
+        "aggressive",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 108,
+      "role": "opponent",
+      "order": [
+        "explorer",
+        "aggressive",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 109,
+      "role": "host",
+      "order": [
+        "explorer",
+        "aggressive",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 109,
+      "role": "opponent",
+      "order": [
+        "explorer",
+        "aggressive",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 110,
+      "role": "host",
+      "order": [
+        "explorer",
+        "aggressive",
+        "defensive"
+      ],
+      "action_differences": 27,
+      "command_differences": 1,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 110,
+      "role": "opponent",
+      "order": [
+        "explorer",
+        "aggressive",
+        "defensive"
+      ],
+      "action_differences": 54,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 111,
+      "role": "host",
+      "order": [
+        "explorer",
+        "aggressive",
+        "defensive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": true
+    },
+    {
+      "seed": 111,
+      "role": "opponent",
+      "order": [
+        "explorer",
+        "aggressive",
+        "defensive"
+      ],
+      "action_differences": 55,
+      "command_differences": 16,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 104,
+      "role": "host",
+      "order": [
+        "explorer",
+        "defensive",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": true
+    },
+    {
+      "seed": 104,
+      "role": "opponent",
+      "order": [
+        "explorer",
+        "defensive",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 105,
+      "role": "host",
+      "order": [
+        "explorer",
+        "defensive",
+        "aggressive"
+      ],
+      "action_differences": 2,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 105,
+      "role": "opponent",
+      "order": [
+        "explorer",
+        "defensive",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 106,
+      "role": "host",
+      "order": [
+        "explorer",
+        "defensive",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 106,
+      "role": "opponent",
+      "order": [
+        "explorer",
+        "defensive",
+        "aggressive"
+      ],
+      "action_differences": 34,
+      "command_differences": 9,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 107,
+      "role": "host",
+      "order": [
+        "explorer",
+        "defensive",
+        "aggressive"
+      ],
+      "action_differences": 2,
+      "command_differences": 8,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 107,
+      "role": "opponent",
+      "order": [
+        "explorer",
+        "defensive",
+        "aggressive"
+      ],
+      "action_differences": 55,
+      "command_differences": 33,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 108,
+      "role": "host",
+      "order": [
+        "explorer",
+        "defensive",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": true
+    },
+    {
+      "seed": 108,
+      "role": "opponent",
+      "order": [
+        "explorer",
+        "defensive",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 109,
+      "role": "host",
+      "order": [
+        "explorer",
+        "defensive",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": true
+    },
+    {
+      "seed": 109,
+      "role": "opponent",
+      "order": [
+        "explorer",
+        "defensive",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 110,
+      "role": "host",
+      "order": [
+        "explorer",
+        "defensive",
+        "aggressive"
+      ],
+      "action_differences": 26,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 110,
+      "role": "opponent",
+      "order": [
+        "explorer",
+        "defensive",
+        "aggressive"
+      ],
+      "action_differences": 55,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    },
+    {
+      "seed": 111,
+      "role": "host",
+      "order": [
+        "explorer",
+        "defensive",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": true
+    },
+    {
+      "seed": 111,
+      "role": "opponent",
+      "order": [
+        "explorer",
+        "defensive",
+        "aggressive"
+      ],
+      "action_differences": 0,
+      "command_differences": 0,
+      "exact_trace_equal": false
+    }
+  ],
+  "first_style_prefix_reproducible": false,
+  "windows": [
+    [
+      88,
+      161
+    ],
+    [
+      168,
+      241
+    ],
+    [
+      248,
+      321
+    ]
+  ],
+  "scope": "Matched seed/role development diagnostic, not exact state replay: inspect prefix differences. Later phases include carryover and survival effects. Not independent generalization, combat effectiveness, or a formal skill-retention gate.",
+  "phases": {
+    "phase_1_aggressive": {
+      "unique_cases": 16,
+      "windows": 32,
+      "short_windows": 0,
+      "attack_fraction": 0.08433219178082191,
+      "search_fraction": 0.7893835616438356,
+      "engage_fraction": 0.16952054794520546,
+      "extract_fraction": 0.0410958904109589,
+      "search_regions": 1.71875
+    },
+    "phase_2_defensive": {
+      "unique_cases": 16,
+      "windows": 32,
+      "short_windows": 0,
+      "attack_fraction": 0.0059931506849315065,
+      "search_fraction": 0.6716609589041096,
+      "engage_fraction": 0.0136986301369863,
+      "extract_fraction": 0.3146404109589041,
+      "search_regions": 1.78125
+    },
+    "phase_3_explorer": {
+      "unique_cases": 16,
+      "windows": 32,
+      "short_windows": 25,
+      "attack_fraction": 0,
+      "search_fraction": 0.6414876919167696,
+      "engage_fraction": 0,
+      "extract_fraction": 0.35851230808323037,
+      "search_regions": 1.4375
+    },
+    "phase_2_explorer": {
+      "unique_cases": 16,
+      "windows": 32,
+      "short_windows": 0,
+      "attack_fraction": 0.0025684931506849314,
+      "search_fraction": 0.9002568493150684,
+      "engage_fraction": 0.0136986301369863,
+      "extract_fraction": 0.0860445205479452,
+      "search_regions": 1.9375
+    },
+    "phase_3_defensive": {
+      "unique_cases": 16,
+      "windows": 32,
+      "short_windows": 27,
+      "attack_fraction": 0,
+      "search_fraction": 0.3065397787144363,
+      "engage_fraction": 0,
+      "extract_fraction": 0.6934602212855637,
+      "search_regions": 0.96875
+    },
+    "phase_1_defensive": {
+      "unique_cases": 16,
+      "windows": 32,
+      "short_windows": 0,
+      "attack_fraction": 0,
+      "search_fraction": 0.5222602739726028,
+      "engage_fraction": 0,
+      "extract_fraction": 0.4777397260273973,
+      "search_regions": 1.34375
+    },
+    "phase_2_aggressive": {
+      "unique_cases": 16,
+      "windows": 32,
+      "short_windows": 0,
+      "attack_fraction": 0.0017123287671232876,
+      "search_fraction": 0.8985445205479452,
+      "engage_fraction": 0.034674657534246575,
+      "extract_fraction": 0.06592465753424658,
+      "search_regions": 2.03125
+    },
+    "phase_3_aggressive": {
+      "unique_cases": 16,
+      "windows": 32,
+      "short_windows": 25,
+      "attack_fraction": 0.02246933736858872,
+      "search_fraction": 0.3710418670509961,
+      "engage_fraction": 0.10117164897179005,
+      "extract_fraction": 0.5153281945497463,
+      "search_regions": 1.15625
+    },
+    "phase_1_explorer": {
+      "unique_cases": 16,
+      "windows": 32,
+      "short_windows": 0,
+      "attack_fraction": 0.0021404109589041095,
+      "search_fraction": 0.952054794520548,
+      "engage_fraction": 0,
+      "extract_fraction": 0.04794520547945205,
+      "search_regions": 1.84375
+    }
+  },
+  "outcomes": {
+    "aggressive-defensive-explorer": {
+      "mean_banked_value": 46.875,
+      "positive_value_cases": 14,
+      "cases": 16
+    },
+    "aggressive-explorer-defensive": {
+      "mean_banked_value": 39.0625,
+      "positive_value_cases": 14,
+      "cases": 16
+    },
+    "defensive-aggressive-explorer": {
+      "mean_banked_value": 40.9375,
+      "positive_value_cases": 14,
+      "cases": 16
+    },
+    "defensive-explorer-aggressive": {
+      "mean_banked_value": 38.75,
+      "positive_value_cases": 14,
+      "cases": 16
+    },
+    "explorer-aggressive-defensive": {
+      "mean_banked_value": 39.6875,
+      "positive_value_cases": 14,
+      "cases": 16
+    },
+    "explorer-defensive-aggressive": {
+      "mean_banked_value": 45.9375,
+      "positive_value_cases": 15,
+      "cases": 16
+    }
+  },
+  "sources": {
+    "reports/hierarchical/selected-controls-style.json": "1fcd11d5fa5bdc6999334482a44cbea91cdb9ab59a01f1b586bf03090250a16c",
+    "reports/hierarchical/counterbalanced-style-aggressive-explorer-defensive.json": "f396b04bab8f9ece823a562b2c330152d9f4cbdd181e3e7323452d34992653e3",
+    "reports/hierarchical/counterbalanced-style-defensive-aggressive-explorer.json": "6a720fc85275aa317fec75d940bbef17214fc654dc379f1a6121313a037bb810",
+    "reports/hierarchical/counterbalanced-style-defensive-explorer-aggressive.json": "8dcb8a294d06d0727cdc9b8690c0bfa48de859212aa3cbe7839eb158cb43cd91",
+    "reports/hierarchical/counterbalanced-style-explorer-aggressive-defensive.json": "c07c1bdbfeed61ae309a6db99bbcac35322c40ca43107d2de1bb28abe816c7e3",
+    "reports/hierarchical/counterbalanced-style-explorer-defensive-aggressive.json": "f317c0bbe729b01d8492733e64d41d17d08ca4276abbb908ce90781dc410d139"
+  }
+}

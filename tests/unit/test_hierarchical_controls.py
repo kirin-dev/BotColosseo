@@ -5,6 +5,17 @@ from botcolosseo.demo.hierarchical_controls import ScheduledController, control_
 from botcolosseo.training.hierarchical_protocol import ControlCondition
 
 
+def test_counterbalanced_order_preserves_times_and_hard_difficulty():
+    from itertools import permutations
+
+    for order in permutations(("aggressive", "defensive", "explorer")):
+        schedule = control_schedule(style_order=order)
+        assert [t for t, _ in schedule] == [0, 81, 161, 241]
+        assert all(c.difficulty == 1 for _, c in schedule)
+        assert [getattr(c, name) for (_, c), name in
+                zip(schedule[1:], order, strict=True)] == [1, 1, 1]
+
+
 def test_runtime_schedule_retains_memory_and_respects_boundaries():
     torch.set_num_threads(1)
     neutral = ControlCondition()
