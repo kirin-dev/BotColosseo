@@ -4,17 +4,30 @@
 
 [中文说明](README_CN.md)
 
-One capable first-person ViZDoom Bot, three learned play styles, and one compact
-1v1 extraction task.
+Fair first-person game bots in a compact 1v1 extraction task, now with runtime
+style and difficulty inputs in one fixed hierarchical deployment policy.
 
-## [Open the interactive Showcase →](https://kirin-dev.github.io/BotColosseo/)
+## [Open the current Showcase →](https://kirin-dev.github.io/BotColosseo/hierarchical.html)
 
-Watch four directly playable videos, inspect the arena, understand the training
-flow, compare the styles, and read the most relevant capability evidence.
+Watch one policy switch controls during play, compare three learned preferences,
+and inspect the architecture and development results.
 
-For the separate hierarchical-policy research route, see the
-[runtime-control preview](https://kirin-dev.github.io/BotColosseo/hierarchical.html)
+### Current release: hierarchical runtime control
+
+- A high-level GRU chooses seven goals; a shared CNN–GRU executes actions.
+- FiLM conditions style and difficulty without swapping weights or resetting memory.
+- Across 192 development games, Easy / Normal / Hard mean banked value is
+  **21.33 / 32.34 / 38.20**; per-style monotonicity is not established.
+- A 96-episode, six-order diagnostic supports distinct behavior preferences;
+  these are 16 reused layout/role cases, not independent generalization evidence.
+
+This is a source-and-showcase release, not a pretrained-model package or a claim
+that all research gates passed. See the [release scope](docs/hierarchical-release.md)
 and [architecture / code guide](docs/hierarchical-research.md).
+
+The [original residual-adapter Showcase](https://kirin-dev.github.io/BotColosseo/)
+is retained as an earlier baseline. **The Strong/adapter results below belong to
+that baseline, not the current hierarchical policy.**
 
 ## What is the task?
 
