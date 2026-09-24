@@ -1,0 +1,57 @@
+/* Hierarchical preview only: leave the original showcase untouched. */
+.section-heading { display:block; text-align:center; margin-bottom:28px; }
+.section-heading .eyebrow { margin-bottom:16px; }
+.section-copy { max-width: 760px; margin-inline: auto; }
+.fairness-note { max-width: 900px; line-height: 1.65; }
+.capability-strip { display:flex; justify-content:center; flex-wrap:wrap; gap:12px 32px; margin:28px 0 12px; font-weight:650; color:#245e9a; }
+.capability-strip span::before { content:'✓'; margin-right:8px; }
+.explain-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; margin:28px 0; }
+.explain-grid article { padding:24px; background:#f7f9fc; border-radius:14px; }
+.mini-label { text-transform:uppercase; letter-spacing:.12em; font-size:12px; font-weight:700; color:#2868a5; }
+.explain-grid h3 { font-size:19px; margin:12px 0; }
+.explain-grid p,.control-timeline p { color:#606b79; font-size:15px; line-height:1.65; margin-bottom:0; }
+.evidence-panel { border-top:1px solid #dde4ec; padding:20px 0; color:#606b79; line-height:1.7; }
+.evidence-panel summary { cursor:pointer; color:#283545; font-weight:600; }
+.timeline-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px; }
+.timeline-heading h3 { margin:0; font-size:22px; }
+.control-timeline { list-style:none; padding:0; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
+.control-timeline li { --tone:#3678b8; border-top:3px solid var(--tone); background:#f8fafc; padding:20px; border-radius:0 0 12px 12px; }
+.control-timeline .aggressive { --tone:#ce4758; }
+.control-timeline .defensive { --tone:#23816b; }
+.control-timeline .explorer { --tone:#a87419; }
+.control-timeline time { display:block; font-size:26px; font-weight:700; color:var(--tone); margin-bottom:12px; }
+.control-timeline strong { font-size:16px; }
+.episode-outcome { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:12px 24px; padding:20px; margin:24px 0; background:#edf7f2; border-radius:12px; color:#22684e; }
+.episode-outcome strong { font-size:24px; }
+.result-charts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; gap:24px; }
+.result-chart { margin:0; padding:28px; border:1px solid #dfe6ef; border-radius:16px; background:white; }
+.result-chart h3 { margin:0 0 8px; font-size:22px; }
+.chart-subtitle,.chart-note { color:#606b79; font-size:14px; line-height:1.6; }
+.chart-scale { display:flex; justify-content:space-between; font-size:12px; color:#748092; margin:22px 70px 10px 84px; }
+.bar-row { display:grid; grid-template-columns:74px minmax(0,1fr) 60px; gap:10px; align-items:center; margin:14px 0; font-size:14px; }
+.bar-track { height:18px; background:#f0f3f7; border-radius:4px; overflow:hidden; }
+.bar-fill { display:block; height:100%; background:#347cbd; width:var(--value); border-radius:4px; }
+.bar-row b { font-variant-numeric:tabular-nums; text-align:right; font-size:13px; }
+.chart-legend { display:flex; flex-wrap:wrap; gap:10px 16px; font-size:12px; margin:16px 0; }
+.chart-legend span::before { content:''; display:inline-block; width:9px; height:9px; background:var(--tone); margin-right:6px; border-radius:2px; }
+.metric-group { margin:18px 0; }
+.metric-group h4 { font-size:14px; margin:0 0 8px; }
+.metric-group .bar-row { margin:5px 0; }
+.metric-group .bar-track { height:10px; }
+.bar-row.a .bar-fill { background:#ce4758; }
+.bar-row.d .bar-fill { background:#23816b; }
+.bar-row.e .bar-fill { background:#a87419; }
+@media(max-width:760px) {
+ .explain-grid,.result-charts { grid-template-columns:1fr; }
+ .control-timeline { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .timeline-heading { align-items:flex-start; flex-direction:column; }
+ .result-chart { padding:20px; }
+ .control-timeline li { padding:16px; }
+}
+@media(max-width:360px) {
+ .control-timeline { grid-template-columns:1fr; }
+ .site-header nav { flex-wrap:wrap; justify-content:flex-start; gap:10px 18px; }
+ .hero h1 { white-space:normal; }
+ .bar-row { grid-template-columns:70px minmax(0,1fr) 60px; gap:6px; font-size:13px; }
+ .chart-scale { margin-left:76px; margin-right:66px; }
+}
