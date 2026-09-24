@@ -34,7 +34,7 @@ search for loot → fight or disengage → manage inventory → extract → bank
 | Bot | Priority | Representative causal chain |
 |---|---|---|
 | **Strong** | balanced task capability | search → valuable loot → extract → bank |
-| **Aggressive** | useful combat conversion | repeated hits → kill → continue search → extract |
+| **Aggressive** | useful combat conversion | hit → kill → corpse cache → extract |
 | **Defensive** | preserve carried value under risk | stop pursuit → disengage → extract |
 | **Explorer** | useful route and loot diversity | search regions → upgrade backpack → extract |
 
@@ -97,7 +97,7 @@ See the [derived curve data](reports/extraction/training-curve.json).
 
 | Bot | Public evidence | What the selected video proves |
 |---|---|---|
-| Aggressive | Representative case | 5 hits → kill → continue search → 85-value extraction |
+| Aggressive | Representative case | 5 hits → kill → corpse cache → 100-value extraction |
 | Defensive | Representative case | carried-value disengagement → extraction, 0 kills |
 | Explorer | Representative case | 4 loot regions → backpack upgrade → 70-value extraction |
 

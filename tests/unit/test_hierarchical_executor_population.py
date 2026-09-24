@@ -8,7 +8,7 @@ from botcolosseo.training.hierarchical_executor_population import (
     FrozenCommandSelector,
     upgrade_pair,
 )
-from botcolosseo.training.hierarchical_protocol import ControlCondition
+from botcolosseo.training.hierarchical_protocol import Command, ControlCondition
 
 
 def test_upgrade_commands_match_deployment_on_identical_fair_history():
@@ -49,10 +49,11 @@ def test_population_upgrade_sampling_balances_source_for_each_learner_role():
 
 
 def comparison(**overrides):
-    commands = {
-        "SEARCH_NORTH": {"baseline_rate": .5, "candidate_rate": .6, "rate_delta": .1},
-        "ENGAGE": {"baseline_rate": .5, "candidate_rate": .5, "rate_delta": 0},
-    }
+    commands = {command.name: {
+        "baseline_rate": .5, "candidate_rate": .5, "rate_delta": 0,
+        "baseline_applicable": 20, "candidate_applicable": 20, "common_applicable": 20,
+    } for command in Command}
+    commands["SEARCH_NORTH"].update(candidate_rate=.6, rate_delta=.1)
     value = {"commands": commands, "extraction_rate_delta": 0.0}
     value.update(overrides)
     return value
@@ -60,7 +61,9 @@ def comparison(**overrides):
 
 def test_promotion_requires_retention_and_named_weak_skill_gain():
     decision = decide_executor_promotion(comparison(), weak_commands=("SEARCH_NORTH",))
-    assert decision["promote"]
+    assert decision["screening_passed"]
+    assert not decision["promote"]
+    assert decision["reason"] == "formal_promotion_evidence_missing"
     assert not decide_executor_promotion(
         comparison(extraction_rate_delta=-.051), weak_commands=("SEARCH_NORTH",)
     )["promote"]
@@ -68,16 +71,45 @@ def test_promotion_requires_retention_and_named_weak_skill_gain():
 
 
 def test_promotion_rejects_unmeasured_weak_command_and_regression():
-    missing = decide_executor_promotion(comparison(), weak_commands=("DISENGAGE",))
-    assert missing == {
-        "promote": False,
-        "reason": "missing_comparable_weak_command",
-        "commands": ["DISENGAGE"],
-    }
-    bad = comparison(
-        commands={"SEARCH_NORTH": {"baseline_rate": .8, "candidate_rate": .7, "rate_delta": -.1}}
-    )
+    data = comparison()
+    data["commands"]["DISENGAGE"]["candidate_rate"] = None
+    missing = decide_executor_promotion(data, weak_commands=("SEARCH_NORTH",))
+    assert not missing["promote"] and not missing["screening_passed"]
+    assert missing["commands"] == ["DISENGAGE"]
+    bad = comparison()
+    bad["commands"]["ENGAGE"].update(candidate_rate=.4, rate_delta=-.1)
     assert (
         decide_executor_promotion(bad, weak_commands=("SEARCH_NORTH",))["reason"]
         == "command_regression"
     )
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), -float("inf"), 2, True])
+def test_invalid_extraction_delta_rejected(value):
+    result = decide_executor_promotion(
+        comparison(extraction_rate_delta=value), weak_commands=("SEARCH_NORTH",)
+    )
+    assert not result["promote"] and not result["screening_passed"]
+
+
+@pytest.mark.parametrize("fault", ["missing", "nan", "inconsistent", "unpaired"])
+def test_other_command_cannot_evade_screen(fault):
+    data = comparison()
+    row = data["commands"]["ENGAGE"]
+    if fault == "missing":
+        del data["commands"]["ENGAGE"]
+    elif fault == "nan":
+        row["candidate_rate"] = float("nan")
+    elif fault == "inconsistent":
+        row.update(candidate_rate=0, rate_delta=0)
+    else:
+        row["common_applicable"] = 0
+    result = decide_executor_promotion(data, weak_commands=("SEARCH_NORTH",))
+    assert not result["promote"] and not result["screening_passed"]
+
+
+def test_only_one_command_cannot_pass():
+    data = comparison()
+    data["commands"] = {"SEARCH_NORTH": data["commands"]["SEARCH_NORTH"]}
+    result = decide_executor_promotion(data, weak_commands=("SEARCH_NORTH",))
+    assert not result["screening_passed"] and not result["promote"]
