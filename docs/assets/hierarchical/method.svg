@@ -18,11 +18,11 @@
   <text x="50" y="237">First-person pixels</text>
   <text class="small" x="50" y="261">Own state · action history</text>
   <rect class="box" x="475" y="38" width="280" height="100" style="stroke:#3488d4"/>
-  <text class="heading" x="495" y="70">Strategic Actor H_i</text>
+  <text class="heading" x="495" y="70">Strategic Actor · goals</text>
   <text x="495" y="96">GRU · command policy</text>
   <text class="small" x="495" y="120">Replan every 8 low decisions*</text>
   <rect class="box" x="475" y="206" width="280" height="104" style="stroke:#3488d4"/>
-  <text class="heading" x="495" y="238">Shared executor L_v</text>
+  <text class="heading" x="495" y="238">Shared executor · act</text>
   <text x="495" y="264">CNN–GRU · action policy</text>
   <text class="small" x="495" y="288">One decision per 4 engine tics</text>
   <rect class="box" x="900" y="221" width="185" height="72"/>
@@ -34,7 +34,7 @@
   <text class="small" x="265" y="119">Explorer · combinations</text>
   <rect class="box" x="30" y="332" width="230" height="66" style="fill:#f3f8fe"/>
   <text class="heading" x="50" y="361">Difficulty input</text>
-  <text class="small" x="50" y="384">FiLM · calibration in progress</text>
+  <text class="small" x="50" y="384">Easy → Hard · both layers</text>
   <path class="flow" d="M260 232H475"/>
   <path class="flow" d="M615 138V206"/>
   <text class="small" x="628" y="174">Command</text>
@@ -48,5 +48,5 @@
   <path class="control" d="M260 365H445V116H475"/>
   <path class="control" d="M445 365H615V310"/>
   <text class="small" x="672" y="363">Change controls, keep model weights and memory.</text>
-  <text class="small" x="475" y="407">*Public events may trigger earlier replanning. Strategy identity i is selected before the episode.</text>
+  <text class="small" x="475" y="407">*Public events may trigger earlier replanning. Weights stay fixed during play.</text>
 </svg>
