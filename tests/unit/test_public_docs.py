@@ -99,7 +99,7 @@ def test_chinese_readme_preserves_pending_and_test_boundaries() -> None:
 
 
 def test_pages_scopes_metrics_and_matches_showcase_evidence() -> None:
-    page = Path("docs/index.html").read_text(encoding="utf-8")
+    page = Path("docs/adapter.html").read_text(encoding="utf-8")
 
     assert "four scripted opponent styles × paired learner sides" in page
     assert "240 validation episodes and 120 heldout episodes" in page
@@ -107,3 +107,12 @@ def test_pages_scopes_metrics_and_matches_showcase_evidence() -> None:
     assert "corpse cache → 100 value" in page
     assert "backpack upgrade → 70 value" in page
     assert "corpse cache → 85 value" not in page
+
+
+def test_root_showcase_serves_current_hierarchical_release() -> None:
+    page = Path("docs/index.html").read_text(encoding="utf-8")
+    assert page == Path("docs/hierarchical.html").read_text(encoding="utf-8")
+    assert "hierarchical.css" in page
+    assert "curriculum-live.mp4" in page
+    assert "counterbalanced-styles.json" in page
+    assert "Runtime control showcase" in page

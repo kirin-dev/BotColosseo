@@ -1,6 +1,6 @@
 # Hierarchical control research
 
-[Watch the released showcase](https://kirin-dev.github.io/BotColosseo/hierarchical.html).
+[Watch the released showcase](https://kirin-dev.github.io/BotColosseo/).
 See the [release scope and evidence](hierarchical-release.md). This is the current
 hierarchical route; the original residual-adapter Showcase remains a separate baseline.
 
