@@ -18,6 +18,7 @@ import pytest
         "botcolosseo.cli.build_extraction_training_curve",
         "botcolosseo.cli.select_randomized_strong_1m",
         "botcolosseo.cli.evaluate_extraction_teacher",
+        "botcolosseo.cli.decide_hierarchical_executor_promotion",
     ),
 )
 def test_v3_cli_modules_expose_executable_help(module: str) -> None:
