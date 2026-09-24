@@ -1,5 +1,6 @@
 """Descriptive command diagnostics, not independent skill-gate evidence."""
 
+import math
 from statistics import mean
 
 from botcolosseo.training.hierarchical_protocol import Command
@@ -104,47 +105,61 @@ def compare_executors(baseline: dict, candidate: dict) -> dict:
 
 
 def decide_executor_promotion(comparison: dict, *, weak_commands: tuple[str, ...]) -> dict:
-    """Apply the specification's regression barrier to a paired comparison.
+    """Screen descriptive rates; these inputs can never authorize promotion.
 
-    This is deliberately separate from ``compare_executors``: a descriptive
-    screen must not silently become a promotion decision. Every named weak
-    command must have a measurable baseline and candidate rate, while at least
-    one of them must improve. Extraction retention uses the same 5pp barrier.
+    Formal promotion also needs adequate evaluation coverage and full high-level
+    regression evidence, neither of which a fixed-command comparison provides.
+    Keep the legacy function name and ``promote`` field for callers, but separate
+    a numerical screen pass from the unavailable formal decision.
     """
-    if not weak_commands:
-        raise ValueError("At least one pre-specified weak command is required")
+    names = {command.name for command in Command}
+    if (not weak_commands or len(set(weak_commands)) != len(weak_commands)
+            or not set(weak_commands) <= names):
+        raise ValueError("Need unique known pre-specified weak commands")
+
+    def rejected(reason, **details):
+        return {"promote": False, "screening_passed": False, "reason": reason, **details}
+
+    def finite(value):
+        return (isinstance(value, (int, float))
+                and not isinstance(value, bool) and math.isfinite(value))
+
     commands = comparison.get("commands", {})
-    missing = [
-        name for name in weak_commands
-        if name not in commands
-        or commands[name]["baseline_rate"] is None
-        or commands[name]["candidate_rate"] is None
-    ]
+    missing = sorted(names - commands.keys())
+    missing += sorted(name for name in names & commands.keys() if any(
+        commands[name].get(key) is None for key in ("baseline_rate", "candidate_rate", "rate_delta")
+    ))
     if missing:
-        return {"promote": False, "reason": "missing_comparable_weak_command", "commands": missing}
-    regressions = [
-        name for name, row in commands.items()
-        if row["baseline_rate"] is not None
-        and row["candidate_rate"] is not None
-        and row["rate_delta"] < -0.05 - 1e-9
-    ]
-    weak_improvements = [
-        name for name in weak_commands
-        if commands[name]["rate_delta"] > 0.0
-    ]
+        return rejected("missing_comparable_command", commands=missing)
+    deltas = {}
+    for name in sorted(names):
+        row = commands[name]
+        old, new, delta = (row[key] for key in ("baseline_rate", "candidate_rate", "rate_delta"))
+        if (not all(finite(v) for v in (old, new, delta))
+                or not 0 <= old <= 1 or not 0 <= new <= 1
+                or not math.isclose(delta, new - old, abs_tol=1e-9, rel_tol=0)):
+            return rejected("invalid_command_rates", command=name)
+        counts = [row.get(k) for k in
+                  ("baseline_applicable", "candidate_applicable", "common_applicable")]
+        if (any(type(n) is not int or n <= 0 for n in counts)
+                or counts[2] > min(counts[:2])):
+            return rejected("missing_comparable_opportunities", command=name)
+        deltas[name] = new - old
     extraction_delta = comparison.get("extraction_rate_delta")
-    if extraction_delta is None or extraction_delta < -0.05 - 1e-9:
-        return {"promote": False, "reason": "extraction_regression", "regressions": regressions}
+    if not finite(extraction_delta) or not -1 <= extraction_delta <= 1:
+        return rejected("invalid_extraction_delta")
+    if extraction_delta < -0.05 - 1e-9:
+        return rejected("extraction_regression")
+    regressions = sorted(name for name, delta in deltas.items() if delta < -0.05 - 1e-9)
     if regressions:
-        return {"promote": False, "reason": "command_regression", "regressions": regressions}
+        return rejected("command_regression", regressions=regressions)
+    weak_improvements = [name for name in weak_commands if deltas[name] > 0]
     if not weak_improvements:
-        return {
-            "promote": False,
-            "reason": "no_weak_skill_improvement",
-            "weak_commands": list(weak_commands),
-        }
+        return rejected("no_weak_skill_improvement", weak_commands=list(weak_commands))
     return {
-        "promote": True,
-        "reason": "regression_barrier_and_weak_skill_improvement",
+        "promote": False,
+        "screening_passed": True,
+        "reason": "formal_promotion_evidence_missing",
+        "missing_evidence": ["sample_adequacy", "full_high_level_regression"],
         "improved_weak_commands": weak_improvements,
     }
