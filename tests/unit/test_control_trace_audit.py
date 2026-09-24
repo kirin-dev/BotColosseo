@@ -28,6 +28,13 @@ def test_valid_boundaries():
         "pending_at_episode_end": 0, "max_delay": 7}
 
 
+def test_live_tuple_schedule_and_serialized_schedule_have_same_audit():
+    data = report()
+    expected = audit_control_report(data)
+    data["control_schedule"] = [(t, tuple(c)) for t, c in data["control_schedule"]]
+    assert audit_control_report(data) == expected
+
+
 def test_finalization_persists_audit_only_after_success():
     data = report()
     data["complete"] = False

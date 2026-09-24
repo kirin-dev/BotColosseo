@@ -61,10 +61,16 @@ def main():
     parser.add_argument("--device", default="cpu")
     parser.add_argument("--switch", action="store_true")
     parser.add_argument("--switch-mode", choices=("style", "difficulty", "joint"), default="style")
+    parser.add_argument("--style-order", nargs=3, choices=("aggressive", "defensive", "explorer"))
     parser.add_argument("--difficulty", type=float, default=1.0)
     parser.add_argument("--compositions", action="store_true")
     parser.add_argument("--only-style", choices=("neutral", "aggressive", "defensive", "explorer"))
     args = parser.parse_args()
+    if args.style_order and not args.switch:
+        raise ValueError("Style order requires switching")
+    schedule = control_schedule(
+        args.switch_mode, difficulty=args.difficulty, style_order=args.style_order
+    )
     ControlCondition(difficulty=args.difficulty)
     if args.switch_mode != "style" and not args.switch:
         raise ValueError("A switch mode requires --switch")
@@ -126,9 +132,11 @@ def main():
         conditions = {"switch": ControlCondition(difficulty=args.difficulty)}
         result["scope"] = "same-checkpoint runtime control diagnostic; fixed Neutral/Hard opponent"
         result["switch_mode"] = args.switch_mode
+        if args.style_order:
+            result["style_order"] = args.style_order
         result["control_schedule"] = [
             (t, c.as_tuple())
-            for t, c in control_schedule(args.switch_mode, difficulty=args.difficulty)
+            for t, c in schedule
         ]
         result["switch_decisions"] = [0, 81, 161, 241]
     elif args.compositions:
@@ -150,7 +158,7 @@ def main():
                         low,
                         actors[0],
                         seed=1701 + 100 * seed + (role == "opponent"),
-                        schedule=control_schedule(args.switch_mode, difficulty=args.difficulty),
+                        schedule=schedule,
                     )
                 env = SynchronousExtractionEnv(
                     config_path=Path(

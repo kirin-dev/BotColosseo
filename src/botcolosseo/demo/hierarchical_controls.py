@@ -4,11 +4,16 @@ from botcolosseo.agents.hierarchical_controller import HierarchicalController
 from botcolosseo.training.hierarchical_protocol import ControlCondition
 
 
-def control_schedule(mode="style", *, difficulty=1.0):
+def control_schedule(mode="style", *, difficulty=1.0, style_order=None):
     """Predeclared independent or joint controls; no state-dependent override."""
     if mode not in ("style", "difficulty", "joint"):
         raise ValueError("Unknown control schedule mode")
     styles = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
+    if style_order is not None:
+        names = {"aggressive": (1, 0, 0), "defensive": (0, 1, 0), "explorer": (0, 0, 1)}
+        if mode != "style" or len(style_order) != 3 or set(style_order) != set(names):
+            raise ValueError("Style order requires each A/D/E endpoint once in style-only mode")
+        styles = [(0, 0, 0), *(names[name] for name in style_order)]
     levels = [difficulty] * 4 if mode == "style" else [difficulty, 0.0, 0.5, 1.0]
     if mode == "difficulty":
         styles = [(0, 0, 0)] * 4
