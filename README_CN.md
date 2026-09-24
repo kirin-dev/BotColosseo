@@ -6,7 +6,7 @@
 
 在紧凑型 1v1 搜打撤任务中，以公平第一视角决策，通过同一套层级策略实时控制风格与难度。
 
-## [打开当前展示页 →](https://kirin-dev.github.io/BotColosseo/hierarchical.html)
+## [打开当前展示页 →](https://kirin-dev.github.io/BotColosseo/)
 
 四段视频展示同模型局内控制与三种风格，配套架构图和开发验证结果。
 
@@ -21,7 +21,7 @@
 本次发布代码与展示证据，不包含预训练权重，也不代表全部研究门通过。
 见[发布范围](docs/hierarchical-release.md)与[架构及代码入口](docs/hierarchical-research.md)。
 
-[原残差 Adapter 展示](https://kirin-dev.github.io/BotColosseo/)保留为早期基线。
+[原残差 Adapter 展示](https://kirin-dev.github.io/BotColosseo/adapter.html)保留为早期基线。
 **下文 Strong/Adapter 指标属于该基线，不能混报为当前层级模型的结果。**
 
 ## 任务是什么？

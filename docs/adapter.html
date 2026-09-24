@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="BotColosseo — controllable game Bots for search, fight, and extract."
+    >
+    <title>BotColosseo · Controllable Game Bots for SFE</title>
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="assets/favicon-32x32.png"
+    >
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="assets/favicon-16x16.png"
+    >
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="assets/apple-touch-icon.png"
+    >
+    <link rel="stylesheet" href="showcase.css?v=randomized-1">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-brand" href="#top">BotColosseo</a>
+      <nav aria-label="Primary navigation">
+        <a href="#scenario">01 Scenario</a>
+        <a href="#method">02 Method</a>
+        <a href="#styles">03 Styles</a>
+        <a href="#results">04 Results</a>
+      </nav>
+      <a
+        class="github-link"
+        href="https://github.com/kirin-dev/BotColosseo"
+      >GitHub ↗</a>
+    </header>
+
+    <main id="top">
+      <section class="hero shell">
+        <h1>BotColosseo Controllable Game Bots for SFE</h1>
+        <p class="fairness-note"><a href="hierarchical.html">New: same-policy real-time style &amp; difficulty controls ↗</a></p>
+      </section>
+
+      <section class="bot-showcase shell" id="bots" aria-label="Bot play styles">
+        <div class="video-grid">
+          <article class="video-card strong">
+            <div class="bot-heading">
+              <img
+                src="assets/extraction/emotes/Strong.jpg"
+                alt=""
+                width="80"
+                height="80"
+              >
+              <div>
+                <h3>Strong</h3>
+                <p>Balanced task capability</p>
+              </div>
+            </div>
+            <video
+              controls
+              muted
+              playsinline
+              preload="metadata"
+              poster="assets/extraction/strong-poster.jpg"
+              aria-label="Strong Bot representative validation video"
+            >
+              <source src="assets/extraction/strong.mp4" type="video/mp4">
+              Your browser does not support HTML video.
+            </video>
+            <p class="causal-chain">
+              <span>Search</span><b>→</b><span>valuable loot</span><b>→</b>
+              <span>extract</span><b>→</b><span>bank value</span>
+            </p>
+          </article>
+
+          <article class="video-card aggressive">
+            <div class="bot-heading">
+              <img
+                src="assets/extraction/emotes/Aggressive.jpg"
+                alt=""
+                width="80"
+                height="80"
+              >
+              <div>
+                <h3>Aggressive</h3>
+                <p>Useful combat conversion</p>
+              </div>
+            </div>
+            <video
+              controls
+              muted
+              playsinline
+              preload="metadata"
+              poster="assets/extraction/aggressive-poster.jpg"
+              aria-label="Aggressive Bot representative validation video"
+            >
+              <source src="assets/extraction/aggressive.mp4" type="video/mp4">
+              Your browser does not support HTML video.
+            </video>
+            <p class="causal-chain">
+              <span>Five hits</span><b>→</b><span>kill</span><b>→</b>
+              <span>loot cache</span><b>→</b><span>extract</span>
+            </p>
+          </article>
+
+          <article class="video-card defensive">
+            <div class="bot-heading">
+              <img
+                src="assets/extraction/emotes/Defensive.jpg"
+                alt=""
+                width="80"
+                height="80"
+              >
+              <div>
+                <h3>Defensive</h3>
+                <p>Value preservation under risk</p>
+              </div>
+            </div>
+            <video
+              controls
+              muted
+              playsinline
+              preload="metadata"
+              poster="assets/extraction/defensive-poster.jpg"
+              aria-label="Defensive Bot representative validation video"
+            >
+              <source src="assets/extraction/defensive.mp4" type="video/mp4">
+              Your browser does not support HTML video.
+            </video>
+            <p class="causal-chain">
+              <span>Carrying value</span><b>→</b><span>encounter risk</span><b>→</b>
+              <span>disengage</span><b>→</b><span>preserve value</span>
+            </p>
+          </article>
+
+          <article class="video-card explorer">
+            <div class="bot-heading">
+              <img
+                src="assets/extraction/emotes/Explorer.jpg"
+                alt=""
+                width="80"
+                height="80"
+              >
+              <div>
+                <h3>Explorer</h3>
+                <p>Useful route and loot diversity</p>
+              </div>
+            </div>
+            <video
+              controls
+              muted
+              playsinline
+              preload="metadata"
+              poster="assets/extraction/explorer-poster.jpg"
+              aria-label="Explorer Bot representative validation video"
+            >
+              <source src="assets/extraction/explorer.mp4" type="video/mp4">
+              Your browser does not support HTML video.
+            </video>
+            <p class="causal-chain">
+              <span>Multiple regions</span><b>→</b><span>upgrade backpack</span>
+              <b>→</b><span>extract</span>
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section shell" id="scenario">
+        <div class="section-heading">
+          <p class="eyebrow">01 · SCENARIO</p>
+          <p class="section-copy">
+            Each raid samples seven loot items from sixteen safe anchors, so
+            the Bot must search before deciding whether to fight, disengage,
+            or extract.
+          </p>
+        </div>
+
+        <div class="scenario-layout">
+          <figure class="map-card">
+            <img
+              src="assets/extraction/map.svg"
+              alt="Top-down extraction arena with two extraction zones, two spawns, and sixteen candidate anchors from which seven loot items are sampled each raid."
+            >
+            <figcaption>Randomized loot · 16 safe anchors · 7 items per raid</figcaption>
+          </figure>
+          <div class="rules-card">
+            <dl class="rules">
+              <div><dt>Raid</dt><dd>1v1 · 75 seconds</dd></div>
+              <div><dt>Combat</dt><dd>100 HP · 20 damage · 30 rounds</dd></div>
+              <div><dt>Inventory</dt><dd>3 slots · loot worth 10 / 25 / 50</dd></div>
+              <div><dt>Extraction</dt><dd>2 zones · opens at 30s · hold for 3s</dd></div>
+              <div><dt>Death</dt><dd>Unbanked loot becomes a collectible cache</dd></div>
+              <div><dt>Objective</dt><dd>Only successfully extracted value counts</dd></div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <section class="section shell" id="method">
+        <div class="section-heading">
+          <p class="eyebrow">02 · METHOD</p>
+          <p class="section-copy">
+            Capability is learned once under randomized loot. Training-only
+            opportunity signals shape bounded adapters while deployment keeps
+            the same fair Actor inputs.
+          </p>
+        </div>
+        <figure class="method-card">
+          <img
+            src="assets/extraction/method.svg?v=aligned-2"
+            alt="A scripted Teacher, behavioral cloning, and recurrent PPO train the Strong policy; opportunity-conditioned shaping and partitioned KL train three bounded residual style adapters over the frozen Actor."
+          >
+        </figure>
+        <div class="method-steps" aria-label="Training flow">
+          <span>Scripted Teacher</span><b>→</b>
+          <span>Behavioral Cloning</span><b>→</b>
+          <span>Recurrent PPO</span><b>→</b>
+          <span>Frozen Strong Actor</span><b>→</b>
+          <span>Opportunity-conditioned Shaping</span><b>→</b>
+          <span>Residual Style Adapters</span>
+        </div>
+        <p class="fairness-note">
+          <strong>Fair observation.</strong> Public inference uses only
+          first-person pixels and the player's own public state. Privileged
+          Critic features and reward ledgers are training-only.
+        </p>
+      </section>
+
+      <section class="section shell" id="styles">
+        <div class="section-heading">
+          <p class="eyebrow">03 · STYLES</p>
+          <p class="section-copy">
+            Three bounded adapters share the same frozen Strong Actor and fair
+            deployment inputs. Training-only opportunity-conditioned PBRS acts
+            only when the corresponding decision is meaningful.
+          </p>
+        </div>
+
+        <div class="style-grid">
+          <article class="style-card strong">
+            <h3>Strong</h3>
+            <p class="style-priority">Priority · complete the task</p>
+            <p>Balances loot, combat risk, and extraction timing.</p>
+            <small>Watch: high-value loot becomes banked value.</small>
+          </article>
+          <article class="style-card aggressive">
+            <h3>Aggressive</h3>
+            <p class="style-priority">Priority · convert useful fights</p>
+            <p>Favors combat when a favorable engagement can become banked value.</p>
+            <small>Watch: hit → kill → corpse cache → extraction.</small>
+          </article>
+          <article class="style-card defensive">
+            <h3>Defensive</h3>
+            <p class="style-priority">Priority · protect carried value</p>
+            <p>Favors disengagement when carried value can be converted safely.</p>
+            <small>Watch: stops chasing, creates distance, leaves alive.</small>
+          </article>
+          <article class="style-card explorer">
+            <h3>Explorer</h3>
+            <p class="style-priority">Priority · improve route and inventory</p>
+            <p>Favors broader search while useful regions or upgrades remain.</p>
+            <small>Watch: broader search → backpack upgrade → extraction.</small>
+          </article>
+        </div>
+      </section>
+
+      <section class="section shell" id="results">
+        <div class="section-heading">
+          <p class="eyebrow">04 · RESULTS</p>
+          <p class="section-copy">
+            Randomized-loot capability and representative style evidence.
+            Candidate selection never accesses the test split.
+          </p>
+        </div>
+
+        <div class="metric-grid" aria-label="Strong Bot capability">
+          <article><strong>83.3%</strong><span>randomized validation extraction</span></article>
+          <article><strong>56.7%</strong><span>randomized validation win rate</span></article>
+          <article><strong>39.10</strong><span>validation mean banked value</span></article>
+          <article><strong>85.8%</strong><span>randomized heldout extraction</span></article>
+        </div>
+        <p class="result-note">
+          Protocol: four scripted opponent styles × paired learner sides;
+          240 validation episodes and 120 heldout episodes from disjoint seeds
+          in the same finite randomized-layout family.
+        </p>
+
+        <figure class="training-curve">
+          <img
+            src="assets/extraction/training-curve.svg?v=axes-2"
+            alt="Randomized Strong checkpoint screening and 240-episode confirmation, alongside Strong PPO action agreement and KL to its frozen BC reference."
+          >
+          <figcaption>
+            Frozen validation selected 950k instead of assuming the terminal
+            checkpoint was best. The right panel shows Strong PPO diagnostics;
+            the style adapters' partitioned KL is not plotted here.
+          </figcaption>
+        </figure>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Bot</th>
+                <th>Evidence tier</th>
+                <th>Selected causal chain</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>Aggressive</th>
+                <td>Representative case</td>
+                <td>5 hits → kill → corpse cache → 100 value</td>
+              </tr>
+              <tr>
+                <th>Defensive</th>
+                <td>Representative case</td>
+                <td>carried-value disengagement → extraction · 0 kills</td>
+              </tr>
+              <tr>
+                <th>Explorer</th>
+                <td>Representative case</td>
+                <td>4 loot regions → backpack upgrade → 70 value</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="result-note">
+          The three style videos are representative validation case studies.
+          They demonstrate complete engine-recorded causal chains, not
+          distribution-level superiority or official-test results.
+          <a href="https://github.com/kirin-dev/BotColosseo/blob/main/reports/extraction/showcase/audit.json">
+            Inspect the machine-readable audit ↗
+          </a>
+          Test and official-test cases were not opened.
+        </p>
+      </section>
+    </main>
+
+    <footer class="shell">
+      <p>BotColosseo · Search, Fight, Extract · ViZDoom · MIT</p>
+      <div>
+        <a href="#top">Back to top ↑</a>
+      </div>
+    </footer>
+  </body>
+</html>

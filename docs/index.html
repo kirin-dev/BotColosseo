@@ -1,354 +1,128 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta
-      name="description"
-      content="BotColosseo — controllable game Bots for search, fight, and extract."
-    >
-    <title>BotColosseo · Controllable Game Bots for SFE</title>
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="assets/favicon-32x32.png"
-    >
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="assets/favicon-16x16.png"
-    >
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="assets/apple-touch-icon.png"
-    >
-    <link rel="stylesheet" href="showcase.css?v=randomized-1">
-  </head>
-  <body>
-    <header class="site-header">
-      <a class="site-brand" href="#top">BotColosseo</a>
-      <nav aria-label="Primary navigation">
-        <a href="#scenario">01 Scenario</a>
-        <a href="#method">02 Method</a>
-        <a href="#styles">03 Styles</a>
-        <a href="#results">04 Results</a>
-      </nav>
-      <a
-        class="github-link"
-        href="https://github.com/kirin-dev/BotColosseo"
-      >GitHub ↗</a>
-    </header>
-
-    <main id="top">
-      <section class="hero shell">
-        <h1>BotColosseo Controllable Game Bots for SFE</h1>
-        <p class="fairness-note"><a href="hierarchical.html">New: same-policy real-time style &amp; difficulty controls ↗</a></p>
-      </section>
-
-      <section class="bot-showcase shell" id="bots" aria-label="Bot play styles">
-        <div class="video-grid">
-          <article class="video-card strong">
-            <div class="bot-heading">
-              <img
-                src="assets/extraction/emotes/Strong.jpg"
-                alt=""
-                width="80"
-                height="80"
-              >
-              <div>
-                <h3>Strong</h3>
-                <p>Balanced task capability</p>
-              </div>
-            </div>
-            <video
-              controls
-              muted
-              playsinline
-              preload="metadata"
-              poster="assets/extraction/strong-poster.jpg"
-              aria-label="Strong Bot representative validation video"
-            >
-              <source src="assets/extraction/strong.mp4" type="video/mp4">
-              Your browser does not support HTML video.
-            </video>
-            <p class="causal-chain">
-              <span>Search</span><b>→</b><span>valuable loot</span><b>→</b>
-              <span>extract</span><b>→</b><span>bank value</span>
-            </p>
-          </article>
-
-          <article class="video-card aggressive">
-            <div class="bot-heading">
-              <img
-                src="assets/extraction/emotes/Aggressive.jpg"
-                alt=""
-                width="80"
-                height="80"
-              >
-              <div>
-                <h3>Aggressive</h3>
-                <p>Useful combat conversion</p>
-              </div>
-            </div>
-            <video
-              controls
-              muted
-              playsinline
-              preload="metadata"
-              poster="assets/extraction/aggressive-poster.jpg"
-              aria-label="Aggressive Bot representative validation video"
-            >
-              <source src="assets/extraction/aggressive.mp4" type="video/mp4">
-              Your browser does not support HTML video.
-            </video>
-            <p class="causal-chain">
-              <span>Five hits</span><b>→</b><span>kill</span><b>→</b>
-              <span>loot cache</span><b>→</b><span>extract</span>
-            </p>
-          </article>
-
-          <article class="video-card defensive">
-            <div class="bot-heading">
-              <img
-                src="assets/extraction/emotes/Defensive.jpg"
-                alt=""
-                width="80"
-                height="80"
-              >
-              <div>
-                <h3>Defensive</h3>
-                <p>Value preservation under risk</p>
-              </div>
-            </div>
-            <video
-              controls
-              muted
-              playsinline
-              preload="metadata"
-              poster="assets/extraction/defensive-poster.jpg"
-              aria-label="Defensive Bot representative validation video"
-            >
-              <source src="assets/extraction/defensive.mp4" type="video/mp4">
-              Your browser does not support HTML video.
-            </video>
-            <p class="causal-chain">
-              <span>Carrying value</span><b>→</b><span>encounter risk</span><b>→</b>
-              <span>disengage</span><b>→</b><span>preserve value</span>
-            </p>
-          </article>
-
-          <article class="video-card explorer">
-            <div class="bot-heading">
-              <img
-                src="assets/extraction/emotes/Explorer.jpg"
-                alt=""
-                width="80"
-                height="80"
-              >
-              <div>
-                <h3>Explorer</h3>
-                <p>Useful route and loot diversity</p>
-              </div>
-            </div>
-            <video
-              controls
-              muted
-              playsinline
-              preload="metadata"
-              poster="assets/extraction/explorer-poster.jpg"
-              aria-label="Explorer Bot representative validation video"
-            >
-              <source src="assets/extraction/explorer.mp4" type="video/mp4">
-              Your browser does not support HTML video.
-            </video>
-            <p class="causal-chain">
-              <span>Multiple regions</span><b>→</b><span>upgrade backpack</span>
-              <b>→</b><span>extract</span>
-            </p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section shell" id="scenario">
-        <div class="section-heading">
-          <p class="eyebrow">01 · SCENARIO</p>
-          <p class="section-copy">
-            Each raid samples seven loot items from sixteen safe anchors, so
-            the Bot must search before deciding whether to fight, disengage,
-            or extract.
-          </p>
-        </div>
-
-        <div class="scenario-layout">
-          <figure class="map-card">
-            <img
-              src="assets/extraction/map.svg"
-              alt="Top-down extraction arena with two extraction zones, two spawns, and sixteen candidate anchors from which seven loot items are sampled each raid."
-            >
-            <figcaption>Randomized loot · 16 safe anchors · 7 items per raid</figcaption>
-          </figure>
-          <div class="rules-card">
-            <dl class="rules">
-              <div><dt>Raid</dt><dd>1v1 · 75 seconds</dd></div>
-              <div><dt>Combat</dt><dd>100 HP · 20 damage · 30 rounds</dd></div>
-              <div><dt>Inventory</dt><dd>3 slots · loot worth 10 / 25 / 50</dd></div>
-              <div><dt>Extraction</dt><dd>2 zones · opens at 30s · hold for 3s</dd></div>
-              <div><dt>Death</dt><dd>Unbanked loot becomes a collectible cache</dd></div>
-              <div><dt>Objective</dt><dd>Only successfully extracted value counts</dd></div>
-            </dl>
-          </div>
-        </div>
-      </section>
-
-      <section class="section shell" id="method">
-        <div class="section-heading">
-          <p class="eyebrow">02 · METHOD</p>
-          <p class="section-copy">
-            Capability is learned once under randomized loot. Training-only
-            opportunity signals shape bounded adapters while deployment keeps
-            the same fair Actor inputs.
-          </p>
-        </div>
-        <figure class="method-card">
-          <img
-            src="assets/extraction/method.svg?v=aligned-2"
-            alt="A scripted Teacher, behavioral cloning, and recurrent PPO train the Strong policy; opportunity-conditioned shaping and partitioned KL train three bounded residual style adapters over the frozen Actor."
-          >
-        </figure>
-        <div class="method-steps" aria-label="Training flow">
-          <span>Scripted Teacher</span><b>→</b>
-          <span>Behavioral Cloning</span><b>→</b>
-          <span>Recurrent PPO</span><b>→</b>
-          <span>Frozen Strong Actor</span><b>→</b>
-          <span>Opportunity-conditioned Shaping</span><b>→</b>
-          <span>Residual Style Adapters</span>
-        </div>
-        <p class="fairness-note">
-          <strong>Fair observation.</strong> Public inference uses only
-          first-person pixels and the player's own public state. Privileged
-          Critic features and reward ledgers are training-only.
-        </p>
-      </section>
-
-      <section class="section shell" id="styles">
-        <div class="section-heading">
-          <p class="eyebrow">03 · STYLES</p>
-          <p class="section-copy">
-            Three bounded adapters share the same frozen Strong Actor and fair
-            deployment inputs. Training-only opportunity-conditioned PBRS acts
-            only when the corresponding decision is meaningful.
-          </p>
-        </div>
-
-        <div class="style-grid">
-          <article class="style-card strong">
-            <h3>Strong</h3>
-            <p class="style-priority">Priority · complete the task</p>
-            <p>Balances loot, combat risk, and extraction timing.</p>
-            <small>Watch: high-value loot becomes banked value.</small>
-          </article>
-          <article class="style-card aggressive">
-            <h3>Aggressive</h3>
-            <p class="style-priority">Priority · convert useful fights</p>
-            <p>Favors combat when a favorable engagement can become banked value.</p>
-            <small>Watch: hit → kill → corpse cache → extraction.</small>
-          </article>
-          <article class="style-card defensive">
-            <h3>Defensive</h3>
-            <p class="style-priority">Priority · protect carried value</p>
-            <p>Favors disengagement when carried value can be converted safely.</p>
-            <small>Watch: stops chasing, creates distance, leaves alive.</small>
-          </article>
-          <article class="style-card explorer">
-            <h3>Explorer</h3>
-            <p class="style-priority">Priority · improve route and inventory</p>
-            <p>Favors broader search while useful regions or upgrades remain.</p>
-            <small>Watch: broader search → backpack upgrade → extraction.</small>
-          </article>
-        </div>
-      </section>
-
-      <section class="section shell" id="results">
-        <div class="section-heading">
-          <p class="eyebrow">04 · RESULTS</p>
-          <p class="section-copy">
-            Randomized-loot capability and representative style evidence.
-            Candidate selection never accesses the test split.
-          </p>
-        </div>
-
-        <div class="metric-grid" aria-label="Strong Bot capability">
-          <article><strong>83.3%</strong><span>randomized validation extraction</span></article>
-          <article><strong>56.7%</strong><span>randomized validation win rate</span></article>
-          <article><strong>39.10</strong><span>validation mean banked value</span></article>
-          <article><strong>85.8%</strong><span>randomized heldout extraction</span></article>
-        </div>
-        <p class="result-note">
-          Protocol: four scripted opponent styles × paired learner sides;
-          240 validation episodes and 120 heldout episodes from disjoint seeds
-          in the same finite randomized-layout family.
-        </p>
-
-        <figure class="training-curve">
-          <img
-            src="assets/extraction/training-curve.svg?v=axes-2"
-            alt="Randomized Strong checkpoint screening and 240-episode confirmation, alongside Strong PPO action agreement and KL to its frozen BC reference."
-          >
-          <figcaption>
-            Frozen validation selected 950k instead of assuming the terminal
-            checkpoint was best. The right panel shows Strong PPO diagnostics;
-            the style adapters' partitioned KL is not plotted here.
-          </figcaption>
-        </figure>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Bot</th>
-                <th>Evidence tier</th>
-                <th>Selected causal chain</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th>Aggressive</th>
-                <td>Representative case</td>
-                <td>5 hits → kill → corpse cache → 100 value</td>
-              </tr>
-              <tr>
-                <th>Defensive</th>
-                <td>Representative case</td>
-                <td>carried-value disengagement → extraction · 0 kills</td>
-              </tr>
-              <tr>
-                <th>Explorer</th>
-                <td>Representative case</td>
-                <td>4 loot regions → backpack upgrade → 70 value</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="result-note">
-          The three style videos are representative validation case studies.
-          They demonstrate complete engine-recorded causal chains, not
-          distribution-level superiority or official-test results.
-          <a href="https://github.com/kirin-dev/BotColosseo/blob/main/reports/extraction/showcase/audit.json">
-            Inspect the machine-readable audit ↗
-          </a>
-          Test and official-test cases were not opened.
-        </p>
-      </section>
-    </main>
-
-    <footer class="shell">
-      <p>BotColosseo · Search, Fight, Extract · ViZDoom · MIT</p>
-      <div>
-        <a href="#top">Back to top ↑</a>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="BotColosseo: hierarchical visual game bots with real-time style control.">
+  <title>BotColosseo · Hierarchical Game Bots for SFE</title>
+  <link rel="icon" href="assets/favicon-32x32.png" type="image/png">
+  <link rel="stylesheet" href="showcase.css?v=randomized-1">
+  <link rel="stylesheet" href="hierarchical.css?v=clarity-1">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-brand" href="#top">BotColosseo</a>
+    <nav aria-label="Primary navigation">
+      <a href="#scenario">01 Scenario</a><a href="#method">02 Method</a>
+      <a href="#styles">03 Styles</a><a href="#results">04 Results</a>
+    </nav>
+    <a class="github-link" href="https://github.com/kirin-dev/BotColosseo">GitHub ↗</a>
+  </header>
+  <main id="top">
+    <section class="hero shell"><h1>BotColosseo Controllable Game Bots for SFE</h1></section>
+    <section class="bot-showcase shell" aria-label="Same-model control and style case studies">
+      <div class="video-grid">
+        <article class="video-card strong">
+          <div class="bot-heading"><img src="assets/extraction/emotes/Strong.jpg" alt="" width="80" height="80"><div><h3>Live controls</h3><p>One policy, changing style and difficulty</p></div></div>
+          <video controls muted playsinline preload="metadata" poster="assets/hierarchical/curriculum-live.jpg" aria-label="Same-model style and difficulty switching"><source src="assets/hierarchical/curriculum-live.mp4" type="video/mp4"></video>
+          <p class="causal-chain"><span>Change preference</span><b>→</b><span>replan</span><b>→</b><span>retain memory</span></p>
+        </article>
+        <article class="video-card aggressive">
+          <div class="bot-heading"><img src="assets/extraction/emotes/Aggressive.jpg" alt="" width="80" height="80"><div><h3>Aggressive</h3><p>Engage, eliminate threat, continue looting</p></div></div>
+          <video controls muted playsinline preload="metadata" poster="assets/hierarchical/curriculum-aggressive.jpg" aria-label="Aggressive case against the shared frozen opponent"><source src="assets/hierarchical/curriculum-aggressive.mp4" type="video/mp4"></video>
+          <p class="causal-chain"><span>Engage</span><b>→</b><span>kill</span><b>→</b><span>search loot</span><b>→</b><span>extract</span></p>
+        </article>
+        <article class="video-card defensive">
+          <div class="bot-heading"><img src="assets/extraction/emotes/Defensive.jpg" alt="" width="80" height="80"><div><h3>Defensive</h3><p>Prefer extraction after acquiring value</p></div></div>
+          <video controls muted playsinline preload="metadata" poster="assets/hierarchical/curriculum-defensive.jpg" aria-label="Defensive extraction case"><source src="assets/hierarchical/curriculum-defensive.mp4" type="video/mp4"></video>
+          <p class="causal-chain"><span>Acquire loot</span><b>→</b><span>seek extraction</span><b>→</b><span>bank value</span></p>
+        </article>
+        <article class="video-card explorer">
+          <div class="bot-heading"><img src="assets/extraction/emotes/Explorer.jpg" alt="" width="80" height="80"><div><h3>Explorer</h3><p>Continue useful search before extraction</p></div></div>
+          <video controls muted playsinline preload="metadata" poster="assets/hierarchical/curriculum-explorer.jpg" aria-label="Explorer multiple-pickup case"><source src="assets/hierarchical/curriculum-explorer.mp4" type="video/mp4"></video>
+          <p class="causal-chain"><span>Search</span><b>→</b><span>three pickups</span><b>→</b><span>extract</span></p>
+        </article>
       </div>
-    </footer>
-  </body>
+      <div class="capability-strip"><span>One shared policy</span><span>Real-time style + difficulty</span><span>No model swapping</span></div>
+      <p class="fairness-note">Selected first-person cases · enemy telemetry is viewer-only. <a href="assets/hierarchical/curriculum-showcase.json">Video evidence</a></p>
+    </section>
+    <section class="section shell" id="scenario">
+      <div class="section-heading"><p class="eyebrow">01 · SCENARIO</p><p class="section-copy">Search for loot. Fight by choice. Extract your value.</p></div>
+      <div class="scenario-layout">
+        <figure class="map-card"><img src="assets/extraction/map.svg" alt="Fixed arena geometry with randomized loot anchors and two extraction zones"><figcaption>Fixed geometry · randomized loot placement</figcaption></figure>
+        <div class="rules-card"><dl class="rules">
+          <div><dt>Raid</dt><dd>1v1 · 75 seconds</dd></div>
+          <div><dt>Combat</dt><dd>100 HP · 20 damage per hit</dd></div>
+          <div><dt>Inventory</dt><dd>3 slots · loot worth 10 / 25 / 50</dd></div>
+          <div><dt>Extraction</dt><dd>2 zones · opens at 30s · hold for 3s</dd></div>
+          <div><dt>Death</dt><dd>Unbanked loot becomes a collectible cache</dd></div>
+          <div><dt>Objective</dt><dd>Own extracted value / 150</dd></div>
+        </dl></div>
+      </div>
+    </section>
+    <section class="section shell" id="method">
+      <div class="section-heading"><p class="eyebrow">02 · METHOD</p><p class="section-copy">One policy: choose a goal, then execute it.</p></div>
+      <figure class="method-card"><a href="assets/hierarchical/method.svg?v=dual-system-1" aria-label="Open full-size two-level architecture diagram"><img src="assets/hierarchical/method.svg?v=dual-system-1" alt="High-level GRU planner and low-level visual executor linked by seven commands, with previous-step visual feedback and runtime style and difficulty controls"></a></figure>
+      <div class="explain-grid"><article><span class="mini-label">Observe</span><h3>First-person information</h3><p>Pixels, own public state and action history. No hidden enemy state.</p></article><article><span class="mini-label">Decide</span><h3>Choose a goal</h3><p>Style conditions the strategic Actor: search, engage, disengage or extract.</p></article><article><span class="mini-label">Act</span><h3>Execute with shared skills</h3><p>Difficulty conditions both layers. Control changes preserve recurrent memory.</p></article></div>
+      <details class="evidence-panel"><summary>Training route &amp; observation boundary</summary><p>Command Teacher + BC → conservative executor PPO → frozen-executor cross-play and strategic responses → conditional distillation → random-segment style/difficulty PPO. The later joint-trained candidate was not selected.</p><p>The high Actor normally replans every eight low decisions; public events can trigger earlier replanning. The executor acts every four engine tics. Privileged state is used for training supervision and Critic targets, not deployment. Distillation includes explicit preference priors; this is not proof of an unconstrained best response.</p><a href="assets/hierarchical/runtime-followup.json">Training-stage evidence</a></details>
+      <details class="evidence-panel"><summary>Future direction: a larger planning backbone</summary><p>The current planner is a GRU, not a VLM. A future vision-language backbone could map fair observations to the same seven-command interface, while retaining the shared executor. This requires observation adaptation, command grounding and new training and validation; it is not a drop-in replacement.</p></details>
+    </section>
+    <section class="section shell" id="styles">
+      <div class="section-heading"><p class="eyebrow">03 · STYLES</p><p class="section-copy">Change preferences during play, without changing models.</p></div>
+      <div class="timeline-heading"><h3>One uninterrupted episode</h3><a href="assets/hierarchical/curriculum-live.mp4">Watch the 32.8s clip ↗</a></div>
+      <ol class="control-timeline"><li><time>0.0s</time><strong>Neutral · Hard</strong><p>Search begins. First pickup at 1.6s.</p></li><li class="aggressive"><time>9.3s</time><strong>Aggressive · Easy</strong><p>New input requested. Engage command at 11.0s.</p></li><li class="defensive"><time>18.4s</time><strong>Defensive · Normal</strong><p>New input requested. Extract command at 26.5s.</p></li><li class="explorer"><time>27.5s</time><strong>Explorer · Hard</strong><p>New input requested. Extraction starts at 29.8s.</p></li></ol>
+      <div class="episode-outcome"><strong>60 value banked</strong><span>Extraction complete at 32.8s · same weights throughout</span></div>
+      <p class="fairness-note">Both controls change; the timeline shows sequence, not causality.</p>
+    </section>
+    <section class="section shell" id="results">
+      <div class="section-heading"><p class="eyebrow">04 · RESULTS</p><p class="section-copy">One model. Distinct preferences. Adjustable difficulty.</p></div>
+      <div class="result-charts">
+        <figure class="result-chart"><span class="mini-label">01 / Difficulty</span><h3>Higher difficulty, more value</h3><p class="chart-subtitle">Mean banked value · 64 games per level</p>
+          <div class="chart-scale"><span>0</span><span>25</span><span>50 value</span></div>
+          <div class="bar-row"><span>Easy</span><span class="bar-track"><span class="bar-fill" style="--value:42.66%"></span></span><b>21.33</b></div>
+          <div class="bar-row"><span>Normal</span><span class="bar-track"><span class="bar-fill" style="--value:64.68%"></span></span><b>32.34</b></div>
+          <div class="bar-row"><span>Hard</span><span class="bar-track"><span class="bar-fill" style="--value:76.40%"></span></span><b>38.20</b></div>
+          <figcaption>Aggregate trend; not every style is monotonic. <a href="assets/hierarchical/task-difficulty.json">Counts &amp; intervals ↗</a></figcaption>
+        </figure>
+        <figure class="result-chart"><span class="mini-label">02 / Style</span><h3>Different behavioral preferences</h3><p class="chart-subtitle">Same early window · Hard · six switch orders</p>
+          <div class="chart-legend"><span style="--tone:#ce4758">Aggressive</span><span style="--tone:#23816b">Defensive</span><span style="--tone:#a87419">Explorer</span></div>
+          <div class="chart-scale"><span>0%</span><span>50%</span><span>100%</span></div>
+          <div class="metric-group"><h4>Attack actions</h4><div class="bar-row a"><span>Aggressive</span><span class="bar-track"><span class="bar-fill" style="--value:8.43%"></span></span><b>8.43%</b></div>
+<div class="bar-row d"><span>Defensive</span><span class="bar-track"><span class="bar-fill" style="--value:0%"></span></span><b>0.00%</b></div>
+<div class="bar-row e"><span>Explorer</span><span class="bar-track"><span class="bar-fill" style="--value:0.21%"></span></span><b>0.21%</b></div></div>
+<div class="metric-group"><h4>Search commands</h4><div class="bar-row a"><span>Aggressive</span><span class="bar-track"><span class="bar-fill" style="--value:78.94%"></span></span><b>78.94%</b></div>
+<div class="bar-row d"><span>Defensive</span><span class="bar-track"><span class="bar-fill" style="--value:52.23%"></span></span><b>52.23%</b></div>
+<div class="bar-row e"><span>Explorer</span><span class="bar-track"><span class="bar-fill" style="--value:95.21%"></span></span><b>95.21%</b></div></div>
+<div class="metric-group"><h4>Extraction commands</h4><div class="bar-row a"><span>Aggressive</span><span class="bar-track"><span class="bar-fill" style="--value:4.11%"></span></span><b>4.11%</b></div>
+<div class="bar-row d"><span>Defensive</span><span class="bar-track"><span class="bar-fill" style="--value:47.77%"></span></span><b>47.77%</b></div>
+<div class="bar-row e"><span>Explorer</span><span class="bar-track"><span class="bar-fill" style="--value:4.79%"></span></span><b>4.79%</b></div></div>
+          <figcaption>Behavior occupancy, not success rates. <a href="assets/hierarchical/counterbalanced-styles.json">All phases &amp; outcomes ↗</a></figcaption>
+        </figure>
+      </div>
+      <p class="fairness-note">Development results; not proof of generalization or switching benefits.</p>
+      <details class="evidence-panel"><summary>Evaluation protocol &amp; limitations</summary>
+        <p>The 96 switching episodes reuse 16 layout/role cases; matched seeds do not reproduce identical histories. Style bars use decisions 88–160 after the first switch. Repeated orders are averaged within a case, then across cases. Later phases include carryover and early-ending effects. The policy, executor, opponent and Hard difficulty are fixed across all six orders.</p>
+        <p>Difficulty results use 192 full games over eight layouts, both roles and four styles with one frozen policy. Positive-value episodes: 67.19% / 81.25% / 85.94%. Adjacent aggregate banked-value differences are positive under paired layout bootstrap; extraction including empty-handed exits is 90.63% / 90.63% / 87.50%. This is not universal difficulty calibration.</p>
+        <p>All four videos use one selected deployment combination, but different seeds and roles. The live clip changes both style and difficulty. Reliable PSRO response gains and formal executor promotion were not established. <a href="assets/hierarchical/curriculum-showcase.json">Clip identities</a> · <a href="assets/hierarchical/runtime-followup.json">Candidate selection</a></p>
+      </details>
+      <details class="rules-card">
+        <summary>Population learning: results and limitations</summary>
+      <figure class="method-card"><img src="assets/hierarchical/payoffs.png" alt="Two five-by-five matrices showing each role's own extracted payoff"><figcaption>48 games per role cell · Neutral / Hard · both roles scored after global settlement</figcaption></figure>
+      <div class="rules-card"><dl class="rules" aria-label="Independent deployment comparison">
+        <div><dt>Fixed strategy</dt><dd>Mean banked value 28.6 · positive banked 78.1%</dd></div>
+        <div><dt>Uniform population</dt><dd>Mean banked value 35.9 · positive banked 75.0%</dd></div>
+        <div><dt>Meta-strategy</dt><dd>Mean banked value 32.7 · positive banked 81.3%</dd></div>
+      </dl></div>
+      <p class="fairness-note">32 games per method across eight separate layouts, both roles and two repeats; each method faces the same sampled uniform-population opponents. All paired 95% layout-bootstrap payoff-difference intervals include zero. This comparison does not establish a reliable gain from meta-strategy selection.</p>
+      <p class="fairness-note">Changing the shared executor changes the game: all payoff cells were recomputed. The resulting restricted-game solution mixes strategies, with measured matrix regret zero. Across 200 layout-cluster bootstrap resamples, mixture weights vary substantially; the point solution is not a stable population ranking. Independent response validation did not establish a gain, and this is not a claim of global Nash convergence. Executor command-retention checks were mixed, so the new version remains a research candidate.</p>
+      </details>
+      <details class="rules-card">
+        <summary>Earlier conditional PPO follow-up</summary>
+        <p class="fairness-note">A 25k-decision task fine-tune changed mean banked value from 29.22 to 38.44 and positive-bank episodes from 29 to 31 in a paired 32-game, four-layout development screen. The executor stayed frozen with a distilled high-Actor KL reference; this is not generalization evidence.</p>
+        <p class="fairness-note"><a href="assets/hierarchical/ppo-live-style.mp4">Two pickups → live preference changes → extract 75 value (32.8s)</a>. This earlier candidate uses a different high Actor from the first four clips and the original Hard executor. Four switching diagnostics completed extraction; 12 style changes applied within 0.8s. <a href="assets/hierarchical/ppo-followup.json">Evidence and identities</a>.</p>
+      </details>
+    </section>
+  </main>
+  <footer class="site-footer"><span>BotColosseo · Runtime control showcase</span><a href="#top">Back to top ↑</a></footer>
+</body>
 </html>

@@ -7,7 +7,7 @@
 Fair first-person game bots in a compact 1v1 extraction task, now with runtime
 style and difficulty inputs in one fixed hierarchical deployment policy.
 
-## [Open the current Showcase →](https://kirin-dev.github.io/BotColosseo/hierarchical.html)
+## [Open the current Showcase →](https://kirin-dev.github.io/BotColosseo/)
 
 Watch one policy switch controls during play, compare three learned preferences,
 and inspect the architecture and development results.
@@ -25,7 +25,7 @@ This is a source-and-showcase release, not a pretrained-model package or a claim
 that all research gates passed. See the [release scope](docs/hierarchical-release.md)
 and [architecture / code guide](docs/hierarchical-research.md).
 
-The [original residual-adapter Showcase](https://kirin-dev.github.io/BotColosseo/)
+The [original residual-adapter Showcase](https://kirin-dev.github.io/BotColosseo/adapter.html)
 is retained as an earlier baseline. **The Strong/adapter results below belong to
 that baseline, not the current hierarchical policy.**
 

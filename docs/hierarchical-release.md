@@ -1,6 +1,6 @@
 # Hierarchical runtime-control showcase release
 
-[Open the showcase](https://kirin-dev.github.io/BotColosseo/hierarchical.html)
+[Open the showcase](https://kirin-dev.github.io/BotColosseo/)
 · [Architecture and code](hierarchical-research.md)
 
 ## The product problem
