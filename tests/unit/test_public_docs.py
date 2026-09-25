@@ -7,6 +7,8 @@ PUBLIC_DOCS = (
     Path("Plan.md"),
     Path("script.md"),
     Path("THIRD_PARTY_NOTICES.md"),
+    Path("docs/adapter-baseline.md"),
+    Path("docs/adapter-baseline_CN.md"),
 )
 
 MARKDOWN_LINK = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
@@ -56,18 +58,28 @@ def test_readme_publishes_clean_product_and_evidence_boundary() -> None:
     assert "100 HP" in readme
     assert "20 damage" in readme
     assert "30 rounds" in readme
-    assert "three slots" in readme
-    assert "no benchmark-success claim" in readme
+    assert "Three slots" in readme
+    assert "These are development results" in readme
     assert "Previous Crystal Run" not in readme
     assert "Extraction v2" not in readme
     assert "v3" not in readme.lower()
-    assert "## Technical evolution" in readme
-    assert "Fixed loot → randomized loot" in readme
-    assert "Global style rewards → opportunity-conditioned shaping" in readme
+    assert "## How it works" in readme
+    assert "Bounded FiLM" in readme
+    assert "source-and-showcase release" in readme
+    assert "Hidden enemy" in readme
+    assert "not policy inputs" in readme
+    for name in ("README.md", "README_CN.md"):
+        current = Path(name).read_text(encoding="utf-8")
+        assert "https://kirin-dev.github.io/BotColosseo/)" in current
+        assert "950k" not in current
+        for value in ("21.33", "32.34", "38.20", "67.19%", "81.25%", "85.94%"):
+            assert value in current
+        for clip in ("live", "aggressive", "defensive", "explorer"):
+            assert f"curriculum-{clip}.jpg" in current
 
 
-def test_readme_preserves_fair_actor_and_learned_style_boundary() -> None:
-    readme = Path("README.md").read_text(encoding="utf-8")
+def test_archived_baseline_preserves_fair_actor_and_learned_style_boundary() -> None:
+    readme = Path("docs/adapter-baseline.md").read_text(encoding="utf-8")
 
     assert "The Actor never receives opponent HP" in readme
     assert "asymmetric training Critic and reward shaping" in readme
@@ -81,8 +93,8 @@ def test_readme_preserves_fair_actor_and_learned_style_boundary() -> None:
     assert "one frozen 400-episode official test per policy" in readme
 
 
-def test_chinese_readme_preserves_pending_and_test_boundaries() -> None:
-    readme = Path("README_CN.md").read_text(encoding="utf-8")
+def test_chinese_archive_preserves_pending_and_test_boundaries() -> None:
+    readme = Path("docs/adapter-baseline_CN.md").read_text(encoding="utf-8")
 
     assert "当前公开结论限定为产品 Showcase" in readme
     assert "候选选择阶段禁止访问 test" in readme

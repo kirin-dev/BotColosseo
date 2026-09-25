@@ -1,135 +1,107 @@
 # BotColosseo
 
-**面向搜打撤的可控风格 Game Bot**
+### 面向搜打撤的实时可控 Game Bot
 
-[English](README.md)
+**同一策略，三种风格，局内实时调节。**
 
-在紧凑型 1v1 搜打撤任务中，以公平第一视角决策，通过同一套层级策略实时控制风格与难度。
+[**观看在线展示 →**](https://kirin-dev.github.io/BotColosseo/) · [English](README.md) · [正式版本](https://github.com/kirin-dev/BotColosseo/releases/tag/v0.1.0) · [代码指南](docs/hierarchical-research.md)
 
-## [打开当前展示页 →](https://kirin-dev.github.io/BotColosseo/)
+基于 ViZDoom 的第一视角游戏智能体：高层选择目标，共享视觉执行器输出动作；
+在对局中改变风格与难度，不更换模型权重，也不清空记忆。
 
-四段视频展示同模型局内控制与三种风格，配套架构图和开发验证结果。
+## 先看效果
 
-### 当前发布：层级实时条件控制
+| 实时控制 | Aggressive · 进攻 |
+|:---:|:---:|
+| [![实时控制视频](docs/assets/hierarchical/curriculum-live.jpg)](https://kirin-dev.github.io/BotColosseo/#styles) | [![进攻风格视频](docs/assets/hierarchical/curriculum-aggressive.jpg)](https://kirin-dev.github.io/BotColosseo/#top) |
+| 改变风格与难度 → 撤离带出 **60** | 消除威胁 → 继续搜索 → 带出 **85** |
+| **Defensive · 防守** | **Explorer · 探索** |
+| [![防守风格视频](docs/assets/hierarchical/curriculum-defensive.jpg)](https://kirin-dev.github.io/BotColosseo/#top) | [![探索风格视频](docs/assets/hierarchical/curriculum-explorer.jpg)](https://kirin-dev.github.io/BotColosseo/#top) |
+| 获得物资 → 寻找撤离 → 带出 **50** | 搜索 → 三次拾取 → 带出 **85** |
 
-- 高层 GRU 选择七类目标，共享 CNN–GRU 执行器输出动作。
-- FiLM 注入风格和难度；局内切换不换权重、不重置记忆。
-- 192 局开发验证的 Easy / Normal / Hard 平均带出价值为 **21.33 / 32.34 / 38.20**，
-  不代表每种风格都严格单调。
-- 六种切换顺序共 96 局支持行为偏好差异，但复用 16 个布局/角色案例，不是独立泛化实验。
+四段视频共享同一高层 Actor、执行器和冻结对手，是精选案例，不代表平均表现。
+[查看视频身份与引擎事件](docs/assets/hierarchical/curriculum-showcase.json)
 
-本次发布代码与展示证据，不包含预训练权重，也不代表全部研究门通过。
-见[发布范围](docs/hierarchical-release.md)与[架构及代码入口](docs/hierarchical-research.md)。
+## 游戏任务
 
-[原残差 Adapter 展示](https://kirin-dev.github.io/BotColosseo/adapter.html)保留为早期基线。
-**下文 Strong/Adapter 指标属于该基线，不能混报为当前层级模型的结果。**
+搜索物资 → 交战或脱离 → 撤离 → 结算带出价值。
 
-## 任务是什么？
+- **75 秒 1v1**，两个中立撤离点；双方都可以撤离。
+- **100 HP**，每次有效命中 **20 伤害**，初始 **30 发子弹**；不换弹、不复活。
+- **三格背包**，物资价值 10 / 25 / 50；高价值物资自动替换最低价值物资。
+- 死亡掉落未带出物资；任务只奖励自己的带出价值，击杀不是撤离前提。
 
-```text
-搜索物资 → 交战或脱离 → 管理背包 → 撤离 → 带出价值
-```
+地图几何固定，7 件物资在 16 个点位构成的有限布局族中变化。
+这是随机物资场景，不是程序化随机地图。
 
-- 单局 75 秒，双方各 100 HP，每次有效命中造成 20 点伤害。
-- 初始 30 发子弹，不换弹、不复活；场内有两个中立撤离点。
-- 三格背包装载价值为 10、25、50 的物资，高价值物资会替换最低价值物资。
-- 死亡会将全部未带出物资变成可被对手拾取的尸体缓存。
-- 击杀本身不计分，只有成功撤离带出的价值有效。
+## 技术路线
 
-## 一个 Base，四种可见行为
+![高层规划与共享低层执行器](docs/assets/hierarchical/method.svg)
 
-| Bot | 行为侧重 | 代表性因果链 |
-|---|---|---|
-| **Strong** | 均衡完成任务 | 搜索 → 高价值物资 → 撤离 → 带出 |
-| **Aggressive** | 将有效交战转化为收益 | 命中 → 击杀 → 尸体缓存 → 撤离 |
-| **Defensive** | 风险下保护携带价值 | 停止追击 → 脱离 → 保值撤离 |
-| **Explorer** | 有效路线和物资多样性 | 多区域搜索 → 背包升级 → 撤离 |
-
-Strong CNN-GRU Actor 先学习 mask-aware 特权 Teacher 数据，再经过行为克隆与
-保守型循环 PPO。1M-step 训练每 50k 做一次筛选，最终选择 950k checkpoint，
-而非默认使用末尾模型。三个风格是绑定同一个冻结 Strong Actor 哈希的有界残差
-logit adapter；仅训练期使用机会检测器激活塑形，部署策略仍只使用相同公开观测。
-
-代码支持历史对手和 PFSP，但当前发布的 Strong 配置明确设为
-`history_probability: 0.0`，因此不声称本次结果使用了 PFSP，也不声称其因果增益。
-
-### 实现入口
-
-| 层级 | 入口 |
+| 模块 | 职责 |
 |---|---|
-| 游戏规则与 ACS 地图 | `assets/scenarios/crystal_run_extraction_randomized/` |
-| 同步环境与公开协议 | `src/botcolosseo/envs/synchronous_extraction.py` |
-| CNN-GRU Actor 与非对称 Critic | `src/botcolosseo/agents/extraction_model.py` |
-| BC、循环 PPO、PFSP 与风格塑形 | `src/botcolosseo/training/extraction_*.py` |
-| 冻结评测与证据分层 | `src/botcolosseo/evaluation/extraction_*.py` |
-| 完整运行命令 | `script.md` |
+| **高层规划** | GRU 选择搜索区域、接战、脱离或两个撤离点，共七类命令。 |
+| **共享执行器** | CNN–GRU 根据第一视角观测与命令，输出移动、转向、射击动作。 |
+| **实时条件控制** | 有界 FiLM 将风格注入高层，将难度注入两层；切换时保留权重和记忆。 |
 
-## 技术路线演进
+**训练链路：** Teacher 示范 → 命令 BC／保守执行器 PPO → 高层条件蒸馏 →
+随机条件段风格／难度 PPO。初始化包含偏好目标，不宣称风格由 PSRO 自发涌现。
 
-项目在保持搜打撤目标不变的前提下完成了两次关键调整：
+Actor 仅使用第一视角画面、自身公开状态和历史。敌方隐藏状态、观众遥测不进入策略；
+特权监督和 Critic 输入仅用于训练。
 
-1. **固定物资 → 随机物资。** 固定点位容易让策略记忆路线；当前场景每局从 16 个
-   安全点位中分配 7 件物资，同时保持战斗、背包和撤离规则不变。
-2. **全局风格奖励 → 机会条件化塑形。** 仅在对应决策有意义时激活风格奖励；
-   PBRS 为行为因果链分配信用，分区 KL 在机会之外约束策略贴近冻结 Strong，
-   有界残差 adapter 则限制风格改动幅度。
+## 量化结果
 
-机会标签和特权 Critic 特征只在训练阶段使用，部署 Actor 仍只接收公平的第一
-视角观测。
+**难度：192 局开发验证，同一冻结部署策略。**
 
-## 核心结果
+| 输入 | 平均带出价值 | 正价值带出率 |
+|---|---:|---:|
+| Easy | **21.33** | 67.19% |
+| Normal | **32.34** | 81.25% |
+| Hard | **38.20** | 85.94% |
 
-| Strong 能力 | 结果 |
-|---|---:|
-| 随机布局 Validation 撤离率 | **83.3%** |
-| 随机布局 Validation 胜率 | **56.7%** |
-| 随机布局 Validation 平均带出价值 | **39.10** |
-| 随机布局 Heldout 撤离率 | **85.8%** |
+**风格：相同首次切换后时间窗口，固定 Hard。**
 
-### 随机布局发布版本
+| 决策步占比 | Aggressive | Defensive | Explorer |
+|---|---:|---:|---:|
+| 攻击动作 | **8.43%** | 0.00% | 0.21% |
+| 搜索命令 | 78.94% | 52.23% | **95.21%** |
+| 撤离命令 | 4.11% | **47.77%** | 4.79% |
 
-当前 Strong 与三个风格 adapter 共享同一个随机物资场景和冻结 Strong
-checkpoint。7 件物资在 16 个安全点位间按无碰撞排列生成；这是有限布局族上的
-domain randomization，不代表连续坐标泛化。20 个 checkpoint 先各做 32 局冻结
-筛选，再对选中的 950k checkpoint 做独立 240 局确认。详见
-[派生曲线数据](reports/extraction/training-curve.json)。
+六种切换顺序共 96 局，复用 16 个布局／角色案例。行为占比不是成功率。
+以上属于开发验证：不能推断每种风格难度都单调，也未证明切换提升收益或独立泛化。
 
-| Bot | 公开证据层 | 选中视频实际证明的行为 |
-|---|---|---|
-| Aggressive | 代表性案例 | 5 次命中 → 击杀 → 尸体缓存 → 带出 100 价值 |
-| Defensive | 代表性案例 | 携带价值时脱战 → 撤离，0 击杀 |
-| Explorer | 代表性案例 | 搜索 4 个物资区域 → 背包升级 → 带出 70 价值 |
+[难度数据](docs/assets/hierarchical/task-difficulty.json) · [风格数据](docs/assets/hierarchical/counterbalanced-styles.json) · [完整发布范围](docs/hierarchical-release.md)
 
-这些是从 validation 选择的产品演示，不代表所有风格在完整分布上均有提升。
-每段视频都是按选定 protocol、seed、side、opponent、layout 与 policy 重新进行的
-确定性渲染，不声称与历史评测 episode 逐帧一致；案例包含由引擎事件记录的完整
-行为因果链。
-完整案例、checkpoint/视频哈希、证据层级与研究检查见
-[机器可读审计](reports/extraction/showcase/audit.json)。
+## 运行代码
 
-## 证据边界
-
-部署时 Actor 只能接收 84×84 第一视角灰度图及自身公开状态，不能接收敌方
-血量或位置、世界坐标、深度图、目标标签、俯视图或观众遥测。特权状态仅用于
-非对称训练 Critic、训练 reward shaping，以及离线评测与观众遥测，不会进入
-部署 Actor。
-
-当前公开结论限定为产品 Showcase，不声称全风格 benchmark 成功、聚合能力保持
-成功或 official-test 结果。
-候选选择阶段禁止访问 test。冻结协议规定每个策略仅测试一次 400 局，
-official test 总计 1,600 局；当前尚未运行。
-
-## 复现
-
-使用 `botcolosseo` Conda 环境。完整命令见 [script.md](script.md)，冻结门见
-[Plan.md](Plan.md)。
+使用 Python 3.10，并按机器配置安装合适的 PyTorch。
 
 ```bash
-conda activate botcolosseo
-python -m pip check
-python -m ruff check src tests scripts
+python -m pip install -e ".[training,dev]"
 python -m pytest tests/unit -q
+python -m botcolosseo.cli.evaluate_hierarchical_styles --help
+python -m botcolosseo.cli.render_hierarchical --help
 ```
 
-项目源码采用 MIT License。ViZDoom 与 Freedoom 保留各自许可证，详见
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+本次发布**源码与展示证据**，不包含预训练权重和原始训练轨迹；
+实际 rollout 需要本地生成的模型与数据。入口见[架构与代码指南](docs/hierarchical-research.md)。
+
+<details>
+<summary>路线演进与研究边界</summary>
+
+固定物资 Bot → 随机物资残差风格 → 共享层级实时控制。
+未来可探索 VLM 高层规划和拟人化，但不属于已交付能力。
+
+已实现 PSRO 和执行器升级实验，但可靠响应增益与正式执行器晋级尚未证实，
+不声称全部研究门通过。
+
+早期 Strong／残差 Adapter 指标属于另一套部署策略：
+[历史基线](docs/adapter-baseline_CN.md) · [旧版视频](https://kirin-dev.github.io/BotColosseo/adapter.html)。
+
+</details>
+
+---
+
+源码采用 MIT License；ViZDoom 与 Freedoom 保留各自许可证。
+详见[第三方声明](THIRD_PARTY_NOTICES.md)。

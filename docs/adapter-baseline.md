@@ -1,0 +1,126 @@
+# Historical residual-adapter baseline
+
+This document describes the earlier adapter release, not the current hierarchical policy.
+[Current showcase](https://kirin-dev.github.io/BotColosseo/) · [Archived videos](https://kirin-dev.github.io/BotColosseo/adapter.html)
+
+## What is the task?
+
+```text
+search for loot → fight or disengage → manage inventory → extract → bank value
+```
+
+- One 75-second 1v1 raid with two neutral extraction zones.
+- Each player has **100 HP**; every valid hit deals **20 damage**.
+- Each player starts with **30 rounds**, with no reload or respawn.
+- The backpack has **three slots** for loot worth 10, 25, or 50.
+- Death drops all unbanked loot into a collectible corpse cache.
+- A kill has no intrinsic score; only extracted value counts.
+
+## One base, four visible behaviors
+
+| Bot | Priority | Representative causal chain |
+|---|---|---|
+| **Strong** | balanced task capability | search → valuable loot → extract → bank |
+| **Aggressive** | useful combat conversion | hit → kill → corpse cache → extract |
+| **Defensive** | preserve carried value under risk | stop pursuit → disengage → extract |
+| **Explorer** | useful route and loot diversity | search regions → upgrade backpack → extract |
+
+The Strong CNN-GRU Actor is trained from a mask-aware privileged Teacher through
+behavioral cloning and conservative recurrent PPO. The 1M-step run is screened
+at 50k intervals and selects the 950k checkpoint rather than the final one. The
+three styles are bounded residual logit adapters over that same frozen Strong
+Actor hash. Training-only opportunity detectors activate their shaping; deployed
+policies remain learned adapters with the same public inputs.
+
+The codebase supports historical opponents and PFSP, but the released Strong run
+sets `history_probability: 0.0`. This release therefore makes no PFSP-training or
+causal PFSP-gain claim.
+
+### Implementation map
+
+| Layer | Entry point |
+|---|---|
+| Game rules and ACS map | `assets/scenarios/crystal_run_extraction_randomized/` |
+| Synchronized environment and public protocol | `src/botcolosseo/envs/synchronous_extraction.py` |
+| CNN-GRU Actor and asymmetric Critic | `src/botcolosseo/agents/extraction_model.py` |
+| BC, recurrent PPO, PFSP, and style shaping | `src/botcolosseo/training/extraction_*.py` |
+| Frozen evaluation and evidence tiers | `src/botcolosseo/evaluation/extraction_*.py` |
+| Reproducible commands | `script.md` |
+
+## Technical evolution
+
+The project made two deliberate changes while keeping the same search-fight-
+extract objective:
+
+1. **Fixed loot → randomized loot.** Fixed placements made route memorization
+   too easy. The released arena assigns seven items to sixteen safe anchors per
+   raid while preserving the combat, inventory, and extraction rules.
+2. **Global style rewards → opportunity-conditioned shaping.** Style rewards are
+   activated only when the corresponding decision is meaningful. PBRS provides
+   causal-chain credit, partitioned KL preserves the frozen Strong policy outside
+   those opportunities, and bounded residual adapters keep style changes small.
+
+Opportunity labels and privileged Critic features remain training-only; the
+deployed Actor still receives only fair first-person observations.
+
+## Results
+
+| Strong capability | Result |
+|---|---:|
+| Randomized validation extraction | **83.3%** |
+| Randomized validation win rate | **56.7%** |
+| Randomized validation mean banked value | **39.10** |
+| Randomized heldout extraction | **85.8%** |
+
+### Randomized-layout release
+
+The released Strong and all three style adapters share the same randomized-loot
+scenario and frozen Strong checkpoint. Seven loot items are assigned across 16
+safe anchors through finite, collision-free permutations. This is domain
+randomization over a finite layout family, not continuous-placement
+generalization. Frozen 32-episode screens selected the 950k checkpoint; the
+public capability numbers above come from a separate 240-episode confirmation.
+See the [derived curve data](../reports/extraction/training-curve.json).
+
+| Bot | Public evidence | What the selected video proves |
+|---|---|---|
+| Aggressive | Representative case | 5 hits → kill → corpse cache → 100-value extraction |
+| Defensive | Representative case | carried-value disengagement → extraction, 0 kills |
+| Explorer | Representative case | 4 loot regions → backpack upgrade → 70-value extraction |
+
+These are validation-selected product demonstrations, not proof that every
+style improves on the full distribution. Each video is a fresh deterministic
+render bound to the selected protocol, seed, side, opponent, layout, and policy;
+it is not claimed to be frame-identical replay of the historical evaluation
+episode. Each case contains a complete, engine-recorded causal chain. See the
+[machine-readable audit](../reports/extraction/showcase/audit.json) for cases,
+checkpoint/media hashes, evidence tiers, and every disclosed failed check.
+
+## Evidence boundary
+
+The deployed Actor sees only its 84×84 first-person grayscale frame and its own
+public state. The Actor never receives opponent HP or position, world
+coordinates, depth, labels, automap, or viewer telemetry. Privileged state is
+confined to the asymmetric training Critic and reward shaping, plus offline
+evaluation and viewer telemetry; none of it enters the deployed Actor.
+
+This is a product Showcase with no benchmark-success claim and no aggregate
+skill-preservation claim for all styles.
+Candidate selection never accesses the test split. The deferred protocol allows
+one frozen 400-episode official test per policy (1,600 episodes total); it has
+not been run.
+
+## Reproduce
+
+Use the `botcolosseo` Conda environment. Full commands are in
+[script.md](../script.md), and frozen gates are in [Plan.md](../Plan.md).
+
+```bash
+conda activate botcolosseo
+python -m pip check
+python -m ruff check src tests scripts
+python -m pytest tests/unit -q
+```
+
+Project source is MIT licensed. ViZDoom and Freedoom retain their respective
+licenses; see [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
