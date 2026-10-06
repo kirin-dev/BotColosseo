@@ -9,10 +9,12 @@ import torch
 from botcolosseo.agents.hierarchical_controller import HierarchicalController
 from botcolosseo.agents.hierarchical_critic import StrategicActorCritic
 from botcolosseo.agents.hierarchical_model import CommandExecutor, StrategicActor
+from botcolosseo.cli.evaluate_hierarchical_styles import EventObservedEnv
 from botcolosseo.cli.train_hierarchical_strategic import digest
 from botcolosseo.data.hierarchical_demonstrations import load_command_episode
 from botcolosseo.demo.hierarchical_controls import ScheduledController, control_schedule
 from botcolosseo.demo.hierarchical_recording import StrategicRecordingEnv
+from botcolosseo.demo.style_response_probe import ProbedScheduledController
 from botcolosseo.envs.synchronous_extraction import SynchronousExtractionEnv
 from botcolosseo.envs.video import write_mp4
 from botcolosseo.training.hierarchical_collection import collect_strategic_episode
@@ -30,6 +32,8 @@ def main():
     parser.add_argument("--style", type=float, nargs=3, default=[0, 0, 0])
     parser.add_argument("--difficulty", type=float, default=1.0)
     parser.add_argument("--switch-mode", choices=("style", "difficulty", "joint"), default="style")
+    parser.add_argument("--single-switch-style", choices=("aggressive", "defensive", "explorer"))
+    parser.add_argument("--probe-style-response", action="store_true")
     parser.add_argument(
         "--switch", action="store_true", help="Neutral/A/D/E at decisions 0/81/161/241"
     )
@@ -37,9 +41,12 @@ def main():
     condition = ControlCondition(*args.style, difficulty=args.difficulty)
     if args.switch_mode != "style" and not args.switch:
         raise ValueError("A switch mode requires --switch")
+    if args.single_switch_style and not args.switch:
+        raise ValueError("Single transition requires --switch")
     schedule = [(0, condition)]
     if args.switch:
-        schedule = control_schedule(args.switch_mode, difficulty=args.difficulty)
+        schedule = control_schedule(args.switch_mode, difficulty=args.difficulty,
+                                    single_style=args.single_switch_style)
     evidence = args.output.with_suffix(".json")
     if args.output.exists() or evidence.exists():
         raise FileExistsError("Preserving recorded video and evidence")
@@ -61,7 +68,10 @@ def main():
         high.load_state_dict(item["actor"])
         controllers[side] = HierarchicalController(low, high, seed=1701 + 100 * args.seed + index)
         if side == args.role:
-            controllers[side] = ScheduledController(
+            controller_type = (
+                ProbedScheduledController if args.probe_style_response else ScheduledController
+            )
+            controllers[side] = controller_type(
                 low, high, seed=1701 + 100 * args.seed + index, schedule=schedule
             )
     env = SynchronousExtractionEnv(
@@ -71,7 +81,10 @@ def main():
         seed=args.seed,
         layout_variant=args.seed % 128,
     )
-    recording = StrategicRecordingEnv(env, controllers[args.role], side=args.role, label=args.label)
+    observed = EventObservedEnv(env, record_observations=True)
+    recording = StrategicRecordingEnv(
+        observed, controllers[args.role], side=args.role, label=args.label
+    )
     try:
         _, report = collect_strategic_episode(
             recording,
@@ -102,8 +115,11 @@ def main():
         "events": recording.events,
         "command_changes": recording.command_changes,
         "report": report,
+        "observation_hashes": observed.observation_hashes,
         "scope": "actual research rollout, not a representative-style claim",
     }
+    if args.probe_style_response:
+        result["same_history_style_probes"] = controllers[args.role].style_probes
     temporary = evidence.with_suffix(".tmp")
     temporary.write_text(json.dumps(result, indent=2))
     temporary.replace(evidence)

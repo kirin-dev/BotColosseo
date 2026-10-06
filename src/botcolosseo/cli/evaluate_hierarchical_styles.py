@@ -1,6 +1,7 @@
 """Same-checkpoint style endpoint rollout against a neutral fixed opponent."""
 
 import argparse
+import hashlib
 import json
 from collections import Counter
 from pathlib import Path
@@ -11,6 +12,7 @@ from botcolosseo.agents.hierarchical_controller import HierarchicalController
 from botcolosseo.agents.hierarchical_critic import StrategicActorCritic
 from botcolosseo.agents.hierarchical_model import CommandExecutor, StrategicActor
 from botcolosseo.cli.train_hierarchical_strategic import digest
+from botcolosseo.data.extraction_demonstrations import extraction_scalars
 from botcolosseo.data.hierarchical_demonstrations import load_command_episode
 from botcolosseo.demo.control_trace_audit import audit_control_report
 from botcolosseo.demo.hierarchical_controls import ScheduledController, control_schedule
@@ -37,15 +39,32 @@ class NeutralOpponent(HierarchicalController):
 class EventObservedEnv:
     """Record post-step events for showcase selection, never feed them to actors."""
 
-    def __init__(self, env):
+    def __init__(self, env, *, record_observations=False):
         self.env = env
         self.events = []
+        self.record_observations = record_observations
+        self.observation_hashes = []
+
+    def record(self, observations):
+        if self.record_observations:
+            self.observation_hashes.append({
+                side: hashlib.sha256(
+                    getattr(observations, side).frame.tobytes()
+                    + extraction_scalars(getattr(observations, side)).tobytes()
+                ).hexdigest() for side in ("host", "opponent")
+            })
+
+    def reset(self):
+        observations, info = self.env.reset()
+        self.record(observations)
+        return observations, info
 
     def __getattr__(self, name):
         return getattr(self.env, name)
 
     def step(self, host, opponent):
         result = self.env.step(host, opponent)
+        self.record(result)
         self.events.extend(
             {"type": event.type.value, "side": event.side, "engine_tic": event.engine_tic}
             for event in result.events
@@ -62,14 +81,19 @@ def main():
     parser.add_argument("--switch", action="store_true")
     parser.add_argument("--switch-mode", choices=("style", "difficulty", "joint"), default="style")
     parser.add_argument("--style-order", nargs=3, choices=("aggressive", "defensive", "explorer"))
+    parser.add_argument("--single-switch-style", choices=("aggressive", "defensive", "explorer"))
+    parser.add_argument("--record-trace", action="store_true")
     parser.add_argument("--difficulty", type=float, default=1.0)
     parser.add_argument("--compositions", action="store_true")
     parser.add_argument("--only-style", choices=("neutral", "aggressive", "defensive", "explorer"))
     args = parser.parse_args()
     if args.style_order and not args.switch:
         raise ValueError("Style order requires switching")
+    if args.single_switch_style and not args.switch:
+        raise ValueError("Single transition requires switching")
     schedule = control_schedule(
-        args.switch_mode, difficulty=args.difficulty, style_order=args.style_order
+        args.switch_mode, difficulty=args.difficulty, style_order=args.style_order,
+        single_style=args.single_switch_style,
     )
     ControlCondition(difficulty=args.difficulty)
     if args.switch_mode != "style" and not args.switch:
@@ -134,11 +158,13 @@ def main():
         result["switch_mode"] = args.switch_mode
         if args.style_order:
             result["style_order"] = args.style_order
+        if args.single_switch_style:
+            result["single_switch_style"] = args.single_switch_style
         result["control_schedule"] = [
             (t, c.as_tuple())
             for t, c in schedule
         ]
-        result["switch_decisions"] = [0, 81, 161, 241]
+        result["switch_decisions"] = [time for time, _ in schedule]
     elif args.compositions:
         result["scope"] = (
             "same-checkpoint static endpoints and compositions; fixed Neutral/Hard opponent"
@@ -167,7 +193,7 @@ def main():
                     seed=seed,
                     layout_variant=seed % 128,
                 )
-                observed = EventObservedEnv(env)
+                observed = EventObservedEnv(env, record_observations=args.record_trace)
                 try:
                     _, report = collect_strategic_episode(
                         observed,
@@ -191,8 +217,10 @@ def main():
                     "events": observed.events,
                 }
                 result["cases"].append(row)
-                if args.switch:
+                if args.switch or args.record_trace:
                     row["control_trace"] = report["timeline"]
+                if args.record_trace:
+                    row["observation_hashes"] = observed.observation_hashes
                 temporary = args.output.with_suffix(".tmp")
                 temporary.write_text(json.dumps(result, indent=2))
                 temporary.replace(args.output)

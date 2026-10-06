@@ -1,0 +1,1102 @@
+{
+  "identities": {
+    "executor": "f0431e2d958e350c1b509160b2e7f8a48a9893fb76fe58139eff42187bcd2445",
+    "strategy": "60a405859c282fdf34b7795ba3eae549bd55e5dbb69a89eea3c54708f5154754",
+    "opponent": "7c52eb008817986cc806d2373e81e5cb0681eb9c93e28b73ac76e08ba44209d9"
+  },
+  "source_sha256": {
+    "neutral": "79aa39e079db1411d01382bbe7ed74ac019370155ece4ad332277e04a330243c",
+    "aggressive": "5791768984faeac254eda2be8cdf23d5695f8f86f05312f996085eef8081b39b",
+    "defensive": "46c41afc499bddb62cc1b64934577b96098f5171d853c1bbcb165933c77d44cc",
+    "explorer": "da6b96c42ce3f38c1f2ceea138bcbf2405f78884fc69c406b642f17cd59af7ba"
+  },
+  "scope": "Seed/role-paired development cases; prefix audit limits causal interpretation",
+  "window": [
+    88,
+    161
+  ],
+  "styles": {
+    "aggressive": {
+      "cases": [
+        {
+          "seed": 104,
+          "role": "host",
+          "bank_control": 45.0,
+          "bank_switch": 35.0,
+          "prefix_equal": false,
+          "first_observation_difference": 69,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.1095890410958904,
+            "search": 0.8904109589041096,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.2054794520547945,
+            "search": 0.7671232876712328,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 104,
+          "role": "opponent",
+          "bank_control": 10.0,
+          "bank_switch": 10.0,
+          "prefix_equal": false,
+          "first_observation_difference": 46,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.8904109589041096,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 105,
+          "role": "host",
+          "bank_control": 0.0,
+          "bank_switch": 0.0,
+          "prefix_equal": false,
+          "first_observation_difference": 55,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.6575342465753424,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 105,
+          "role": "opponent",
+          "bank_control": 70.0,
+          "bank_switch": 45.0,
+          "prefix_equal": false,
+          "first_observation_difference": 2,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0684931506849315,
+            "search": 0.547945205479452,
+            "extract": 0.3287671232876712
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.1643835616438356,
+            "search": 0.7671232876712328,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 106,
+          "role": "host",
+          "bank_control": 60.0,
+          "bank_switch": 0.0,
+          "prefix_equal": true,
+          "first_observation_difference": null,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0547945205479452,
+            "search": 0.8904109589041096,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 106,
+          "role": "opponent",
+          "bank_control": 85.0,
+          "bank_switch": 70.0,
+          "prefix_equal": false,
+          "first_observation_difference": 3,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.8904109589041096,
+            "extract": 0.1095890410958904
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.7808219178082192,
+            "extract": 0.1095890410958904
+          }
+        },
+        {
+          "seed": 107,
+          "role": "host",
+          "bank_control": 20.0,
+          "bank_switch": 20.0,
+          "prefix_equal": false,
+          "first_observation_difference": 4,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.6712328767123288,
+            "extract": 0.3287671232876712
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.3424657534246575,
+            "extract": 0.3287671232876712
+          }
+        },
+        {
+          "seed": 107,
+          "role": "opponent",
+          "bank_control": 70.0,
+          "bank_switch": 60.0,
+          "prefix_equal": true,
+          "first_observation_difference": null,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.7808219178082192,
+            "extract": 0.2191780821917808
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.1643835616438356,
+            "search": 0.547945205479452,
+            "extract": 0.1095890410958904
+          }
+        },
+        {
+          "seed": 108,
+          "role": "host",
+          "bank_control": 0.0,
+          "bank_switch": 0.0,
+          "prefix_equal": true,
+          "first_observation_difference": null,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0958904109589041,
+            "search": 0.6575342465753424,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 108,
+          "role": "opponent",
+          "bank_control": 35.0,
+          "bank_switch": 45.0,
+          "prefix_equal": false,
+          "first_observation_difference": 1,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 109,
+          "role": "host",
+          "bank_control": 45.0,
+          "bank_switch": 0.0,
+          "prefix_equal": true,
+          "first_observation_difference": null,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.7808219178082192,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 109,
+          "role": "opponent",
+          "bank_control": 0.0,
+          "bank_switch": 0.0,
+          "prefix_equal": false,
+          "first_observation_difference": 53,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.8904109589041096,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 110,
+          "role": "host",
+          "bank_control": 10.0,
+          "bank_switch": 10.0,
+          "prefix_equal": false,
+          "first_observation_difference": 2,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.8904109589041096,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 110,
+          "role": "opponent",
+          "bank_control": 60.0,
+          "bank_switch": 60.0,
+          "prefix_equal": false,
+          "first_observation_difference": 2,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.8904109589041096,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 111,
+          "role": "host",
+          "bank_control": 75.0,
+          "bank_switch": 60.0,
+          "prefix_equal": false,
+          "first_observation_difference": 38,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 111,
+          "role": "opponent",
+          "bank_control": 60.0,
+          "bank_switch": 85.0,
+          "prefix_equal": false,
+          "first_observation_difference": 18,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0821917808219178,
+            "search": 0.8904109589041096,
+            "extract": 0.0
+          }
+        }
+      ],
+      "mean_bank_delta": -9.0625,
+      "matched_prefix_cases": 4,
+      "causal_matched_history_comparison": false,
+      "layout_bootstrap_95": [
+        -19.0703125,
+        -0.3125
+      ],
+      "control_audit": {
+        "cases": 16,
+        "reached": 16,
+        "applied": 16,
+        "pending_at_episode_end": 0,
+        "max_delay": 7
+      }
+    },
+    "defensive": {
+      "cases": [
+        {
+          "seed": 104,
+          "role": "host",
+          "bank_control": 45.0,
+          "bank_switch": 45.0,
+          "prefix_equal": true,
+          "first_observation_difference": null,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.1095890410958904,
+            "search": 0.8904109589041096,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.547945205479452,
+            "extract": 0.4520547945205479
+          }
+        },
+        {
+          "seed": 104,
+          "role": "opponent",
+          "bank_control": 10.0,
+          "bank_switch": 45.0,
+          "prefix_equal": false,
+          "first_observation_difference": 1,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.3424657534246575,
+            "extract": 0.6575342465753424
+          }
+        },
+        {
+          "seed": 105,
+          "role": "host",
+          "bank_control": 0.0,
+          "bank_switch": 0.0,
+          "prefix_equal": true,
+          "first_observation_difference": null,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 105,
+          "role": "opponent",
+          "bank_control": 70.0,
+          "bank_switch": 100.0,
+          "prefix_equal": false,
+          "first_observation_difference": 2,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0684931506849315,
+            "search": 0.547945205479452,
+            "extract": 0.3287671232876712
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.3287671232876712,
+            "extract": 0.6712328767123288
+          }
+        },
+        {
+          "seed": 106,
+          "role": "host",
+          "bank_control": 60.0,
+          "bank_switch": 60.0,
+          "prefix_equal": true,
+          "first_observation_difference": null,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.1095890410958904,
+            "extract": 0.8904109589041096
+          }
+        },
+        {
+          "seed": 106,
+          "role": "opponent",
+          "bank_control": 85.0,
+          "bank_switch": 0.0,
+          "prefix_equal": false,
+          "first_observation_difference": 77,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.8904109589041096,
+            "extract": 0.1095890410958904
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.0,
+            "extract": 1.0
+          }
+        },
+        {
+          "seed": 107,
+          "role": "host",
+          "bank_control": 20.0,
+          "bank_switch": 20.0,
+          "prefix_equal": false,
+          "first_observation_difference": 1,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.6712328767123288,
+            "extract": 0.3287671232876712
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.0,
+            "extract": 1.0
+          }
+        },
+        {
+          "seed": 107,
+          "role": "opponent",
+          "bank_control": 70.0,
+          "bank_switch": 10.0,
+          "prefix_equal": false,
+          "first_observation_difference": 23,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.7808219178082192,
+            "extract": 0.2191780821917808
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.1095890410958904,
+            "extract": 0.8904109589041096
+          }
+        },
+        {
+          "seed": 108,
+          "role": "host",
+          "bank_control": 0.0,
+          "bank_switch": 30.0,
+          "prefix_equal": true,
+          "first_observation_difference": null,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.9863013698630136,
+            "extract": 0.0136986301369863
+          }
+        },
+        {
+          "seed": 108,
+          "role": "opponent",
+          "bank_control": 35.0,
+          "bank_switch": 35.0,
+          "prefix_equal": false,
+          "first_observation_difference": 52,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 109,
+          "role": "host",
+          "bank_control": 45.0,
+          "bank_switch": 25.0,
+          "prefix_equal": false,
+          "first_observation_difference": 1,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.2191780821917808,
+            "extract": 0.7808219178082192
+          }
+        },
+        {
+          "seed": 109,
+          "role": "opponent",
+          "bank_control": 0.0,
+          "bank_switch": 10.0,
+          "prefix_equal": false,
+          "first_observation_difference": 1,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 110,
+          "role": "host",
+          "bank_control": 10.0,
+          "bank_switch": 10.0,
+          "prefix_equal": false,
+          "first_observation_difference": 2,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 110,
+          "role": "opponent",
+          "bank_control": 60.0,
+          "bank_switch": 70.0,
+          "prefix_equal": false,
+          "first_observation_difference": 8,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.4383561643835616,
+            "extract": 0.5616438356164384
+          }
+        },
+        {
+          "seed": 111,
+          "role": "host",
+          "bank_control": 75.0,
+          "bank_switch": 60.0,
+          "prefix_equal": false,
+          "first_observation_difference": 38,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 111,
+          "role": "opponent",
+          "bank_control": 60.0,
+          "bank_switch": 45.0,
+          "prefix_equal": false,
+          "first_observation_difference": 1,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.0,
+            "extract": 1.0
+          }
+        }
+      ],
+      "mean_bank_delta": -5.0,
+      "matched_prefix_cases": 4,
+      "causal_matched_history_comparison": false,
+      "layout_bootstrap_95": [
+        -20.0,
+        9.0625
+      ],
+      "control_audit": {
+        "cases": 16,
+        "reached": 16,
+        "applied": 16,
+        "pending_at_episode_end": 0,
+        "max_delay": 7
+      }
+    },
+    "explorer": {
+      "cases": [
+        {
+          "seed": 104,
+          "role": "host",
+          "bank_control": 45.0,
+          "bank_switch": 45.0,
+          "prefix_equal": true,
+          "first_observation_difference": null,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.1095890410958904,
+            "search": 0.8904109589041096,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 104,
+          "role": "opponent",
+          "bank_control": 10.0,
+          "bank_switch": 10.0,
+          "prefix_equal": false,
+          "first_observation_difference": 46,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 105,
+          "role": "host",
+          "bank_control": 0.0,
+          "bank_switch": 0.0,
+          "prefix_equal": false,
+          "first_observation_difference": 31,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 105,
+          "role": "opponent",
+          "bank_control": 70.0,
+          "bank_switch": 45.0,
+          "prefix_equal": false,
+          "first_observation_difference": 2,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0684931506849315,
+            "search": 0.547945205479452,
+            "extract": 0.3287671232876712
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 106,
+          "role": "host",
+          "bank_control": 60.0,
+          "bank_switch": 60.0,
+          "prefix_equal": true,
+          "first_observation_difference": null,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 106,
+          "role": "opponent",
+          "bank_control": 85.0,
+          "bank_switch": 70.0,
+          "prefix_equal": false,
+          "first_observation_difference": 20,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.8904109589041096,
+            "extract": 0.1095890410958904
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 107,
+          "role": "host",
+          "bank_control": 20.0,
+          "bank_switch": 20.0,
+          "prefix_equal": false,
+          "first_observation_difference": 4,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.6712328767123288,
+            "extract": 0.3287671232876712
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.6712328767123288,
+            "extract": 0.3287671232876712
+          }
+        },
+        {
+          "seed": 107,
+          "role": "opponent",
+          "bank_control": 70.0,
+          "bank_switch": 30.0,
+          "prefix_equal": false,
+          "first_observation_difference": 7,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.7808219178082192,
+            "extract": 0.2191780821917808
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.5616438356164384,
+            "extract": 0.4383561643835616
+          }
+        },
+        {
+          "seed": 108,
+          "role": "host",
+          "bank_control": 0.0,
+          "bank_switch": 0.0,
+          "prefix_equal": false,
+          "first_observation_difference": 13,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 108,
+          "role": "opponent",
+          "bank_control": 35.0,
+          "bank_switch": 35.0,
+          "prefix_equal": false,
+          "first_observation_difference": 52,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 109,
+          "role": "host",
+          "bank_control": 45.0,
+          "bank_switch": 60.0,
+          "prefix_equal": false,
+          "first_observation_difference": 2,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 109,
+          "role": "opponent",
+          "bank_control": 0.0,
+          "bank_switch": 30.0,
+          "prefix_equal": false,
+          "first_observation_difference": 2,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 0.8904109589041096,
+            "extract": 0.1095890410958904
+          }
+        },
+        {
+          "seed": 110,
+          "role": "host",
+          "bank_control": 10.0,
+          "bank_switch": 10.0,
+          "prefix_equal": false,
+          "first_observation_difference": 1,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 110,
+          "role": "opponent",
+          "bank_control": 60.0,
+          "bank_switch": 70.0,
+          "prefix_equal": false,
+          "first_observation_difference": 4,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 111,
+          "role": "host",
+          "bank_control": 75.0,
+          "bank_switch": 50.0,
+          "prefix_equal": false,
+          "first_observation_difference": 38,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        },
+        {
+          "seed": 111,
+          "role": "opponent",
+          "bank_control": 60.0,
+          "bank_switch": 60.0,
+          "prefix_equal": false,
+          "first_observation_difference": 7,
+          "control": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          },
+          "switch": {
+            "observed_steps": 73,
+            "attack": 0.0,
+            "search": 1.0,
+            "extract": 0.0
+          }
+        }
+      ],
+      "mean_bank_delta": -3.125,
+      "matched_prefix_cases": 2,
+      "causal_matched_history_comparison": false,
+      "layout_bootstrap_95": [
+        -10.9375,
+        5.9375
+      ],
+      "control_audit": {
+        "cases": 16,
+        "reached": 16,
+        "applied": 16,
+        "pending_at_episode_end": 0,
+        "max_delay": 7
+      }
+    }
+  },
+  "selected_video": {
+    "seed": 104,
+    "role": "host",
+    "difficulty": 1,
+    "request_decision": 81,
+    "applied_decision": 88,
+    "prefix_observations_equal": true,
+    "prefix_actions_commands_equal": true,
+    "bank": [
+      45,
+      45
+    ],
+    "extraction_seconds": [
+      38.97142857142857,
+      32.8
+    ],
+    "raw_video_sha256": {
+      "control": "d3eb59598080f5745a8c8114f978338296bf0d7d437df802f1eea693028f02b0",
+      "switch": "fe87388877c201757e2453fe97fece5b4a5dadaccfdeab009b22ada42fe59673"
+    },
+    "raw_evidence_sha256": {
+      "control": "05c3d4d04ad510e5df942f08653bbf03421a8c3c13bd59b9b6bd7a4c876df59a",
+      "switch": "8b0ba9958e13f56712ab15dfb869b9cc34d9ff5d8623d4931276f7572230d401"
+    },
+    "video_sha256": "3c8ee3781d7b136cd9c5c6a7e38782343ab15773a5406d6c847dd2e4ca3f81fb"
+  },
+  "same_history_response": {
+    "scope": "Read-only one-step style intervention on actual Neutral histories, not closed-loop benefits",
+    "points": 11,
+    "mean_command_probabilities": {
+      "neutral": [
+        0.07157498932528225,
+        0.7454492801969702,
+        0.11250528300562027,
+        0.020647399000484835,
+        0.0013362257900139825,
+        0.04710983027788726,
+        0.0013770137342031705
+      ],
+      "aggressive": [
+        0.023974096931686454,
+        0.6728368902748282,
+        0.09276450449727815,
+        0.1749384945089167,
+        0.005956229669126597,
+        0.0273835418576544,
+        0.002146264517002485
+      ],
+      "defensive": [
+        0.05362584230236032,
+        0.5592942928726022,
+        0.10816677206788551,
+        0.010925394567576322,
+        0.001299812521954829,
+        0.2644418166442351,
+        0.002246074971150268
+      ],
+      "explorer": [
+        0.09785440653054552,
+        0.7306589308110151,
+        0.1254433769499883,
+        0.009637113237245516,
+        0.000713853800499981,
+        0.03469082010401921,
+        0.0010015058161860163
+      ]
+    }
+  }
+}
