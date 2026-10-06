@@ -1,5 +1,11 @@
 # Hierarchical runtime-control showcase release
 
+This document records the original v0.1.0 showcase scope. The subsequent
+[v0.1.1 Release](https://github.com/kirin-dev/BotColosseo/releases/tag/v0.1.1)
+adds a portable inference archive with the same selected Actor weights,
+scene and standalone launcher. See the [runtime guide](deployment-bundle.md).
+Raw training data and optimizer checkpoints remain outside the public release.
+
 [Open the showcase](https://kirin-dev.github.io/BotColosseo/)
 · [Architecture and code](hierarchical-research.md)
 
