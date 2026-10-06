@@ -13,7 +13,8 @@ then publish an explanatory comparison for the showcase and interview handoff.
 - Same per-player sampling seeds across arms. Recurrent memory persists.
 - Record both players' frame/self-state hashes and learner action/command traces.
   Check equality through the observation entering decision 81, before comparing
-  post-switch behavior. Prefix mismatches invalidate a matched-state comparison.
+  post-switch behavior. Prefix mismatches invalidate a matched-state comparison;
+  keep those outcomes as descriptive seed/role-paired diagnostics.
 - Report applied-control latency separately from behavioral response. Compare
   attack actions, search/extraction command occupancy in decisions 88–160;
   report missing/short windows and terminal outcomes rather than discarding them.
@@ -35,3 +36,16 @@ update the private BotColosseo.md interview handoff without publishing it.
 
 If response is stable, finish without retraining. If a reproducible visible
 failure appears, diagnose it and use a small targeted repair before publishing.
+
+## Observed outcome
+
+All 64 games completed. Each style arm applied all 16 requests, maximum delay
+7 decisions. Matching full observation/action prefixes: A 4/16, D 4/16, E 2/16.
+The replay engine does not reproduce identical histories for every matched seed.
+Aggregate payoff differences therefore do not isolate a causal switching effect.
+
+The selected Defensive video was independently recorded and passes observation
+and action/command prefix equality. Both arms bank 45; extraction times are
+38.97s and 32.80s. Published `assets/hierarchical/paired-runtime.json` binds raw
+reports, video identities, behavior windows, payoff uncertainty and clip hashes.
+The read-only same-history probe preserves actual actions, RNG and hidden state.
