@@ -1,4 +1,8 @@
 /* Hierarchical preview only: leave the original showcase untouched. */
+.runtime-comparison { margin:36px 0 20px; }
+.runtime-comparison h3 { font-size:22px; text-align:center; }
+.runtime-comparison video { display:block; width:100%; border-radius:12px; }
+.runtime-comparison figcaption { margin-top:12px; text-align:center; color:#606b79; line-height:1.6; }
 .section-heading { display:block; text-align:center; margin-bottom:28px; }
 .section-heading .eyebrow { margin-bottom:16px; }
 .section-copy { max-width: 760px; margin-inline: auto; }

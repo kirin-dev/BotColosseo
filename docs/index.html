@@ -73,6 +73,17 @@
       <ol class="control-timeline"><li><time>0.0s</time><strong>Neutral · Hard</strong><p>Search begins. First pickup at 1.6s.</p></li><li class="aggressive"><time>9.3s</time><strong>Aggressive · Easy</strong><p>New input requested. Engage command at 11.0s.</p></li><li class="defensive"><time>18.4s</time><strong>Defensive · Normal</strong><p>New input requested. Extract command at 26.5s.</p></li><li class="explorer"><time>27.5s</time><strong>Explorer · Hard</strong><p>New input requested. Extraction starts at 29.8s.</p></li></ol>
       <div class="episode-outcome"><strong>60 value banked</strong><span>Extraction complete at 32.8s · same weights throughout</span></div>
       <p class="fairness-note">Both controls change; the timeline shows sequence, not causality.</p>
+      <figure class="runtime-comparison">
+        <h3>Keep Neutral or switch to Defensive?</h3>
+        <video controls playsinline preload="none" poster="assets/hierarchical/paired-defensive.jpg" aria-label="Side-by-side Neutral and Defensive runtime comparison">
+          <source src="assets/hierarchical/paired-defensive.mp4" type="video/mp4">
+        </video>
+        <figcaption>Same observed history at the switch. Both bank 45; Defensive extracts earlier in this selected case.</figcaption>
+      </figure>
+      <details class="evidence-panel"><summary>Comparison protocol &amp; evidence</summary>
+        <p>Seed 104, host role, fixed Hard difficulty and identical policy identities. At decision 81 (9.26s), the right policy requests Defensive; the next high-level boundary applies it at decision 88 (10.06s). Both players' observation hashes and learner actions match before the intervention. Memory and weights persist. The right frame holds after extraction at 32.8s; the left extracts at 38.97s. This selected case illustrates a preference change, not an average switching benefit.</p>
+        <a href="assets/hierarchical/paired-runtime.json">Audit and development results ↗</a>
+      </details>
     </section>
     <section class="section shell" id="results">
       <div class="section-heading"><p class="eyebrow">04 · RESULTS</p><p class="section-copy">One model. Distinct preferences. Adjustable difficulty.</p></div>

@@ -80,6 +80,13 @@ generalization are not established.
 
 ## Run the code
 
+**Runtime comparison:** [keep Neutral vs. switch to Defensive](https://kirin-dev.github.io/BotColosseo/#styles).
+The selected pair shares the observed history at the switch and banks 45 in both
+arms; Defensive extracts at 32.80s versus 38.97s. A further 64 development games
+confirm timely control application and directional preferences, but do not
+establish an average switching benefit. [Paired audit](docs/assets/hierarchical/paired-runtime.json)
+
+
 Python 3.10 is required. Install the appropriate PyTorch build for your machine.
 
 ```bash

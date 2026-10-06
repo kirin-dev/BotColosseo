@@ -75,6 +75,12 @@ Actor 仅使用第一视角画面、自身公开状态和历史。敌方隐藏�
 
 ## 运行代码
 
+**实时切换对比：** [保持 Neutral／切换 Defensive](https://kirin-dev.github.io/BotColosseo/#styles)。
+精选案例在切换时具有一致的观测历史，两侧均带出 45；Defensive 在 32.80 秒撤离，
+持续 Neutral 在 38.97 秒撤离。新增 64 局开发验证确认输入及时生效与风格方向，
+尚未证明切换的平均收益增益。[配对审计](docs/assets/hierarchical/paired-runtime.json)
+
+
 使用 Python 3.10，并按机器配置安装合适的 PyTorch。
 
 ```bash
