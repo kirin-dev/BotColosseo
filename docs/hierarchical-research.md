@@ -43,8 +43,10 @@ python -m botcolosseo.cli.evaluate_hierarchical_styles --help
 python -m botcolosseo.cli.render_hierarchical --help
 ```
 
-Training checkpoints and trajectory archives are not bundled with this source
-release. Training and rollout commands require locally generated artifacts;
+Git checkout does not include training checkpoints or trajectory archives.
+For selected-policy inference, download the standalone v0.1.1 Release archive
+and follow the [bundle guide](deployment-bundle.md).
+Training and research rollout commands require locally generated artifacts;
 the CLI arguments expose their paths. The public preview includes selected
 videos and a compact [evidence summary](assets/hierarchical/evidence.json).
 

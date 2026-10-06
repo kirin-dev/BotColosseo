@@ -4,7 +4,7 @@
 
 **One policy. Three play styles. Real-time control.**
 
-[**Watch the showcase →**](https://kirin-dev.github.io/BotColosseo/) · [中文](README_CN.md) · [Release](https://github.com/kirin-dev/BotColosseo/releases/tag/v0.1.0) · [Code guide](docs/hierarchical-research.md)
+[**Watch the showcase →**](https://kirin-dev.github.io/BotColosseo/) · [中文](README_CN.md) · [Release](https://github.com/kirin-dev/BotColosseo/releases/tag/v0.1.1) · [Code guide](docs/hierarchical-research.md)
 
 A first-person ViZDoom bot that changes its priorities during a match—without
 swapping model weights or resetting memory. A high-level planner chooses goals;
@@ -96,8 +96,12 @@ python -m botcolosseo.cli.evaluate_hierarchical_styles --help
 python -m botcolosseo.cli.render_hierarchical --help
 ```
 
-This is a **source-and-showcase release**. Pretrained checkpoints and raw training
-trajectories are not bundled; rollout commands require locally generated artifacts.
+The [v0.1.1 Release](https://github.com/kirin-dev/BotColosseo/releases/tag/v0.1.1)
+provides a standalone inference archive with selected model weights, scene and
+runtime instructions; see the [bundle guide](docs/deployment-bundle.md).
+Git checkout alone does not contain weights or raw training trajectories.
+The repository is a **source-and-showcase release**; training continuation requires
+the original research artifacts.
 See the [architecture and entry points](docs/hierarchical-research.md).
 
 <details>
