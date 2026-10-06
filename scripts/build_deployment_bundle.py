@@ -16,13 +16,17 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def archive_path(directory):
+    return Path(str(directory) + ".tar.gz")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--artifact-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--source-commit", help="Published source commit for this bundle")
     args = parser.parse_args()
-    if args.output.exists() or args.output.with_suffix(".tar.gz").exists():
+    if args.output.exists() or archive_path(args.output).exists():
         raise FileExistsError("Preserve previous bundle")
     source = Path(__file__).resolve().parents[1]
     args.output.mkdir(parents=True)
@@ -76,7 +80,7 @@ def main():
                 "files": {str(p.relative_to(args.output)): digest(p)
                           for p in sorted(args.output.rglob("*")) if p.is_file()}}
     (args.output / "deployment.json").write_text(json.dumps(manifest, indent=2))
-    archive = args.output.with_suffix(".tar.gz")
+    archive = archive_path(args.output)
     with tarfile.open(archive, "w:gz") as stream:
         stream.add(args.output, arcname=args.output.name)
     print(json.dumps({"bundle": str(args.output), "archive": str(archive),
