@@ -4,7 +4,7 @@
 
 **同一策略，三种风格，局内实时调节。**
 
-[**观看在线展示 →**](https://kirin-dev.github.io/BotColosseo/) · [English](README.md) · [正式版本](https://github.com/kirin-dev/BotColosseo/releases/tag/v0.1.0) · [代码指南](docs/hierarchical-research.md)
+[**观看在线展示 →**](https://kirin-dev.github.io/BotColosseo/) · [English](README.md) · [正式版本](https://github.com/kirin-dev/BotColosseo/releases/tag/v0.1.1) · [代码指南](docs/hierarchical-research.md)
 
 基于 ViZDoom 的第一视角游戏智能体：高层选择目标，共享视觉执行器输出动作；
 在对局中改变风格与难度，不更换模型权重，也不清空记忆。
@@ -90,8 +90,10 @@ python -m botcolosseo.cli.evaluate_hierarchical_styles --help
 python -m botcolosseo.cli.render_hierarchical --help
 ```
 
-本次发布**源码与展示证据**，不包含预训练权重和原始训练轨迹；
-实际 rollout 需要本地生成的模型与数据。入口见[架构与代码指南](docs/hierarchical-research.md)。
+[v0.1.1 Release](https://github.com/kirin-dev/BotColosseo/releases/tag/v0.1.1)
+另提供包含最终模型、场景和运行说明的独立推理压缩包，见[运行指南](docs/deployment-bundle.md)。
+Git 仓库保留源码与展示证据，直接拉取不含权重或原始训练轨迹；
+继续训练仍需原研究数据。代码入口见[架构与代码指南](docs/hierarchical-research.md)。
 
 <details>
 <summary>路线演进与研究边界</summary>
